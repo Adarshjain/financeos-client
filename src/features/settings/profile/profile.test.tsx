@@ -93,9 +93,9 @@ describe('AppearanceCard', () => {
     expect(assign).toHaveBeenCalledWith('/storybook');
   });
 
-  it('has an Open Legacy row that links /legacy/dashboard', () => {
+  it('has no Legacy row and no link rows', () => {
     render(<AppearanceCard />);
-    expect(screen.getByRole('link', { name: 'Open Legacy' })).toHaveAttribute('href', '/legacy/dashboard');
+    expect(screen.queryByText('Open Legacy')).toBeNull();
     expect(screen.queryAllByRole('link', { name: 'Open' })).toHaveLength(0);
   });
 });
@@ -148,7 +148,7 @@ describe('DeleteAccountCard', () => {
     expect(submit()).toBeEnabled();
     fireEvent.click(submit());
     await waitFor(() =>
-      expect(deleteAccount).toHaveBeenCalledWith({ password: undefined, confirmEmail: 'ARJUN@example.test' }, true),
+      expect(deleteAccount).toHaveBeenCalledWith({ password: undefined, confirmEmail: 'ARJUN@example.test' }),
     );
   });
 
@@ -161,7 +161,7 @@ describe('DeleteAccountCard', () => {
     type('Current password', 'hunter22');
     fireEvent.click(submit());
     await waitFor(() =>
-      expect(deleteAccount).toHaveBeenCalledWith({ password: 'hunter22', confirmEmail: undefined }, true),
+      expect(deleteAccount).toHaveBeenCalledWith({ password: 'hunter22', confirmEmail: undefined }),
     );
   });
 

@@ -1,30 +1,22 @@
 'use client';
 
-import { useEffect } from 'react';
+import '../../design-system/tokens.css';
+import './(ds)/ds.css';
 
+import React, { useEffect } from 'react';
+
+import { Button } from '@/components/ds/Button/Button';
+import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { Root } from '@/components/ds/Root/Root';
+import { Text } from '@/components/ds/Text/Text';
+import { Illustration } from '@/components/organisms/Illustration/Illustration';
 import { getFaro } from '@/instrumentation-client';
 import { copyText } from '@/lib/copyText';
 
-// global-error replaces the root layout entirely, so it must render its own
-// <html>/<body> and cannot rely on anything the root layout sets up (fonts,
-// ThemeProvider, Toaster). It must not import either root's stylesheet: Next
-// attaches global-error's CSS to every route, which would ship the Legacy CSS
-// to Dinero pages. So it carries a tiny inline stylesheet (light palette, the
-// Legacy tokens' values).
-const css = `
-body{margin:0;background:hsl(210 40% 98%);color:hsl(222 47% 11%);font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;-webkit-font-smoothing:antialiased}
-.ge-wrap{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:1rem;box-sizing:border-box}
-.ge-box{width:100%;max-width:28rem;text-align:center}
-.ge-box>*+*{margin-top:.5rem}
-.ge-title{margin:0;font-size:1.125rem;line-height:1.75rem;font-weight:600;letter-spacing:-.025em}
-.ge-muted{margin:0;font-size:.875rem;line-height:1.25rem;color:hsl(215 16% 47%)}
-.ge-ref{font-size:.75rem;line-height:1rem;cursor:pointer}
-.ge-ref:hover{text-decoration:underline}
-.ge-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-.ge-btn{height:2.25rem;width:100%;border:0;border-radius:.375rem;background:hsl(160 84% 39%);padding:0 1rem;font:inherit;font-size:.875rem;font-weight:500;color:#fff;cursor:pointer}
-.ge-btn:hover{background:hsl(160 84% 39% / .9)}
-`;
+import { bricolageGrotesque, figtree } from './dsFonts';
 
+// global-error replaces the root layout entirely, so it renders its own <html>/<body> and loads the Dinero
+// stylesheet and fonts itself. No providers: it uses only components that work without them.
 export default function GlobalError({
   error,
   reset,
@@ -45,39 +37,33 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="en">
-      <head>
-        <style>{css}</style>
-      </head>
-      <body>
-        <div className="ge-wrap">
-          <div className="ge-box">
-            <h1 className="ge-title">FinanceOS failed to start</h1>
-            <p className="ge-muted">
-              A problem occurred outside the application shell. Reloading usually
-              recovers it.
-            </p>
-
-            {error.digest && (
-              <p
-                className="ge-muted ge-ref"
-                onClick={() => {
-                  if (error.digest) void copyText(error.digest);
-                }}
-                title="Click to copy"
-              >
-                Reference: <span className="ge-mono">{error.digest}</span>
-              </p>
-            )}
-
-            <button
-              onClick={reset}
-              className="ge-btn"
+    <html lang="en" className={`${figtree.variable} ${bricolageGrotesque.variable}`}>
+      <body className="antialiased">
+        <Root>
+          <main className="min-h-dvh flex items-center justify-center p-space-20">
+            <EmptyState
+              illustration={<Illustration variant="error" />}
+              title="FinanceOS failed to start"
+              description="A problem occurred outside the application shell. Reloading usually recovers it."
+              action={{ label: 'Reload', onSelect: reset }}
             >
-              Reload
-            </button>
-          </div>
-        </div>
+              {error.digest && (
+                <Text variant="caption" tone="ink-3" as="p">
+                  Reference:{' '}
+                  <Button
+                    variant="link"
+                    onClick={() => {
+                      if (error.digest) void copyText(error.digest);
+                    }}
+                    title="Click to copy"
+                  >
+                    {error.digest}
+                  </Button>
+                </Text>
+              )}
+            </EmptyState>
+          </main>
+        </Root>
       </body>
     </html>
   );

@@ -13,6 +13,7 @@ const config: Config = {
     './src/components/organisms/**/*.{js,ts,jsx,tsx,mdx}',
     './src/features/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/(ds)/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/*.{js,ts,jsx,tsx}',
     './.storybook/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {

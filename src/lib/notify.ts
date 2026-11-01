@@ -32,12 +32,12 @@ function toDinero(message: Message, tone: Tone, options?: NotifyOptions, forever
   );
 }
 
-/** Forward the options argument only when given, so Legacy calls match a bare sonner call exactly. */
+/** Forward the options argument only when given, so a call matches a bare sonner call exactly. */
 const rest = (o?: NotifyOptions): [NotifyOptions] | [] => (o === undefined ? [] : [o]);
 
 /**
- * Toasts that land on whichever toaster is mounted: Dinero's under /ds, sonner's root toaster on
- * Legacy (identical to calling sonner directly). Loading has no Dinero look, so it is a neutral toast
+ * Toasts that land on whichever toaster is mounted: Dinero's, else sonner's (identical to calling sonner
+ * directly). Loading has no Dinero look, so it is a neutral toast
  * that stays until dismissed or replaced by id.
  */
 export const notify = {

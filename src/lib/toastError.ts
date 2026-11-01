@@ -1,4 +1,3 @@
-import { isLegacyPath, legacyHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { copyText } from '@/lib/copyText';
 import { errorLog } from '@/lib/diagnostics/errorLog';
@@ -7,10 +6,9 @@ import { refOf } from '@/lib/diagnostics/ref';
 import { notify } from '@/lib/notify';
 import type { ErrorResponse } from '@/lib/types';
 
-/** The diagnostics page for `ref`: the Legacy one when the user is inside Legacy, else the plain path. */
+/** The diagnostics page for `ref`. */
 function debugHref(ref: string): string {
-  const path = '/debug?ref=' + encodeURIComponent(ref);
-  return typeof window !== 'undefined' && isLegacyPath(window.location.pathname) ? legacyHref(path) : path;
+  return '/debug?ref=' + encodeURIComponent(ref);
 }
 
 function extractErrorMessage(e: unknown, fallback: string): string {

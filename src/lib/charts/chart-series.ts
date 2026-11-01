@@ -1,4 +1,4 @@
-// Series helpers shared by the Legacy and Dinero charts. Pure — no React.
+// Series helpers shared by the charts. Pure — no React.
 
 import { niceTicks } from '@/lib/charts/chart-format';
 import type { ChartData } from '@/lib/reports.types';

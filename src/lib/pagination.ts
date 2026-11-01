@@ -63,6 +63,3 @@ export function pageItems(
     last,
   ];
 }
-
-/** Server default page size for report and dashboard tables (max 1000). */
-export const DEFAULT_TABLE_PAGE_SIZE = 50;

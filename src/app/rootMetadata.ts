@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 
-// Shared by both root layouts ((legacy) and (ds)); each re-exports these as its own metadata.
+// The app's base metadata; the root layout extends it.
 const isDev = process.env.NODE_ENV === 'development';
 
 export const metadata: Metadata = {

@@ -15,7 +15,7 @@ const revision =
 
 /**
  * Precache only the JS/CSS chunks the `/offline` document itself loads (read from its prerendered HTML).
- * Every other chunk (Legacy, other pages) is runtime-cached CacheFirst by sw.ts on first use. If the HTML is
+ * Every other chunk (other pages) is runtime-cached CacheFirst by sw.ts on first use. If the HTML is
  * not readable at build time, nothing is filtered and every chunk is precached as before.
  */
 type ManifestEntry = { url: string; size: number; integrity?: string; revision?: string | null };

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -60,10 +59,6 @@ export function AppearanceCard() {
         checked={hidden}
         onCheckedChange={setHidden}
       />
-      {/* The switch to Legacy: removed together with Legacy. Another root layout, so Next loads it as a full page. */}
-      <ListRow asChild chevron title="Open Legacy">
-        <Link href="/legacy/dashboard" prefetch={false} />
-      </ListRow>
       <ListRow
         title="Storybook"
         subtitle="Every Dinero component, live"

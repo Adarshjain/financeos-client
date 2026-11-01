@@ -84,13 +84,7 @@ async function endSession(): Promise<void> {
   await clearSessionCookie();
 }
 
-/** Signs out to the Legacy login. Takes no argument: it is also a form action, which passes FormData. */
-export async function logout(): Promise<void> {
-  await endSession();
-  redirect('/legacy/login');
-}
-
-/** Signs out to the Dinero login. */
+/** Signs out to the login page. */
 export async function logoutToDinero(): Promise<void> {
   await endSession();
   redirect(appHref('/login'));

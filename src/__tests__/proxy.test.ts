@@ -44,7 +44,7 @@ describe('proxy', () => {
     }
   );
 
-  it.each(['/login', '/signup', '/offline', '/legacy/login', '/legacy/signup', '/legacy/offline', '/auth/google/callback'])(
+  it.each(['/login', '/signup', '/offline', '/auth/google/callback'])(
     'serves the public auth page %s without a session',
     (pathname) => {
       expect(proxy(requestWithoutSession(pathname)).headers.get('location')).toBeNull();
@@ -60,12 +60,6 @@ describe('proxy', () => {
   it('keeps /ds, the review index, and protects it', () => {
     expect(proxy(requestWithoutSession('/ds')).headers.get('location')).toBe(
       'https://financeos.local/login?from=%2Fds'
-    );
-  });
-
-  it('sends a signed-out Legacy page visit to the Dinero login with the /legacy page as from', () => {
-    expect(proxy(requestWithoutSession('/legacy/accounts')).headers.get('location')).toBe(
-      'https://financeos.local/login?from=%2Flegacy%2Faccounts'
     );
   });
 
@@ -92,7 +86,7 @@ describe('proxy', () => {
       expect(to('/ds//evil.com')).toBe('https://financeos.local/evil.com');
     });
 
-    it('sends a Legacy alias path to its Dinero page, keeping the query', () => {
+    it('sends an old path to the page that replaced it, keeping the query', () => {
       expect(to('/rules')).toBe('https://financeos.local/transactions/rules');
       expect(to('/settings/gmail?focus=attention')).toBe('https://financeos.local/settings/connections?focus=attention');
       expect(to('/debug')).toBe('https://financeos.local/settings/debug');
@@ -105,9 +99,9 @@ describe('proxy', () => {
       );
     });
 
-    it('sends a Legacy-only page under /legacy, keeping the query', () => {
-      expect(to('/settings/ingest?x=1')).toBe('https://financeos.local/legacy/settings/ingest?x=1');
-      expect(to('/loans/calendar')).toBe('https://financeos.local/legacy/loans/calendar');
+    it('sends the old ingest and calendar pages to their replacements, keeping the query', () => {
+      expect(to('/settings/ingest?x=1')).toBe('https://financeos.local/transactions/import?x=1');
+      expect(to('/loans/calendar')).toBe('https://financeos.local/upcoming');
     });
 
     it('redirects before the auth check, with a session too', () => {

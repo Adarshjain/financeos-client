@@ -76,7 +76,7 @@ describe('shell navigation', () => {
     }
   });
 
-  it('getActiveNavItem follows Dinero pages: /ds paths light the same item as their Legacy twin', () => {
+  it('getActiveNavItem follows Dinero pages: each page lights its nav item', () => {
     expect(getActiveNavItem('/inbox')).toBe('inbox');
     expect(getActiveNavItem('/upcoming')).toBe('inbox');
     expect(getActiveNavItem('/upcoming/calendar')).toBe('inbox');
@@ -89,7 +89,7 @@ describe('shell navigation', () => {
     expect(getActiveNavItem('/dsx/inbox')).toBeUndefined();
   });
 
-  it('shell links go to the Dinero page when built, Legacy otherwise', () => {
+  it('shell links go to the Dinero page', () => {
     mockPathname = '/inbox';
     render(<ShellRail user={{ email: 'a@b.test' }} />);
     expect(screen.getByRole('link', { name: /Inbox/i })).toHaveAttribute('href', '/inbox');

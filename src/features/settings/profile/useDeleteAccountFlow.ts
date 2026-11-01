@@ -9,7 +9,7 @@ import { deleteAccount } from './profileActions';
 import { useDeletionSummary } from './useDeletionSummary';
 
 /** The delete-account dialog's state and submit: summary, fields, validation, busy/error handling. */
-export function useDeleteAccountFlow(user: Pick<UserResponse, 'email' | 'hasPassword'>, { toDinero = false } = {}) {
+export function useDeleteAccountFlow(user: Pick<UserResponse, 'email' | 'hasPassword'>) {
   const [open, setOpen] = useState(false);
   const { data: summary, isLoading: loadingSummary } = useDeletionSummary(open);
 
@@ -30,7 +30,6 @@ export function useDeleteAccountFlow(user: Pick<UserResponse, 'email' | 'hasPass
             password: hasPassword ? password : undefined,
             confirmEmail: !hasPassword ? confirmEmail.trim() : undefined,
           },
-          toDinero,
         ),
       ),
     // On success the action redirects to /login?deleted=1.

@@ -25,7 +25,7 @@ const FORM_ID = 'delete-account-form';
 
 /** The delete-account card and its confirm dialog (summary, what goes, password or email, DELETE phrase). */
 export function DeleteAccountCard({ user }: { user: UserResponse }) {
-  const f = useDeleteAccountFlow(user, { toDinero: true });
+  const f = useDeleteAccountFlow(user);
 
   return (
     <>

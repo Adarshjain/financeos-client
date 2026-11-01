@@ -1,6 +1,5 @@
 /**
- * Which toaster is on screen. Legacy and /ds use different root layouts (full reload between them),
- * so a module-level counter set by the Dinero Toaster while it is mounted is always accurate.
+ * Which toaster is on screen: a module-level counter set by the Dinero Toaster while it is mounted.
  */
 let dineroToasters = 0;
 

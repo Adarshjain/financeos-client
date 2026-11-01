@@ -2,7 +2,7 @@ import type { components } from '@/lib/api/schema';
 
 export type StatementDeletionPreview = components['schemas']['StatementDeletionPreviewResponse'];
 
-/** One bullet: `lead` is the count the Legacy dialog shows in bold; the rest is plain. */
+/** One bullet: `lead` is the count the dialog shows in bold; the rest is plain. */
 export interface ImpactItem {
   lead?: string;
   text: string;

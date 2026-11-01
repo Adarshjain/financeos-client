@@ -1,5 +1,4 @@
 import { setPageParam } from '@/features/shell/pagination';
-import { legacyHref } from '@/features/shell/routes';
 import type { JobType } from '@/lib/types';
 
 /**
@@ -35,8 +34,8 @@ export function getJobTypeLabel(type: JobType): string {
 export function buildJobsFilterUrl(
   current: { statusFilter: string; typeFilter: string; size: number },
   overrides: { newStatus?: string; newType?: string; newPage?: number } = {},
-  /** Another page showing the same list (the Dinero Activity tab) sets its own path and default size; the default is the Legacy page. */
-  target: { base?: string; defaultSize?: number; /** The address counts pages from 1 (Dinero); Legacy counts from 0. */ oneBasedPage?: boolean } = {},
+  /** Another page showing the same list sets its own path and default size; the default is the Activity tab. */
+  target: { base?: string; defaultSize?: number } = {},
 ): string {
   const q = new URLSearchParams();
   const st = overrides.newStatus !== undefined ? overrides.newStatus : current.statusFilter;
@@ -44,11 +43,10 @@ export function buildJobsFilterUrl(
   const page = overrides.newPage ?? 0;
   if (st) q.set('status', st);
   if (tp) q.set('type', tp);
-  if (target.oneBasedPage) setPageParam(q, page);
-  else if (page > 0) q.set('page', String(page));
+  setPageParam(q, page);
   if (current.size !== (target.defaultSize ?? 20)) q.set('size', String(current.size));
   const str = q.toString();
-  return `${target.base ?? legacyHref('/settings/activity')}${str ? `?${str}` : ''}`;
+  return `${target.base ?? '/settings/activity'}${str ? `?${str}` : ''}`;
 }
 
 /**

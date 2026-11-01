@@ -2,8 +2,8 @@ import { notifyIfAppLocked } from '@/lib/appLock';
 
 /**
  * Who handles `financeos:auth-expired` (dispatched by the browser API client on any 401).
- * Legacy has no handler of its own, so QueryProvider sends it to /login. A page that can ask for the
- * password in place (the /ds shell's SessionExpiredDialog) claims the event so nobody navigates away.
+ * Where nothing claims it, QueryProvider sends the visitor to /login. A page that can ask for the
+ * password in place (the shell's SessionExpiredDialog) claims the event so nobody navigates away.
  */
 export const AUTH_EXPIRED_EVENT = 'financeos:auth-expired';
 
@@ -37,7 +37,7 @@ export function isSessionExpiredResult(value: unknown): boolean {
 
 /**
  * Raises `financeos:auth-expired` when `value` says the session ended, but only where a page has claimed the
- * event (the /ds shell), so Legacy keeps its own behaviour. The browser API client dispatches the same event
+ * event (the shell). The browser API client dispatches the same event
  * itself for direct 401s; this covers server actions, whose 401 comes back as data.
  */
 export function notifyIfSessionExpired(value: unknown): void {

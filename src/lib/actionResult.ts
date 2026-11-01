@@ -23,7 +23,7 @@ export class ActionError extends ApiError {
 /**
  * Turns a server action's `ApiResult` into its data, or throws an `ActionError` carrying the server's answer.
  * The one way client code reads an action inside `queryFn` / `mutationFn`. Like the browser API client, a 401 raises
- * `financeos:auth-expired` (the /ds shell asks for the password in place; Legacy goes to /login) and an app-lock
+ * `financeos:auth-expired` (the shell asks for the password in place) and an app-lock
  * answer raises the lock event.
  */
 export async function unwrapAction<T>(result: Promise<ApiResult<T>>): Promise<T> {

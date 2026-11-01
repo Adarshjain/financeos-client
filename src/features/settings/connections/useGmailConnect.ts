@@ -23,7 +23,7 @@ import { useGmailQueries } from './useGmailQueries';
  * Composes the Gmail reads (`useGmailQueries`), writes (`useGmailMutations`)
  * and the sync job's live status (`useJobStatusPolling`) into the flat API
  * the Gmail settings pages consume. Disconnect and sender delete run straight away: the caller
- * confirms first (Legacy with `confirm()`, the Dinero page with a Dialog).
+ * confirms first (the Connections page with a Dialog).
  */
 export function useGmailConnect() {
   const qc = useQueryClient();

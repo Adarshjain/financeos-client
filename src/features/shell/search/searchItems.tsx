@@ -17,7 +17,7 @@ export interface SearchPage {
   id: string;
   label: string;
   icon: IconName;
-  /** Legacy-shaped path; appHref picks the Dinero page. */
+  /** App path; appHref resolves moved pages. */
   href: string;
 }
 
