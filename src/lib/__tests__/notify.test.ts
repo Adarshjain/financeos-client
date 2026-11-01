@@ -79,6 +79,23 @@ describe('notify with a Dinero toaster mounted', () => {
     expect(onClick).toHaveBeenCalled();
   });
 
+  it('carries cancel as a secondary action next to the action', () => {
+    const onDebug = vi.fn();
+    notify.error('Failed', {
+      action: { label: 'Copy ID', onClick: vi.fn() },
+      cancel: { label: 'Debug', onClick: onDebug },
+    });
+    const opts = vi.mocked(showToast).mock.calls[0][1];
+    expect(opts?.secondaryAction?.label).toBe('Debug');
+    opts?.secondaryAction?.onSelect?.();
+    expect(onDebug).toHaveBeenCalled();
+  });
+
+  it('has no secondary action without cancel', () => {
+    notify.error('Failed', { action: { label: 'Copy ID', onClick: vi.fn() } });
+    expect(vi.mocked(showToast).mock.calls[0][1]?.secondaryAction).toBeUndefined();
+  });
+
   it('stops routing to Dinero once the toaster unmounts', () => {
     unmount();
     notify.success('late');

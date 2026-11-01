@@ -9,6 +9,7 @@ The same as Banner, so a toast reads the same as an inline message: `neutral` (t
 - `tone`: `'neutral' | 'success' | 'danger' | 'warning' | 'info'` (default `'neutral'`)
 - `message`: `ReactNode` (or `children`)
 - `action`: `{ label: ReactNode; onSelect: () => void }` (Button `link` on the right)
+- `secondaryAction`: same shape, a second `link` button left of `action`; only with `action`
 
 ## Use
 - Says what happened, with the object: "Marked ₹20,000 paid · ₹13,900 still due", "Dashboard deleted".
@@ -26,7 +27,7 @@ Banner (tones and layout), Sonner (queue and timing), Button `link` (action).
 - Don't use a toast for something the user must act on; use a Banner or the Inbox.
 
 ## Variants
-- Neutral, success, danger, warning, info; with action (`{ label, onSelect }`).
+- Neutral, success, danger, warning, info; with action (`{ label, onSelect }`); with action and secondaryAction (error toast offering two next steps, e.g. Copy ID and Debug; the app supplies the labels).
 
 ## Hidden amounts
 Under a `ConcealProvider` with `concealed`, each ₹ amount in message (the Toaster sits above the provider, so it reads the flag from a shared store) reads "₹ —". See Conceal.
