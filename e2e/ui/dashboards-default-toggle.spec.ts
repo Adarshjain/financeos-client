@@ -18,22 +18,23 @@ test.describe('Dashboards UI: default toggle keeps Home intact (@ui)', () => {
     test.slow();
     const api = makeApi(currentUser.cookie);
 
-    await page.goto('/legacy/dashboards');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/dashboards');
     const list = await api.GET('/api/v1/dashboards');
     expectStatus(list, 200);
     const home = list.data!.find((d) => d.name === 'Home')!;
     expect(home.isDefault).toBe(true);
 
-    const card = page.locator('div.flex-col.gap-3', { has: page.getByRole('link', { name: 'Home', exact: true }) });
-    await card.getByTitle('Clear default').click();
+    const row = page.getByRole('table').getByRole('button').filter({ hasText: /^Home/ });
+    await expect(row).toBeVisible({ timeout: 45_000 });
+    await page.getByRole('button', { name: 'Options for Home', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Clear default' }).click();
     await expectToast(page, 'Default cleared');
-    await expect(card.getByTitle('Set as default')).toBeVisible();
+    await expect(page.getByRole('menuitem')).toHaveCount(0);
     expect((await api.GET('/api/v1/dashboards/{id}', { params: { path: { id: home.id } } })).data!.isDefault).toBe(false);
 
-    await card.getByTitle('Set as default').click();
-    await expectToast(page, 'Set as default');
-    await expect(card.getByTitle('Clear default')).toBeVisible();
+    await page.getByRole('button', { name: 'Options for Home', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Set as default' }).click();
+    await expectToast(page, 'Default dashboard set');
 
     const after = await api.GET('/api/v1/dashboards/{id}', { params: { path: { id: home.id } } });
     expectStatus(after, 200);
@@ -43,8 +44,9 @@ test.describe('Dashboards UI: default toggle keeps Home intact (@ui)', () => {
     expect(builtins.find((w) => w.builtinKey === 'upcoming')!.params).toEqual({ days: 14 });
     expect(after.data!.widgets).toHaveLength(5);
 
-    await page.goto('/legacy/dashboard');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/dashboard');
+    await expect(page.getByTestId('dashboard-widget').first()).toBeVisible({ timeout: 45_000 });
+    await expect(page.getByTestId('dashboard-widget')).toHaveCount(5);
     await expect(page.getByText('Net worth').first()).toBeVisible();
     await expect(page.getByText('Upcoming').first()).toBeVisible();
   });

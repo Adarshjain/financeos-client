@@ -104,15 +104,14 @@ test.describe('/ds app lock (@ui)', () => {
     expect(page.url()).toBe(landed);
   });
 
-  test('a Legacy page goes to the same lock screen and comes back by itself after the automatic unlock', async ({ page }) => {
+  test('a page opened by its address goes to the same lock screen and comes back by itself after the automatic unlock', async ({ page }) => {
     await turnOn(page);
     await lockNow(page);
     const visited = trackVisited(page);
-    await page.goto(`${E2E_CLIENT_URL}/legacy/loans/calendar`);
-    // /legacy/loans/calendar itself redirects to /legacy/upcoming once unlocked.
-    await page.waitForURL('**/legacy/upcoming');
-    await expect(page).toHaveURL(/\/legacy\/upcoming$/);
-    expect(visited.some((u) => u.includes('/locked?from=%2Flegacy%2Floans%2Fcalendar'))).toBe(true);
+    await page.goto(`${E2E_CLIENT_URL}/upcoming`);
+    await page.waitForURL('**/upcoming');
+    await expect(page).toHaveURL(/\/upcoming$/);
+    expect(visited.some((u) => u.includes('/locked?from=%2Fupcoming'))).toBe(true);
   });
 
   test('sign out from the lock screen, sign in with the password: the app opens and app lock stays on', async ({ page }) => {

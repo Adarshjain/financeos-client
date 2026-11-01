@@ -16,23 +16,39 @@ import {
 } from '../fixtures/seed/loans';
 import { createTransaction } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
-import { openTransactions } from '../fixtures/ui';
 
-/**
- * Searches the (already-open) TransactionPicker for `description` and clicks the
- * matching candidate row's "Select" button — mirrors the pattern in
- * e2e/ui/lending-links.spec.ts.
- */
+/** dd/mm/yyyy (the typed form) from an ISO date. */
+const typed = (iso: string) => iso.split('-').reverse().join('/');
+/** dd/mm/yy (how the date field shows a value) from an ISO date. */
+const shown = (iso: string) => {
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y.slice(2)}`;
+};
+
+/** Searches the (already-open) transaction picker for `description` and picks its row. */
 async function pickTransactionCandidate(page: Page, description: string): Promise<void> {
-  const searchInput = page.getByPlaceholder('Search by description or amount...');
-  await searchInput.fill(description);
-  const candidateRow = page
-    .locator('div')
-    .filter({ hasText: description })
-    .filter({ has: page.getByRole('button', { name: 'Select' }) })
-    .last();
-  await expect(candidateRow.getByRole('button', { name: 'Select' })).toBeVisible();
-  await candidateRow.getByRole('button', { name: 'Select' }).click();
+  await page.getByPlaceholder('Search by description or amount').fill(description);
+  const candidate = page.getByRole('radio', { name: description });
+  await expect(candidate).toBeVisible();
+  await candidate.click();
+}
+
+/** Opens a transaction's detail from /transactions and returns its dialog. */
+async function openTransactionDetail(page: Page, description: string) {
+  await page.goto('/transactions');
+  await page.getByRole('row').filter({ hasText: description }).getByText(description).first().click();
+  const dialog = page.getByRole('dialog', { name: description });
+  await expect(dialog).toBeVisible();
+  return dialog;
+}
+
+/** Opens the first overdue installment's Mark paid form and switches it to "Pick another bank debit". */
+async function openPickDebit(page: Page) {
+  await page.getByRole('button', { name: 'Mark paid', exact: true }).first().click();
+  const dialog = page.getByRole('dialog', { name: /^Mark EMI #\d+ paid$/ });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('radio', { name: 'Pick another bank debit' }).click();
+  return dialog;
 }
 
 test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
@@ -55,48 +71,45 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
     // Same defaults as createLoan (principal 120000 / 12% / 12 months) give a fixed EMI of
     // 10661.85 for every installment (proven in e2e/ui/loans.spec.ts).
     const debitDescription = `Picker Settle Debit ${Date.now()}`;
-    const debitTxn = await createTransaction(api, bank.id, {
+    await createTransaction(api, bank.id, {
       amount: -10661.85,
       date: addDays(startDate, 1),
       description: debitDescription,
     });
 
-    await page.goto(`/legacy/loans/${loan.id}`);
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByRole('heading', { name: loanName })).toBeVisible();
+    await page.goto(`/loans/${loan.id}`);
+    await expect(page.getByText(loanName).first()).toBeVisible();
 
-    await page.getByRole('button', { name: 'Mark Paid' }).first().click();
-    await expect(page.getByRole('heading', { name: /Settle Installment #1/i })).toBeVisible();
+    const dialog = await openPickDebit(page);
 
-    // The shared TransactionPicker replaced the raw transaction-ID input.
-    await expect(page.getByText('Transaction (Optional)')).toBeVisible();
+    // The shared transaction picker replaced the raw transaction-ID input.
+    await expect(dialog.getByText('Bank debit', { exact: true })).toBeVisible();
     await expect(page.getByPlaceholder(/UUID of/i)).toHaveCount(0);
-    await expect(page.getByPlaceholder('Search by description or amount...')).toBeVisible();
+    await expect(page.getByPlaceholder('Search by description or amount')).toBeVisible();
 
     await pickTransactionCandidate(page, debitDescription);
 
-    // Amount/date already match the exact-EMI seeded transaction (pre-filled from the
-    // installment itself when Mark Paid opened; the picker's own prefill-if-empty path is
-    // exercised below in the Add Charge / Add Event dialogs, whose fields start empty).
-    await expect(page.locator('#settle-payment-form input[type="number"]')).toHaveValue('10661.85');
-    // The field shows dd/mm/yyyy; startDate is ISO.
-    await expect(page.locator('#settle-payment-form input[data-slot="date-input"]')).toHaveValue(
-      startDate.split('-').reverse().join('/'),
-    );
+    // Amount and date come from the picked debit.
+    await expect(dialog.getByRole('textbox', { name: /^Amount paid/ })).toHaveValue('10661.85');
+    await expect(dialog.getByRole('textbox', { name: /^Paid on/ })).toHaveValue(shown(addDays(startDate, 1)));
 
-    await page.getByRole('button', { name: 'Confirm Settle' }).click();
-    await expect(page.getByRole('button', { name: 'Unlink' }).first()).toBeVisible();
+    await dialog.getByRole('button', { name: 'Mark paid & link' }).click();
+    await expect(dialog).not.toBeVisible();
 
-    await openTransactions(page);
-    await expect(page.locator('main').getByText(debitDescription)).toBeVisible();
-    await expect(page.locator('main').getByText(new RegExp(`EMI #1 · ${loanName}`))).toBeVisible();
+    // The paid, linked row opens its EMI dialog, which offers Unlink.
+    await page.getByRole('button').filter({ hasText: /Paid/ }).first().click();
+    await expect(page.getByRole('dialog', { name: /^EMI #\d+$/ }).getByRole('button', { name: 'Unlink' })).toBeVisible();
+    await page.keyboard.press('Escape');
 
-    await page.locator('main').getByText(debitDescription).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByRole('dialog').getByText('Ledger, loans & dividends')).toBeVisible();
-    await expect(
-      page.getByRole('dialog').getByText(new RegExp(`EMI #1 · ${loanName}`))
-    ).toBeVisible();
+    await page.goto('/transactions');
+    const txRow = page.getByRole('row').filter({ hasText: debitDescription });
+    await expect(txRow).toBeVisible();
+    await expect(txRow.getByText(new RegExp(`EMI #1 · ${loanName}`)).filter({ visible: true }).first()).toBeVisible();
+
+    await txRow.getByText(debitDescription).first().click();
+    const detail = page.getByRole('dialog', { name: debitDescription });
+    await expect(detail.getByText('Links', { exact: true })).toBeVisible();
+    await expect(detail.getByText(new RegExp(`EMI #1 · ${loanName}`))).toBeVisible();
   });
 
   test('Add Itemized Charge via picker: picking the seeded DEBIT prefills the amount, charge is listed with its badge', async ({
@@ -113,30 +126,29 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
       description: debitDescription,
     });
 
-    await page.goto(`/legacy/loans/${loan.id}`);
-    await page.waitForLoadState('networkidle');
+    await page.goto(`/loans/${loan.id}`);
+    await expect(page.getByText(loanName).first()).toBeVisible();
 
-    await page.getByRole('button', { name: /Add Charge/i }).first().click();
-    await expect(page.getByRole('heading', { name: 'Add Itemized Charge' })).toBeVisible();
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Charge' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Add charge' });
+    await expect(dialog).toBeVisible();
 
-    const chargeTypeSelect = page.locator('#add-charge-form button[role="combobox"]').first();
-    await chargeTypeSelect.click();
-    await page.getByRole('option', { name: 'Processing Fee', exact: true }).click();
+    await dialog.getByRole('combobox', { name: /^Charge type/ }).click();
+    await page.getByRole('option', { name: 'Processing fee', exact: true }).click();
 
     await pickTransactionCandidate(page, debitDescription);
-    await expect(page.locator('#add-charge-form input[type="number"]')).toHaveValue('2500');
+    await expect(dialog.getByRole('textbox', { name: /^Amount/ })).toHaveValue('2500');
 
-    await page.getByRole('dialog').getByRole('button', { name: 'Add Charge' }).click();
-    // Wait for the dialog to close (only happens on mutation success) before asserting on
-    // "Processing Fee" text -- the charge-type Select trigger shows that same text the moment
-    // it's picked, well before submission, so checking it while the dialog is still around
-    // would pass without ever waiting for the charge to actually be saved.
-    await expect(page.getByRole('dialog')).toHaveCount(0);
-    await expect(page.getByText('Processing Fee').first()).toBeVisible();
+    await dialog.getByRole('button', { name: 'Add charge' }).click();
+    // The dialog closes only once the charge is saved, so wait for that before looking at the list:
+    // the charge-type select already shows "Processing fee" the moment it is picked.
+    await expect(dialog).not.toBeVisible();
+    await expect(page.getByText('Processing fee').first()).toBeVisible();
 
-    await openTransactions(page);
+    await page.goto('/transactions');
     await expect(
-      page.locator('main').getByText(new RegExp(`Processing fee · ${loanName}`))
+      page.getByRole('row').filter({ hasText: debitDescription }).getByText(new RegExp(`Processing fee · ${loanName}`)).filter({ visible: true }).first(),
     ).toBeVisible();
   });
 
@@ -161,33 +173,30 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
 
     const before = await getSchedule(api, loan.id);
 
-    await page.goto(`/legacy/loans/${loan.id}`);
-    await page.waitForLoadState('networkidle');
+    await page.goto(`/loans/${loan.id}`);
+    await expect(page.getByText(loanName).first()).toBeVisible();
 
-    await page.getByRole('button', { name: /Add Event/i }).first().click();
-    await expect(page.getByRole('heading', { name: 'Record Lifecycle Event' })).toBeVisible();
+    await page.getByRole('button', { name: 'Prepay', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Record event' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('combobox', { name: /^Event type/ })).toContainText('Prepayment');
 
-    const eventTypeSelect = page.locator('#add-event-form button[role="combobox"]').first();
-    await eventTypeSelect.click();
-    await page.getByRole('option', { name: 'Prepayment', exact: true }).click();
-
-    await page.locator('#add-event-form input[data-slot="date-input"]').fill(effectiveDate);
+    await dialog.getByRole('textbox', { name: /^Effective date/ }).fill(typed(effectiveDate));
     await pickTransactionCandidate(page, debitDescription);
-    await expect(page.locator('#add-event-form input[type="number"]')).toHaveValue('20000');
+    await expect(dialog.getByRole('textbox', { name: /^Amount/ })).toHaveValue('20000');
 
-    await page.getByRole('button', { name: 'Record Event' }).click();
-    // Wait for the dialog to close (mutation success) before reading the schedule back --
-    // the event-type Select trigger already shows "Prepayment" the moment it's picked, so
-    // checking that text while the dialog is still up would race the POST /events call.
-    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Record event' }).click();
+    // The event-type select already shows "Prepayment" once picked, so wait for the dialog to close
+    // (it does so only on success) before reading the schedule back.
+    await expect(dialog).not.toBeVisible();
     await expect(page.getByText(/prepayment/i).first()).toBeVisible();
 
     const after = await getSchedule(api, loan.id);
     expect(after.installments.length).toBeLessThan(before.installments.length);
 
-    await openTransactions(page);
+    await page.goto('/transactions');
     await expect(
-      page.locator('main').getByText(new RegExp(`Prepayment · ${loanName}`))
+      page.getByRole('row').filter({ hasText: debitDescription }).getByText(new RegExp(`Prepayment · ${loanName}`)).filter({ visible: true }).first(),
     ).toBeVisible();
   });
 
@@ -226,17 +235,15 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
       description: `${marker} Fresh Debit`,
     });
 
-    await page.goto(`/legacy/loans/${loan.id}`);
-    await page.waitForLoadState('networkidle');
+    await page.goto(`/loans/${loan.id}`);
+    await expect(page.getByText(loanName).first()).toBeVisible();
 
-    await page.getByRole('button', { name: 'Mark Paid' }).first().click();
-    await expect(page.getByRole('heading', { name: /Settle Installment #1/i })).toBeVisible();
+    const dialog = await openPickDebit(page);
+    await page.getByPlaceholder('Search by description or amount').fill(marker);
 
-    await page.getByPlaceholder('Search by description or amount...').fill(marker);
-
-    await expect(page.getByRole('dialog').getByText(`${marker} Fresh Debit`)).toBeVisible();
-    await expect(page.getByRole('dialog').getByText(`${marker} Linked Debit`)).toHaveCount(0);
-    await expect(page.getByRole('dialog').getByText(`${marker} Credit`)).toHaveCount(0);
+    await expect(dialog.getByRole('radio', { name: `${marker} Fresh Debit` })).toBeVisible();
+    await expect(dialog.getByText(`${marker} Linked Debit`)).toHaveCount(0);
+    await expect(dialog.getByText(`${marker} Credit`)).toHaveCount(0);
   });
 
   test('Rate change event: the picker has no type restriction (a CREDIT appears), saving without a transaction still works', async ({
@@ -253,24 +260,24 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
       description: creditDescription,
     });
 
-    await page.goto(`/legacy/loans/${loan.id}`);
-    await page.waitForLoadState('networkidle');
+    await page.goto(`/loans/${loan.id}`);
+    await expect(page.getByText(loanName).first()).toBeVisible();
 
-    await page.getByRole('button', { name: /Add Event/i }).first().click();
-    await expect(page.getByRole('heading', { name: 'Record Lifecycle Event' })).toBeVisible();
+    // The page's Add event opens the form on Rate change; only the required rate needs filling.
+    await page.getByRole('button', { name: 'Add event', exact: true }).first().click();
+    const dialog = page.getByRole('dialog', { name: 'Record event' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('combobox', { name: /^Event type/ })).toContainText('Rate change');
+    await dialog.getByRole('textbox', { name: /^New annual rate/ }).fill('9.5');
 
-    // Event type defaults to Rate Change; only the required rate needs filling.
-    await page.locator('#add-event-form input[type="number"]').fill('9.5');
-
-    await page.getByPlaceholder('Search by description or amount...').fill(creditDescription);
-    await expect(page.getByRole('dialog').getByText(creditDescription)).toBeVisible();
+    await page.getByPlaceholder('Search by description or amount').fill(creditDescription);
+    await expect(dialog.getByRole('radio', { name: creditDescription })).toBeVisible();
 
     // Deliberately don't select it -- saving without a linked transaction must still work.
-    await page.getByRole('button', { name: 'Record Event' }).click();
-    // The event-type Select already shows "Rate Change" as soon as the dialog opens (it's the
-    // default), so that text alone can't prove the save succeeded -- wait for the dialog to
-    // close (only happens on mutation success) first.
-    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Record event' }).click();
+    // The event-type select already shows "Rate change" as soon as the dialog opens (it's the
+    // default), so wait for the dialog to close (only happens on success) first.
+    await expect(dialog).not.toBeVisible();
     await expect(page.getByText(/rate change/i).first()).toBeVisible();
 
     const detail = await getLoanDetail(api, loan.id);
@@ -290,21 +297,19 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
     const debitTxn = await createTransaction(api, bank.id, { description: debitDescription });
     await pay(api, loan.id, { installmentSeq: 1, transactionId: debitTxn.id });
 
-    await openTransactions(page);
-    await page.locator('main').getByText(debitDescription).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(
-      page.getByRole('dialog').getByText(new RegExp(`EMI #1 · ${loanName}`))
-    ).toBeVisible();
+    const detail = await openTransactionDetail(page, debitDescription);
+    await expect(detail.getByText(new RegExp(`EMI #1 · ${loanName}`))).toBeVisible();
 
-    await page.getByRole('dialog').getByRole('button', { name: 'Unlink' }).click();
-    await expect(page.getByText('Remove this settlement?')).toBeVisible();
-    await page.getByRole('dialog').last().getByRole('button', { name: 'Unlink', exact: true }).click();
-    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await detail.getByRole('button', { name: 'Unlink' }).click();
+    const confirm = page.getByRole('dialog', { name: 'Remove this settlement?' });
+    await expect(confirm).toBeVisible();
+    await confirm.getByRole('button', { name: 'Remove' }).click();
+    await expect(confirm).not.toBeVisible();
+    await expect(detail.getByText(new RegExp(`EMI #1 · ${loanName}`))).toHaveCount(0);
 
-    await page.goto(`/legacy/loans/${loan.id}`);
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByRole('button', { name: 'Unlink' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Mark Paid' }).first()).toBeVisible();
+    await page.goto(`/loans/${loan.id}`);
+    await expect(page.getByText(loanName).first()).toBeVisible();
+    await expect(page.getByRole('button').filter({ hasText: /Paid/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Mark paid', exact: true }).first()).toBeVisible();
   });
 });

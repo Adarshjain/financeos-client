@@ -6,14 +6,13 @@ import { istNow } from '../fixtures/dates';
 import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
 import { addCardholder, createBankAccount, createCreditCard } from '../fixtures/seed/accounts';
 import { createDashboard, createReport, widget } from '../fixtures/seed/reports';
-import { createMilestone, createRewardCard, createRewardRule } from '../fixtures/seed/rewards';
+import { createRewardCard, createRewardRule } from '../fixtures/seed/rewards';
 import { uploadAndIngest } from '../fixtures/seed/statements';
 import { expect, test } from '../fixtures/test';
 
-// Compact date-range labels (src/lib/date-range.ts) at every surface that shows
-// a range. The rules themselves are unit-tested; these check each surface is
-// wired to them and keeps the full dates in the hover title. Fixed dates sit in
-// past years so the labels do not depend on the run date.
+// Date-range labels (src/lib/date-range.ts) at every surface that shows a range.
+// The rules themselves are unit-tested; these check each surface is wired to
+// them. Fixed dates sit in past years so the labels do not depend on the run date.
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -26,10 +25,7 @@ function monthLabel(monthsAgo: number): string {
   return `${MONTHS[d.getMonth()]}${suffix}`;
 }
 
-// formatDate renders September as "Sep" or "Sept" depending on the ICU build.
-const SEP = 'Sept?';
-
-test.describe('Compact date ranges (@ui)', () => {
+test.describe('Date ranges (@ui)', () => {
   let currentUser: CreatedUser;
 
   test.beforeEach(async ({ context, request }) => {
@@ -84,29 +80,24 @@ test.describe('Compact date ranges (@ui)', () => {
       ],
     });
 
-    await page.goto(`/legacy/dashboards/${dashboard.id}`);
-    await expect(page.getByRole('heading', { name: 'Date range board' })).toBeVisible();
+    await page.goto(`/dashboards/${dashboard.id}`);
+    const card = (name: string) => page.getByTestId('dashboard-widget').filter({ hasText: name });
+    await expect(card('Range KPI plain')).toBeVisible({ timeout: 45_000 });
 
-    // No comparison: the range alone — no stray "vs previous period".
-    const plainLine = page.getByText('Sep 24', { exact: true });
-    await expect(plainLine).toBeVisible();
-    await expect(plainLine).toHaveAttribute('title', new RegExp(`^1 ${SEP} 24 – 30 ${SEP} 24$`));
+    // No comparison: the range alone, no stray "vs previous period".
+    await expect(card('Range KPI plain').getByText('Sep 24', { exact: true })).toBeVisible();
+    await expect(card('Range KPI plain').getByText(/\bvs\b/)).toHaveCount(0);
 
     // between → previous_period is a flat 30-day shift: equal length, right before.
-    const shiftedLine = page.getByText('Sep 24 vs prev 30d', { exact: true });
-    await expect(shiftedLine).toBeVisible();
-    await expect(shiftedLine).toHaveAttribute(
-      'title',
-      new RegExp(`^1 ${SEP} 24 – 30 ${SEP} 24 vs 2 Aug 24 – 31 Aug 24$`),
-    );
+    await expect(card('Range KPI shifted').getByText('Sep 24', { exact: true })).toBeVisible();
+    await expect(card('Range KPI shifted').getByText('vs prev 30d', { exact: true })).toBeVisible();
 
     // previous_month compares against the month before it, by name.
-    await expect(
-      page.getByText(`${monthLabel(1)} vs ${monthLabel(2)}`, { exact: true }),
-    ).toBeVisible();
+    await expect(card('Range KPI monthly').getByText(monthLabel(1), { exact: true })).toBeVisible();
+    await expect(card('Range KPI monthly').getByText(`vs ${monthLabel(2)}`, { exact: true })).toBeVisible();
   });
 
-  test('statements archive and detail show the compact period @mobile', async ({ page }) => {
+  test('statement detail shows its period', async ({ page }) => {
     const api = makeApi(currentUser.cookie);
     const spec: BankSpec = {
       bank: 'HDFC Bank',
@@ -120,26 +111,10 @@ test.describe('Compact date ranges (@ui)', () => {
       ],
     };
     const account = await createBankAccount(api, { name: 'Range Bank', openingBalance: spec.opening });
-    await uploadAndIngest(api, account.id, [
-      { filename: 'range-stmt.pdf', buffer: await genBankPdf(spec) },
-    ]);
+    await uploadAndIngest(api, account.id, [{ filename: 'range-stmt.pdf', buffer: await genBankPdf(spec) }]);
 
-    await page.goto('/legacy/accounts');
-    await expect(page.getByText('Range Bank')).toBeVisible();
-    const card = page.getByText('Range Bank').locator('xpath=ancestor::div[contains(@class, "group")]');
-    await card.getByRole('button', { name: 'Statements' }).first().click();
-
-    const archive = page.getByRole('dialog');
-    await expect(archive.getByText('Statements Archive')).toBeVisible();
-    // Desktop table or mobile list, whichever this viewport renders.
-    const period = archive.getByText('5 Apr – 4 May 24', { exact: true }).filter({ visible: true });
-    await expect(period).toBeVisible();
-    await expect(period).toHaveAttribute('title', '5 Apr 24 – 4 May 24');
-
-    await archive.getByRole('button', { name: /View details/i }).first().click();
-    await expect(page.getByText('Statement Details', { exact: true })).toBeVisible();
-    const header = page.getByTitle('5 Apr 24 – 4 May 24').filter({ hasText: /^5 Apr – 4 May 24$/ }).last();
-    await expect(header).toBeVisible();
+    await page.goto(`/accounts/${account.id}/statements`);
+    await expect(page.getByText('Period 5 Apr 24 → 4 May 24')).toBeVisible({ timeout: 45_000 });
   });
 
   test('reward rules show their active window compactly', async ({ page }) => {
@@ -155,45 +130,13 @@ test.describe('Compact date ranges (@ui)', () => {
     await createRewardRule(api, account.id, { name: 'Range Until Rule', activeTo: '2025-04-01' });
     await createRewardRule(api, account.id, { name: 'Range Always Rule' });
 
-    await page.goto('/legacy/rewards/rules');
-    await expect(page.getByRole('heading', { name: 'Reward Rules', exact: true })).toBeVisible();
-    await page.locator('button[role="combobox"]').first().click();
-    await page.getByRole('option', { name: 'Range Rules Card' }).click();
-
-    const fyWindow = page.getByText('FY25', { exact: true });
-    await expect(fyWindow).toBeVisible();
-    await expect(fyWindow).toHaveAttribute('title', '1 Apr 24 – 31 Mar 25');
-
-    const untilWindow = page.getByText('until 31 Mar 25', { exact: true });
-    await expect(untilWindow).toBeVisible();
-    await expect(untilWindow).toHaveAttribute('title', 'until 31 Mar 25');
-
-    const sinceWindow = page.getByText('since 5 Apr 24', { exact: true });
-    await expect(sinceWindow).toBeVisible();
-    await expect(sinceWindow).toHaveAttribute('title', 'since 5 Apr 24');
-
-    // No dates at all keeps the plain word.
-    const alwaysRow = page.getByText('Range Always Rule').locator('xpath=../..');
-    await expect(alwaysRow.getByText(/·\s*always$/)).toBeVisible();
-  });
-
-  test('milestones show their window compactly', async ({ page }) => {
-    const api = makeApi(currentUser.cookie);
-    const { account } = await createRewardCard(api, { name: 'Range Milestone Card' });
-    await createMilestone(api, account.id, { name: 'Range Monthly Milestone', windowType: 'CALENDAR_MONTH' });
-
-    await page.goto('/legacy/rewards');
-    await expect(page.getByRole('heading', { name: 'Rewards', exact: true })).toBeVisible();
-    await page.locator('button[role="combobox"]:visible').first().click();
-    await page.getByRole('option', { name: 'Range Milestone Card' }).click();
-    await page.locator('button[role="combobox"]:visible').nth(1).click();
-    await page.getByRole('option', { name: 'This month' }).click();
-
-    await expect(page.getByText('Range Monthly Milestone')).toBeVisible();
-    // The current calendar month is a whole named month in the current year.
-    const milestoneWindow = page.getByText(monthLabel(0), { exact: true });
-    await expect(milestoneWindow).toBeVisible();
-    await expect(milestoneWindow).toHaveAttribute('title', /^1 \S+ \d\d – \d\d \S+ \d\d$/);
+    await page.goto('/rewards/rules');
+    const rule = (text: string) => page.getByText(text, { exact: true });
+    await expect(rule('Range FY Rule · exclusive · FY25 · ended')).toBeVisible({ timeout: 45_000 });
+    await expect(rule('Range Until Rule · exclusive · until 31 Mar 25 · ended')).toBeVisible();
+    await expect(rule('Range Since Rule · exclusive · since 5 Apr 24')).toBeVisible();
+    // No dates at all: no window is shown.
+    await expect(rule('Range Always Rule · exclusive')).toBeVisible();
   });
 
   test('replaced plastics show their issued–closed span compactly', async ({ page }) => {
@@ -214,14 +157,7 @@ test.describe('Compact date ranges (@ui)', () => {
     );
     expect(res.response.ok).toBe(true);
 
-    await page.goto('/legacy/accounts');
-    await expect(page.getByText('Range Plastics Card')).toBeVisible();
-    await page.getByRole('button', { name: 'Cards' }).click();
-
-    const dialog = page.getByRole('dialog');
-    await expect(dialog.getByText(/Replaced \/ Closed Plastics/i)).toBeVisible();
-    const span = dialog.getByText('(10 May 24 – 14 Feb 25)', { exact: true });
-    await expect(span).toBeVisible();
-    await expect(span).toHaveAttribute('title', '10 May 24 – 14 Feb 25');
+    await page.goto(`/accounts/${account.id}/cards`);
+    await expect(page.getByText('10 May 24 → 14 Feb 25')).toBeVisible({ timeout: 45_000 });
   });
 });

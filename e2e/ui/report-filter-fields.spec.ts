@@ -12,13 +12,13 @@ test.describe('Report filter fields UI (@ui)', () => {
   });
 
   test('the filter field list leaves out grouping-only fields', async ({ page }) => {
-    await page.goto('/legacy/reports/new');
-    await expect(page.getByRole('heading', { name: 'Create Report' })).toBeVisible();
-    await page.getByRole('combobox').filter({ hasText: 'Transactions' }).first().click();
+    await page.goto('/reports/new');
+    await expect(page.getByLabel('Report name')).toBeVisible({ timeout: 45_000 });
+    await page.getByRole('combobox', { name: 'Datasource', exact: true }).click();
     await page.getByRole('option', { name: 'Reward Earnings' }).click();
 
-    await page.getByRole('button', { name: /Add filter rule/i }).click();
-    await page.getByRole('combobox').filter({ hasText: 'Effective Date' }).last().click();
+    await page.getByRole('button', { name: 'Add filter', exact: true }).click();
+    await page.getByRole('combobox', { name: 'Field', exact: true }).click();
     await expect(page.getByRole('option', { name: 'Rule', exact: true })).toBeVisible();
     await expect(page.getByRole('option', { name: 'Billing cycle', exact: true })).toHaveCount(0);
     await expect(page.getByRole('option', { name: 'Reward year', exact: true })).toHaveCount(0);
