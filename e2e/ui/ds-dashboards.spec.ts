@@ -138,7 +138,7 @@ for (const viewport of VIEWPORTS) {
       let picker = page.getByRole('dialog', { name: /Add widget/ });
       await expect(picker.getByRole('tab', { name: /Built-in/ })).toBeVisible();
       await picker.getByRole('radio', { name: /Net worth/ }).click();
-      await expect(picker.getByText(/^Selected/).first()).toBeVisible();
+      await expect(picker.getByText('Preview · sample data')).toBeVisible();
       await picker.getByRole('button', { name: 'Add to board' }).click();
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1);
 
@@ -198,8 +198,8 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
 
       await widgetCard(page, 'wr').getByRole('button', { name: 'Widget options' }).click();
-      // A KPI report's menu is Edit report only; its value tap opens the underlying data.
-      await expect(page.getByRole('menuitem')).toHaveText(['Edit report']);
+      // A KPI report's menu is Edit report and View underlying data (its value tap opens it too).
+      await expect(page.getByRole('menuitem')).toHaveText(['Edit report', 'View underlying data']);
       await page.keyboard.press('Escape');
       await widgetCard(page, 'wr').getByRole('button', { name: /₹/ }).click();
       await expect(page.getByRole('dialog').getByText(/Underlying data/).first()).toBeVisible({ timeout: 30_000 });
@@ -210,8 +210,8 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('menuitem', { name: 'Widget settings' })).toBeVisible();
       await expect(page.getByRole('menuitem', { name: 'Duplicate as my report' })).toBeVisible();
       await expect(page.getByRole('menuitem', { name: 'Edit report' })).toHaveCount(0);
-      // Net worth's underlying data is its value tap only (owner 2026-10-26).
-      await expect(page.getByRole('menuitem', { name: 'View underlying data' })).toHaveCount(0);
+      // Net worth's underlying data is in its menu as well as its value tap (owner 2026-11-02).
+      await expect(page.getByRole('menuitem', { name: 'View underlying data' })).toBeVisible();
       await page.getByRole('menuitem', { name: 'Duplicate as my report' }).click();
       await expect(page.getByText(/Report "Net worth" saved/)).toBeVisible({ timeout: 30_000 });
 

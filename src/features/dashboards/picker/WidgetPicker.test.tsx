@@ -98,7 +98,7 @@ describe('WidgetPicker', () => {
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).queryByRole('button', { name: 'Add to board' })).toBeNull();
     await user.click(within(dialog).getByRole('radio', { name: /Card utilisation/ }));
-    expect(screen.getByRole('dialog', { name: 'Card utilisation' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Add widget' })).toBeInTheDocument();
     expect(within(dialog).getByText('Limit used per card')).toBeInTheDocument();
     expect(within(dialog).getByText('Preview · sample data')).toBeInTheDocument();
     expect(within(dialog).queryByRole('radio')).toBeNull();
