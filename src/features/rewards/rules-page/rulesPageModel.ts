@@ -1,6 +1,7 @@
 import { capTone, milestonePace } from '@/features/accounts/detail/rewards/rewardsModel';
 import { accrualSummary } from '@/features/rewards/rules/manager/managerModel';
 import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/format';
+import { formatDateRangeCompressed } from '@/lib/date-range';
 import type { RewardCapBucket, RewardReport, RewardRule, RewardType } from '@/lib/rewards.types';
 
 /** One cap's use in the reward year, drawn as a bar on its row. */
@@ -69,7 +70,7 @@ export function buildUsage(
     milestones[m.milestoneId] = {
       pct,
       label: [formatPercent(pct, { decimals: 0 }), m.achieved ? 'achieved' : left != null ? `${left} d left` : null].filter(Boolean).join(' · '),
-      range: `${formatDate(m.windowStart, 'list')} → ${formatDate(m.windowEnd, 'list')}`,
+      range: formatDateRangeCompressed(m.windowStart, m.windowEnd, { today }),
     };
   }
   return { earned, caps: capUsage, milestones };

@@ -92,8 +92,14 @@ describe('buildUsage', () => {
 
   it('gives a milestone its percent and days left, or "achieved"', () => {
     expect(usage.milestones.m1.label).toBe('21% · 141 d left');
-    expect(usage.milestones.m1.range).toBe('15 Mar → 14 Mar 27');
+    expect(usage.milestones.m1.range).toBe('15 Mar 26 – 14 Mar 27');
     expect(usage.milestones.m2.label).toBe('100% · achieved');
+  });
+
+  it('reads a calendar-month window as one compressed range, with the year once', () => {
+    const r = report();
+    r.milestones[0] = { ...r.milestones[0], windowType: 'CALENDAR_MONTH', windowStart: '2027-05-01', windowEnd: '2027-05-31' };
+    expect(buildUsage(r, [rule({ capBucketId: 'c1' })], [cap()], '2026-10-24').milestones.m1.range).toBe('1–31 May 27');
   });
 });
 
