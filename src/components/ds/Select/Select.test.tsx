@@ -509,3 +509,36 @@ describe('Select menu layout (UAT)', () => {
     expect(radios[1]).toHaveAttribute('aria-checked', 'false');
   });
 });
+
+describe('Select single with create (person picker)', () => {
+  function Person() {
+    const [value, setValue] = React.useState('');
+    return (
+      <Select
+        searchable
+        defaultOpen
+        searchPlaceholder="Type a name"
+        options={[{ value: 'p1', label: 'Asha' }]}
+        value={value}
+        onValueChange={(v) => setValue(v as string)}
+        onCreate={() => {}}
+        createLabel={(q) => `Add "${q}"`}
+      />
+    );
+  }
+
+  it('closes after the create row is clicked, like a normal pick', () => {
+    render(<Person />);
+    fireEvent.change(screen.getByPlaceholderText('Type a name'), { target: { value: 'Ravi' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add "Ravi"' }));
+    expect(screen.queryByPlaceholderText('Type a name')).not.toBeInTheDocument();
+  });
+
+  it('closes after Enter creates', () => {
+    render(<Person />);
+    const field = screen.getByPlaceholderText('Type a name');
+    fireEvent.change(field, { target: { value: 'Ravi' } });
+    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(screen.queryByPlaceholderText('Type a name')).not.toBeInTheDocument();
+  });
+});

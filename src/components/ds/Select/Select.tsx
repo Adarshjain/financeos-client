@@ -146,6 +146,8 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
     const handleCreate = () => {
       onCreate?.(typed);
       handleSearchChange('');
+      // A single select is done after a create, like after a pick; a multiple one stays open for the next entry.
+      if (!multiple) onOpenChange?.(false);
     };
 
     const selectedValues = useMemo(() => {
