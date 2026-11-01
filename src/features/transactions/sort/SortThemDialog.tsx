@@ -42,6 +42,8 @@ import {
 export interface SortThemDialogProps {
   /** How many transactions need a category (the card's number). */
   count: number;
+  /** How many groups of two or more there are (the card's number): the groups page counts them with the one-offs, so the one-offs are its total less this. */
+  groupCount?: number;
   /** Closed: Later, ×, or after Save. */
   onClose: () => void;
 }
@@ -105,7 +107,7 @@ function GroupRow({
  * A group opens to pick its category; picks are staged, and Save applies each staged group, then the list, the card and the
  * filter counts refresh. Later drops the staged picks.
  */
-export function SortThemDialog({ count, onClose }: SortThemDialogProps) {
+export function SortThemDialog({ count, groupCount, onClose }: SortThemDialogProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { list } = useCategoryList();
@@ -216,7 +218,7 @@ export function SortThemDialog({ count, onClose }: SortThemDialogProps) {
                   <GroupRow key={g.groupKey} group={g} staged={staged[g.groupKey]} categories={list} onOpen={() => setOpenGroup(g)} />
                 ))}
                 {oneOffs.length > 0 ? (
-                  <SectionHeader variant="band" sticky={false}>
+                  <SectionHeader variant="band" sticky={false} meta={groupCount === undefined ? undefined : Math.max(0, data.totalElements - groupCount)}>
                     One-offs
                   </SectionHeader>
                 ) : null}

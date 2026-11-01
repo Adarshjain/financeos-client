@@ -11,16 +11,14 @@ import { Popover } from '@/components/ds/Popover/Popover';
 import { Text } from '@/components/ds/Text/Text';
 import { TextField } from '@/components/ds/TextField/TextField';
 import type { CategoryDef } from '@/lib/categoryList.types';
-import { formatCount } from '@/lib/format';
 import type { Tag } from '@/lib/tags.types';
-import type { CategoryCounts } from '@/lib/uncategorized.types';
 
 import {
   categoryChipLabel,
   type CategoryFilter,
   categoryFilterSize,
   categoryRowState,
-  countsOf,
+  categorySubtitle,
   NO_CATEGORY_FILTER,
   sameCategoryFilter,
   subRowState,
@@ -50,14 +48,14 @@ export interface CategoryFilterChipProps {
   value: CategoryFilter;
   /** The fixed category list; null while it could not be loaded (the chip is then off). */
   categories: readonly CategoryDef[] | null;
-  /** Transactions per category; without it the rows show no counts and every category is listed. */
-  counts?: CategoryCounts | null;
+  /** How many transactions have no category: shown beside Uncategorized (only that row has a count). */
+  uncategorizedCount?: number | null;
   /** Written once, when the dropdown closes with a change. */
   onCommit: (value: CategoryFilter) => void;
 }
 
-/** The Category chip: Uncategorized first, then the categories with their counts; a chevron narrows to sub-categories. */
-export function CategoryFilterChip({ value, categories, counts, onCommit }: CategoryFilterChipProps) {
+/** The Category chip: Uncategorized first (with its count), then every category; a chevron narrows to sub-categories. */
+export function CategoryFilterChip({ value, categories, uncategorizedCount, onCommit }: CategoryFilterChipProps) {
   const [open, setOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<CategoryFilter | null>(null);
   const [search, setSearch] = React.useState('');
@@ -74,7 +72,7 @@ export function CategoryFilterChip({ value, categories, counts, onCommit }: Cate
     if (draft && !sameCategoryFilter(draft, value)) onCommit(draft);
     setDraft(null);
   };
-  const rows = visibleCategories(list, counts, shown, search);
+  const rows = visibleCategories(list, search);
   const toggleOpen = (key: string) => setExpanded((now) => (now.includes(key) ? now.filter((k) => k !== key) : [...now, key]));
   return (
     <Popover
@@ -87,41 +85,48 @@ export function CategoryFilterChip({ value, categories, counts, onCommit }: Cate
           className="shrink-0"
           hasDropdown
           disabled={categories === null}
-          changed={categoryFilterSize(value) > 0}
+          changed={categoryFilterSize(value, list) > 0}
           onReset={() => onCommit(NO_CATEGORY_FILTER)}
         >
           {categoryChipLabel(value, list)}
         </FilterChip>
       }
     >
-      <div className="flex w-full flex-col gap-space-4">
-        <TextField
-          size="md"
-          placeholder="Search categories"
-          aria-label="Search categories"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="flex w-full flex-col p-space-6">
+        <div className="mb-space-8">
+          <TextField
+            type="search"
+            size="md"
+            variant="embedded"
+            prefix={<Icon name="search" size="sm" />}
+            clearable
+            placeholder="Search categories"
+            aria-label="Search categories"
+            value={search}
+            onValueChange={setSearch}
+          />
+        </div>
         <div className={SCROLL}>
           {!search.trim() ? (
             <ListRow
               clickable
               flush
+              className="px-space-10"
               leading={<Checkbox checked={shown.uncategorized} {...noCheck} />}
               title="Uncategorized"
-              trailing={<Count n={counts?.uncategorized} />}
+              trailing={<Count n={uncategorizedCount} />}
               onClick={() => setDraft(toggleUncategorized(shown))}
             />
           ) : null}
           {rows.map(({ category, subs, expand }) => {
             const state = categoryRowState(shown, category);
             const isOpen = expand || expanded.includes(category.key);
-            const c = countsOf(counts, category.key);
             return (
               <React.Fragment key={category.key}>
                 <ListRow
                   clickable
                   flush
+                  className="px-space-10"
                   leading={<Checkbox checked={state} {...noCheck} />}
                   title={
                     <span className="inline-flex items-center gap-space-8">
@@ -129,31 +134,24 @@ export function CategoryFilterChip({ value, categories, counts, onCommit }: Cate
                       {category.name}
                     </span>
                   }
-                  subtitle={
-                    isOpen && state === true && subs.length > 0
-                      ? `All ${formatCount(subs.length, ['sub-category', 'sub-categories'])}`
-                      : undefined
-                  }
+                  subtitle={categorySubtitle(shown, category)}
                   trailing={
-                    <span className="inline-flex items-center gap-space-8">
-                      <Count n={c.count} />
-                      {category.subs.length > 0 ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          iconOnly
-                          aria-label={isOpen ? 'Hide sub-categories' : 'Show sub-categories'}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleOpen(category.key);
-                          }}
-                        >
-                          <Icon name={isOpen ? 'chevron-down' : 'chevron-right'} size="sm" />
-                        </Button>
-                      ) : null}
-                    </span>
+                    category.subs.length > 0 ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        iconOnly
+                        aria-label={isOpen ? 'Hide sub-categories' : 'Show sub-categories'}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleOpen(category.key);
+                        }}
+                      >
+                        <Icon name={isOpen ? 'chevron-down' : 'chevron-right'} size="sm" />
+                      </Button>
+                    ) : null
                   }
-                  onClick={() => setDraft(toggleCategory(shown, category, list))}
+                  onClick={() => setDraft(toggleCategory(shown, category))}
                 />
                 {isOpen
                   ? subs.map((s) => (
@@ -161,10 +159,9 @@ export function CategoryFilterChip({ value, categories, counts, onCommit }: Cate
                         key={s.key}
                         clickable
                         flush
-                        className="pl-space-24"
+                        className="pl-space-24 pr-space-10"
                         leading={<Checkbox checked={subRowState(shown, category, s.key)} {...noCheck} />}
                         title={s.name}
-                        trailing={<Count n={c.sub(s.key)} />}
                         onClick={() => setDraft(toggleSub(shown, category, s.key))}
                       />
                     ))
@@ -220,10 +217,11 @@ export function TagsFilterChip({ value, tags, onCommit }: TagsFilterChipProps) {
         </FilterChip>
       }
     >
-      <div className={SCROLL}>
+      <div className={`${SCROLL} p-space-6`}>
         <ListRow
           clickable
           flush
+          className="px-space-10"
           leading={<Checkbox checked={shown.untagged} {...noCheck} />}
           title="Untagged"
           onClick={() => setDraft(toggleUntagged(shown))}
@@ -233,6 +231,7 @@ export function TagsFilterChip({ value, tags, onCommit }: TagsFilterChipProps) {
             key={t.id}
             clickable
             flush
+            className="px-space-10"
             leading={<Checkbox checked={shown.tags.includes(t.id)} {...noCheck} />}
             title={t.name}
             trailing={<Count n={t.transactionCount} />}

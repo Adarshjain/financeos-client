@@ -17,7 +17,7 @@ import type { Account } from '@/lib/account.types';
 import type { CategoryDef } from '@/lib/categoryList.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { Tag } from '@/lib/tags.types';
-import type { CategoryCounts, UncategorizedSummary } from '@/lib/uncategorized.types';
+import type { UncategorizedSummary } from '@/lib/uncategorized.types';
 
 import { FilterChips } from './FilterChips';
 import type { TransactionListRow } from './transactionRowsModel';
@@ -48,8 +48,6 @@ export interface TransactionsListPaneProps {
   categories: Tag[] | null;
   /** The fixed category list (the Category chip); null when it could not be loaded. */
   categoryList?: CategoryDef[] | null;
-  /** Transactions per category and sub-category, for the Category chip's counts. */
-  categoryCounts?: CategoryCounts | null;
   /** The Uncategorized card's numbers; the card shows only while `count` is above zero. */
   uncategorized?: UncategorizedSummary | null;
   /** "Sort them" on the Uncategorized card. */
@@ -89,7 +87,6 @@ export function TransactionsListPane({
   accounts,
   categories,
   categoryList,
-  categoryCounts,
   uncategorized,
   onSortThem,
   needsReviewCount,
@@ -157,7 +154,7 @@ export function TransactionsListPane({
               accounts={accounts}
               categories={categories}
               categoryList={categoryList}
-              categoryCounts={categoryCounts}
+              uncategorizedCount={uncategorized?.count}
               onChange={go}
               onOpenFilters={() => void runFilters(() => setFiltersOpen(true))}
               search={{ value: text, onValueChange: setText }}

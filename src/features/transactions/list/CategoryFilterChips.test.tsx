@@ -7,31 +7,23 @@ import { CATEGORY_LIST_FIXTURE } from '@/lib/categoryList.fixtures';
 import { CategoryFilterChip, TagsFilterChip } from './CategoryFilterChips';
 import { NO_CATEGORY_FILTER } from './categoryFilterModel';
 
-const COUNTS = {
-  uncategorized: 23,
-  categories: [
-    { categoryKey: 'food', count: 9, subs: [{ subcategoryKey: 'food.dining', count: 4 }, { subcategoryKey: 'food.delivery', count: 5 }] },
-    { categoryKey: 'transport', count: 2, subs: [{ subcategoryKey: 'transport.cabs', count: 2 }] },
-  ],
-};
-
 const row = (title: string) => screen.getByText(title).closest('[role="button"]') as HTMLElement;
 
 describe('CategoryFilterChip', () => {
   const setup = (value = NO_CATEGORY_FILTER) => {
     const onCommit = vi.fn();
-    render(<CategoryFilterChip value={value} categories={CATEGORY_LIST_FIXTURE} counts={COUNTS} onCommit={onCommit} />);
+    render(<CategoryFilterChip value={value} categories={CATEGORY_LIST_FIXTURE} uncategorizedCount={23} onCommit={onCommit} />);
     return { onCommit, user: userEvent.setup({ pointerEventsCheck: 0 }) };
   };
 
-  it('lists Uncategorized first with its count, then only categories that have transactions, with counts', async () => {
+  it('lists Uncategorized first with its count, then every category with no count of its own', async () => {
     const { user } = setup();
     await user.click(screen.getByRole('button', { name: /Category/ }));
     const titles = screen.getAllByRole('button').map((b) => b.textContent ?? '');
     expect(titles.findIndex((t) => t.startsWith('Uncategorized'))).toBeLessThan(titles.findIndex((t) => t.startsWith('Food')));
     expect(row('Uncategorized')).toHaveTextContent('23');
-    expect(row('Food')).toHaveTextContent('9');
-    expect(screen.queryByText('Groceries')).toBeNull();
+    expect(row('Food')).not.toHaveTextContent(/\d/);
+    expect(screen.getByText('Groceries')).toBeInTheDocument();
   });
 
   it('ticking a category and closing commits it once, subs included', async () => {
@@ -48,19 +40,19 @@ describe('CategoryFilterChip', () => {
   it('the chevron opens the sub-categories to narrow to one', async () => {
     const { user, onCommit } = setup();
     await user.click(screen.getByRole('button', { name: /Category/ }));
-    await user.click(screen.getAllByRole('button', { name: 'Show sub-categories' })[0]);
+    await user.click(screen.getAllByRole('button', { name: /^Show sub-categories$/ })[0]);
     expect(screen.getByText('Dining')).toBeInTheDocument();
     await user.click(row('Delivery'));
     await user.keyboard('{Escape}');
-    expect(onCommit).toHaveBeenCalledWith({ uncategorized: false, categories: [], subcategories: ['food.delivery'] });
+    expect(onCommit).toHaveBeenCalledWith({ uncategorized: false, categories: ['food'], subcategories: ['food.delivery'] });
   });
 
-  it('Uncategorized commits as its own flag', async () => {
-    const { user, onCommit } = setup();
+  it('Uncategorized commits as its own flag, beside a ticked category', async () => {
+    const { user, onCommit } = setup({ uncategorized: false, categories: ['food'], subcategories: [] });
     await user.click(screen.getByRole('button', { name: /Category/ }));
     await user.click(row('Uncategorized'));
     await user.keyboard('{Escape}');
-    expect(onCommit).toHaveBeenCalledWith({ uncategorized: true, categories: [], subcategories: [] });
+    expect(onCommit).toHaveBeenCalledWith({ uncategorized: true, categories: ['food'], subcategories: [] });
   });
 
   it('closing without a change commits nothing; the chip names what is picked', async () => {
@@ -74,7 +66,7 @@ describe('CategoryFilterChip', () => {
   it('the search finds a sub-category and opens its category', async () => {
     const { user } = setup();
     await user.click(screen.getByRole('button', { name: /Category/ }));
-    await user.type(screen.getByRole('textbox', { name: 'Search categories' }), 'cab');
+    await user.type(screen.getByRole('searchbox', { name: 'Search categories' }), 'cab');
     expect(screen.getByText('Cabs')).toBeInTheDocument();
     expect(screen.queryByText('Food')).toBeNull();
   });

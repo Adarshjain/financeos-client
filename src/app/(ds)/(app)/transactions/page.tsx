@@ -6,7 +6,6 @@ import { transactionRows } from '@/features/transactions/list/transactionRowsMod
 import type { TransactionsListResult } from '@/features/transactions/list/TransactionsListPane';
 import {
   fetchAccounts,
-  fetchCategoryCounts,
   fetchNeedsReviewCount,
   fetchTags,
   fetchTransactionsPage,
@@ -31,14 +30,13 @@ export default async function DsTransactionsPage({ searchParams }: { searchParam
   // An old link's `category` carried a tag; it becomes a `tag` before the one fetch. Only a link that has one waits for the two lists.
   const raw = params.category === undefined ? params : remapLegacyCategoryParams(params, ((await categoryListRequest) ?? []).map((c) => c.key), (await tagsRequest) ?? []);
   const query = parseTransactionsUrl(raw);
-  const [page, accounts, categories, needsReviewCount, categoryList, uncategorized, categoryCounts] = await Promise.all([
+  const [page, accounts, categories, needsReviewCount, categoryList, uncategorized] = await Promise.all([
     loaded(fetchTransactionsPage(query)),
     accountsRequest,
     tagsRequest,
     orNull(fetchNeedsReviewCount()),
     categoryListRequest,
     orNull(fetchUncategorizedSummary()),
-    orNull(fetchCategoryCounts()),
   ]);
 
   const list: TransactionsListResult = page.ok
@@ -60,7 +58,6 @@ export default async function DsTransactionsPage({ searchParams }: { searchParam
       accounts={accounts}
       categories={categories}
       categoryList={categoryList}
-      categoryCounts={categoryCounts}
       uncategorized={uncategorized}
       needsReviewCount={needsReviewCount}
     />

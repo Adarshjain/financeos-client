@@ -1,7 +1,10 @@
 import type { CategoryDef } from '@/lib/categoryList.types';
-import type { CategoryCounts } from '@/lib/uncategorized.types';
+import { formatCount } from '@/lib/format';
 
-/** What the Category filter holds: no category, whole categories (a key includes its sub-categories), or narrowed sub-categories. */
+/**
+ * What the Category filter holds. The server ORs within it: Uncategorized, or any ticked category, or any narrowed
+ * sub-category. A category in `categories` with none of its sub-categories in `subcategories` is whole; with some, it is narrowed to those.
+ */
 export interface CategoryFilter {
   uncategorized: boolean;
   categories: string[];
@@ -19,11 +22,6 @@ export function sameCategoryFilter(a: CategoryFilter, b: CategoryFilter): boolea
   return a.uncategorized === b.uncategorized && same(a.categories, b.categories) && same(a.subcategories, b.subcategories);
 }
 
-/** How many things are ticked: Uncategorized, each whole category and each narrowed sub-category. */
-export function categoryFilterSize(f: CategoryFilter): number {
-  return (f.uncategorized ? 1 : 0) + f.categories.length + f.subcategories.length;
-}
-
 /** The categories the filter lists, in the list's order: money out first, then the money-in ones. */
 export function filterCategories(list: readonly CategoryDef[]): CategoryDef[] {
   const out = list.filter((c) => c.outOrder != null).sort((a, b) => (a.outOrder ?? 0) - (b.outOrder ?? 0));
@@ -32,87 +30,101 @@ export function filterCategories(list: readonly CategoryDef[]): CategoryDef[] {
 }
 
 const sortedSubs = (c: CategoryDef) => [...c.subs].sort((a, b) => a.sortOrder - b.sortOrder);
+const subKeysOf = (c: CategoryDef) => sortedSubs(c).map((s) => s.key);
 
-/** The count of a category and of each of its sub-categories, from GET category-counts. */
-export function countsOf(counts: CategoryCounts | null | undefined, categoryKey: string) {
-  const found = counts?.categories.find((c) => c.categoryKey === categoryKey);
-  return {
-    count: found?.count,
-    sub: (subKey: string) => found?.subs.find((s) => s.subcategoryKey === subKey)?.count,
-  };
+/** The sub-categories of `category` the filter narrows it to (empty: the whole category, or not ticked at all). */
+function narrowedTo(f: CategoryFilter, category: CategoryDef): string[] {
+  const keys = subKeysOf(category);
+  return f.subcategories.filter((k) => keys.includes(k));
 }
 
 export type RowState = boolean | 'indeterminate';
 
-/** A category row: ticked when it is whole, half-ticked when only some of its sub-categories are. */
+/** A category row: ticked when whole, half-ticked when narrowed to some of its sub-categories. */
 export function categoryRowState(f: CategoryFilter, category: CategoryDef): RowState {
-  if (f.categories.includes(category.key)) return true;
-  const subs = sortedSubs(category);
-  const ticked = subs.filter((s) => f.subcategories.includes(s.key)).length;
-  if (ticked === 0) return false;
-  return ticked === subs.length ? true : 'indeterminate';
+  const narrowed = narrowedTo(f, category);
+  if (narrowed.length > 0) return narrowed.length === category.subs.length ? true : 'indeterminate';
+  return f.categories.includes(category.key);
 }
 
-/** A sub-category row: ticked on its own, or because its category is whole. */
+/** A sub-category row: ticked on its own, or because its category is ticked whole. */
 export function subRowState(f: CategoryFilter, category: CategoryDef, subKey: string): boolean {
-  return f.categories.includes(category.key) || f.subcategories.includes(subKey);
+  const narrowed = narrowedTo(f, category);
+  return narrowed.length > 0 ? narrowed.includes(subKey) : f.categories.includes(category.key);
 }
 
-/** Ticks or unticks Uncategorized. The server ANDs filters, so it replaces any category pick. */
+/** The line under a ticked category's name: "All 5 sub-categories", or "2 of 5 sub-categories" when narrowed; none otherwise. */
+export function categorySubtitle(f: CategoryFilter, category: CategoryDef): string | undefined {
+  const n = category.subs.length;
+  const state = categoryRowState(f, category);
+  if (n === 0 || state === false) return undefined;
+  const narrowed = narrowedTo(f, category).length;
+  if (narrowed > 0 && narrowed < n) return `${narrowed} of ${formatCount(n, ['sub-category', 'sub-categories'])}`;
+  return `All ${formatCount(n, ['sub-category', 'sub-categories'])}`;
+}
+
+/** Ticks or unticks Uncategorized; it sits beside the category picks. */
 export function toggleUncategorized(f: CategoryFilter): CategoryFilter {
-  return f.uncategorized ? { ...f, uncategorized: false } : { uncategorized: true, categories: [], subcategories: [] };
+  return { ...f, uncategorized: !f.uncategorized };
 }
 
-/**
- * Ticks or unticks a whole category. Ticking one over narrowed sub-categories widens those to their whole categories
- * (the server ANDs the category and sub-category filters, so the two cannot be mixed).
- */
-export function toggleCategory(f: CategoryFilter, category: CategoryDef, list: readonly CategoryDef[]): CategoryFilter {
-  if (f.categories.includes(category.key)) {
-    return { ...f, categories: f.categories.filter((k) => k !== category.key) };
+/** Ticks a category whole, or unticks it with any narrowing of it. */
+export function toggleCategory(f: CategoryFilter, category: CategoryDef): CategoryFilter {
+  const keys = subKeysOf(category);
+  const subcategories = f.subcategories.filter((k) => !keys.includes(k));
+  if (categoryRowState(f, category) !== false) {
+    return { ...f, categories: f.categories.filter((k) => k !== category.key), subcategories };
   }
-  const parents = list.filter((c) => c.subs.some((s) => f.subcategories.includes(s.key))).map((c) => c.key);
-  return { uncategorized: false, categories: [...new Set([...f.categories, ...parents, category.key])], subcategories: [] };
+  return { ...f, categories: [...f.categories, category.key], subcategories };
 }
 
 /**
- * Ticks or unticks one sub-category. Unticking one of a whole category narrows it to the others; ticking one with other
- * whole categories ticked narrows to that category alone (the server ANDs the two filters).
+ * Ticks or unticks one sub-category. A sub-category narrows its category: unticking one of a whole category leaves the
+ * others, ticking one of an unticked category ticks the category narrowed to it, all of them make it whole again, and
+ * unticking the last one unticks the category.
  */
 export function toggleSub(f: CategoryFilter, category: CategoryDef, subKey: string): CategoryFilter {
-  const subs = sortedSubs(category).map((s) => s.key);
-  if (f.categories.includes(category.key)) {
-    return { uncategorized: false, categories: [], subcategories: subs.filter((k) => k !== subKey) };
-  }
-  const base = f.categories.length > 0 || f.uncategorized ? [] : f.subcategories;
-  const next = base.includes(subKey) ? base.filter((k) => k !== subKey) : [...base, subKey];
-  return { uncategorized: false, categories: [], subcategories: next };
+  const keys = subKeysOf(category);
+  const now = categoryRowState(f, category) === false ? [] : narrowedTo(f, category).length > 0 ? narrowedTo(f, category) : f.categories.includes(category.key) ? keys : [];
+  const next = now.includes(subKey) ? now.filter((k) => k !== subKey) : [...now, subKey];
+  const rest = f.subcategories.filter((k) => !keys.includes(k));
+  const others = f.categories.filter((k) => k !== category.key);
+  if (next.length === 0) return { ...f, categories: others, subcategories: rest };
+  if (next.length === keys.length) return { ...f, categories: [...others, category.key], subcategories: rest };
+  return { ...f, categories: [...others, category.key], subcategories: [...rest, ...keys.filter((k) => next.includes(k))] };
+}
+
+/** How many things are ticked: Uncategorized and each ticked category (a narrowing is part of its category). */
+export function categoryFilterSize(f: CategoryFilter, list: readonly CategoryDef[]): number {
+  const standalone = list.filter((c) => !f.categories.includes(c.key) && narrowedTo(f, c).length > 0).length;
+  return (f.uncategorized ? 1 : 0) + f.categories.length + standalone;
 }
 
 /** The chip's words once something is ticked: "Category · Food" for one, "Category · 2" for more. */
 export function categoryChipLabel(f: CategoryFilter, list: readonly CategoryDef[]): string {
-  const size = categoryFilterSize(f);
+  const size = categoryFilterSize(f, list);
   if (size === 0) return 'Category';
   if (size > 1) return `Category · ${size}`;
   if (f.uncategorized) return 'Category · Uncategorized';
-  if (f.categories[0]) return `Category · ${list.find((c) => c.key === f.categories[0])?.name ?? '1'}`;
-  const sub = list.flatMap((c) => c.subs.map((s) => ({ c, s }))).find(({ s }) => s.key === f.subcategories[0]);
-  return `Category · ${sub ? sub.s.name : '1'}`;
+  const category = list.find((c) => f.categories.includes(c.key) || narrowedTo(f, c).length > 0);
+  if (!category) return 'Category · 1';
+  const narrowed = narrowedTo(f, category);
+  const sub = narrowed.length === 1 ? category.subs.find((s) => s.key === narrowed[0]) : undefined;
+  return `Category · ${sub ? sub.name : category.name}`;
 }
 
-/** The tag filter: no tag, or any of these tags. */
+/** The tag filter: no tag, or any of these tags (the server ORs them). */
 export interface TagFilter {
   untagged: boolean;
   tags: string[];
 }
 
 export function toggleUntagged(f: TagFilter): TagFilter {
-  return f.untagged ? { ...f, untagged: false } : { untagged: true, tags: [] };
+  return { ...f, untagged: !f.untagged };
 }
 
 export function toggleTag(f: TagFilter, id: string): TagFilter {
-  const tags = f.tags.includes(id) ? f.tags.filter((t) => t !== id) : [...f.tags, id];
-  return { untagged: false, tags };
+  return { ...f, tags: f.tags.includes(id) ? f.tags.filter((t) => t !== id) : [...f.tags, id] };
 }
 
 export function tagChipLabel(f: TagFilter, tags: readonly { id: string; name: string }[]): string {
@@ -123,30 +135,21 @@ export function tagChipLabel(f: TagFilter, tags: readonly { id: string; name: st
   return `Tags · ${tags.find((t) => t.id === f.tags[0])?.name ?? '1'}`;
 }
 
-/** What the Category dropdown lists: the categories with something in them (or ticked), narrowed by the search text. */
+/** What the Category dropdown lists: every category, narrowed by the search text (a sub-category hit opens its category). */
 export function visibleCategories(
   list: readonly CategoryDef[],
-  counts: CategoryCounts | null | undefined,
-  f: CategoryFilter,
   search: string,
 ): { category: CategoryDef; subs: CategoryDef['subs']; expand: boolean }[] {
   const needle = search.trim().toLowerCase();
   const out: { category: CategoryDef; subs: CategoryDef['subs']; expand: boolean }[] = [];
   for (const category of filterCategories(list)) {
-    const c = countsOf(counts, category.key);
-    const ticked = categoryRowState(f, category) !== false;
-    const hasAny = !counts || (c.count ?? 0) > 0 || ticked;
-    if (!hasAny) continue;
-    const subs = sortedSubs(category).filter((s) => !counts || (c.sub(s.key) ?? 0) > 0 || f.subcategories.includes(s.key));
-    if (!needle) {
+    const subs = sortedSubs(category);
+    if (!needle || category.name.toLowerCase().includes(needle)) {
       out.push({ category, subs, expand: false });
       continue;
     }
-    if (category.name.toLowerCase().includes(needle)) out.push({ category, subs, expand: false });
-    else {
-      const hits = subs.filter((s) => s.name.toLowerCase().includes(needle));
-      if (hits.length > 0) out.push({ category, subs: hits, expand: true });
-    }
+    const hits = subs.filter((s) => s.name.toLowerCase().includes(needle));
+    if (hits.length > 0) out.push({ category, subs: hits, expand: true });
   }
   return out;
 }
