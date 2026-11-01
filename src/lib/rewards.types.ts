@@ -1,6 +1,6 @@
 import { type Account, isAccountClosed } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
 import type { Page } from '@/lib/pagination';
+import type { Tag } from '@/lib/tags.types';
 import type { TransactionChannel } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
 
@@ -142,7 +142,7 @@ export interface RewardRule {
   stacking: RuleStacking;
   activeFrom?: string | null;
   activeTo?: string | null;
-  categories?: Category[];
+  categories?: Tag[];
   mccs?: string[];
   channels?: TransactionChannel[];
   daysOfWeek?: DayOfWeek[];

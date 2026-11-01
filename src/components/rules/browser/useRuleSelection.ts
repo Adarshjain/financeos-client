@@ -18,7 +18,7 @@ export function useRuleSelection() {
 
   const bulkVerifyMutation = useMutation({
     mutationFn: (ruleIds: string[]) =>
-      api.POST('/api/v1/rules/verify', { body: { ruleIds } }).then((r) => r.data!),
+      Promise.reject(new Error('Rule verification was removed.')).then(() => ({ verifiedCount: ruleIds.length })),
     onSuccess: ({ verifiedCount }) => {
       toast.success(
         `${verifiedCount} rule${verifiedCount === 1 ? '' : 's'} verified — matching transactions cleared from review`

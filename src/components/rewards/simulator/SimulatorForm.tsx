@@ -17,14 +17,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Account } from '@/lib/account.types';
-import { Category } from '@/lib/categories.types';
+import { Tag } from '@/lib/tags.types';
 import { formatDate, toCalendarDate } from '@/lib/utils';
 
 import { CategorySelectPicker } from './CategorySelectPicker';
 import { CompareCardsPicker } from './CompareCardsPicker';
 
 interface SimulatorFormProps {
-  categories: Category[];
+  categories: Tag[];
   accounts: Account[];
   amount: string;
   setAmount: (a: string) => void;

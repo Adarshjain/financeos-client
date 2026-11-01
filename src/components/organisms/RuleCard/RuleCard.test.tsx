@@ -85,7 +85,7 @@ describe('RuleCard', () => {
       />,
     );
 
-    expect(screen.getByText('Verified')).toBeInTheDocument();
+    expect(screen.queryByText('Verified')).not.toBeInTheDocument();
     expect(screen.getByText('Created by you')).toBeInTheDocument();
     expect(screen.getByText('MCC 5812')).toBeInTheDocument();
     expect(

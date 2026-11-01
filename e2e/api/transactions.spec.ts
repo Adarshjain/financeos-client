@@ -32,7 +32,7 @@ const TRANSACTION_KEYS = new Set([
   'amount',
   'description',
   'sourcedDescription',
-  'categories',
+  'tags',
   'source',
   'isTransactionUnderMonitoring',
   'monitoringReason',
@@ -111,7 +111,7 @@ test.describe('Transactions API (@api)', () => {
           amount: -1250.75,
           date: '2026-07-10',
           description: 'Full Transaction Details',
-          categoryIds: [category.id],
+          tagIds: [category.id],
           mcc: '5411',
           isTransactionUnderMonitoring: true,
           monitoringReason: 'Large grocery spend check',
@@ -134,9 +134,9 @@ test.describe('Transactions API (@api)', () => {
       expect(data.cardLast4).toBe(card.last4);
       expect(data.amount).toBe(-1250.75);
       expect(data.description).toBe('Full Transaction Details');
-      expect(data.categories).toHaveLength(1);
-      expect(data.categories[0].id).toBe(category.id);
-      expect(data.categories[0].name).toBe(category.name);
+      expect(data.tags).toHaveLength(1);
+      expect(data.tags[0].id).toBe(category.id);
+      expect(data.tags[0].name).toBe(category.name);
       expect(data.mcc).toBe('5411');
       expect(data.isTransactionUnderMonitoring).toBe(true);
       expect(data.monitoringReason).toBe('Large grocery spend check');
@@ -160,7 +160,7 @@ test.describe('Transactions API (@api)', () => {
         amount: -200,
         date: '2026-07-15',
         description: 'Original Description',
-        categoryIds: [initialCat.id],
+        tagIds: [initialCat.id],
         isTransactionExcluded: false,
         isTransactionUnderMonitoring: false,
       });
@@ -173,7 +173,7 @@ test.describe('Transactions API (@api)', () => {
           amount: -350,
           date: '2026-07-16',
           description: 'Updated Description',
-          categoryIds: [updatedCat.id],
+          tagIds: [updatedCat.id],
           isTransactionExcluded: true,
           isTransactionUnderMonitoring: true,
           monitoringReason: 'Now monitored',
@@ -196,7 +196,7 @@ test.describe('Transactions API (@api)', () => {
       expect(updated.amount).toBe(-350);
       expect(updated.date).toBe('2026-07-16');
       expect(updated.description).toBe('Updated Description');
-      expect(updated.categories.map((c) => c.id)).toEqual([updatedCat.id]);
+      expect(updated.tags.map((c) => c.id)).toEqual([updatedCat.id]);
       expect(updated.isTransactionExcluded).toBe(true);
       expect(updated.isTransactionUnderMonitoring).toBe(true);
       expect(updated.monitoringReason).toBe('Now monitored');
@@ -524,7 +524,7 @@ test.describe('Transactions API (@api)', () => {
 
       // Pull forward Categories API (POST & GET /api/v1/categories)
       const cat = await createCategory(user.api, 'Dining Out');
-      const categoriesList = await user.api.GET('/api/v1/categories');
+      const categoriesList = await user.api.GET('/api/v1/tags');
       expect(categoriesList.response.status).toBe(200);
       expect(categoriesList.data?.some((c) => c.id === cat.id)).toBe(true);
 
@@ -542,7 +542,7 @@ test.describe('Transactions API (@api)', () => {
         date: '2026-06-20',
         description: 'Txn Two with Card and Category',
         cardId: card.id,
-        categoryIds: [cat.id],
+        tagIds: [cat.id],
         isTransactionExcluded: true,
         isTransactionUnderMonitoring: false,
       });
@@ -766,7 +766,7 @@ test.describe('Transactions API (@api)', () => {
         body: {
           transactionIds: ids,
           reviewType: 'MANUALLY_REVIEWED',
-          reviewReasons: ['CATEGORY_UNVERIFIED'],
+          reviewReasons: ['DATE_CORRECTED'],
         },
       });
       expect(res.response.status).toBe(200);

@@ -385,14 +385,14 @@ describe('buildRecentTransactions', () => {
   const base = { accountId: 'c1', source: 'manual', createdAt: '' } as const;
   it('formats debits plain and credits with a plus, with category and balance', () => {
     const rows = buildRecentTransactions([
-      { ...base, id: 't1', date: '2026-10-05', amount: 45, description: 'Fuel surcharge waiver', balance: 56681, categories: [] },
+      { ...base, id: 't1', date: '2026-10-05', amount: 45, description: 'Fuel surcharge waiver', balance: 56681, category: null },
       {
         ...base,
         id: 't2',
         date: '2026-10-02',
         amount: -352,
         description: 'Uber',
-        categories: [{ id: 'g1', name: 'Transport' }],
+        category: { key: 'transport', name: 'Transport', icon: 'cat-taxi' },
       },
       { ...base, id: 't3', date: '2026-10-01', amount: -10, sourcedDescription: 'Raw text' },
       { ...base, id: 't4', date: '2026-10-01', amount: -10 },

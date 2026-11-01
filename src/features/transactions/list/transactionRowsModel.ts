@@ -1,6 +1,8 @@
+import type { IconName } from '@/components/ds/Icon/registry';
 import type { TransactionRowData } from '@/components/organisms/TransactionRow/transactionColumns';
 import type { TransactionLink } from '@/components/organisms/TransactionRow/TransactionRow';
 import type { Account } from '@/lib/account.types';
+import { categoryLabel } from '@/lib/categoryList';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { ReviewReason, Transaction, TransactionSource } from '@/lib/transaction.types';
 
@@ -22,9 +24,15 @@ export interface TransactionListRow extends TransactionRowData {
   plastic?: string;
   /** "₹2,95,030"; none on an excluded row. */
   balance?: string;
-  /** Every category name, in order; empty on an excluded row (it shows no category). */
+  /** The category's name; empty when none is set, and on an excluded row (the row then shows the dashed "Set category" badge). */
   categories: string[];
-  /** The first category, for the table's Category column. */
+  /** The sub-category's name, when there is one. */
+  subCategory?: string;
+  /** The category's icon, drawn at the start of its badge. */
+  categoryIcon?: IconName;
+  /** The category's key, to open the picker on it. */
+  categoryKey?: string;
+  /** "Food · Delivery", for the table's Category column. */
   category?: string;
   /** Amber words: review reasons and Watching. */
   reviewStatus?: string;
@@ -45,7 +53,6 @@ const MONTHS = [
 /** The amber word for each review reason, as the row board writes them. */
 export const REASON_WORDS: Record<ReviewReason, string> = {
   UNRECONCILED: 'Unreconciled',
-  CATEGORY_UNVERIFIED: 'Category unverified',
   DUPLICATE_SUSPECT: 'Duplicate',
   DATE_CORRECTED: 'Date corrected',
 };
@@ -116,7 +123,8 @@ export function transactionRow(t: Transaction, ctx: RowContext): TransactionList
   const excluded = Boolean(t.isTransactionExcluded);
   const credit = t.amount > 0;
   const amount = formatMoney(Math.abs(t.amount), { decimals: 'exact', symbol: false });
-  const categories = excluded ? [] : (t.categories ?? []).map((c) => c.name);
+  const shown = excluded ? null : t.category;
+  const categories = shown ? [shown.name] : [];
   const source = ctx.showSource ? SOURCE_WORDS[t.source] : undefined;
   const provenance = [excluded ? 'Excluded' : undefined, source].filter(Boolean).join(' · ');
   return {
@@ -133,7 +141,10 @@ export function transactionRow(t: Transaction, ctx: RowContext): TransactionList
     plastic: plasticOf(t),
     balance: t.balance != null && !excluded ? formatMoney(t.balance, { decimals: 'exact' }) : undefined,
     categories,
-    category: categories[0],
+    subCategory: shown ? t.subcategory?.name : undefined,
+    categoryIcon: shown?.icon as IconName | undefined,
+    categoryKey: shown?.key,
+    category: shown ? categoryLabel(shown.name, t.subcategory?.name) : undefined,
     reviewStatus: reviewWords(t),
     link: linkWords(t),
     provenance: provenance || undefined,

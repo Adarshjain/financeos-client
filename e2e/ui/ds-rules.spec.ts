@@ -21,7 +21,7 @@ const menuOf = (page: Page, name: string) =>
 
 /** Transactions still waiting in review for an unverified category. */
 const inReview = async (cookie: string) =>
-  (await searchAll(makeApi(cookie))).filter((t) => t.reviewReasons?.includes('CATEGORY_UNVERIFIED')).length;
+  (await searchAll(makeApi(cookie))).filter((t) => t.reviewReasons?.includes('DATE_CORRECTED')).length;
 
 const bankSpec: BankSpec = {
   bank: 'HDFC Bank',

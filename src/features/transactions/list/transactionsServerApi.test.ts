@@ -4,7 +4,7 @@ const count = vi.hoisted(() => vi.fn());
 const search = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/apiClient', () => ({
   accountsApi: { list: vi.fn() },
-  categoriesApi: { list: vi.fn() },
+  tagsApi: { list: vi.fn() },
   transactionsApi: { count, search },
 }));
 

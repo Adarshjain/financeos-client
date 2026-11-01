@@ -2,12 +2,14 @@
 
 import { serverApi } from '@/lib/api/server';
 import type { Schemas } from '@/lib/api/types';
-import type { CategorizeResponse } from '@/lib/categories.types';
 import { createDomainAction } from '@/lib/domainApi';
 import type { FilterClause } from '@/lib/reports.types';
 import type {
   BatchReviewRequest,
+  CategorizeResponse,
   MergeTransactionsResponse,
+  SetCategoryRequest,
+  SetCategoryResponse,
   Transaction,
   TransactionRequest,
 } from '@/lib/transaction.types';
@@ -49,9 +51,18 @@ export const updateTransaction = createDomainAction(
   },
 );
 
-/** Category and MCC suggestions for a description. */
+/** Set (or clear) a transaction's category; `restore` puts back what the response's `previous` reported (Undo). */
+export const setTransactionCategory = createDomainAction(
+  { fallbackError: "Couldn't set the category. Try again." },
+  async (id: string, body: SetCategoryRequest): Promise<SetCategoryResponse> => {
+    const { data } = await serverApi.PUT('/api/v1/transactions/{id}/category', { params: { path: { id } }, body });
+    return data! as unknown as SetCategoryResponse;
+  },
+);
+
+/** A category suggestion for a description. */
 export const categorizeDescription = createDomainAction(
-  { fallbackError: "Couldn't suggest categories. Try again." },
+  { fallbackError: "Couldn't suggest a category. Try again." },
   async (description: string): Promise<CategorizeResponse | null> => {
     const { data } = await serverApi.POST('/api/v1/categorize', { body: { description } });
     return (data ?? null) as CategorizeResponse | null;
@@ -85,7 +96,7 @@ export const batchReviewTransactions = createDomainAction(
   },
 );
 
-/** Sends back what an approve cleared (rows and the rules it verified) in one all-or-nothing request. */
+/** Sends back what an approve cleared in one all-or-nothing request. */
 export const undoApproveTransactions = createDomainAction(
   { fallbackError: "Couldn't undo. Try again." },
   async (body: Schemas['UndoApproveRequest']): Promise<void> => {

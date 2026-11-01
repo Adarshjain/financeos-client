@@ -17,7 +17,8 @@ const txn = {
   amount: 1249,
   type: 'DEBIT',
   sourcedDescription: 'SWIGGY BANGALORE',
-  categories: [{ id: 'c1', name: 'Food' }],
+  category: { key: 'food', name: 'Food', icon: 'cat-fork-knife' },
+  subcategory: { key: 'food.delivery', name: 'Delivery' },
   reviewType: null,
   appliedRuleId: null,
   appliedRuleName: null,
@@ -31,13 +32,13 @@ describe('MatchRow', () => {
     expect(screen.getByText('SWIGGY BANGALORE')).toBeInTheDocument();
     expect(screen.getByText('11 Oct')).toBeInTheDocument();
     expect(screen.getByText('HDFC Regalia ••7741')).toBeInTheDocument();
-    expect(screen.getByText('Food')).toBeInTheDocument();
+    expect(screen.getAllByText('Food · Delivery').length).toBeGreaterThan(0);
     expect(screen.getByText('(not linked to a rule)')).toBeInTheDocument();
     expect(screen.queryByRole('checkbox')).toBeNull();
   });
 
   it('shows Uncategorized when there is no category', () => {
-    render(<MatchRow txn={{ ...txn, categories: [] }} />);
+    render(<MatchRow txn={{ ...txn, category: null, subcategory: null }} />);
     expect(screen.getByText('Uncategorized')).toBeInTheDocument();
   });
 

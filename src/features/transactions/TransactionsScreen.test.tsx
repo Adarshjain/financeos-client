@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Account } from '@/lib/account.types';
+import { CATEGORY_LIST_FIXTURE } from '@/lib/categoryList.fixtures';
 import type { Transaction } from '@/lib/transaction.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
@@ -51,7 +52,7 @@ vi.mock('./form/useTransactionMutations', () => ({
 const accounts = [{ id: 'a1', name: 'HDFC Bank Savings', type: 'bank_account', balance: 0, cardholders: [] }] as unknown as Account[];
 vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: accounts }) }));
 const categories = vi.hoisted(() => [{ id: 'c1', name: 'Groceries' }]);
-vi.mock('@/lib/query/hooks/useCategories', () => ({ useCategories: () => ({ data: categories }) }));
+vi.mock('@/lib/query/hooks/useTags', () => ({ useTags: () => ({ data: categories }) }));
 
 const txn = (over: Partial<Transaction>): Transaction =>
   ({
@@ -63,14 +64,14 @@ const txn = (over: Partial<Transaction>): Transaction =>
     sourcedDescription: 'UPI/BIGBASKET',
     source: 'gmail_transaction_alert',
     reviewType: 'MANUALLY_REVIEWED',
-    categories: [{ id: 'c1', name: 'Groceries' }],
+    category: { key: 'groceries', name: 'Groceries', icon: 'cat-shopping-cart' },
     createdAt: '',
     ...over,
   }) as Transaction;
 
 const transactions = [
   txn({}),
-  txn({ id: 't2', description: 'Uber', sourcedDescription: 'UBER INDIA', amount: -533, categories: [] }),
+  txn({ id: 't2', description: 'Uber', sourcedDescription: 'UBER INDIA', amount: -533, category: null }),
 ];
 
 function setup(over: Partial<TransactionsScreenProps> = {}) {
@@ -86,6 +87,7 @@ function setup(over: Partial<TransactionsScreenProps> = {}) {
     transactions,
     accounts,
     categories: [],
+    categoryList: CATEGORY_LIST_FIXTURE,
     needsReviewCount: null,
     ...over,
   };
@@ -133,10 +135,11 @@ describe('TransactionsScreen', () => {
     expect(screen.getByRole('combobox', { name: /^Account/ })).toHaveTextContent('HDFC Bank Savings');
   });
 
-  it('opens the Set category dialog from a row\'s Set category, not the Edit form', async () => {
+  it('opens the category picker from a row\'s Set category, not the Edit form', async () => {
     setup();
     fireEvent.click(screen.getAllByText('Set category')[0]);
-    expect(await screen.findByRole('dialog', { name: 'Set category' })).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: 'Category' })).toBeInTheDocument();
+    expect(screen.getByText(/^Uber · .*533/)).toBeInTheDocument();
     expect(screen.queryByText('Edit transaction')).toBeNull();
     expect(router.push).not.toHaveBeenCalled();
   });

@@ -34,10 +34,10 @@ const statement = {
   description: 'SWIGGY BANGALORE',
   source: 'gmail_statement',
   createdAt: '2026-10-12T00:00:00Z',
-  categories: [{ id: 'c1', name: 'Food & dining' }],
+  category: { key: 'food', name: 'Food & dining', icon: 'cat-fork-knife' },
   cardLast4: '7741',
 } as Transaction;
-const alert = { ...statement, id: 'alert', description: 'Swiggy', source: 'gmail_transaction_alert', categories: [], cardLast4: '7741' } as Transaction;
+const alert = { ...statement, id: 'alert', description: 'Swiggy', source: 'gmail_transaction_alert', category: null, cardLast4: '7741' } as Transaction;
 
 function setup(pair: readonly [Transaction, Transaction], onClose = vi.fn(), onMerged = vi.fn()) {
   renderWithQuery(<MergeDialog transactions={pair} accounts={accounts} onClose={onClose} onMerged={onMerged} />);

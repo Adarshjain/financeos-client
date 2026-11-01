@@ -1,6 +1,7 @@
-import { Category } from '@/lib/categories.types';
+import type { CategoryRef, CategorySource, SubcategoryRef } from '@/lib/categoryList.types';
 import type { Page } from '@/lib/pagination';
 import { FilterClause } from '@/lib/reports.types';
+import type { Tag } from '@/lib/tags.types';
 
 export interface TransactionSearchRequest {
   filters: FilterClause[];
@@ -11,7 +12,7 @@ export type TransactionSource = 'gmail_transaction_alert' | 'gmail_statement' | 
 
 export type ReviewType = 'NEEDS_REVIEW' | 'AUTO_REVIEWED' | 'MANUALLY_REVIEWED' | 'NA';
 
-export type ReviewReason = 'UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT' | 'DATE_CORRECTED';
+export type ReviewReason = 'UNRECONCILED' | 'DUPLICATE_SUSPECT' | 'DATE_CORRECTED';
 
 export type TransactionChannel = 'ONLINE' | 'POS' | 'UPI' | 'CONTACTLESS' | 'ATM' | 'OTHER';
 
@@ -44,7 +45,10 @@ export interface TransactionBase {
 }
 
 export type TransactionRequest = Omit<TransactionBase, 'source' | 'reviewType'> & {
-  categoryIds: string[];
+  tagIds: string[];
+  /** Create: the category to set. Update: send only when the user changed it; an edit never re-categorises. */
+  categoryKey?: string;
+  subcategoryKey?: string;
   source?: TransactionSource;
   reviewType?: ReviewType;
   /** Update only, with reviewType NEEDS_REVIEW: exactly these reasons. Omitted keeps the stored ones. */
@@ -136,7 +140,12 @@ export type Transaction = TransactionBase & {
   balance?: number | null;
   /** The bank's printed balance, only on the first row where our running balance stops matching it (same sign as balance). */
   bankBalance?: number | null;
-  categories?: Category[];
+  category?: CategoryRef | null;
+  subcategory?: SubcategoryRef | null;
+  categorySource?: CategorySource | null;
+  categoryRule?: { id: string; name?: string | null } | null;
+  categorySetAt?: string | null;
+  tags?: Tag[];
   sourcedDescription?: string | null;
   reviewReasons?: ReviewReason[];
   appliedRuleId?: string | null;
@@ -214,4 +223,41 @@ export interface MergeTransactionsResponse {
   keptId: string;
   reviewType: ReviewType;
   remainingReasons: ReviewReason[];
+}
+
+/** The category fields a transaction had before a change: PUT …/category sends them back as `restore` for Undo. */
+export interface CategoryRestore {
+  source?: CategorySource | null;
+  ruleId?: string | null;
+  setAt?: string | null;
+}
+
+export interface SetCategoryRequest {
+  categoryKey: string | null;
+  subcategoryKey: string | null;
+  restore?: CategoryRestore;
+}
+
+export interface SetCategoryResponse {
+  transactionId: string;
+  category?: CategoryRef | null;
+  subcategory?: SubcategoryRef | null;
+  categorySource?: CategorySource | null;
+  categoryRuleId?: string | null;
+  categorySetAt?: string | null;
+  isTransactionExcluded: boolean;
+  previous: {
+    categoryKey?: string | null;
+    subcategoryKey?: string | null;
+    source?: CategorySource | null;
+    ruleId?: string | null;
+    setAt?: string | null;
+  };
+}
+
+/** POST /categorize: both keys are null when nothing matched. */
+export interface CategorizeResponse {
+  categoryKey?: string | null;
+  subcategoryKey?: string | null;
+  source?: string | null;
 }

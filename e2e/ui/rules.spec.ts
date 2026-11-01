@@ -105,7 +105,7 @@ test.describe('Rules & Categories UI (@ui)', () => {
     ).not.toBeVisible();
 
     // 6. Verify via API fixture that GET /api/v1/categories no longer lists it
-    const categoriesRes = await api.GET('/api/v1/categories');
+    const categoriesRes = await api.GET('/api/v1/tags');
     expect(
       categoriesRes.data?.some((c) => c.name === 'UI Renamed Category')
     ).toBe(false);

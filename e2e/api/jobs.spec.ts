@@ -320,11 +320,9 @@ test.describe('Jobs API', () => {
     ]);
 
     // 2. Create rule and trigger apply while slots are occupied -> queued in PENDING
-    const { createCategory, createRule } = await import('../fixtures/seed/categories');
-    const cat = await createCategory(api, 'Retry Rule Cat');
+    const { createRule } = await import('../fixtures/seed/categories');
     const rule = await createRule(api, {
       merchantKey: 'RETRY_MERCHANT',
-      categoryIds: [cat.id],
     });
 
     const applyRes = await api.POST('/api/v1/rules/{id}/apply', {

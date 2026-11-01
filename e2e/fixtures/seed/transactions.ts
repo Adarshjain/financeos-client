@@ -7,7 +7,7 @@ export type UpdateTransactionRequest = components['schemas']['UpdateTransactionR
 export type TransactionResponse = components['schemas']['TransactionResponse'];
 export type PageTransactionResponse = components['schemas']['PageTransactionResponse'];
 export type FilterClause = components['schemas']['FilterClause'];
-export type CategoryResponse = components['schemas']['CategoryResponse'];
+export type CategoryResponse = components['schemas']['TagResponse'];
 
 let seedCounter = 0;
 
@@ -21,7 +21,7 @@ export async function createCategory(
 ): Promise<CategoryResponse> {
   seedCounter += 1;
   const catName = name ?? `Category ${seedCounter}`;
-  const res = await api.POST('/api/v1/categories', {
+  const res = await api.POST('/api/v1/tags', {
     body: { name: catName },
   });
 

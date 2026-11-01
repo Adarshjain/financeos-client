@@ -42,8 +42,8 @@ describe('labels', () => {
     expect(amountLabel({ op: 'greater_than', from: 99.5, to: null })).toBe('Over ₹99.50');
   });
 
-  it('lists the four server reasons, Date corrected included, and no Other', () => {
-    expect(REASON_OPTIONS.map((o) => o.label)).toEqual(['All reasons', 'Unreconciled', 'Category unverified', 'Possible duplicate', 'Date corrected']);
+  it('lists the three server reasons, Date corrected included, and no Other', () => {
+    expect(REASON_OPTIONS.map((o) => o.label)).toEqual(['All reasons', 'Unreconciled', 'Possible duplicate', 'Date corrected']);
   });
 
   it('describes the active filters for the no-match state', () => {

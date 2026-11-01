@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 
-import { Category } from '@/lib/categories.types';
 import {
   AccrualType,
   CapExhaustedBehavior,
@@ -18,11 +17,12 @@ import {
   RewardType,
   RuleStacking,
 } from '@/lib/rewards.types';
+import { Tag } from '@/lib/tags.types';
 import { TransactionChannel } from '@/lib/transaction.types';
 import { parseCalendarDate } from '@/lib/utils';
 
 interface UseRewardRuleFormFieldsProps {
-  categories: Category[];
+  categories: Tag[];
   defaultRewardType: RewardType;
   rule?: RewardRule;
   cloneFrom?: RewardRule;
@@ -55,7 +55,7 @@ export function useRewardRuleFormFields({
   const [activeTo, setActiveTo] = useState<Date | undefined>(
     rule?.activeTo ? parseCalendarDate(rule.activeTo) : undefined
   );
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>(
+  const [selectedCategories, setSelectedCategories] = useState<Tag[]>(
     source?.categories
       ? source.categories.map((c) => categories.find((x) => x.id === c.id) ?? c)
       : []
@@ -126,7 +126,7 @@ export function useRewardRuleFormFields({
   const [previewDescription, setPreviewDescription] = useState('');
   const [previewMcc, setPreviewMcc] = useState('');
   const [previewChannel, setPreviewChannel] = useState<TransactionChannel | 'NONE'>('NONE');
-  const [previewCategories, setPreviewCategories] = useState<Category[]>([]);
+  const [previewCategories, setPreviewCategories] = useState<Tag[]>([]);
   const [previewEmi, setPreviewEmi] = useState(false);
   const [previewIntl, setPreviewIntl] = useState(false);
 

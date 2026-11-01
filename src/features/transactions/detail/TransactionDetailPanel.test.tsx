@@ -53,7 +53,10 @@ const txn = (over: Partial<Transaction> = {}): Transaction =>
     sourcedDescription: 'UPI/DR/427812345678/BIGBASKET BANGALORE',
     source: 'gmail_transaction_alert',
     reviewType: 'MANUALLY_REVIEWED',
-    categories: [{ id: 'c1', name: 'Groceries' }],
+    category: { key: 'groceries', name: 'Groceries', icon: 'cat-shopping-cart' },
+    subcategory: { key: 'groceries.supermarket', name: 'Supermarket' },
+    categorySource: 'AUTO',
+    tags: [{ id: 't1', name: 'Work' }],
     createdAt: '',
     ...over,
   }) as Transaction;
@@ -125,8 +128,53 @@ describe('TransactionDetailPanel', () => {
       expect(screen.getByText(label)).toBeInTheDocument();
       expect(screen.getByText(value)).toBeInTheDocument();
     }
-    expect(screen.getByText('Groceries')).toBeInTheDocument();
+    expect(screen.getByText('Groceries · Supermarket')).toBeInTheDocument();
+    expect(screen.getByText('Set automatically from the merchant')).toBeInTheDocument();
+    expect(screen.getByText('Work')).toBeInTheDocument();
     expect(screen.getByText('Manually reviewed')).toBeInTheDocument();
+  });
+
+  describe('the Category row and the line under it', () => {
+    const line = (over: Partial<Transaction>) => {
+      renderWithQuery(<TransactionDetailPanel {...props({ pageTransactions: [txn(over)] })} />);
+    };
+
+    it('says a rule set it, by the rule name', () => {
+      line({ categorySource: 'RULE', categoryRule: { id: 'r1', name: 'Swiggy' } });
+      expect(screen.getByText('Set by the rule "Swiggy"')).toBeInTheDocument();
+    });
+
+    it('says a link set it', () => {
+      line({ categorySource: 'LINK' });
+      expect(screen.getByText('Set by a link')).toBeInTheDocument();
+    });
+
+    it('says the user set it, with the date as dd/mm/yy', () => {
+      line({ categorySource: 'USER', categorySetAt: '2026-11-01T10:00:00+05:30' });
+      expect(screen.getByText('Set by you on 01/11/26')).toBeInTheDocument();
+    });
+
+    it('with no category says so, and offers Set category', () => {
+      const onSetCategory = vi.fn();
+      renderWithQuery(<TransactionDetailPanel {...props({ pageTransactions: [txn({ category: null, subcategory: null, categorySource: null })], onSetCategory })} />);
+      expect(screen.getByText("We couldn't tell. Pick one, or sort similar ones together.")).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Set category' }));
+      expect(onSetCategory).toHaveBeenCalledTimes(1);
+    });
+
+    it('opens the picker from the category badge', () => {
+      const onSetCategory = vi.fn();
+      renderWithQuery(<TransactionDetailPanel {...props({ onSetCategory })} />);
+      fireEvent.click(screen.getByText('Groceries · Supermarket'));
+      expect(onSetCategory).toHaveBeenCalledWith(expect.objectContaining({ id: 't1' }));
+    });
+
+    it('shows a category with no sub-category alone, and "None" for a transaction with no tags', () => {
+      line({ subcategory: null, tags: [] });
+      expect(screen.getByText('Groceries')).toBeInTheDocument();
+      expect(screen.queryByText(/·/)).toBeNull();
+      expect(screen.getByText('None')).toBeInTheDocument();
+    });
   });
 
   it('leaves out the Card, MCC and Rewards fields when there is nothing to show', () => {

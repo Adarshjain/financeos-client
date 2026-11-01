@@ -6,16 +6,14 @@ import React from 'react';
 import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
-import { Icon } from '@/components/ds/Icon/Icon';
 import { Pager } from '@/components/ds/Pager/Pager';
 import { type SelectOption } from '@/components/ds/Select/Select';
-import { SelectionBar } from '@/components/ds/SelectionBar/SelectionBar';
 import { RuleCard } from '@/components/organisms/RuleCard/RuleCard';
 import { LoadError } from '@/features/shell/LoadError';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useSearchText } from '@/features/shell/useSearchText';
-import type { Category } from '@/lib/categories.types';
+import type { CategoryDef } from '@/lib/categoryList.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { CategoryRule } from '@/lib/rules.types';
 
@@ -25,20 +23,15 @@ import { RuleJobsCard } from './RuleJobsCard';
 import {
   ANY,
   DEFAULT_RULES_STATE,
-  DEFAULT_STATUS,
   hasRuleFilters,
   MATCH_FILTER_OPTIONS,
   MATCH_TYPE_LABEL,
+  ruleCategoryLabel,
   ruleMatchLine,
   ruleName,
   RULES_SIZE_OPTIONS,
-  rulesFilterKey,
-  type RuleSource,
-  type RuleStatus,
   rulesUrl,
   type RulesUrlState,
-  SOURCE_LABEL,
-  SOURCE_OPTIONS,
 } from './rulesModel';
 import { useRuleMutations } from './useRuleMutations';
 
@@ -53,10 +46,8 @@ export interface RulesScreenProps {
   rules: RulesPage | null;
   reference?: string;
   state: RulesUrlState;
-  /** An empty status tab while other tabs hold rules: it says nothing matches, not "No rules yet". */
-  hasRulesElsewhere?: boolean;
-  /** Null when they could not be loaded: the Category chip is then off. */
-  categories: Category[] | null;
+  /** The fixed category list, for the Category filter and the rule form; null when it could not be loaded. */
+  categoryList: CategoryDef[] | null;
 }
 
 // The rule editor and Find matches are not in the page: each loads when pressed (see useLazyDialog).
@@ -70,14 +61,8 @@ type Dialogs =
   | { kind: 'delete'; rule: CategoryRule }
   | null;
 
-const STATUS_LABEL: Record<RuleStatus, string> = { unverified: 'Unverified', verified: 'Verified', all: 'All' };
-const STATUS_OPTIONS: SelectOption[] = (['unverified', 'verified', 'all'] as const).map((value) => ({
-  value,
-  label: STATUS_LABEL[value],
-}));
-
-/** /transactions/rules: the Rules tab. Add from the top bar's +; Find matches, Edit and Delete from a rule's ⋮. */
-export function RulesScreen({ rules, reference, state, categories, hasRulesElsewhere = false }: RulesScreenProps) {
+/** /transactions/rules: the Tags tab (the rules still live here until its rebuild). Add from the top bar's +; Find matches, Edit and Delete from a rule's ⋮. */
+export function RulesScreen({ rules, reference, state, categoryList }: RulesScreenProps) {
   const router = useRouter();
   const [dialog, setDialog] = React.useState<Dialogs>(null);
   const { Component: RuleDialog, run: runRule } = useLazyDialog(loadRuleDialog);
@@ -88,18 +73,8 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
     else if (next.kind === 'matches') void runMatches(() => setDialog(next));
     else setDialog(next);
   };
-  const [picked, setPicked] = React.useState<{ key: string; ids: string[] }>({ key: '', ids: [] });
-  const filterKey = rulesFilterKey(state);
-  // The ticked rules survive paging; another status, filter or search starts from none.
-  const ids = picked.key === filterKey ? picked.ids : [];
-  const setIds = (next: string[]) => setPicked({ key: filterKey, ids: next });
-  const forget = (gone: string[]) => setIds(ids.filter((id) => !gone.includes(id)));
-  const { remove, verify, verifyMany } = useRuleMutations({
-    onDeleted: (id) => {
-      forget([id]);
-      setDialog(null);
-    },
-    onVerified: forget,
+  const { remove } = useRuleMutations({
+    onDeleted: () => setDialog(null),
   });
 
   const go = (patch: Partial<RulesUrlState>, resetPage = true) =>
@@ -108,9 +83,9 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
 
   const categoryOptions: SelectOption[] = [
     { value: ANY, label: 'Any category' },
-    ...[...(categories ?? [])].sort((a, b) => a.name.localeCompare(b.name)).map((c) => ({ value: c.id, label: c.name })),
+    ...[...(categoryList ?? [])].sort((a, b) => a.name.localeCompare(b.name)).map((c) => ({ value: c.key, label: c.name })),
   ];
-  const categoryName = categories?.find((c) => c.id === state.categoryId)?.name;
+  const categoryName = categoryList?.find((c) => c.key === state.categoryKey)?.name;
 
   const pager = rules ? (
       <Pager
@@ -127,44 +102,26 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
       />
   ) : null;
 
-  const noMatch = hasRuleFilters(state) || hasRulesElsewhere;
-  const pageSelectable = rules?.rows.filter((r) => !r.verified).map((r) => r.id) ?? [];
-  const allOnPage = pageSelectable.length > 0 && pageSelectable.every((id) => ids.includes(id));
+  const noMatch = hasRuleFilters(state);
 
   return (
-    <ShellPage crumb={subCrumb('transactions')} title="Rules" flushTop onAdd={() => openDialog({ kind: 'add' })} addLabel="Add rule">
+    <ShellPage crumb={subCrumb('transactions')} title="Tags" flushTop onAdd={() => openDialog({ kind: 'add' })} addLabel="Add rule">
       <div className="flex min-w-0 flex-col gap-space-8 desk:gap-space-16">
         <TransactionsTabs />
         <FilterBar
           size="md"
           search={{ value: text, onValueChange: setText }}
-          changed={state.status !== DEFAULT_STATUS || state.source !== null || state.matchType !== null || state.categoryId !== null}
+          changed={state.matchType !== null || state.categoryKey !== null}
           onReset={() => go({ ...DEFAULT_RULES_STATE, q: state.q, size: state.size })}
         >
-          <ChoiceChip
-            label={STATUS_LABEL[state.status]}
-            value={state.status}
-            options={STATUS_OPTIONS}
-            selected={state.status !== DEFAULT_STATUS}
-            onReset={() => go({ status: DEFAULT_STATUS })}
-            onCommit={(v) => go({ status: v as RuleStatus })}
-          />
             <ChoiceChip
               label={categoryName ?? 'Category'}
-              onReset={() => go({ categoryId: null })}
-              value={state.categoryId ?? ANY}
+              onReset={() => go({ categoryKey: null })}
+              value={state.categoryKey ?? ANY}
               options={categoryOptions}
-              selected={state.categoryId !== null}
+              selected={state.categoryKey !== null}
               searchPlaceholder="Search categories"
-              onCommit={(v) => go({ categoryId: v === ANY ? null : v })}
-            />
-            <ChoiceChip
-              label={state.source ? SOURCE_LABEL[state.source] : 'Source'}
-              onReset={() => go({ source: null })}
-              value={state.source ?? ANY}
-              options={SOURCE_OPTIONS}
-              selected={state.source !== null}
-              onCommit={(v) => go({ source: v === ANY ? null : (v as RuleSource) })}
+              onCommit={(v) => go({ categoryKey: v === ANY ? null : v })}
             />
             <ChoiceChip
               label={state.matchType ? MATCH_TYPE_LABEL[state.matchType] : 'Match type'}
@@ -183,14 +140,14 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
             description={
               noMatch
                 ? 'Try adjusting your search or filters.'
-                : 'Transactions you import will generate rules automatically, or add one yourself.'
+                : 'A rule sets the category of transactions whose description matches it. Add one to get started.'
             }
             action={
               hasRuleFilters(state)
                 ? {
                     label: 'Clear filters',
                     variant: 'secondary',
-                    onSelect: () => go({ ...DEFAULT_RULES_STATE, status: state.status, size: state.size }),
+                    onSelect: () => go({ ...DEFAULT_RULES_STATE, size: state.size }),
                   }
                 : noMatch
                   ? undefined
@@ -210,20 +167,14 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
                     matchType={line.matchType}
                     pattern={line.pattern}
                     usedCount={rule.appliedCount}
-                    tone={rule.verified ? 'success' : 'warning'}
-                    source={SOURCE_LABEL[rule.source]}
+                    tone="success"
                     mcc={rule.mcc ? `MCC ${rule.mcc}` : undefined}
-                    categories={rule.categories.map((c) => c.name)}
-                    onApprove={() => verify.mutate(rule)}
+                    categories={[ruleCategoryLabel(rule)]}
                     menuItems={[
                       { label: 'Edit', onSelect: () => openDialog({ kind: 'edit', rule }) },
                       { label: 'Find matches', onSelect: () => openDialog({ kind: 'matches', rule }) },
                       { label: 'Delete', tone: 'danger', onSelect: () => setDialog({ kind: 'delete', rule }) },
                     ]}
-                    selectable={!rule.verified}
-                    selected={ids.includes(rule.id)}
-                    onSelectedChange={(on) => setIds(on ? [...ids, rule.id] : ids.filter((id) => id !== rule.id))}
-                    selectionMode={ids.length > 0}
                     onOpenDetail={() => openDialog({ kind: 'edit', rule })}
                   />
                 );
@@ -235,28 +186,8 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
         <RuleJobsCard />
       </div>
 
-      <SelectionBar
-        className="fixed inset-x-0 bottom-0 desk:bottom-safe-12"
-        count={ids.length}
-        summary="unverified rules"
-        onClear={() => setIds([])}
-        onSelectAll={allOnPage ? undefined : () => setIds([...new Set([...ids, ...pageSelectable])])}
-        selectAllLabel="Select all on page"
-        actions={[
-          {
-            id: 'approve',
-            label: 'Approve',
-            hint: 'mark verified',
-            icon: <Icon name="check" size="lg" />,
-            count: ids.length,
-            disabled: verifyMany.isPending,
-            onSelect: () => verifyMany.mutate(ids),
-          },
-        ]}
-      />
-
-      {dialog?.kind === 'add' && RuleDialog ? <RuleDialog categories={categories} onClose={() => setDialog(null)} /> : null}
-      {dialog?.kind === 'edit' && RuleDialog ? <RuleDialog key={dialog.rule.id} rule={dialog.rule} categories={categories} onClose={() => setDialog(null)} /> : null}
+      {dialog?.kind === 'add' && RuleDialog ? <RuleDialog categoryList={categoryList} onClose={() => setDialog(null)} /> : null}
+      {dialog?.kind === 'edit' && RuleDialog ? <RuleDialog key={dialog.rule.id} rule={dialog.rule} categoryList={categoryList} onClose={() => setDialog(null)} /> : null}
       {dialog?.kind === 'matches' && FindMatchesDialog ? <FindMatchesDialog key={dialog.rule.id} rule={dialog.rule} onClose={() => setDialog(null)} /> : null}
       <ConfirmDialog
         open={dialog?.kind === 'delete'}
@@ -264,7 +195,7 @@ export function RulesScreen({ rules, reference, state, categories, hasRulesElsew
           if (!open && !remove.isPending) setDialog(null);
         }}
         title="Delete rule?"
-        description="Transactions already categorized by this rule keep their categories. This can't be undone."
+        description="Transactions it categorized go back to your links and the built-in engine. This can't be undone."
         confirmLabel="Delete"
         confirmLoading={remove.isPending}
         onConfirm={() => {

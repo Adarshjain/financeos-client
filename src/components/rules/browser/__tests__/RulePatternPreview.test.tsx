@@ -16,14 +16,13 @@ const txn1 = {
   amount: 450,
   type: 'DEBIT',
   sourcedDescription: 'UPI/SWIGGY/ORDER 123',
-  categories: [{ id: 'c1', name: 'Food' }],
-  reviewType: null,
+  category: { key: 'food', name: 'Food', icon: 'cat-fork-knife' },
   appliedRuleId: 'r1',
 };
-const txn2 = { ...txn1, id: 't2', sourcedDescription: 'SWIGGY INSTAMART', categories: [], appliedRuleId: null };
+const txn2 = { ...txn1, id: 't2', sourcedDescription: 'SWIGGY INSTAMART', category: null, appliedRuleId: null };
 
 function paged(content: unknown[], overrides: Record<string, unknown> = {}) {
-  return {
+  const matches = {
     content,
     totalElements: content.length,
     totalPages: 1,
@@ -34,6 +33,7 @@ function paged(content: unknown[], overrides: Record<string, unknown> = {}) {
     empty: content.length === 0,
     ...overrides,
   };
+  return { matchCount: content.length, userSetCount: 0, matches };
 }
 
 const post = api.POST as ReturnType<typeof vi.fn>;
@@ -51,16 +51,16 @@ describe('RulePatternPreview', () => {
   });
 
   it('is disabled while the pattern is empty or fails validation', () => {
-    const { rerender } = renderWithQuery(<RulePatternPreview matchType="MERCHANT_KEY" merchantKey="  " />);
+    const { rerender } = renderWithQuery(<RulePatternPreview matchType="CONTAINS" merchantKey="  " />);
     expect(findButton()).toBeDisabled();
 
-    rerender(<RulePatternPreview matchType="MERCHANT_KEY" merchantKey="ab1" />);
+    rerender(<RulePatternPreview matchType="CONTAINS" merchantKey="ab" />);
     expect(findButton()).toBeDisabled();
 
     rerender(<RulePatternPreview matchType="REGEX" merchantKey="SWIG(GY" />);
     expect(findButton()).toBeDisabled();
 
-    rerender(<RulePatternPreview matchType="MERCHANT_KEY" merchantKey="SWIGGY" />);
+    rerender(<RulePatternPreview matchType="CONTAINS" merchantKey="SWIGGY" />);
     expect(findButton()).toBeEnabled();
   });
 

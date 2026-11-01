@@ -6,6 +6,7 @@ import { Badge } from '@/components/ds/Badge/Badge';
 import { Banner } from '@/components/ds/Banner/Banner';
 import { Card } from '@/components/ds/Card/Card';
 import { Dialog } from '@/components/ds/Dialog/Dialog';
+import type { IconName } from '@/components/ds/Icon/registry';
 import { TransactionRow } from '@/components/organisms/TransactionRow/TransactionRow';
 import type { Account } from '@/lib/account.types';
 import { formatDate, formatMoney } from '@/lib/format';
@@ -71,7 +72,9 @@ export function MergeDialog({ transactions, accounts, onClose, onMerged }: Merge
             date={formatDate(t.date, 'list')}
             account={accountName(t.accountId)}
             plastic={t.cardLast4 ? `••${t.cardLast4}` : undefined}
-            categories={t.categories?.map((c) => c.name) ?? []}
+            categories={t.category ? [t.category.name] : []}
+            subCategory={t.subcategory?.name}
+            categoryIcon={t.category?.icon as IconName | undefined}
             unsetCategoryLabel="Uncategorized"
             provenance={mergeSourceLabel(t.source)}
             amount={amountOf(t)}

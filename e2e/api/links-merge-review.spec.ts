@@ -139,7 +139,7 @@ test.describe('Transaction Links, Merge & Review API', () => {
       const purchaseTxn = await createTransaction(api, cc.id, {
         amount: -2500,
         description: 'Online Store Purchase',
-        categoryIds: [cat.id],
+        tagIds: [cat.id],
       });
       const refundTxn = await createTransaction(api, cc.id, {
         amount: 2500,
@@ -160,7 +160,7 @@ test.describe('Transaction Links, Merge & Review API', () => {
 
       // Verify alignRefundCategories copied categories from anchor to counterpart
       const refundAfter = await findById(api, refundTxn.id);
-      expect(refundAfter?.categories.map((c) => c.id)).toContain(cat.id);
+      expect(refundAfter?.tags.map((c) => c.id)).toContain(cat.id);
 
       // 3. REVERSAL: DEBIT and CREDIT on same account
       const revDebit = await createTransaction(api, bank.id, {
@@ -291,7 +291,7 @@ test.describe('Transaction Links, Merge & Review API', () => {
       // Transaction to delete (has categories and mcc)
       const deletedTxn = await createTransaction(api, account.id, {
         amount: -1500,
-        categoryIds: [cat.id],
+        tagIds: [cat.id],
         mcc: '5411',
       });
 
@@ -312,7 +312,7 @@ test.describe('Transaction Links, Merge & Review API', () => {
       // Verify kept transaction inherited categories and mcc
       const keptAfter = allTxns.find((t) => t.id === keptTxn.id);
       expect(keptAfter).toBeDefined();
-      expect(keptAfter?.categories.map((c) => c.id)).toContain(cat.id);
+      expect(keptAfter?.tags.map((c) => c.id)).toContain(cat.id);
       expect(keptAfter?.mcc).toBe('5411');
     });
 
@@ -382,7 +382,7 @@ test.describe('Transaction Links, Merge & Review API', () => {
         body: {
           transactionIds: [txn.id, foreignTxn.id, UNKNOWN_UUID],
           reviewType: 'MANUALLY_REVIEWED',
-          reviewReasons: ['CATEGORY_UNVERIFIED'],
+          reviewReasons: ['DATE_CORRECTED'],
         },
       });
       expectStatus(batchRes, 200);
@@ -418,7 +418,7 @@ test.describe('Transaction Links, Merge & Review API', () => {
         body: {
           transactionIds: [],
           reviewType: 'MANUALLY_REVIEWED',
-          reviewReasons: ['CATEGORY_UNVERIFIED'],
+          reviewReasons: ['DATE_CORRECTED'],
         },
       });
       expectStatus(emptyRes, 400);

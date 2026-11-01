@@ -14,10 +14,10 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Category } from '@/lib/categories.types';
+import type { Tag as TagRecord } from '@/lib/tags.types';
 
 interface CategoryMultiSelectProps {
-  categories: Category[];
+  categories: TagRecord[];
   activeCategories: string[];
   onCategoryToggle: (name: string) => void;
 }

@@ -39,12 +39,15 @@ export function RuleCard({
   onToggleSelect,
 }: RuleCardProps) {
   const name = rule.displayName || rule.merchantKey;
+  // Legacy: rules are no longer verified or LLM-made, and carry one category.
+  const verified = true;
+  const categories = [{ id: rule.category.key, name: rule.subcategory ? `${rule.category.name} · ${rule.subcategory.name}` : rule.category.name }];
   return (
     <div className="relative rounded-2xl border border-slate-200/50 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-3 shadow-sm hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300 flex flex-col justify-between">
       {/* Header Info */}
       <div className="space-y-2">
         <div className="flex justify-between items-start gap-2">
-          {onToggleSelect && !rule.verified && (
+          {onToggleSelect && !verified && (
             <Checkbox
               checked={selected}
               onCheckedChange={() => onToggleSelect(rule.id)}
@@ -56,12 +59,12 @@ export function RuleCard({
             <h3 className="text-slate-900 dark:text-white truncate">
               {name}
             </h3>
-            {(rule.displayName || rule.matchType !== 'MERCHANT_KEY') && (
+            {(rule.displayName || rule.matchType !== 'CONTAINS') && (
               <span className="text-2xs tabular-nums px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 mt-1 block w-fit font-medium">
                 {
                   (
                     MATCH_TYPE_META[rule.matchType] ||
-                    MATCH_TYPE_META.MERCHANT_KEY
+                    MATCH_TYPE_META.CONTAINS
                   ).chip
                 }
                 : {rule.merchantKey}
@@ -70,16 +73,16 @@ export function RuleCard({
           </div>
           <div className="flex gap-1.5 shrink-0">
             <Badge
-              variant={rule.verified ? 'success' : 'warning'}
+              variant={verified ? 'success' : 'warning'}
               className="text-2xs font-bold px-2 py-0.5 rounded-md"
             >
-              {rule.verified ? 'Verified' : 'Unverified'}
+              {verified ? 'Verified' : 'Unverified'}
             </Badge>
             <Badge
-              variant={rule.source === 'LLM' ? 'info' : 'secondary'}
+              variant="secondary"
               className="text-2xs font-bold px-2 py-0.5 rounded-md"
             >
-              {rule.source}
+              USER
             </Badge>
             {rule.mcc && (
               <span className="text-2xs tabular-nums px-2 py-0.5 rounded-md font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
@@ -91,12 +94,12 @@ export function RuleCard({
 
         {/* Categories */}
         <div className="flex flex-wrap gap-1.5 pt-1">
-          {rule.categories.length === 0 ? (
+          {categories.length === 0 ? (
             <span className="text-xs text-slate-400 italic">
               No categories
             </span>
           ) : (
-            rule.categories.map((c) => (
+            categories.map((c) => (
               <Badge
                 key={c.id}
                 variant="outline"
@@ -119,7 +122,7 @@ export function RuleCard({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          {!rule.verified && (
+          {!verified && (
             <Button
               variant="outline"
               size="xs"

@@ -3,7 +3,7 @@ import { resetLlm, setLlmMode } from '../fixtures/control';
 import { istToday } from '../fixtures/dates';
 import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
 import { createBankAccount, createCreditCard } from '../fixtures/seed/accounts';
-import { createCategory, createRule } from '../fixtures/seed/categories';
+import { createRule } from '../fixtures/seed/categories';
 import { addLending, createCounterparty, pay } from '../fixtures/seed/loans';
 import { getInbox, inboxRow, ingestCardStatement, loanWithFirstEmiIn, setBillDue, shiftDate } from '../fixtures/seed/nav';
 import { uploadAndIngest } from '../fixtures/seed/statements';
@@ -170,8 +170,7 @@ test.describe('Inbox API: reads (@api)', () => {
     await ingestCardStatement(api, card.id, '8105');
     expect((await getInbox(api)).items.filter((i) => i.kind === 'job'), 'finished statement imports make no row').toHaveLength(0);
 
-    const cat = await createCategory(api, 'Inbox Job Cat');
-    const rule = await createRule(api, { merchantKey: 'INBOX_JOB_MERCHANT', categoryIds: [cat.id] });
+    const rule = await createRule(api, { merchantKey: 'INBOX_JOB_MERCHANT' });
     const applied = await api.POST('/api/v1/rules/{id}/apply', { params: { path: { id: rule.id } }, body: { all: true } });
     expectStatus(applied, 202);
     expect((await waitForJob(api, (applied.data as { jobId: string }).jobId, { timeoutMs: 15000 })).status).toBe('SUCCEEDED');

@@ -1,7 +1,7 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 import { ReportBuilder } from '@/components/reports/ReportBuilder';
-import { accountsApi, categoriesApi, reportsApi } from '@/lib/apiClient';
+import { accountsApi, reportsApi,tagsApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
 
 export default async function EditReportPage({
@@ -14,11 +14,11 @@ export default async function EditReportPage({
   const [report, catalog, categories, accounts] = await Promise.all([
     reportsApi.getById(id),
     reportsApi.getDatasource(),
-    categoriesApi.list().catch(() => []),
+    tagsApi.list().catch(() => []),
     accountsApi.list().catch(() => []),
   ]);
 
-  qc.setQueryData(keys.categories.list(), categories);
+  qc.setQueryData(keys.tags.list(), categories);
   qc.setQueryData(keys.accounts.list(), accounts);
 
   return (

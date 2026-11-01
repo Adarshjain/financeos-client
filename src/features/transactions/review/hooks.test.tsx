@@ -64,11 +64,11 @@ describe('useApproveTransactions', () => {
 
   describe('Undo', () => {
     const approvedTransactions = [cleared('a'), cleared('b', 'UNRECONCILED')];
-    const dialogApprove = async (verifiedRules?: unknown, undoResult: unknown = { data: { restoredTransactionIds: [], skippedTransactionIds: [] } }) => {
+    const dialogApprove = async (undoResult: unknown = { data: { restoredTransactionIds: [], skippedTransactionIds: [] } }) => {
       vi.mocked(api.POST).mockImplementation((async (path: string) =>
         path === '/api/v1/transactions/undo-approve'
           ? undoResult
-          : { data: { succeededIds: ['a', 'b'], skippedIds: [], failures: [], approvedTransactions, verifiedRules } }) as never);
+          : { data: { succeededIds: ['a', 'b'], skippedIds: [], failures: [], approvedTransactions } }) as never);
       const hook = setup(() => useApproveTransactions());
       await act(async () => {
         await hook.result.current.approve(txns, ['DUPLICATE_SUSPECT', 'UNRECONCILED']);
@@ -77,28 +77,20 @@ describe('useApproveTransactions', () => {
     };
     const undoCalls = () => vi.mocked(api.POST).mock.calls.filter((c) => c[0] === '/api/v1/transactions/undo-approve');
 
-    it('sends the approve response back in one undo-approve request and refreshes even with no verified rules', async () => {
+    it('sends the approve response back in one undo-approve request and refreshes the lists', async () => {
       const { invalidate } = await dialogApprove();
       const options = showToast.mock.calls[0][1];
       expect(options.action.label).toBe('Undo');
       await act(async () => options.action.onSelect());
       expect(vi.mocked(api.POST).mock.calls).toHaveLength(2);
-      expect(undoCalls().map((c) => c[1])).toEqual([{ body: { approved: approvedTransactions, rules: [] } }]);
+      expect(undoCalls().map((c) => c[1])).toEqual([{ body: { approved: approvedTransactions } }]);
       const k = invalidate.mock.calls.map((c) => c[0]?.queryKey);
-      expect(k).toEqual(expect.arrayContaining([keys.rules.all, keys.transactions.all, keys.transactions.needsReviewCount()]));
+      expect(k).toEqual(expect.arrayContaining([keys.transactions.all, keys.transactions.needsReviewCount()]));
       expect(router.refresh).toHaveBeenCalledTimes(2);
     });
 
-    it('carries each verified rule with the rows it cleared', async () => {
-      await dialogApprove([{ ruleId: 'r1', clearedTransactionIds: ['x'], clearedTransactions: [cleared('x')] }]);
-      await act(async () => showToast.mock.calls[0][1].action.onSelect());
-      expect(undoCalls().map((c) => c[1])).toEqual([
-        { body: { approved: approvedTransactions, rules: [{ ruleId: 'r1', restore: [cleared('x')] }] } },
-      ]);
-    });
-
     it('shows the failure toast and refreshes nothing when the undo is rejected', async () => {
-      const { invalidate } = await dialogApprove(undefined, { error: { message: 'too many' } });
+      const { invalidate } = await dialogApprove({ error: { message: 'too many' } });
       invalidate.mockClear();
       router.refresh.mockClear();
       await act(async () => showToast.mock.calls[0][1].action.onSelect());
@@ -159,11 +151,10 @@ describe('useQuickApprove', () => {
     expect(showToast.mock.calls[0][0]).toBe('Approved');
     await act(async () => options.action.onSelect());
     expect(vi.mocked(api.POST).mock.calls[1][0]).toBe('/api/v1/transactions/undo-approve');
-    expect(post()[1]).toEqual({ body: { approved: [cleared('a')], rules: [] } });
+    expect(post()[1]).toEqual({ body: { approved: [cleared('a')] } });
   });
 
-  describe('Undo with verified rules', () => {
-    const rule = { ruleId: 'r1', clearedTransactionIds: ['x', 'y'], clearedTransactions: [cleared('x'), cleared('y')] };
+  describe('Undo', () => {
     const approveThenUndo = async (undoResult: unknown = { data: { restoredTransactionIds: [], skippedTransactionIds: [] } }) => {
       vi.mocked(api.POST).mockImplementation((async (path: string) =>
         path === '/api/v1/transactions/undo-approve'
@@ -173,25 +164,22 @@ describe('useQuickApprove', () => {
                 succeededIds: ['a'],
                 skippedIds: [],
                 failures: [],
-                approvedTransactions: [cleared('a', 'CATEGORY_UNVERIFIED')],
-                verifiedRules: [rule],
+                approvedTransactions: [cleared('a', 'DATE_CORRECTED')],
               },
             }) as never);
       const hook = setup(() => useQuickApprove());
       await act(async () => {
-        await hook.result.current.quickApprove({ id: 'a', reviewReasons: ['CATEGORY_UNVERIFIED'] });
+        await hook.result.current.quickApprove({ id: 'a', reviewReasons: ['DATE_CORRECTED'] });
       });
       await act(async () => showToast.mock.calls[0][1].action.onSelect());
       return hook;
     };
     const undos = () => vi.mocked(api.POST).mock.calls.filter((c) => c[0] === '/api/v1/transactions/undo-approve');
 
-    it('restores the approved row and each verified rule rows in one request, and refreshes rules', async () => {
+    it('restores the approved row in one request, and refreshes the lists', async () => {
       const { invalidate } = await approveThenUndo();
-      expect(undos().map((c) => c[1])).toEqual([
-        { body: { approved: [cleared('a', 'CATEGORY_UNVERIFIED')], rules: [{ ruleId: 'r1', restore: rule.clearedTransactions }] } },
-      ]);
-      expect(invalidate.mock.calls.map((c) => c[0]?.queryKey)).toContainEqual(keys.rules.all);
+      expect(undos().map((c) => c[1])).toEqual([{ body: { approved: [cleared('a', 'DATE_CORRECTED')] } }]);
+      expect(invalidate.mock.calls.map((c) => c[0]?.queryKey)).toContainEqual(keys.transactions.all);
     });
 
     it('shows the error toast when the undo fails, with no other calls', async () => {

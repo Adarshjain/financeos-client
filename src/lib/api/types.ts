@@ -52,9 +52,8 @@ export type TransactionLinkSummary = Schemas['TransactionLinkSummary'];
 export type CreateTransactionLinkRequest = Schemas['CreateTransactionLinkRequest'];
 
 // Categories & Rules
-export type CategoryResponse = Schemas['CategoryResponse'];
-export type Category = CategoryResponse;
-export type CategoryRequest = Schemas['CategoryRequest'];
+export type TagResponse = Schemas['TagResponse'];
+export type TagRequest = Schemas['TagRequest'];
 export type CategorizeRequest = Schemas['CategorizeRequest'];
 export type CategorizeResponse = Schemas['CategorizeResponse'];
 export type CategoryRule = Schemas['RuleResponse'];

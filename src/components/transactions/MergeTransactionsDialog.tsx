@@ -155,9 +155,9 @@ export function MergeTransactionsDialog({
 
           {/* Categories & Reasons Badges */}
           <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-            {tx.categories && tx.categories.length > 0 ? (
+            {tx.category ? (
                 <div className="flex flex-wrap gap-1">
-                  {tx.categories.map((c) => (
+                  {[{ id: tx.category.key, name: tx.category.name }].map((c) => (
                       <span
                           key={c.id}
                           className="text-2xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium px-2 py-0.5 rounded-md"

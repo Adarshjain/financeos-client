@@ -130,12 +130,10 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
     const renderStatusLine = () => {
       if (statusLine) return statusLine;
 
-      const items: { tone: 'success' | 'warning' | 'neutral'; label: React.ReactNode }[] = [
-        {
-          tone: isVerified ? 'success' : 'warning',
-          label: isVerified ? 'Verified' : 'Unverified',
-        },
-      ];
+      // Verified is the normal state, so only Unverified is called out.
+      const items: { tone: 'success' | 'warning' | 'neutral'; label: React.ReactNode }[] = isVerified
+        ? []
+        : [{ tone: 'warning', label: 'Unverified' }];
 
       if (source) {
         items.push({ tone: 'neutral', label: source });
@@ -145,7 +143,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
         items.push({ tone: 'neutral', label: mcc });
       }
 
-      return <StatusWords items={items} />;
+      return items.length ? <StatusWords items={items} /> : null;
     };
 
     const renderActions = () => {

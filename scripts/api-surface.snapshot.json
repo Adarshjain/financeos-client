@@ -7,7 +7,8 @@
     "authApi",
     "billsApi",
     "cardholdersApi",
-    "categoriesApi",
+    "categorizeApi",
+    "categoryListApi",
     "chatApi",
     "corporateActionsApi",
     "counterpartiesApi",
@@ -34,6 +35,7 @@
     "rulesApi",
     "shellApi",
     "statementsApi",
+    "tagsApi",
     "transactionLinksApi",
     "transactionsApi"
   ],
@@ -105,14 +107,19 @@
       "replaceCard",
       "update"
     ],
-    "categoriesApi": [
-      "categorize",
-      "categorizeDescription",
+    "tagsApi": [
+      "bulkAdd",
       "create",
       "delete",
       "list",
       "page",
-      "update"
+      "rename"
+    ],
+    "categoryListApi": [
+      "list"
+    ],
+    "categorizeApi": [
+      "categorize"
     ],
     "dashboardsApi": [
       "builtinData",
@@ -322,8 +329,7 @@
       "list",
       "previewMatches",
       "remove",
-      "update",
-      "verify"
+      "update"
     ],
     "statementsApi": [
       "getById",
@@ -338,6 +344,7 @@
       "delete",
       "merge",
       "search",
+      "setCategory",
       "update"
     ],
     "transactionLinksApi": [

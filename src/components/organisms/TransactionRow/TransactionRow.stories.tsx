@@ -22,6 +22,7 @@ import {
   Toaster,
 } from '@/components/ds';
 import {
+  BankLogo,
   transactionColumns,
   type TransactionLink,
   TransactionRow,
@@ -1016,7 +1017,20 @@ export const Default: Story = {
     account: 'HDFC Bank Savings',
     provenance: 'Statement',
     categories: ['Groceries'],
+    subCategory: 'Supermarket',
+    categoryIcon: 'cat-shopping-cart',
   },
+};
+
+/** Phone layout: line 1 description and amount, line 2 meta and balance, line 3 account and the category pill ("Category · Sub", neutral; unset is a dashed neutral "Set category"). */
+export const CategoryPill: Story = {
+  render: (args) => (
+    <div>
+      <TransactionRow {...args} description="Uber" amount="212.00" balance="₹61,545" account="HDFC Bank Savings" accountLogo={<BankLogo bankId="hdfc" name="HDFC Bank Savings" size="sm" />} provenance="UPI" categories={['Transport']} subCategory="Cabs" categoryIcon="cat-taxi" />
+      <TransactionRow {...args} description="Blinkit" amount="1,140.00" balance="₹60,405" account="HDFC Bank Savings" accountLogo={<BankLogo bankId="hdfc" name="HDFC Bank Savings" size="sm" />} provenance="UPI" categories={['Groceries']} categoryIcon="cat-shopping-cart" />
+      <TransactionRow {...args} description="Swiggy" amount="486.00" balance="₹59,919" account="HDFC Bank Savings" accountLogo={<BankLogo bankId="hdfc" name="HDFC Bank Savings" size="sm" />} provenance="UPI" categories={[]} unsetCategoryLabel="Set category" />
+    </div>
+  ),
 };
 
 /** The phone layout at every width, for rows outside a DataTable (dialogs, pickers, the search palette): the date joins the context line. */

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { CATEGORY_LIST_FIXTURE } from '@/lib/categoryList.fixtures';
 import type { CategoryRule } from '@/lib/rules.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
@@ -23,25 +24,24 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({ ...(await orig<object>
 const http = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELETE: vi.fn() }));
 vi.mock('@/lib/api/server', () => ({ serverApi: http }));
 
-const food = { id: 'c1', name: 'Food & dining' };
-const groceries = { id: 'c2', name: 'Groceries' };
-const categories = [food, groceries];
+const food = { key: 'food', name: 'Food', icon: 'cat-fork-knife' };
+const groceries = { key: 'groceries', name: 'Groceries', icon: 'cat-shopping-cart' };
+const categoryList = CATEGORY_LIST_FIXTURE;
 
 const rule = (over: Partial<CategoryRule> = {}): CategoryRule => ({
   id: 'r1',
   merchantKey: 'DUNZO DAILY',
   matchType: 'CONTAINS',
   displayName: 'Dunzo',
-  categories: [groceries],
-  verified: false,
-  source: 'LLM',
+  category: groceries,
+  subcategory: { key: 'groceries.supermarket', name: 'Supermarket' },
   appliedCount: 4,
   lastAppliedAt: '2026-10-20T00:00:00Z',
   createdAt: '2026-10-01T00:00:00Z',
   mcc: '5814',
   ...over,
 });
-const swiggy = rule({ id: 'r2', merchantKey: 'SWIGGY', matchType: 'STARTS_WITH', displayName: 'Swiggy', verified: true, source: 'USER', appliedCount: 31, mcc: null, categories: [food] });
+const swiggy = rule({ id: 'r2', merchantKey: 'SWIGGY', matchType: 'STARTS_WITH', displayName: 'Swiggy', appliedCount: 31, mcc: null, category: food, subcategory: { key: 'food.delivery', name: 'Delivery' } });
 const rules = [rule(), swiggy];
 
 const match = (id: string, over: Record<string, unknown> = {}) => ({
@@ -50,7 +50,7 @@ const match = (id: string, over: Record<string, unknown> = {}) => ({
   amount: 612,
   type: 'DEBIT',
   sourcedDescription: `DUNZO DAILY ${id}`,
-  categories: [],
+  category: null,
   reviewType: null,
   appliedRuleId: null,
   appliedRuleName: null,
@@ -62,23 +62,20 @@ const match = (id: string, over: Record<string, unknown> = {}) => ({
   ...over,
 });
 const matchPage = (rows: ReturnType<typeof match>[], total = rows.length, totalPages = 1) => ({
-  data: { content: rows, totalElements: total, totalPages, number: 0, size: 10 },
+  data: {
+    matchCount: total,
+    userSetCount: 0,
+    matches: { content: rows, totalElements: total, totalPages, number: 0, size: 10 },
+  },
 });
 
 function props(over: Partial<RulesScreenProps> = {}): RulesScreenProps {
   return {
     rules: { rows: rules, totalElements: 2, totalPages: 1 },
     state: DEFAULT_RULES_STATE,
-    categories,
+    categoryList,
     ...over,
   };
-}
-
-function stubLayout(phone: boolean) {
-  vi.stubGlobal(
-    'matchMedia',
-    vi.fn((query: string) => ({ matches: !phone && query.includes('min-width'), media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() })),
-  );
 }
 
 describe('RulesScreen', () => {
@@ -86,35 +83,46 @@ describe('RulesScreen', () => {
     vi.clearAllMocks();
     vi.unstubAllGlobals();
     http.GET.mockImplementation((url: string) =>
-      Promise.resolve({ data: url === '/api/v1/categories' ? categories : { content: [], totalElements: 0, totalPages: 0 } }),
+      Promise.resolve({ data: url === '/api/v1/category-list' ? { categories: categoryList } : { content: [], totalElements: 0, totalPages: 0 } }),
     );
     http.POST.mockImplementation((url: string) => Promise.resolve(url === '/api/v1/rules/preview-matches' ? matchPage([]) : { data: {} }));
   });
 
-  it('draws each rule as a card with its match, source, MCC and categories, and no last-used text', () => {
+  it('draws each rule as a card with its match, MCC and one category, and no last-used text', () => {
     renderWithQuery(<RulesScreen {...props()} />);
     expect(screen.getByText('Dunzo')).toBeTruthy();
     expect(screen.getByText('DUNZO DAILY')).toBeTruthy();
-    expect(screen.getByText('LLM-generated')).toBeTruthy();
     expect(screen.getByText('MCC 5814')).toBeTruthy();
-    expect(screen.getByText('Created by you')).toBeTruthy();
     expect(screen.getByText(/Starts with/)).toBeTruthy();
+    expect(screen.getByText('Groceries · Supermarket')).toBeTruthy();
+    expect(screen.getByText('Food · Delivery')).toBeTruthy();
     expect(screen.queryByText(/last (used|active)|used \d/i)).toBeNull();
-    // Approve only on the unverified rule.
-    expect(screen.getAllByRole('button', { name: 'Approve' })).toHaveLength(1);
   });
 
-  it('the status is one dropdown chip with no counts and writes the status to the address', () => {
+  it('has no verify, status or source UI: no Verified or Unverified word, no Approve, no checkboxes, no Source filter', () => {
     renderWithQuery(<RulesScreen {...props()} />);
-    expect(screen.queryByRole('button', { name: 'Verified' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Unverified' }));
-    expect(screen.getByRole('option', { name: 'All' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('option', { name: 'Verified' }));
-    expect(router.push).toHaveBeenCalledWith('?status=verified', { scroll: false });
+    expect(screen.queryByText('Verified')).toBeNull();
+    expect(screen.queryByText('Unverified')).toBeNull();
+    expect(screen.queryByText('LLM-generated')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Approve' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Source' })).toBeNull();
+    expect(screen.queryByRole('checkbox')).toBeNull();
   });
 
-  it('a status off its default shows a changed chip; Reset filters and the chip x put it back', () => {
-    renderWithQuery(<RulesScreen {...props({ state: { ...DEFAULT_RULES_STATE, status: 'all' } })} />);
+  it('the Tags tab replaces Rules and Categories', () => {
+    renderWithQuery(<RulesScreen {...props()} />);
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['All', 'Tags', 'Import']);
+  });
+
+  it('the Category filter lists the fixed categories and writes the key to the address', () => {
+    renderWithQuery(<RulesScreen {...props()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Category' }));
+    fireEvent.click(screen.getByRole('option', { name: 'Groceries' }));
+    expect(router.push).toHaveBeenCalledWith('?category=groceries', { scroll: false });
+  });
+
+  it('a filter set shows a changed chip; Reset filters and the chip x put it back', () => {
+    renderWithQuery(<RulesScreen {...props({ state: { ...DEFAULT_RULES_STATE, matchType: 'EXACT' } })} />);
     fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
     expect(router.push).toHaveBeenCalledWith('?', { scroll: false });
     fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
@@ -122,17 +130,17 @@ describe('RulesScreen', () => {
   });
 
   it('a filter resets the page and keeps the rest of the address', () => {
-    renderWithQuery(<RulesScreen {...props({ state: { ...DEFAULT_RULES_STATE, status: 'all', page: 2 } })} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Source' }));
-    fireEvent.click(screen.getByRole('option', { name: 'Created by you' }));
-    expect(router.push).toHaveBeenCalledWith('?status=all&source=USER', { scroll: false });
+    renderWithQuery(<RulesScreen {...props({ state: { ...DEFAULT_RULES_STATE, matchType: 'EXACT', page: 2 } })} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Exact' }));
+    fireEvent.click(screen.getByRole('option', { name: 'Regex' }));
+    expect(router.push).toHaveBeenCalledWith('?match=REGEX', { scroll: false });
   });
 
   it('Reset filters keeps the search text', () => {
-    renderWithQuery(<RulesScreen {...props({ state: { ...DEFAULT_RULES_STATE, q: 'dunzo', source: 'USER' } })} />);
+    renderWithQuery(<RulesScreen {...props({ state: { ...DEFAULT_RULES_STATE, q: 'dunzo', matchType: 'EXACT' } })} />);
     fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
     expect(router.push).toHaveBeenCalledWith(expect.stringContaining('q=dunzo'), { scroll: false });
-    expect(router.push).toHaveBeenCalledWith(expect.not.stringContaining('source'), { scroll: false });
+    expect(router.push).toHaveBeenCalledWith(expect.not.stringContaining('match'), { scroll: false });
   });
 
   it('has no Usage or Sort filter', () => {
@@ -159,162 +167,10 @@ describe('RulesScreen', () => {
     expect(screen.getByText("Couldn't load rules")).toBeTruthy();
   });
 
-  it('an empty status tab says nothing matches when other tabs hold rules, with no Clear filters', () => {
-    renderWithQuery(
-      <RulesScreen {...props({ rules: { rows: [], totalElements: 0, totalPages: 0 }, state: { ...DEFAULT_RULES_STATE, status: 'verified' }, hasRulesElsewhere: true })} />,
-    );
-    expect(screen.getByText('No rules match')).toBeTruthy();
-    expect(screen.queryByText('No rules yet')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull();
-  });
-
-  it('an empty list for a user with no rules at all says No rules yet with the import hint', () => {
-    renderWithQuery(
-      <RulesScreen {...props({ rules: { rows: [], totalElements: 0, totalPages: 0 }, state: { ...DEFAULT_RULES_STATE, status: 'verified' } })} />,
-    );
+  it('an empty list for a user with no rules says No rules yet and what a rule does', () => {
+    renderWithQuery(<RulesScreen {...props({ rules: { rows: [], totalElements: 0, totalPages: 0 } })} />);
     expect(screen.getByText('No rules yet')).toBeTruthy();
-    expect(screen.getByText(/Transactions you import will generate rules/)).toBeTruthy();
-  });
-
-  it('Approve verifies that rule', async () => {
-    renderWithQuery(<RulesScreen {...props()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
-    await waitFor(() => expect(http.POST).toHaveBeenCalledWith('/api/v1/rules/{id}/verify', { params: { path: { id: 'r1' } } }));
-    await waitFor(() => expect(router.refresh).toHaveBeenCalled());
-  });
-
-  it('Approve offers Undo, which un-verifies that rule', async () => {
-    http.POST.mockImplementation((url: string) => Promise.resolve({ data: url.endsWith('/unverify') ? { restoredTransactionIds: [] } : {} }));
-    renderWithQuery(<RulesScreen {...props()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
-    await waitFor(() => expect(toasts.showToast).toHaveBeenCalled());
-    const [, options] = toasts.showToast.mock.calls[0];
-    expect(options.action.label).toBe('Undo');
-    options.action.onSelect();
-    await waitFor(() =>
-      expect(http.POST).toHaveBeenCalledWith('/api/v1/rules/{id}/unverify', { params: { path: { id: 'r1' } }, body: { transactionIds: [], restore: [] } }),
-    );
-    await waitFor(() => expect(router.refresh).toHaveBeenCalledTimes(2));
-  });
-
-  it('bulk Approve offers Undo, which un-verifies every approved rule', async () => {
-    stubLayout(false);
-    http.POST.mockImplementation((url: string) =>
-      Promise.resolve({
-        data:
-          url === '/api/v1/rules/verify'
-            ? {
-                verifiedCount: 2,
-                verifiedRules: [
-                  { ruleId: 'r1', clearedTransactionIds: [], clearedTransactions: [] },
-                  { ruleId: 'r3', clearedTransactionIds: [], clearedTransactions: [] },
-                ],
-              }
-            : { restoredTransactionIds: [] },
-      }),
-    );
-    renderWithQuery(<RulesScreen {...props({ rules: { rows: [rule(), rule({ id: 'r3', displayName: 'Zomato', merchantKey: 'ZOMATO' })], totalElements: 2, totalPages: 1 } })} />);
-    fireEvent.click(screen.getByLabelText('Select Dunzo'));
-    fireEvent.click(screen.getByLabelText('Select Zomato'));
-    fireEvent.click(within(document.querySelector('[data-selection-bar]') as HTMLElement).getByRole('button', { name: /^Approve/ }));
-    await waitFor(() => expect(toasts.showToast).toHaveBeenCalled());
-    const [message, options] = toasts.showToast.mock.calls[0];
-    expect(message).toMatch(/^2 rules verified/);
-    options.action.onSelect();
-    await waitFor(() => {
-      const unverified = http.POST.mock.calls.filter((c) => c[0] === '/api/v1/rules/{id}/unverify').map((c) => c[1].params.path.id);
-      expect(unverified.sort()).toEqual(['r1', 'r3']);
-    });
-  });
-
-  const cleared = (id: string) => ({
-    transactionId: id,
-    previousReviewType: 'NEEDS_REVIEW',
-    previousReviewReasons: ['CATEGORY_UNVERIFIED'],
-    previousReviewedAt: null,
-    verifiedUpdatedAt: '2026-10-23T09:00:00Z',
-  });
-
-  it('Undo sends back exactly what the single approve cleared, and refreshes transactions', async () => {
-    http.POST.mockImplementation((url: string) =>
-      Promise.resolve({ data: url.endsWith('/unverify') ? { restoredTransactionIds: ['t1'], skippedTransactionIds: [] } : { clearedTransactions: [cleared('t1')] } }),
-    );
-    const { queryClient } = renderWithQuery(<RulesScreen {...props()} />);
-    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
-    fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
-    await waitFor(() => expect(toasts.showToast).toHaveBeenCalled());
-    toasts.showToast.mock.calls[0][1].action.onSelect();
-    await waitFor(() =>
-      expect(http.POST).toHaveBeenCalledWith('/api/v1/rules/{id}/unverify', {
-        params: { path: { id: 'r1' } },
-        body: { transactionIds: [], restore: [cleared('t1')] },
-      }),
-    );
-    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['transactions'] }));
-  });
-
-  it('bulk Undo restores each rule with its own cleared rows and leaves already-verified rules alone', async () => {
-    stubLayout(false);
-    http.POST.mockImplementation((url: string) =>
-      Promise.resolve({
-        data:
-          url === '/api/v1/rules/verify'
-            ? { verifiedCount: 1, verifiedRules: [{ ruleId: 'r3', clearedTransactionIds: ['t9'], clearedTransactions: [cleared('t9')] }] }
-            : { restoredTransactionIds: [], skippedTransactionIds: [] },
-      }),
-    );
-    renderWithQuery(<RulesScreen {...props({ rules: { rows: [rule({ verified: false }), rule({ id: 'r3', displayName: 'Zomato', merchantKey: 'ZOMATO' })], totalElements: 2, totalPages: 1 } })} />);
-    fireEvent.click(screen.getByLabelText('Select Dunzo'));
-    fireEvent.click(screen.getByLabelText('Select Zomato'));
-    fireEvent.click(within(document.querySelector('[data-selection-bar]') as HTMLElement).getByRole('button', { name: /^Approve/ }));
-    await waitFor(() => expect(toasts.showToast).toHaveBeenCalled());
-    toasts.showToast.mock.calls[0][1].action.onSelect();
-    await waitFor(() => {
-      const undos = http.POST.mock.calls.filter((c) => c[0] === '/api/v1/rules/{id}/unverify');
-      expect(undos).toHaveLength(1);
-      expect(undos[0][1]).toEqual({ params: { path: { id: 'r3' } }, body: { transactionIds: [], restore: [cleared('t9')] } });
-    });
-  });
-
-  it('bulk Undo that fails for one rule still refreshes and says how many could not be undone', async () => {
-    stubLayout(false);
-    http.POST.mockImplementation((url: string, init?: { params?: { path?: { id?: string } } }) => {
-      if (url === '/api/v1/rules/verify') {
-        return Promise.resolve({
-          data: {
-            verifiedCount: 2,
-            verifiedRules: [
-              { ruleId: 'r1', clearedTransactionIds: [], clearedTransactions: [cleared('t1')] },
-              { ruleId: 'r3', clearedTransactionIds: [], clearedTransactions: [cleared('t9')] },
-            ],
-          },
-        });
-      }
-      return Promise.resolve(init?.params?.path?.id === 'r3' ? { error: { message: 'no' } } : { data: { restoredTransactionIds: [] } });
-    });
-    const { queryClient } = renderWithQuery(<RulesScreen {...props({ rules: { rows: [rule(), rule({ id: 'r3', displayName: 'Zomato', merchantKey: 'ZOMATO' })], totalElements: 2, totalPages: 1 } })} />);
-    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
-    fireEvent.click(screen.getByLabelText('Select Dunzo'));
-    fireEvent.click(screen.getByLabelText('Select Zomato'));
-    fireEvent.click(within(document.querySelector('[data-selection-bar]') as HTMLElement).getByRole('button', { name: /^Approve/ }));
-    await waitFor(() => expect(toasts.showToast).toHaveBeenCalled());
-    const refreshes = router.refresh.mock.calls.length;
-    toasts.showToast.mock.calls[0][1].action.onSelect();
-    await waitFor(() => expect(toasts.showToast).toHaveBeenCalledWith("Couldn't undo 1 of 2 rules. Try again.", { tone: 'danger' }));
-    expect(http.POST.mock.calls.filter((c) => c[0] === '/api/v1/rules/{id}/unverify')).toHaveLength(2);
-    await waitFor(() => expect(router.refresh.mock.calls.length).toBeGreaterThan(refreshes));
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['transactions'] });
-  });
-
-  it('a failed Undo is a toast', async () => {
-    http.POST.mockImplementation((url: string) =>
-      url.endsWith('/unverify') ? Promise.resolve({ error: { message: 'no' } }) : Promise.resolve({ data: {} }),
-    );
-    renderWithQuery(<RulesScreen {...props()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
-    await waitFor(() => expect(toasts.showToast).toHaveBeenCalled());
-    toasts.showToast.mock.calls[0][1].action.onSelect();
-    await waitFor(() => expect(toasts.showToast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' }));
+    expect(screen.getByText(/A rule sets the category of transactions/)).toBeTruthy();
   });
 
   it('Delete is in the menu and confirms first', async () => {
@@ -330,34 +186,22 @@ describe('RulesScreen', () => {
     await waitFor(() => expect(toasts.showToast).toHaveBeenCalledWith('Rule deleted'));
   });
 
-  it('desktop: ticking unverified rules docks Approve, which verifies them together', async () => {
-    stubLayout(false);
-    http.POST.mockResolvedValue({ data: { verifiedCount: 1 } });
-    renderWithQuery(<RulesScreen {...props()} />);
-    // Only the unverified rule has a checkbox.
-    expect(screen.queryByLabelText('Select Swiggy')).toBeNull();
-    fireEvent.click(screen.getByLabelText('Select Dunzo'));
-    expect(await screen.findByText('1 selected')).toBeTruthy();
-    fireEvent.click(within(document.querySelector('[data-selection-bar]') as HTMLElement).getByRole('button', { name: /^Approve/ }));
-    await waitFor(() => expect(http.POST).toHaveBeenCalledWith('/api/v1/rules/verify', { body: { ruleIds: ['r1'] } }));
-  });
-
-  it('the top bar + opens an empty Add rule form that saves with its categories', async () => {
+  it('the top bar + opens an empty Add rule form that saves with one category from the picker', async () => {
     renderWithQuery(<RulesScreen {...props()} />);
     fireEvent.click(screen.getAllByRole('button', { name: /Add/ })[0]);
     expect(await screen.findByRole('dialog', { name: 'Add rule' })).toBeTruthy();
     expect((screen.getByLabelText('Pattern') as HTMLInputElement).value).toBe('');
     fireEvent.click(screen.getByRole('button', { name: 'Add rule' }));
-    expect(await screen.findByText('Pick at least one category.')).toBeTruthy();
+    expect(await screen.findByText('Pick a category.')).toBeTruthy();
     expect(http.POST).not.toHaveBeenCalledWith('/api/v1/rules', expect.anything());
     fireEvent.change(screen.getByLabelText('Pattern'), { target: { value: 'ZOMATO' } });
-    fireEvent.click(screen.getByRole('combobox', { name: /Categories/ }));
-    fireEvent.click(await screen.findByRole('option', { name: 'Food & dining' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    fireEvent.click(screen.getByRole('combobox', { name: /Category/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Food' }));
+    fireEvent.click(await screen.findByText('Delivery'));
     fireEvent.click(screen.getByRole('button', { name: 'Add rule' }));
     await waitFor(() =>
       expect(http.POST).toHaveBeenCalledWith('/api/v1/rules', {
-        body: { merchantKey: 'ZOMATO', matchType: 'MERCHANT_KEY', displayName: undefined, categoryIds: ['c1'], mcc: undefined },
+        body: { merchantKey: 'ZOMATO', matchType: 'CONTAINS', displayName: undefined, categoryKey: 'food', subcategoryKey: 'food.delivery', mcc: undefined },
       }),
     );
   });
@@ -432,7 +276,7 @@ describe('RulesScreen', () => {
     await waitFor(() =>
       expect(http.PUT).toHaveBeenCalledWith('/api/v1/rules/{id}', {
         params: { path: { id: 'r1' } },
-        body: { merchantKey: 'DUNZO NOW', matchType: 'CONTAINS', displayName: 'Dunzo', categoryIds: ['c2'], mcc: '5812' },
+        body: { merchantKey: 'DUNZO NOW', matchType: 'CONTAINS', displayName: 'Dunzo', categoryKey: 'groceries', subcategoryKey: 'groceries.supermarket', mcc: '5812' },
       }),
     );
     await waitFor(() => expect(toasts.showToast).toHaveBeenCalledWith('Rule updated'));
@@ -448,30 +292,13 @@ describe('RulesScreen', () => {
                 totalElements: 1,
                 totalPages: 1,
               }
-            : categories,
+            : { categories: categoryList },
       }),
     );
     renderWithQuery(<RulesScreen {...props()} />);
     expect(screen.getByText('Recent rule jobs')).toBeTruthy();
     await waitFor(() => expect(http.GET).toHaveBeenCalledWith('/api/v1/jobs', expect.objectContaining({ params: { query: expect.objectContaining({ type: 'RULE_APPLY' }) } })));
   });
-  it('deleting a ticked rule takes it out of the selection, so Approve sends only the others', async () => {
-    stubLayout(false);
-    http.DELETE.mockResolvedValue({});
-    http.POST.mockImplementation((url: string) => Promise.resolve(url === '/api/v1/rules/verify' ? { data: { verifiedCount: 1 } } : { data: {} }));
-    const second = rule({ id: 'r3', displayName: 'Lenskart', merchantKey: 'LENSKART' });
-    renderWithQuery(<RulesScreen {...props({ rules: { rows: [rule(), second], totalElements: 2, totalPages: 1 } })} />);
-    fireEvent.click(screen.getByLabelText('Select Dunzo'));
-    fireEvent.click(screen.getByLabelText('Select Lenskart'));
-    expect(await screen.findByText('2 selected')).toBeTruthy();
-    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Rule actions' })[0], { button: 0, ctrlKey: false });
-    fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete' }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
-    expect(await screen.findByText('1 selected')).toBeTruthy();
-    fireEvent.click(within(document.querySelector('[data-selection-bar]') as HTMLElement).getByRole('button', { name: /^Approve/ }));
-    await waitFor(() => expect(http.POST).toHaveBeenCalledWith('/api/v1/rules/verify', { body: { ruleIds: ['r3'] } }));
-  });
-
   it('a failed matches request says so and Try again asks again', async () => {
     let calls = 0;
     http.POST.mockImplementation((url: string) => {

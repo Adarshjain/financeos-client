@@ -80,7 +80,7 @@ export const TransactionCard = ({
               <TransactionLinkBadges links={transaction.links}/>
               <ObligationRefBadges refs={transaction.obligationRefs}/>
 
-              {!isExcluded && <TransactionCategoryBadges categories={transaction.categories}/>}
+              {!isExcluded && <TransactionCategoryBadges categories={transaction.category ? [{ id: transaction.category.key, name: transaction.category.name }] : []}/>}
             </div>
           </div>
           <TransactionAmount

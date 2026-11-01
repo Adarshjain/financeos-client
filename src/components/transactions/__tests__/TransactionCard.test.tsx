@@ -3,16 +3,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { TransactionCard } from '@/components/transactions/TransactionCard';
 import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
 
 const mockAccounts: Account[] = [
   { id: 'acc1', name: 'HDFC Bank', type: AccountType.BANK_ACCOUNT },
-];
-
-const mockCategories: Category[] = [
-  { id: 'cat1', name: 'Shopping' },
 ];
 
 const mockTxn: Transaction = {
@@ -27,7 +22,7 @@ const mockTxn: Transaction = {
   reviewReasons: ['UNRECONCILED'],
   balance: 45000,
   createdAt: '2026-07-25T00:00:00Z',
-  categories: mockCategories,
+  category: { key: 'shopping', name: 'Shopping', icon: 'cat-shopping-bag' },
   links: [
     {
       linkId: 'link-1',
@@ -148,7 +143,7 @@ describe('TransactionCard (CD-8, CD-2c)', () => {
       source: 'file_upload',
       reviewType: 'NA',
       links: [],
-      categories: [],
+      category: null,
     };
 
     render(

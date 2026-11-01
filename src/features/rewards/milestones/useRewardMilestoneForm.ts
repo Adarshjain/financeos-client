@@ -7,7 +7,6 @@ import {
   useUpdateRewardMilestone,
 } from '@/features/rewards/queries/useRewardMilestonesQueries';
 import { type RewardNotifier, sonnerRewardNotifier } from '@/features/rewards/rewardNotifier';
-import { Category } from '@/lib/categories.types';
 import {
   MilestoneBasis,
   MilestonePayoutTiming,
@@ -17,11 +16,12 @@ import {
   RewardMilestoneRequest,
   RewardType,
 } from '@/lib/rewards.types';
+import { Tag } from '@/lib/tags.types';
 import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
 interface UseRewardMilestoneFormProps {
   accountId: string;
-  categories: Category[];
+  categories: Tag[];
   defaultRewardType: RewardType;
   milestone?: RewardMilestone;
   onSaved: () => void;
@@ -64,14 +64,14 @@ export function useRewardMilestoneForm({
     milestone?.payoutTiming ?? 'WINDOW_END'
   );
 
-  const toCategoryOptions = (ids: string[]): Category[] =>
+  const toCategoryOptions = (ids: string[]): Tag[] =>
     ids.map(
       (id) => categories.find((c) => c.id === id) ?? { id, name: 'Unknown category' }
     );
-  const [includeCategories, setIncludeCategories] = useState<Category[]>(
+  const [includeCategories, setIncludeCategories] = useState<Tag[]>(
     milestone ? toCategoryOptions(milestone.includeCategoryIds) : []
   );
-  const [excludeCategories, setExcludeCategories] = useState<Category[]>(
+  const [excludeCategories, setExcludeCategories] = useState<Tag[]>(
     milestone ? toCategoryOptions(milestone.excludeCategoryIds) : []
   );
   const [includeMccs, setIncludeMccs] = useState(

@@ -2,7 +2,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 import { RULES_PAGE_SIZE } from '@/components/rules/browser/constants';
 import { RulesBrowser } from '@/components/rules/RulesBrowser';
-import { categoriesApi, rulesApi } from '@/lib/apiClient';
+import { rulesApi,tagsApi } from '@/lib/apiClient';
 import { getQueryClient } from '@/lib/query/client';
 import { keys } from '@/lib/query/keys';
 
@@ -20,8 +20,8 @@ export default async function RulesPage() {
       queryFn: () => rulesApi.list(listParams),
     }),
     qc.prefetchQuery({
-      queryKey: keys.categories.list(),
-      queryFn: () => categoriesApi.list(),
+      queryKey: keys.tags.list(),
+      queryFn: () => tagsApi.list(),
     }),
   ]);
 

@@ -4,7 +4,7 @@ A record card for lists where each item has several facts and actions (categoris
 
 ## Anatomy
 - Header: name with "match type · **pattern**" under it; the used count alone at the top right. Checkbox on desktop when selectable.
-- Status line: status word (amber Unverified or green Verified) · source · MCC.
+- Status line: the amber word Unverified only when `tone` is `warning`; a verified (`success`) rule shows no status word (2026-11-01: every rule is now one the user made, so Verified is the normal state and is not called out). Then source · MCC when given; with none of these the line is left out.
 - Bottom row: category badges, then Approve (unverified only) and ⋮ menu (Find matches · Edit rule · Delete rule).
 
 ## Selection mode (phone)
@@ -27,7 +27,7 @@ These gestures belong to the **phone layout** (below `desk`), with touch or mous
 - `matchType: ReactNode`: Match type ("Contains", "Starts with", "Exact")
 - `pattern?: ReactNode`: Match pattern string
 - `usedCount?: number | string`: Usage count shown at top right
-- `tone?: 'warning' | 'success'`: Verification (`warning` = unverified, default; `success` = verified)
+- `tone?: 'warning' | 'success'`: `warning` (default) shows the amber Unverified word; `success` shows no status word
 - `source?: ReactNode`: Provenance or source
 - `mcc?: ReactNode`: MCC code
 - `statusLine?: ReactNode`: Custom status line override
@@ -48,8 +48,8 @@ These gestures belong to the **phone layout** (below `desk`), with touch or mous
 Card, StatusWords, Badge, Menu, Button, Checkbox.
 
 ## Variants
-- **Unverified**: amber unverified tag, Approve button, and kebab menu.
-- **Verified**: green verified tag and kebab menu.
+- **Unverified**: amber Unverified word, Approve button, and kebab menu.
+- **Verified**: no status word, kebab menu.
 - **Selected**: tinted brand background with brand outline.
 - **Selection mode**: trailing eye icon replaces actions.
 - **With menu**: custom actions menu (Find matches, Edit rule, Delete rule).

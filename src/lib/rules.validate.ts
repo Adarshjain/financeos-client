@@ -6,11 +6,7 @@ export function validatePattern(
   pattern: string
 ): string | null {
   const trimmed = pattern.trim();
-  if (matchType === 'MERCHANT_KEY') {
-    if (trimmed.replace(/[^a-zA-Z]/g, '').length < 3) {
-      return 'Merchant key must contain at least 3 letters (ignoring numbers, spaces, and punctuation).';
-    }
-  } else if (matchType === 'CONTAINS' || matchType === 'STARTS_WITH') {
+  if (matchType === 'CONTAINS' || matchType === 'STARTS_WITH') {
     if (trimmed.length < 3) return 'Pattern must be at least 3 characters.';
   } else if (matchType === 'EXACT') {
     if (trimmed.length === 0) return 'Pattern must not be empty.';

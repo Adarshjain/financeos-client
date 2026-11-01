@@ -1,17 +1,17 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 import RecommendSimulator from '@/components/rewards/RecommendSimulator';
-import { accountsApi, categoriesApi } from '@/lib/apiClient';
+import { accountsApi, tagsApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
 
 export default async function RewardRecommendPage() {
   const qc = getQueryClient();
   const [categories, accounts] = await Promise.all([
-    categoriesApi.list().catch(() => []),
+    tagsApi.list().catch(() => []),
     accountsApi.list().catch(() => []),
   ]);
 
-  qc.setQueryData(keys.categories.list(), categories);
+  qc.setQueryData(keys.tags.list(), categories);
   qc.setQueryData(keys.accounts.list(), accounts);
 
   return (

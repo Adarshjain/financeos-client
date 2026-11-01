@@ -87,7 +87,7 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     expect(blueTokaiRows.length).toBe(2);
     for (const s of blueTokaiRows) {
       expect(s.reviewReasons).toContain('DUPLICATE_SUSPECT');
-      expect(s.reviewReasons).toContain('CATEGORY_UNVERIFIED');
+      expect(s.reviewReasons).toContain('DATE_CORRECTED');
     }
 
     // Single row carries CATEGORY_UNVERIFIED but not DUPLICATE_SUSPECT
@@ -95,7 +95,7 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
       (t.sourcedDescription || t.description || '').includes('UBER')
     );
     expect(uberRow).toBeDefined();
-    expect(uberRow?.reviewReasons).toContain('CATEGORY_UNVERIFIED');
+    expect(uberRow?.reviewReasons).toContain('DATE_CORRECTED');
     expect(uberRow?.reviewReasons).not.toContain('DUPLICATE_SUSPECT');
   });
 
@@ -165,14 +165,14 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     const after1 = await findById(api, blueTokaiRows[0].id);
     expect(after1?.reviewType).toBe('NEEDS_REVIEW');
     expect(after1?.reviewReasons).not.toContain('DUPLICATE_SUSPECT');
-    expect(after1?.reviewReasons).toContain('CATEGORY_UNVERIFIED');
+    expect(after1?.reviewReasons).toContain('DATE_CORRECTED');
 
     // 3. Clear remaining reason CATEGORY_UNVERIFIED on blueTokaiRows[0]
     const batch2Res = await api.POST('/api/v1/transactions/batch-review', {
       body: {
         transactionIds: [blueTokaiRows[0].id],
         reviewType: 'MANUALLY_REVIEWED',
-        reviewReasons: ['CATEGORY_UNVERIFIED'],
+        reviewReasons: ['DATE_CORRECTED'],
       },
     });
     expectStatus(batch2Res, 200);
@@ -210,7 +210,7 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     // 3. Search with reviewReason = CATEGORY_UNVERIFIED -> all 5 rows returned
     const unverifiedRows = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
-      { field: 'reviewReason', operator: 'is', value: 'CATEGORY_UNVERIFIED' },
+      { field: 'reviewReason', operator: 'is', value: 'DATE_CORRECTED' },
     ]);
     expect(unverifiedRows.length).toBe(5);
 
@@ -220,7 +220,7 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
       body: {
         transactionIds: allIds,
         reviewType: 'MANUALLY_REVIEWED',
-        reviewReasons: ['DUPLICATE_SUSPECT', 'CATEGORY_UNVERIFIED'],
+        reviewReasons: ['DUPLICATE_SUSPECT', 'DATE_CORRECTED'],
       },
     });
 

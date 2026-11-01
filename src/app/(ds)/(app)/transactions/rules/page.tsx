@@ -5,18 +5,18 @@ import { loaded, orNull } from '@/features/shell/loadHelpers';
 import type { SearchParams } from '@/features/shell/searchParams';
 import {
   clampedRulesUrl,
-  hasRuleFilters,
   parseRulesUrl,
   rulesRequest,
 } from '@/features/transactions/rules/rulesModel';
 import { RulesScreen } from '@/features/transactions/rules/RulesScreen';
-import { categoriesApi, rulesApi } from '@/lib/apiClient';
+import { rulesApi } from '@/lib/apiClient';
+import { fetchCategoryList } from '@/lib/categoryList.server';
 
-export const metadata = { title: 'Rules' };
+export const metadata = { title: 'Tags' };
 
 /**
- * /transactions/rules: one page of rules, filtered by the address (it opens on Unverified), with the
- * categories the filter and the form need. The server reads the address once and fetches them together.
+ * /transactions/rules (the Tags tab; its page is rebuilt next): one page of rules, filtered by the address, with the
+ * category list the filter and the form need. The server reads the address once and fetches them together.
  */
 export default async function DsRulesPage({
   searchParams,
@@ -24,15 +24,12 @@ export default async function DsRulesPage({
   searchParams: SearchParams;
 }) {
   const state = parseRulesUrl(await searchParams);
-  const [result, categories] = await Promise.all([
+  const [result, categoryList] = await Promise.all([
     loaded(rulesApi.list({ ...rulesRequest(state), page: state.page, size: state.size })),
-    orNull(categoriesApi.list()),
+    orNull(fetchCategoryList()),
   ]);
   const clamped = result.ok ? clampedRulesUrl(state, result.data) : null;
   if (clamped) redirect(clamped);
-  // An empty status tab says "no rules yet" only for a user with none at all: ask whether the other tabs hold any.
-  const emptyTab = result.ok && result.data.content.length === 0 && state.status !== 'all' && !hasRuleFilters(state);
-  const everywhere = emptyTab ? await orNull(rulesApi.list({ ...rulesRequest(state, 'all'), page: 0, size: 1 })) : null;
   return (
     <RulesScreen
       rules={
@@ -42,8 +39,7 @@ export default async function DsRulesPage({
       }
       reference={result.ok ? undefined : result.reference}
       state={state}
-      hasRulesElsewhere={(everywhere?.totalElements ?? 0) > 0}
-      categories={categories}
+      categoryList={categoryList}
     />
   );
 }

@@ -2,7 +2,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 import { parseReviewSearchParams } from '@/components/transactions/review-browser/reviewDeepLink';
 import { ReviewBrowser } from '@/components/transactions/ReviewBrowser';
-import { accountsApi, categoriesApi } from '@/lib/apiClient';
+import { accountsApi, tagsApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
 
 export default async function TransactionReviewPage({
@@ -14,7 +14,7 @@ export default async function TransactionReviewPage({
   const queryClient = getQueryClient();
   await Promise.all([
     queryClient.prefetchQuery({ queryKey: keys.accounts.list(), queryFn: () => accountsApi.list() }),
-    queryClient.prefetchQuery({ queryKey: keys.categories.list(), queryFn: () => categoriesApi.list() }),
+    queryClient.prefetchQuery({ queryKey: keys.tags.list(), queryFn: () => tagsApi.list() }),
   ]);
 
   return (

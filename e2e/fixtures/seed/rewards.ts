@@ -263,7 +263,7 @@ export async function spend(
     date,
     description: options.description ?? `Spend ${seedCounter}`,
     mcc: options.mcc,
-    categoryIds: options.categoryIds,
+    tagIds: options.categoryIds,
     cardId: options.cardId,
     rewardDetails: {
       convenienceFee: options.convenienceFee,

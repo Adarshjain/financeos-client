@@ -103,11 +103,9 @@ test.describe('Background Jobs UI (@ui)', () => {
     });
 
     // 1. Create rule first so it's ready to apply
-    const { createCategory, createRule } = await import('../fixtures/seed/categories');
-    const cat = await createCategory(api, 'UI Retry Rule Cat');
+    const { createRule } = await import('../fixtures/seed/categories');
     const rule = await createRule(api, {
       merchantKey: 'UI_RETRY_MERCHANT',
-      categoryIds: [cat.id],
     });
 
     // 2. Temporarily fill worker concurrency slots with delayed jobs

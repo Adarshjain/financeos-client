@@ -16,13 +16,13 @@ import {
   inputClass,
   selectTriggerClass,
 } from '@/features/rewards/rules/form/constants';
-import { Category } from '@/lib/categories.types';
 import { DayOfWeek } from '@/lib/rewards.types';
+import { Tag } from '@/lib/tags.types';
 import { TransactionChannel } from '@/lib/transaction.types';
 import { cn, sanitizeDecimalInput } from '@/lib/utils';
 
 interface RuleTesterSectionProps {
-  categories: Category[];
+  categories: Tag[];
   previewAmount: string;
   setPreviewAmount: (a: string) => void;
   previewDescription: string;
@@ -31,8 +31,8 @@ interface RuleTesterSectionProps {
   setPreviewMcc: (m: string) => void;
   previewChannel: TransactionChannel | 'NONE';
   setPreviewChannel: (c: TransactionChannel | 'NONE') => void;
-  previewCategories: Category[];
-  setPreviewCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  previewCategories: Tag[];
+  setPreviewCategories: React.Dispatch<React.SetStateAction<Tag[]>>;
   previewEmi: boolean;
   setPreviewEmi: React.Dispatch<React.SetStateAction<boolean>>;
   previewIntl: boolean;

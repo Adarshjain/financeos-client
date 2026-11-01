@@ -13,8 +13,8 @@ import { useSearchText } from '@/features/shell/useSearchText';
 import { TransactionsTabs } from '@/features/transactions/TransactionsTabs';
 import { seedNeedsReviewCount } from '@/features/transactions/useNeedsReviewCount';
 import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import type { Tag } from '@/lib/tags.types';
 
 import { FilterChips } from './FilterChips';
 import type { TransactionListRow } from './transactionRowsModel';
@@ -41,7 +41,7 @@ export interface TransactionsListPaneProps {
   list: TransactionsListResult;
   /** Null when they could not be loaded: the Account and Category chips are then off. */
   accounts: Account[] | null;
-  categories: Category[] | null;
+  categories: Tag[] | null;
   /** Everything that needs review; null when it could not be loaded. */
   needsReviewCount: number | null;
   /** The app bar's +: opens Add transaction (piece 3 wires it). */

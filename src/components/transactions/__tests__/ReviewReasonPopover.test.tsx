@@ -33,7 +33,6 @@ describe('ReviewReasonPopover', () => {
     expect(options).toEqual([
       'All Reasons',
       'Unreconciled',
-      'Category unverified',
       'Possible duplicate',
       'Date corrected',
     ]);

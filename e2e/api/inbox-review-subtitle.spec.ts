@@ -61,8 +61,8 @@ test.describe('Inbox API: review summary subtitle (@api)', () => {
     const uber = txns.find((t) => (t.sourcedDescription || t.description || '').includes('UBER'))!;
     const netflix = txns.find((t) => (t.sourcedDescription || t.description || '').includes('NETFLIX'))!;
     expect(tokai).toHaveLength(2);
-    expect(tokai[0].reviewReasons).toEqual(expect.arrayContaining(['DUPLICATE_SUSPECT', 'CATEGORY_UNVERIFIED']));
-    expect(uber.reviewReasons).toContain('CATEGORY_UNVERIFIED');
+    expect(tokai[0].reviewReasons).toEqual(expect.arrayContaining(['DUPLICATE_SUSPECT', 'DATE_CORRECTED']));
+    expect(uber.reviewReasons).toContain('DATE_CORRECTED');
 
     // Every waiting row is category-flagged: no "other" tail.
     const full = inboxRow(await getInbox(api), 'review')!;
@@ -71,20 +71,20 @@ test.describe('Inbox API: review summary subtitle (@api)', () => {
 
     const review = async (ids: string[], reason: string) => {
       const res = await api.POST('/api/v1/transactions/batch-review', {
-        body: { transactionIds: ids, reviewType: 'MANUALLY_REVIEWED', reviewReasons: [reason as 'CATEGORY_UNVERIFIED'] },
+        body: { transactionIds: ids, reviewType: 'MANUALLY_REVIEWED', reviewReasons: [reason as 'DATE_CORRECTED'] },
       });
       expectStatus(res, 200);
       expect(res.data!.succeededIds).toEqual(ids);
     };
 
-    await review([netflix.id], 'CATEGORY_UNVERIFIED');
+    await review([netflix.id], 'DATE_CORRECTED');
     const three = inboxRow(await getInbox(api), 'review')!;
     expect(three.count).toBe(3);
     expect(three.subtitle).toBe('3 flagged for category');
 
     // tokai[0] fully reviewed (leaves the queue); tokai[1] keeps only DUPLICATE_SUSPECT; uber keeps CATEGORY_UNVERIFIED.
     await review([tokai[0].id], 'DUPLICATE_SUSPECT');
-    await review([tokai[0].id, tokai[1].id], 'CATEGORY_UNVERIFIED');
+    await review([tokai[0].id, tokai[1].id], 'DATE_CORRECTED');
     expect((await findById(api, tokai[0].id))?.reviewType).toBe('MANUALLY_REVIEWED');
     const dupOnly = await findById(api, tokai[1].id);
     expect(dupOnly?.reviewType).toBe('NEEDS_REVIEW');
@@ -95,7 +95,7 @@ test.describe('Inbox API: review summary subtitle (@api)', () => {
     expect(mixed.subtitle).toBe('1 flagged for category · 1 other');
 
     // Once the category-flagged row is cleared, only the duplicate-suspect row waits: plain wording.
-    await review([uber.id], 'CATEGORY_UNVERIFIED');
+    await review([uber.id], 'DATE_CORRECTED');
     const plain = inboxRow(await getInbox(api), 'review')!;
     expect(plain.count).toBe(1);
     expect(plain.subtitle).toBe('1 waiting for review');

@@ -3,14 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { activeTransactionsTab, TRANSACTION_TABS } from './transactionTabs';
 
 describe('transactions tabs', () => {
-  it('lists All, Rules, Categories and Import in order', () => {
-    expect(TRANSACTION_TABS.map((t) => t.label)).toEqual(['All', 'Rules', 'Categories', 'Import']);
+  it('lists All, Tags and Import in order', () => {
+    expect(TRANSACTION_TABS.map((t) => t.label)).toEqual(['All', 'Tags', 'Import']);
   });
 
   it('reads the active tab from the pathname', () => {
     expect(activeTransactionsTab('/transactions')).toBe('all');
     expect(activeTransactionsTab('/transactions/rules')).toBe('rules');
-    expect(activeTransactionsTab('/transactions/categories')).toBe('categories');
     expect(activeTransactionsTab('/transactions/import')).toBe('import');
     expect(activeTransactionsTab('/transactions/import/')).toBe('import');
   });

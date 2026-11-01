@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import TransactionCRUD from '@/components/transactions/TransactionCRUD';
 import type { Account } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
-import type { Category } from '@/lib/categories.types';
 import { keys } from '@/lib/query/keys';
+import type { Tag } from '@/lib/tags.types';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
 import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
@@ -31,7 +31,7 @@ const closedBank: Account = {
   closedOn: '2020-01-01',
 };
 
-const mockCategories: Category[] = [{ id: 'cat1', name: 'Food' }];
+const mockCategories: Tag[] = [{ id: 'cat1', name: 'Food' }];
 
 const mockTxn: Transaction = {
   id: 't1',
@@ -50,7 +50,7 @@ const CALLOUT = 'No account to record this against yet';
 function renderCRUD(accounts: Account[], transaction?: Transaction) {
   const queryClient = createTestQueryClient();
   queryClient.setQueryData(keys.accounts.list(), accounts);
-  queryClient.setQueryData(keys.categories.list(), mockCategories);
+  queryClient.setQueryData(keys.tags.list(), mockCategories);
   return renderWithQuery(<TransactionCRUD transaction={transaction} />, { queryClient });
 }
 

@@ -3,7 +3,7 @@
 import { serverApi } from '@/lib/api/server';
 import type { Schemas } from '@/lib/api/types';
 import { createDomainAction } from '@/lib/domainApi';
-import type { MatchType, PagedRuleMatches } from '@/lib/rules.types';
+import type { MatchType, RuleMatchesPreview } from '@/lib/rules.types';
 
 export const createRule = createDomainAction(
   { fallbackError: "Couldn't create the rule. Try again." },
@@ -28,43 +28,15 @@ export const deleteRule = createDomainAction(
   },
 );
 
-export const verifyRule = createDomainAction(
-  { fallbackError: "Couldn't verify the rule. Try again." },
-  async (id: string) => {
-    const { data } = await serverApi.POST('/api/v1/rules/{id}/verify', { params: { path: { id } } });
-    return data;
-  },
-);
-
-export const verifyRules = createDomainAction(
-  { fallbackError: "Couldn't verify the rules. Try again." },
-  async (ruleIds: string[]) => {
-    const { data } = await serverApi.POST('/api/v1/rules/verify', { body: { ruleIds } });
-    return data!;
-  },
-);
-
-/** Sends one chunk of what an approve cleared back to the rule; the server restores those rows exactly. */
-export const unverifyRule = createDomainAction(
-  { fallbackError: "Couldn't undo the approval. Try again." },
-  async (id: string, restore: Schemas['ClearedTransaction'][]): Promise<void> => {
-    const { data } = await serverApi.POST('/api/v1/rules/{id}/unverify', {
-      params: { path: { id } },
-      body: { transactionIds: [], restore },
-    });
-    if (!data) throw new Error("Couldn't undo the rule verification. Try again.");
-  },
-);
-
-/** One page of the transactions a pattern matches (manually reviewed ones left out). */
+/** One page of the transactions a pattern matches (ones the user set by hand are counted apart). */
 export const loadRuleMatches = createDomainAction(
   { fallbackError: "Couldn't load matches. Try again." },
-  async (merchantKey: string, matchType: MatchType, page: number, size: number): Promise<PagedRuleMatches> => {
+  async (merchantKey: string, matchType: MatchType, page: number, size: number): Promise<RuleMatchesPreview> => {
     const { data } = await serverApi.POST('/api/v1/rules/preview-matches', {
       params: { query: { page, size, sort: [] } },
       body: { merchantKey, matchType },
     });
-    return data as unknown as PagedRuleMatches;
+    return data as unknown as RuleMatchesPreview;
   },
 );
 

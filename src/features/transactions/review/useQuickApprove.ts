@@ -47,7 +47,7 @@ export function useQuickApprove() {
       shown?.settle(true);
       showToast(approvedMessage(1), {
         tone: 'success',
-        action: { label: 'Undo', onSelect: () => void undo(data.approvedTransactions ?? [], data.verifiedRules ?? []) },
+        action: { label: 'Undo', onSelect: () => void undo(data.approvedTransactions ?? []) },
       });
       return 'approved';
     } catch (e) {

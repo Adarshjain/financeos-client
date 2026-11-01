@@ -3,24 +3,23 @@ import { describe, expect, it } from 'vitest';
 import { approvedMessage, approveTitle, countReasons, getPresentReasons, mapBatchFailures, mapBatchSkips } from './reviewModel';
 
 const txns = [
-  { id: 'a', description: 'Swiggy', reviewReasons: ['DUPLICATE_SUSPECT', 'CATEGORY_UNVERIFIED'] as const },
-  { id: 'b', description: null, sourcedDescription: 'IKEA', reviewReasons: ['CATEGORY_UNVERIFIED'] as const },
+  { id: 'a', description: 'Swiggy', reviewReasons: ['DUPLICATE_SUSPECT', 'DATE_CORRECTED'] as const },
+  { id: 'b', description: null, sourcedDescription: 'IKEA', reviewReasons: ['DATE_CORRECTED'] as const },
   { id: 'c' },
 ].map((t) => ({ ...t, reviewReasons: t.reviewReasons ? [...t.reviewReasons] : undefined }));
 
 describe('reviewHelpers', () => {
   it('lists the distinct reasons present', () => {
-    expect(getPresentReasons({ content: txns }, ['a', 'b', 'c']).sort()).toEqual(['CATEGORY_UNVERIFIED', 'DUPLICATE_SUSPECT']);
-    expect(getPresentReasons({ content: txns }, ['b'])).toEqual(['CATEGORY_UNVERIFIED']);
+    expect(getPresentReasons({ content: txns }, ['a', 'b', 'c']).sort()).toEqual(['DATE_CORRECTED', 'DUPLICATE_SUSPECT']);
+    expect(getPresentReasons({ content: txns }, ['b'])).toEqual(['DATE_CORRECTED']);
     expect(getPresentReasons(null, ['a'])).toEqual([]);
   });
 
   it('counts every approvable reason in board order, zero included', () => {
     expect(countReasons(txns).map((r) => [r.reason, r.count])).toEqual([
-      ['CATEGORY_UNVERIFIED', 2],
       ['UNRECONCILED', 0],
       ['DUPLICATE_SUSPECT', 1],
-      ['DATE_CORRECTED', 0],
+      ['DATE_CORRECTED', 2],
     ]);
   });
 

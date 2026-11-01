@@ -73,7 +73,7 @@ export function useRuleMatches({
         params: { query: { page, size: PAGE_SIZE, sort: [] } },
         body: { merchantKey: rule.merchantKey, matchType: rule.matchType },
       });
-      return data as PagedRuleMatches;
+      return (data as unknown as { matches: PagedRuleMatches }).matches;
     },
     enabled: open,
     placeholderData: keepPreviousData,

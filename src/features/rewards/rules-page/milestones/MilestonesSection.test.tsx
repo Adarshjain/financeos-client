@@ -50,8 +50,8 @@ vi.mock('@/features/rewards/queries/useRewardMilestonesQueries', () => ({
 vi.mock('@/features/rewards/queries/useRewardAccountConfigQueries', () => ({
   useRewardAccountConfig: () => ({ data: { defaultRewardType: 'POINTS' } }),
 }));
-vi.mock('@/lib/query/hooks/useCategories', () => ({
-  useCategories: () => ({ data: [{ id: 'k1', name: 'Dining' }, { id: 'k2', name: 'Fuel' }] }),
+vi.mock('@/lib/query/hooks/useTags', () => ({
+  useTags: () => ({ data: [{ id: 'k1', name: 'Dining' }, { id: 'k2', name: 'Fuel' }] }),
 }));
 vi.mock('@/lib/query/hooks/useAccounts', () => ({
   useAccounts: () => ({

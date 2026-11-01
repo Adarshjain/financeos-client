@@ -51,7 +51,6 @@ export const REVIEW_PARAMS: Record<string, ReviewType> = {
 
 export const REASON_PARAMS: Record<string, ReviewReason> = {
   unreconciled: 'UNRECONCILED',
-  category_unverified: 'CATEGORY_UNVERIFIED',
   duplicate_suspect: 'DUPLICATE_SUSPECT',
   date_corrected: 'DATE_CORRECTED',
 };

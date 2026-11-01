@@ -21,7 +21,7 @@ const LEGACY_ALIASES: Record<string, string> = {
   '/settings/gmail': '/settings/connections',
   '/settings/jobs': '/settings/activity',
   '/debug': '/settings/debug',
-  '/rules/categories': '/transactions/categories',
+  '/rules/categories': '/transactions/rules',
   '/rules': '/transactions/rules',
   '/rewards/recommend': '/rewards/which-card',
 };
@@ -36,7 +36,7 @@ const LEGACY_ONLY_ROUTES: RegExp[] = [/^\/settings\/ingest$/, /^\/loans\/calenda
 const NON_PAGE_PATH = /^\/(api|auth|handbook|storybook|serwist|icons|brand|manifest\.webmanifest)(\/|$)/;
 
 /** The Dinero Transactions `reason` values (lower case); Legacy review links carry the enum names. */
-const REVIEW_REASON_PARAMS = ['unreconciled', 'category_unverified', 'duplicate_suspect', 'date_corrected'];
+const REVIEW_REASON_PARAMS = ['unreconciled', 'duplicate_suspect', 'date_corrected'];
 
 /** Plain paths that have a Dinero page, as full-pathname patterns. */
 const BUILT_ROUTES: RegExp[] = [
@@ -50,7 +50,7 @@ const BUILT_ROUTES: RegExp[] = [
   /^\/accounts\/[^/]+(\/(cards|rewards|statements))?$/,
   // The list, Import and an import's page (/transactions/review is a filter of the list, see the aliases).
   /^\/transactions(\/import(\/[^/]+)?)?$/,
-  /^\/transactions\/(categories|rules)$/,
+  /^\/transactions\/rules$/,
   /^\/settings(\/(activity|connections|ai|notifications|debug))?$/,
   /^\/loans(\/lendings)?$/,
   // A loan's page; /loans/calendar is a Legacy page, not a loan id.

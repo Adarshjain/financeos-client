@@ -1,4 +1,5 @@
 import type { Account } from '@/lib/account.types';
+import type { CategoryPick } from '@/lib/categoryList.types';
 import type {
   ReviewReason,
   ReviewType,
@@ -21,7 +22,6 @@ export type Direction = 'debit' | 'credit';
 /** The reasons the server accepts on an edit. */
 export const EDITABLE_REASONS: readonly ReviewReason[] = [
   'UNRECONCILED',
-  'CATEGORY_UNVERIFIED',
   'DUPLICATE_SUSPECT',
   'DATE_CORRECTED',
 ];
@@ -157,7 +157,9 @@ export interface RequestContext {
   isUpdate: boolean;
   /** The edited transaction's source; kept as it is. */
   source?: Transaction['source'];
-  categoryIds: string[];
+  tagIds: string[];
+  /** Send this category: Add, the one picked; Edit, only when the user changed it. */
+  category?: CategoryPick | null;
   /** The chosen account takes cards (credit card or bank account). */
   supportsCards: boolean;
 }
@@ -170,7 +172,8 @@ export function buildRequest(values: TransactionFormValues, ctx: RequestContext)
     supportsCards: ctx.supportsCards,
     description: values.description,
     amount: String(signedAmount(values)),
-    categoryIds: ctx.categoryIds,
+    tagIds: ctx.tagIds,
+    category: ctx.category,
     date: parseCalendarDate(values.date),
     isExcluded: values.excluded,
     isMonitored: values.monitored,

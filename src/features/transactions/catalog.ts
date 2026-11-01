@@ -14,7 +14,6 @@ export const REVIEW_REASON_META: Record<
   { label: string; shortLabel: string; variant: 'warning' | 'info' | 'outline' }
 > = {
   UNRECONCILED: { label: 'Unreconciled', shortLabel: 'Unreconciled', variant: 'warning' },
-  CATEGORY_UNVERIFIED: { label: 'Category unverified', shortLabel: 'Category', variant: 'info' },
   DUPLICATE_SUSPECT: { label: 'Possible duplicate', shortLabel: 'Duplicate', variant: 'warning' },
   DATE_CORRECTED: { label: 'Date corrected', shortLabel: 'Date', variant: 'warning' },
 };

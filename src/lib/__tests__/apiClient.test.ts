@@ -6,7 +6,8 @@ import {
   accountsApi,
   authApi,
   cardholdersApi,
-  categoriesApi,
+  categorizeApi,
+  categoryListApi,
   counterpartiesApi,
   dashboardsApi,
   gmailApi,
@@ -23,6 +24,7 @@ import {
   rulesApi,
   shellApi,
   statementsApi,
+  tagsApi,
   transactionLinksApi,
   transactionsApi,
 } from '@/lib/apiClient';
@@ -123,22 +125,43 @@ describe('apiClient (Server API Client Modernization & Coverage)', () => {
     });
   });
 
-  describe('categoriesApi & dashboardsApi', () => {
-    it('handles categories operations', async () => {
+  describe('tags, the category list, categorize and dashboardsApi', () => {
+    it('handles tag operations', async () => {
       fetchSpy.mockResolvedValueOnce(mockResponse(200, [{ id: 'c1', name: 'Food' }]));
-      expect(await categoriesApi.list()).toHaveLength(1);
+      expect(await tagsApi.list()).toHaveLength(1);
 
       fetchSpy.mockResolvedValueOnce(mockResponse(201, { id: 'c1', name: 'Food' }));
-      expect(await categoriesApi.create({ name: 'Food' })).toEqual({ id: 'c1', name: 'Food' });
+      expect(await tagsApi.create({ name: 'Food' })).toEqual({ id: 'c1', name: 'Food' });
 
       fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'c1', name: 'Groceries' }));
-      expect(await categoriesApi.update('c1', { name: 'Groceries' })).toEqual({ id: 'c1', name: 'Groceries' });
+      expect(await tagsApi.rename('c1', { name: 'Groceries' })).toEqual({ id: 'c1', name: 'Groceries' });
 
       fetchSpy.mockResolvedValueOnce(new Response(null, { status: 204 }));
-      await categoriesApi.delete('c1');
+      await tagsApi.delete('c1');
 
-      fetchSpy.mockResolvedValueOnce(mockResponse(200, { categoryId: 'c1', fromRule: true }));
-      expect(await categoriesApi.categorize({ description: 'Uber' })).toEqual({ categoryId: 'c1', fromRule: true });
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { tagsAdded: 2, transactionsFound: 2 }));
+      expect(await tagsApi.bulkAdd({ transactionIds: ['t1', 't2'], tagIds: ['c1'] })).toEqual({ tagsAdded: 2, transactionsFound: 2 });
+    });
+
+    it('reads the fixed category list from the categories key', async () => {
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { categories: [{ key: 'food', name: 'Food', subs: [] }] }));
+      expect(await categoryListApi.list()).toEqual([{ key: 'food', name: 'Food', subs: [] }]);
+    });
+
+    it('categorizes a description into keys, or nulls', async () => {
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { categoryKey: 'food', subcategoryKey: 'food.delivery', source: 'RULE' }));
+      expect(await categorizeApi.categorize('Swiggy')).toEqual({ categoryKey: 'food', subcategoryKey: 'food.delivery', source: 'RULE' });
+    });
+
+    it('sets a transaction category, with restore for Undo', async () => {
+      const response = { transactionId: 't1', isTransactionExcluded: false, previous: { categoryKey: null } };
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, response));
+      const restore = { source: 'RULE' as const, ruleId: 'r1', setAt: '2026-11-01T10:00:00Z' };
+      expect(await transactionsApi.setCategory('t1', { categoryKey: 'food', subcategoryKey: null, restore })).toEqual(response);
+      const [url, init] = fetchSpy.mock.calls.at(-1)!;
+      expect(String(url instanceof Request ? url.url : url)).toContain('/api/v1/transactions/t1/category');
+      const sent = init ? String((init as RequestInit).body) : await (url as Request).clone().text();
+      expect(JSON.parse(sent)).toEqual({ categoryKey: 'food', subcategoryKey: null, restore });
     });
 
     it('handles dashboards operations', async () => {
@@ -350,7 +373,7 @@ describe('apiClient (Server API Client Modernization & Coverage)', () => {
       await rewardsApi.getRewardLines({ accountId: 'a1', page: 0, size: 10 });
 
       // Rules (pageable-nested list — must not throw the "deeply-nested" error)
-      await rulesApi.list({ page: 0, size: 20, verified: false, search: 'uber' });
+      await rulesApi.list({ page: 0, size: 20, categoryKey: 'food', search: 'uber' });
       await rulesApi.create({} as any);
       await rulesApi.update('rl1', {} as any);
       await rulesApi.delete('rl1');

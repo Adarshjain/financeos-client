@@ -36,7 +36,7 @@ const mockReviewTxn: Transaction = {
   sourcedDescription: 'UNVERIFIED MERCHANT',
   source: 'gmail_transaction_alert',
   reviewType: 'NEEDS_REVIEW',
-  reviewReasons: ['CATEGORY_UNVERIFIED'],
+  reviewReasons: ['DATE_CORRECTED'],
   balance: 15000,
   createdAt: '2026-06-15T00:00:00Z',
 };
@@ -132,14 +132,14 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
 
     // Pick Category from the reason dropdown
     fireEvent.click(screen.getByRole('button', { name: 'All Reasons' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Category unverified' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Date corrected' }));
 
     await waitFor(() => {
       const calls = (api.POST as ReturnType<typeof vi.fn>).mock.calls;
       const lastSearchCall = calls[calls.length - 1];
       const filters = lastSearchCall[1].body.filters;
       const reasonClause = filters.find((f: any) => f.field === 'reviewReason');
-      expect(reasonClause).toEqual({ field: 'reviewReason', operator: 'is', value: 'CATEGORY_UNVERIFIED' });
+      expect(reasonClause).toEqual({ field: 'reviewReason', operator: 'is', value: 'DATE_CORRECTED' });
     });
   });
 
@@ -198,7 +198,7 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
         body: {
           transactionIds: ['t-review-1'],
           reviewType: 'MANUALLY_REVIEWED',
-          reviewReasons: ['CATEGORY_UNVERIFIED'],
+          reviewReasons: ['DATE_CORRECTED'],
         },
       });
     });

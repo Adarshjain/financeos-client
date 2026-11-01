@@ -2,7 +2,7 @@ import { type ApiClient,expectStatus, waitForJob } from '../fixtures/api';
 import { resetLlm } from '../fixtures/control';
 import { genBankPdf } from '../fixtures/gen/statements';
 import { createBankAccount } from '../fixtures/seed/accounts';
-import { createCategory, createRule } from '../fixtures/seed/categories';
+import { createRule } from '../fixtures/seed/categories';
 import { uploadAndIngest } from '../fixtures/seed/statements';
 import { newUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
@@ -31,7 +31,6 @@ async function applyRule(api: ApiClient, ruleId: string): Promise<string> {
 // Rules only match ingested transactions, so seed one through a statement, then apply a matching rule.
 async function categoriseOne(api: ApiClient, key: string): Promise<string> {
   await resetLlm(api);
-  const cat = await createCategory(api);
   const account = await createBankAccount(api);
   const pdf = await genBankPdf({
     bank: 'HDFC Bank',
@@ -43,7 +42,7 @@ async function categoriseOne(api: ApiClient, key: string): Promise<string> {
   });
   const { job } = await uploadAndIngest(api, account.id, [{ filename: 'feed.pdf', buffer: pdf }]);
   expect(job.status).toBe('SUCCEEDED');
-  const rule = await createRule(api, { merchantKey: key, displayName: 'Feed shop', categoryIds: [cat.id], matchType: 'CONTAINS' });
+  const rule = await createRule(api, { merchantKey: key, displayName: 'Feed shop', matchType: 'CONTAINS' });
   return applyRule(api, rule.id);
 }
 
@@ -72,8 +71,7 @@ test.describe('Notification feed API (@api)', () => {
 
   test('a rule apply that categorises nothing adds no row', async ({ request }) => {
     const { api } = await newUser(request, 'feed-rule-zero');
-    const cat = await createCategory(api);
-    const rule = await createRule(api, { merchantKey: 'NOMATCHXYZ', categoryIds: [cat.id], matchType: 'CONTAINS' });
+    const rule = await createRule(api, { merchantKey: 'NOMATCHXYZ', matchType: 'CONTAINS' });
     await applyRule(api, rule.id);
 
     await new Promise((r) => setTimeout(r, 1500));

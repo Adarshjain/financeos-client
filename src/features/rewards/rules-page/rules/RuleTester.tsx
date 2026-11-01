@@ -8,7 +8,7 @@ import { Text } from '@/components/ds/Text/Text';
 import { TextField } from '@/components/ds/TextField/TextField';
 import { CHANNEL_OPTIONS } from '@/features/rewards/rules/form/constants';
 import type { useRewardRuleForm } from '@/features/rewards/rules/form/useRewardRuleForm';
-import type { Category } from '@/lib/categories.types';
+import type { Tag } from '@/lib/tags.types';
 import type { TransactionChannel } from '@/lib/transaction.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
@@ -18,7 +18,7 @@ const NONE = 'NONE';
 const asList = (v: string | string[]): string[] => (Array.isArray(v) ? v : v ? [v] : []);
 
 /** The rule dialog's own tester: one purchase run against the rule as it is being typed, in the browser. */
-export function RuleTester({ f, categories }: { f: ReturnType<typeof useRewardRuleForm>; categories: Category[] }) {
+export function RuleTester({ f, categories }: { f: ReturnType<typeof useRewardRuleForm>; categories: Tag[] }) {
   const reading = f.preview ? readRuleTest(f.preview, f) : null;
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-12">

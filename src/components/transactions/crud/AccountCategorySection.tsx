@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Account } from '@/lib/account.types';
-import { Category } from '@/lib/categories.types';
+import type { Tag as TagRecord } from '@/lib/tags.types';
 
 /** Sentinel for the picker's trailing "Add account" entry: Radix Select items
  * must carry a value, and this one must never be mistaken for an account id. */
@@ -35,9 +35,9 @@ interface AccountCategorySectionProps {
   isCreditCard?: boolean;
   supportsCards?: boolean;
   cardOptions: { id: string; label: string }[];
-  localCategories: Category[];
-  selectedCategories: Category[];
-  setSelectedCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  localCategories: TagRecord[];
+  selectedCategories: TagRecord[];
+  setSelectedCategories: React.Dispatch<React.SetStateAction<TagRecord[]>>;
   createCategory: (name: string) => Promise<void>;
   creatingCategory: boolean;
   mcc: string;

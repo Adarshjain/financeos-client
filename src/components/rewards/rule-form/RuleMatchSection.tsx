@@ -20,7 +20,6 @@ import {
   sectionTitleClass,
   selectTriggerClass,
 } from '@/features/rewards/rules/form/constants';
-import { Category } from '@/lib/categories.types';
 import {
   DayOfWeek,
   EmiTreatment,
@@ -28,13 +27,14 @@ import {
   IntlTreatment,
   RewardMerchantMatch,
 } from '@/lib/rewards.types';
+import { Tag } from '@/lib/tags.types';
 import { TransactionChannel } from '@/lib/transaction.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
 interface RuleMatchSectionProps {
-  categories: Category[];
-  selectedCategories: Category[];
-  setSelectedCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  categories: Tag[];
+  selectedCategories: Tag[];
+  setSelectedCategories: React.Dispatch<React.SetStateAction<Tag[]>>;
   mccText: string;
   setMccText: (text: string) => void;
   merchantPattern: string;

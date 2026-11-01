@@ -32,7 +32,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     const bank = await createBankAccount(api, { name: 'Home Bank', openingBalance: 40000 });
     const food = await createCategory(api, 'Home Food');
-    await createTransaction(api, bank.id, { amount: -500, description: 'Home spend sample', categoryIds: [food.id] });
+    await createTransaction(api, bank.id, { amount: -500, description: 'Home spend sample', tagIds: [food.id] });
     await seedDueSoonLoan(api, 'Home Loan');
     const bill = await seedCardBill(api, { name: 'Home Card', last4: '7401', dueInDays: 2 });
 

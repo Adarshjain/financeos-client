@@ -5,7 +5,7 @@ import { Eye, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import { useCategories } from '@/lib/query/hooks/useCategories';
+import { useTags } from '@/lib/query/hooks/useTags';
 import type { FilterClause } from '@/lib/reports.types';
 
 import { AccountMultiSelect } from './filter-bar/AccountMultiSelect';
@@ -31,7 +31,7 @@ export function TransactionFilterBar({
   onSearchChange,
 }: TransactionFilterBarProps) {
   const { data: accounts = [] } = useAccounts();
-  const { data: categories = [] } = useCategories();
+  const { data: categories = [] } = useTags();
   const {
     activeType,
     activeDate,

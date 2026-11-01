@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Account } from '@/lib/account.types';
 import { serverApi as api } from '@/lib/api/server';
+import { CATEGORY_LIST_FIXTURE } from '@/lib/categoryList.fixtures';
 import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
@@ -54,9 +55,9 @@ vi.mock('./form/useTransactionMutations', () => ({
 const accounts = [{ id: 'a1', name: 'HDFC Bank Savings', type: 'bank_account', balance: 0, cardholders: [] }] as unknown as Account[];
 vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: accounts }) }));
 const categories = vi.hoisted(() => [{ id: 'c1', name: 'Groceries' }]);
-vi.mock('@/lib/query/hooks/useCategories', () => ({ useCategories: () => ({ data: categories }) }));
+vi.mock('@/lib/query/hooks/useTags', () => ({ useTags: () => ({ data: categories }) }));
 
-vi.mock('@/lib/api/server', () => ({ serverApi: { POST: vi.fn(), GET: vi.fn() } }));
+vi.mock('@/lib/api/server', () => ({ serverApi: { POST: vi.fn(), GET: vi.fn(), PUT: vi.fn() } }));
 const showToast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
   ...(await orig<typeof import('@/components/ds/Toast/Toast')>()),
@@ -93,7 +94,7 @@ const txn = (over: Partial<Transaction>): Transaction =>
     sourcedDescription: 'UPI/BIGBASKET',
     source: 'gmail_transaction_alert',
     reviewType: 'MANUALLY_REVIEWED',
-    categories: [{ id: 'c1', name: 'Groceries' }],
+    category: { key: 'groceries', name: 'Groceries', icon: 'cat-shopping-cart' },
     createdAt: '2026-10-12T00:00:00Z',
     ...over,
   }) as Transaction;
@@ -101,8 +102,8 @@ const txn = (over: Partial<Transaction>): Transaction =>
 const transactions = [
   txn({}),
   txn({ id: 't2', description: 'Swiggy', amount: -1249, reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] }),
-  txn({ id: 't3', description: 'IKEA', amount: -7430, reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED', 'CATEGORY_UNVERIFIED'] }),
-  txn({ id: 't5', description: 'Uber', amount: -533, categories: [] }),
+  txn({ id: 't3', description: 'IKEA', amount: -7430, reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED', 'DATE_CORRECTED'] }),
+  txn({ id: 't5', description: 'Uber', amount: -533, category: null }),
 ];
 
 function propsFor(over: Partial<TransactionsScreenProps> = {}, rowsFor = transactions): TransactionsScreenProps {
@@ -118,6 +119,7 @@ function propsFor(over: Partial<TransactionsScreenProps> = {}, rowsFor = transac
     transactions: rowsFor,
     accounts,
     categories: [],
+    categoryList: CATEGORY_LIST_FIXTURE,
     needsReviewCount: null,
     ...over,
   };
@@ -153,6 +155,16 @@ const swipe = (name: string, side: 'swipe-right' | 'swipe-left') => {
   fireEvent.click(within(row).getByText(side));
 };
 const present = (text: string) => screen.queryAllByText(text).length > 0;
+const saved = (over: Record<string, unknown> = {}) => ({
+  data: {
+    transactionId: 't5',
+    isTransactionExcluded: false,
+    previous: { categoryKey: null, subcategoryKey: null, source: null, ruleId: null, setAt: null },
+    ...over,
+  },
+});
+const put = () => vi.mocked(api.PUT);
+
 const tick = (name: string) => fireEvent.click(screen.getByRole('checkbox', { name: `Select ${name}` }));
 
 const needsReviewQuery = { ...DEFAULT_QUERY, review: 'NEEDS_REVIEW' as const };
@@ -217,13 +229,13 @@ describe('TransactionsScreen instant approve', () => {
   it('approve from the dialog (several reasons): the reasons clear and the dialog closes before the server answers', async () => {
     const d = hold();
     setup();
-    expect(present('Unreconciled · Category unverified')).toBe(true);
+    expect(present('Unreconciled · Date corrected')).toBe(true);
     swipe('IKEA', 'swipe-right');
     fireEvent.click(await screen.findByRole('button', { name: 'Approve 1' }, { timeout: 5000 }));
-    await waitFor(() => expect(present('Unreconciled · Category unverified')).toBe(false));
+    await waitFor(() => expect(present('Unreconciled · Date corrected')).toBe(false));
     expect(screen.queryByText('Approve 1 transaction')).toBeNull();
     await act(async () => d.reject(new Error('boom')));
-    await waitFor(() => expect(present('Unreconciled · Category unverified')).toBe(true));
+    await waitFor(() => expect(present('Unreconciled · Date corrected')).toBe(true));
     expect(showToast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' });
   });
 
@@ -248,7 +260,7 @@ describe('TransactionsScreen instant approve', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Approve 2' }));
     await waitFor(() => expect(api.POST).toHaveBeenCalled());
     expect(present('Duplicate')).toBe(true);
-    expect(present('Unreconciled · Category unverified')).toBe(true);
+    expect(present('Unreconciled · Date corrected')).toBe(true);
     await act(async () => d.resolve(ok(['t2', 't3'])));
   });
 });
@@ -308,32 +320,70 @@ describe('TransactionsScreen instant delete', () => {
 });
 
 describe('TransactionsScreen instant category and edit', () => {
-  it('Set category shows the category on the row and closes at once; a failure takes it back with an error toast', async () => {
+  it('a pick shows the category on the row and closes the picker at once; a failure takes it back with an error toast', async () => {
     const d = deferred<unknown>();
-    update.mockReturnValue(d.promise);
+    put().mockReturnValue(d.promise as never);
     setup();
-    expect(present('Groceries')).toBe(true);
     fireEvent.click(screen.getAllByText('Set category')[0]);
-    fireEvent.click(await screen.findByRole('combobox', { name: /^Categories/ }));
-    fireEvent.click(await screen.findByRole('option', { name: /Groceries/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Set category' }));
-    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Set category' })).toBeNull());
+    fireEvent.click(await screen.findByRole('button', { name: 'Cash' }));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Category' })).toBeNull());
+    expect(present('Cash')).toBe(true);
     expect(screen.queryAllByText('Set category')).toHaveLength(0);
     await act(async () => d.reject(new Error('boom')));
     await waitFor(() => expect(screen.queryAllByText('Set category').length).toBeGreaterThan(0));
+    expect(present('Cash')).toBe(false);
     expect(showToast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' });
   });
 
-  it('Set category keeps the category once the save goes through', async () => {
-    update.mockResolvedValue({});
+  it('a pick is saved with the PUT category call, keeps the category, and toasts "Set to …" with Undo', async () => {
+    put().mockResolvedValue(saved() as never);
     setup();
     fireEvent.click(screen.getAllByText('Set category')[0]);
-    fireEvent.click(await screen.findByRole('combobox', { name: /^Categories/ }));
-    fireEvent.click(await screen.findByRole('option', { name: /Groceries/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Set category' }));
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Transaction saved'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Food' }));
+    fireEvent.click(await screen.findByText('Delivery'));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Set to Food · Delivery', expect.objectContaining({ action: expect.objectContaining({ label: 'Undo' }) })));
+    expect(put()).toHaveBeenCalledWith('/api/v1/transactions/{id}/category', {
+      params: { path: { id: 't5' } },
+      body: { categoryKey: 'food', subcategoryKey: 'food.delivery' },
+    });
+    expect(present('Food · Delivery')).toBe(true);
     expect(screen.queryAllByText('Set category')).toHaveLength(0);
     expect(router.refresh).toHaveBeenCalled();
+  });
+
+  it('Undo sends the previous category back with restore, and the row shows it again', async () => {
+    const previous = { categoryKey: 'groceries', subcategoryKey: null, source: 'RULE', ruleId: 'r1', setAt: '2026-10-01T10:00:00Z' };
+    put().mockResolvedValue(saved({ previous }) as never);
+    setup({}, [txn({ id: 't5', description: 'Uber', amount: -533 })]);
+    fireEvent.click(screen.getAllByText('Groceries')[0]);
+    fireEvent.click(await screen.findByRole('button', { name: 'Cash' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Set to Cash', expect.anything()));
+    await waitFor(() => expect(present('Cash')).toBe(true));
+    await act(async () => showToast.mock.calls.find((c) => c[0] === 'Set to Cash')![1].action.onSelect());
+    await waitFor(() => expect(put()).toHaveBeenCalledTimes(2));
+    expect(put().mock.calls[1]).toEqual([
+      '/api/v1/transactions/{id}/category',
+      {
+        params: { path: { id: 't5' } },
+        body: { categoryKey: 'groceries', subcategoryKey: null, restore: { source: 'RULE', ruleId: 'r1', setAt: '2026-10-01T10:00:00Z' } },
+      },
+    ]);
+    await waitFor(() => expect(present('Cash')).toBe(false));
+  });
+
+  it('Undo of a first pick clears the category with the empty restore', async () => {
+    put().mockResolvedValue(saved() as never);
+    setup();
+    fireEvent.click(screen.getAllByText('Set category')[0]);
+    fireEvent.click(await screen.findByRole('button', { name: 'Cash' }));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Set to Cash', expect.anything()));
+    await act(async () => showToast.mock.calls.find((c) => c[0] === 'Set to Cash')![1].action.onSelect());
+    await waitFor(() => expect(put()).toHaveBeenCalledTimes(2));
+    expect(put().mock.calls[1][1]).toEqual({
+      params: { path: { id: 't5' } },
+      body: { categoryKey: null, subcategoryKey: null, restore: { source: null, ruleId: null, setAt: null } },
+    });
+    await waitFor(() => expect(screen.queryAllByText('Set category').length).toBeGreaterThan(0));
   });
 
   it('Edit shows the new description at once and closes; a failure restores it', async () => {
@@ -418,37 +468,35 @@ describe('TransactionsScreen entry lifecycle, counts and ordering', () => {
   });
 
   const flagged = [
-    txn({ id: 'u1', description: 'Uber', amount: -533, categories: [], reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] }),
+    txn({ id: 'u1', description: 'Uber', amount: -533, category: null, reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] }),
     txn({}),
   ];
-  const pickGroceries = async () => {
+  const pickCash = async () => {
     fireEvent.click(screen.getAllByText('Set category')[0]);
-    fireEvent.click(await screen.findByRole('combobox', { name: /^Categories/ }));
-    fireEvent.click(await screen.findByRole('option', { name: /Groceries/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Set category' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Cash' }));
   };
 
-  it('writes to one row go out one at a time, in order, and the category save carries the approve that went before it', async () => {
+  it('writes to one row go out one at a time, in order: the category save waits for the approve that went before it', async () => {
     const approve = hold();
-    update.mockResolvedValue({});
+    put().mockResolvedValue(saved({ transactionId: 'u1' }) as never);
     setup({}, flagged);
     swipe('Uber', 'swipe-right');
     await waitFor(() => expect(api.POST).toHaveBeenCalledTimes(1));
-    await pickGroceries();
-    await waitFor(() => expect(present('Groceries')).toBe(true));
-    expect(update).not.toHaveBeenCalled();
+    await pickCash();
+    await waitFor(() => expect(present('Cash')).toBe(true));
+    expect(put()).not.toHaveBeenCalled();
     await act(async () => approve.resolve(ok(['u1'])));
-    await waitFor(() => expect(update).toHaveBeenCalledTimes(1));
-    expect(update.mock.calls[0][0].body).toMatchObject({ reviewType: 'MANUALLY_REVIEWED' });
+    await waitFor(() => expect(put()).toHaveBeenCalledTimes(1));
+    expect(put().mock.calls[0][1]).toMatchObject({ body: { categoryKey: 'cash' } });
   });
 
-  it('an earlier category save that fails does not undo the approve queued behind it, and only its own categories go', async () => {
+  it('an earlier category save that fails does not undo the approve queued behind it', async () => {
     const category = deferred<unknown>();
-    update.mockReturnValue(category.promise);
+    put().mockReturnValue(category.promise as never);
     vi.mocked(api.POST).mockResolvedValue(ok(['u1']) as never);
     setup({}, flagged);
-    await pickGroceries();
-    await waitFor(() => expect(update).toHaveBeenCalledTimes(1));
+    await pickCash();
+    await waitFor(() => expect(put()).toHaveBeenCalledTimes(1));
     swipe('Uber', 'swipe-right');
     await waitFor(() => expect(present('Duplicate')).toBe(false));
     expect(api.POST).not.toHaveBeenCalled();

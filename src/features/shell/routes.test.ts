@@ -48,7 +48,7 @@ describe('appHref', () => {
     ['/settings/jobs', '/settings/activity'],
     ['/debug', '/settings/debug'],
     ['/rules', '/transactions/rules'],
-    ['/rules/categories', '/transactions/categories'],
+    ['/rules/categories', '/transactions/rules'],
     ['/rewards/recommend', '/rewards/which-card'],
   ])('maps the Legacy path %s', (from, to) => expect(appHref(from)).toBe(to));
 

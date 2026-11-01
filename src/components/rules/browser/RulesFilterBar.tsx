@@ -11,8 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { Category } from '@/lib/categories.types';
 import type { MatchType } from '@/lib/rules.types';
+import type { Tag } from '@/lib/tags.types';
 import { cn } from '@/lib/utils';
 
 import { DEFAULT_RULE_FILTERS, RULE_SORT_OPTIONS, type RuleFilters } from './constants';
@@ -73,7 +73,7 @@ interface RulesFilterBarProps {
   filters: RuleFilters;
   onFilterChange: <K extends keyof RuleFilters>(key: K, value: RuleFilters[K]) => void;
   onClearFilters: () => void;
-  categories: Category[];
+  categories: Tag[];
   searchVal: string;
   setSearchVal: (s: string) => void;
 }

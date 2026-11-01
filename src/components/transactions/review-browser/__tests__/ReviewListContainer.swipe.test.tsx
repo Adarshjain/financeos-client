@@ -30,7 +30,7 @@ const withReasons: Transaction = {
   description: 'Swiggy order',
   source: 'gmail_statement',
   reviewType: 'NEEDS_REVIEW',
-  reviewReasons: ['DUPLICATE_SUSPECT', 'CATEGORY_UNVERIFIED'],
+  reviewReasons: ['DUPLICATE_SUSPECT', 'DATE_CORRECTED'],
   createdAt: '2026-07-25T00:00:00Z',
 };
 
@@ -108,7 +108,7 @@ describe('ReviewListContainer swipe actions', () => {
     const dialog = within(screen.getByRole('dialog'));
     expect(dialog.getByRole('heading', { name: 'Approve Transaction' })).toBeInTheDocument();
     expect(dialog.getByText('Possible duplicate')).toBeInTheDocument();
-    expect(dialog.getByText('Category unverified')).toBeInTheDocument();
+    expect(dialog.getByText('Date corrected')).toBeInTheDocument();
     const boxes = dialog.getAllByRole('checkbox');
     expect(boxes).toHaveLength(2);
     boxes.forEach((box) => expect(box).toHaveAttribute('aria-checked', 'true'));
@@ -172,7 +172,7 @@ describe('ReviewListContainer swipe actions', () => {
       body: {
         transactionIds: ['t-reasons'],
         reviewType: 'MANUALLY_REVIEWED',
-        reviewReasons: ['DUPLICATE_SUSPECT', 'CATEGORY_UNVERIFIED'],
+        reviewReasons: ['DUPLICATE_SUSPECT', 'DATE_CORRECTED'],
       },
     });
   });

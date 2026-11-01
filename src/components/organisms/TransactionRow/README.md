@@ -1,11 +1,12 @@
 # TransactionRow
 
-The phone transaction row: merchant and amount on top, a context line and category below. Status is told with coloured words, not tags.
+The phone transaction row: three lines. Status is told with coloured words, not tags; the category is the one pill.
 
 ## Anatomy
-- Line 1: description (`heading`) · amount (700, tabular, credits `positive`). Running balance sits under the amount in `caption`, as the bare amount ("₹2,95,030", no "bal" prefix; owner 2026-10-17).
-- Line 2, the context line, in this order: **account name first**, plastic (••7741), then amber review words, a note, blue link/record words, then grey provenance.
-- Categories (owner, 2026-10-22): no own line on phone. They end the grey context line as text: the first category, then "+n" if more; "Set category" as an amber word when none is set. Tappable when the handlers are given. Desktop keeps the Category cell with badges. The description is semibold (600, owner 10-22) and never truncated (wraps). Amount is `title` on phone, `heading` on desktop. The amount and balance stay top-right.
+- Line 1 (owner, 2026-11-01): description (`heading`, semibold, wraps) | amount (700, tabular, credits `positive`; `title` on phone, `heading` on desktop).
+- Line 2: the meta words, in this order: amber review words, a note, blue link/record words, then grey provenance. No account here. | the running balance in `caption`, as the bare amount ("₹2,95,030", no "bal" prefix; owner 2026-10-17).
+- Line 3: the bank logo and the account name (plastic ••7741 after it) | the category pill.
+- The category pill (owner, 2026-11-01), on phone line 3 and in the desktop Category cell: a neutral rounded Badge with the category's Phosphor icon, then "Category · Sub-category", or the category alone when there is no sub. No colours per category. An unset category is the dashed **neutral** Badge "Set category" (not amber). Both open the category picker when the handlers are given. Tags are not on the row (they show in the detail).
 - Checkbox on desktop when selectable. Trailing chevron or eye icon in selection mode.
 
 ## Word colours
@@ -31,10 +32,12 @@ Selected (`brand-tint`, no stripe; owner 2026-10-26), warning tone (`attention-t
 - `link?: string | TransactionLink`: Blue link or connected record `{ label, isRecord? }`
 - `provenance?: ReactNode`: Provenance source
 - `contextLine?: ReactNode`: Custom context line override
-- `categories?: string[]`: Assigned categories array, rendered as `<Badge variant="outline" shape="rounded">`
-- `unsetCategoryLabel?: ReactNode`: Label for unset category (rendered as dashed warning Badge)
+- `categories?: string[]`: The category name (the first entry is the pill; more entries add a "+n" badge). Empty shows the unset badge when `unsetCategoryLabel` is given
+- `subCategory?: string`: The sub-category: the pill reads "Category · Sub"
+- `categoryIcon?: IconName`: The category's icon, at the start of its pill
+- `unsetCategoryLabel?: ReactNode`: Label for unset category (rendered as the dashed neutral Badge)
 - `onSetCategory?: () => void`: Click callback for unset category badge
-- `onCategoryClick?: (category: string) => void`: Click callback for first category badge
+- `onCategoryClick?: (category: string) => void`: Click callback for the category pill
 - `onMoreCategoriesClick?: () => void`: Click callback for +n badge
 - `tone?: 'default' | 'warning'`: Row visual tone (warning sets attention tint and 4px stripe)
 - `disabled?: boolean`: Dimmed disabled state (60% opacity), no pointer events
@@ -48,7 +51,7 @@ Selected (`brand-tint`, no stripe; owner 2026-10-26), warning tone (`attention-t
 - `onOpenDetail?: () => void`: Detail callback when trailing eye button is clicked
 - `chevron?: boolean`: Trailing chevron indicator
 - `borderTop?: boolean`: Whether to show top border line (default: true)
-- `compact?: boolean`: The phone layout at every width, for a row outside a DataTable (a dialog, a picker, the search palette). No table cells and no checkbox; the `date` joins the grey context line (first) and categories ride it as text. Pass `leading` for a radio or checkbox and `role`/`aria-*` for the picker's semantics.
+- `compact?: boolean`: The phone layout at every width, for a row outside a DataTable (a dialog, a picker, the search palette). No table cells and no checkbox; the `date` joins the grey context line (first); the account and the category pill sit on line 3 as everywhere. Pass `leading` for a radio or checkbox and `role`/`aria-*` for the picker's semantics.
 - `query?: string`: Search text. Matches in string `description`, `account`, each `categories` label, `amount`, `note`, `plastic` and `contextLine` get the Highlight marker stroke (phone and desktop). ReactNode values are left alone. `createTransactionColumns(query)` gives the DataTable columns the same marks on description, category, account and amount (`transactionColumns` is the same without a query).
 
 ## Gestures

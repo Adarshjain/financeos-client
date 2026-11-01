@@ -51,7 +51,7 @@ vi.mock('./form/useTransactionMutations', () => ({
 const accounts = [{ id: 'a1', name: 'HDFC Bank Savings', type: 'bank_account', balance: 0, cardholders: [] }] as unknown as Account[];
 vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: accounts }) }));
 const categories = vi.hoisted(() => [{ id: 'c1', name: 'Groceries' }]);
-vi.mock('@/lib/query/hooks/useCategories', () => ({ useCategories: () => ({ data: categories }) }));
+vi.mock('@/lib/query/hooks/useTags', () => ({ useTags: () => ({ data: categories }) }));
 
 vi.mock('@/lib/api/server', () => ({ serverApi: { POST: vi.fn(), GET: vi.fn() } }));
 const showToast = vi.fn();
@@ -90,7 +90,7 @@ const txn = (over: Partial<Transaction>): Transaction =>
     sourcedDescription: 'UPI/BIGBASKET',
     source: 'gmail_transaction_alert',
     reviewType: 'MANUALLY_REVIEWED',
-    categories: [{ id: 'c1', name: 'Groceries' }],
+    category: { key: 'groceries', name: 'Groceries', icon: 'cat-shopping-cart' },
     createdAt: '2026-10-12T00:00:00Z',
     ...over,
   }) as Transaction;
@@ -98,7 +98,7 @@ const txn = (over: Partial<Transaction>): Transaction =>
 const transactions = [
   txn({}),
   txn({ id: 't2', description: 'Swiggy', amount: -1249, source: 'gmail_transaction_alert', reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] }),
-  txn({ id: 't3', description: 'IKEA', amount: -7430, source: 'gmail_statement', reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED', 'CATEGORY_UNVERIFIED'] }),
+  txn({ id: 't3', description: 'IKEA', amount: -7430, source: 'gmail_statement', reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED', 'DATE_CORRECTED'] }),
   txn({ id: 't4', description: 'Rent', amount: -32000, reviewType: 'NEEDS_REVIEW', reviewReasons: [] }),
 ];
 
@@ -233,10 +233,10 @@ describe('TransactionsScreen selection and bulk actions', () => {
 
   it('puts the select row where the tabs were while rows are selected', () => {
     setup();
-    expect(screen.getByText('Rules').closest('.desk\\:hidden')).toBeNull();
+    expect(screen.getByText('Tags').closest('.desk\\:hidden')).toBeNull();
     tick('Swiggy');
     // Phone keeps the tabs (desk:hidden wrapper); desktop swaps them for the select row.
-    expect(screen.getByText('Rules').closest('.desk\\:hidden')).not.toBeNull();
+    expect(screen.getByText('Tags').closest('.desk\\:hidden')).not.toBeNull();
   });
 
   it('Approve is off when nothing selected needs review', () => {

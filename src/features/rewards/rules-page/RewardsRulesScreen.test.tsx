@@ -26,7 +26,7 @@ const accounts = [
   { id: 'a2', name: 'Amex Platinum', type: AccountType.CREDIT_CARD, anniversaryDate: null, cardholders: [] },
 ];
 vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: accounts }) }));
-vi.mock('@/lib/query/hooks/useCategories', () => ({ useCategories: () => ({ data: [] }) }));
+vi.mock('@/lib/query/hooks/useTags', () => ({ useTags: () => ({ data: [] }) }));
 
 let config: { defaultRewardType: string; pointValueInr: number | null } = { defaultRewardType: 'POINTS', pointValueInr: 0.5 };
 const updateConfig = vi.fn();

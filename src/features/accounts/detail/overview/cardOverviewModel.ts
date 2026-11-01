@@ -361,7 +361,7 @@ export function buildRecentTransactions(items: readonly Transaction[]): Transact
       id: t.id,
       date: formatDate(t.date, 'list'),
       description: t.description || t.sourcedDescription || '—',
-      category: t.categories?.[0]?.name ?? null,
+      category: t.category?.name ?? null,
       amount: credit ? `+${amount}` : amount,
       credit,
       balanceLabel: t.balance != null ? formatMoney(t.balance, { decimals: 'exact' }) : null,

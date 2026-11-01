@@ -21,7 +21,7 @@ import { useEndDateAndClone } from '@/features/rewards/rules/useEndDateAndClone'
 import { formatDateRange } from '@/lib/date-range';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import { useCategories } from '@/lib/query/hooks/useCategories';
+import { useTags } from '@/lib/query/hooks/useTags';
 import type { RewardRule } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';
 
@@ -136,7 +136,7 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
   const rules = useRewardRules(accountId).data ?? [];
   const bucketsQuery = useRewardCapBuckets(accountId);
   const capBuckets = bucketsQuery.data ?? [];
-  const categories = useCategories().data ?? [];
+  const categories = useTags().data ?? [];
   const account = useAccounts().data?.find((a) => a.id === accountId);
   const defaultRewardType = useRewardAccountConfig(accountId).data?.defaultRewardType ?? 'CASH';
   const remove = useDeleteRewardRule();

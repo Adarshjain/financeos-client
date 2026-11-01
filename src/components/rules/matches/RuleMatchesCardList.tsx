@@ -83,7 +83,7 @@ export function RuleMatchesCardList({
                 <span className="tabular-nums">{formatDate(txn.date)}</span>
                 <RuleLinkLabel txn={txn} ruleId={rule.id} />
               </div>
-              <MatchCategoryBadges categories={txn.categories} />
+              <MatchCategoryBadges categories={txn.category ? [{ id: txn.category.key, name: txn.category.name }] : []} />
             </div>
           </label>
         );
