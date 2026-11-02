@@ -18,6 +18,17 @@ export interface WidgetMenuItem {
   tone?: 'neutral' | 'danger';
 }
 
+/** The widget's own loading state: three text lines. A widget body that is still waiting on anything shows this same one. */
+export function WidgetSkeleton() {
+  return (
+    <div className="flex flex-col gap-space-8">
+      <Skeleton width="80%" height={12} />
+      <Skeleton width="60%" height={12} />
+      <Skeleton width="70%" height={12} />
+    </div>
+  );
+}
+
 export type WidgetAction = { label: string } & ActionTarget;
 
 export interface WidgetProps
@@ -105,14 +116,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
 
     const renderBody = () => {
       if (loading) {
-        if (loadingSkeleton) return loadingSkeleton;
-        return (
-          <div className="flex flex-col gap-space-8">
-            <Skeleton width="80%" height={12} />
-            <Skeleton width="60%" height={12} />
-            <Skeleton width="70%" height={12} />
-          </div>
-        );
+        return loadingSkeleton ?? <WidgetSkeleton />;
       }
 
       if (error) {

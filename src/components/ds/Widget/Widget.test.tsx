@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Widget } from './Widget';
+import { Widget, WidgetSkeleton } from './Widget';
 
 describe('Widget', () => {
   it('renders title, subtitle, and body content', () => {
@@ -103,5 +103,17 @@ describe('Widget', () => {
     expect(screen.getByText('body').className).not.toContain('px-space-16');
     rerender(<Widget title="A" flush error="Down" errorTitle="Couldn't load">body</Widget>);
     expect(screen.getByRole('alert').parentElement?.className).toContain('px-space-16');
+  });
+
+  it('shows WidgetSkeleton while loading, and a body waiting on anything can show the same one', () => {
+    const { container, rerender } = render(<Widget title="Spend" loading />);
+    const loading = container.innerHTML;
+    expect(container.querySelectorAll('.animate-pulse')).toHaveLength(3);
+    rerender(
+      <Widget title="Spend">
+        <WidgetSkeleton />
+      </Widget>,
+    );
+    expect(container.innerHTML).toBe(loading);
   });
 });

@@ -6,11 +6,12 @@
 
 import React from 'react';
 
-import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { WidgetSkeleton } from '@/components/ds/Widget/Widget';
 import { workingCatalog } from '@/features/reports/builder/editorStateModel';
 import { categoryTarget, tableRowRequest, type UnderlyingTarget } from '@/features/reports/underlying/underlyingRequest';
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import type { WidgetResponse } from '@/lib/dashboards.types';
+import { useChartReady } from '@/lib/lazy/LazyChart';
 import { isChartData, isPivotTableData } from '@/lib/reports.helpers';
 import type { ChartDefinition, RunReportRequest } from '@/lib/reports.types';
 
@@ -34,8 +35,11 @@ export function ReportWidgetBody({ widget, state, onOpenUnderlying, onOpenUnderl
     () => (report.data && catalog.data ? workingCatalog(catalog.data, report.data.datasource) : undefined),
     [report.data, catalog.data],
   );
+  // A chart's code is fetched as soon as its data says it is one, and waited for here, so no second chart-frame skeleton shows.
+  const chartReady = useChartReady(Boolean(state.data && isChartData(state.data)));
   // The labels come with the report and the catalog; wait for them (or their failure) rather than flash field names.
-  if (!state.data || report.isPending || catalog.isPending) return <Skeleton height={96} />;
+  // Until then this is the widget's own loading state again, not a different placeholder.
+  if (!state.data || report.isPending || catalog.isPending || (isChartData(state.data) && !chartReady)) return <WidgetSkeleton />;
   // The request the widget runs is its saved report's; a header sort or page changes the rows shown, never the figure.
   const request = report.data ? ({ type: report.data.type, datasource: report.data.datasource, definition: report.data.definition } as RunReportRequest) : null;
   const chart = isChartData(state.data) ? state.data : null;

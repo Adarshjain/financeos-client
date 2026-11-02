@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, renderHook, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { LazyChart } from './LazyChart';
+import { LazyChart, preloadChart, useChartReady } from './LazyChart';
 
 vi.mock('@/components/organisms/Chart/Chart', () => ({
   Chart: (props: { fill?: boolean }) => <div data-testid="chart" data-fill={String(Boolean(props.fill))} />,
@@ -19,6 +19,25 @@ describe('LazyChart', () => {
   it('draws a chart-sized skeleton while loading', () => {
     const { container } = render(<LazyChart data={data as never} />);
     expect(screen.queryByTestId('chart')).toBeNull();
-    expect(container.querySelector('.aspect-video')).not.toBeNull();
+    const sk = container.querySelector('.aspect-video') as HTMLElement;
+    expect(sk).not.toBeNull();
+    // The chart's aspect ratio, not Skeleton's own 12px height (which drew a thin line).
+    expect(sk.className).toContain('h-auto');
+    expect(sk.className).not.toContain('h-space-12');
+  });
+
+  it('preloads the chart code once, and reports it ready after', async () => {
+    const first = preloadChart();
+    expect(preloadChart()).toBe(first);
+    await first;
+    const { result } = renderHook(() => useChartReady(true));
+    expect(result.current).toBe(true);
+  });
+
+  it('is ready once the code is in, whether or not the caller asked for it', async () => {
+    await act(async () => {
+      await preloadChart();
+    });
+    expect(renderHook(() => useChartReady(false)).result.current).toBe(true);
   });
 });

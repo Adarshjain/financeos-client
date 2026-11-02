@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+// The chart's code is treated as already loaded: these tests are about what the result opens, not the load.
+vi.mock('@/lib/lazy/LazyChart', async (orig) => ({ ...(await orig<typeof import('@/lib/lazy/LazyChart')>()), useChartReady: () => true }));
 
 import type { ChartData, DatasourceCatalog, PivotTableData, RunReportRequest } from '@/lib/reports.types';
 
