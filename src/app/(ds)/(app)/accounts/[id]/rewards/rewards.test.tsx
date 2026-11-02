@@ -14,7 +14,7 @@ const notFound = vi.fn(() => {
 });
 const push = vi.fn();
 const refresh = vi.fn();
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({ usePathname: () => '/',
   notFound: () => notFound(),
   useRouter: () => ({ push, refresh }),
 }));

@@ -10,7 +10,7 @@ import { dividendFilters, dividendListRow, dividendsFigures, fyTotals, parseDivi
 import { DividendsScreen, type DividendsScreenProps } from './DividendsScreen';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, useRouter: () => router }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/', unstable_rethrow: () => undefined, useRouter: () => router }));
 
 vi.mock('@/lib/date-range', () => ({ todayInAppZone: () => '2026-10-23' }));
 vi.mock('@/features/transactions/TransactionPickerField', () => ({ TransactionPickerField: () => <div /> }));
