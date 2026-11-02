@@ -41,6 +41,18 @@ for (const viewport of VIEWPORTS) {
       await page.goto(`/transactions${search}`);
       await expect(page.getByRole('row').filter({ hasText: /\S/ }).first()).toBeVisible({ timeout: 45_000 });
     };
+    const phone = viewport.width < 641;
+    // The Category and Tags chips show only on desktop; phone carries the filter in the "All filters" count.
+    const chipShows = async (page: Page, name: string) => {
+      if (phone) await expect(page.getByRole('button', { name: /^All filters\s*[1-9]/ })).toBeVisible();
+      else await expect(page.getByRole('button', { name })).toBeVisible();
+    };
+    const openFilters = async (page: Page) => {
+      await page.getByRole('button', { name: /^(\+ More|All filters)/ }).click();
+      const dialog = page.getByRole('dialog', { name: 'Filters' });
+      await expect(dialog).toBeVisible();
+      return dialog;
+    };
     const shown = async (page: Page, ...names: string[]) => {
       for (const n of ['Delivery', 'Dining', 'Grocery', 'Unsorted']) {
         await expect(row(page, `Zxqv ${n} Row`)).toHaveCount(names.includes(n) ? 1 : 0);
@@ -50,8 +62,14 @@ for (const viewport of VIEWPORTS) {
     test('?uncategorized=1 lists only the uncategorized; the chip says so and its reset clears the address', async ({ page }) => {
       await open(page, '?uncategorized=1');
       await shown(page, 'Unsorted');
-      await expect(page.getByRole('button', { name: 'Category · Uncategorized' })).toBeVisible();
-      await page.getByRole('button', { name: 'Reset filter', exact: true }).first().click();
+      await chipShows(page, 'Category · Uncategorized');
+      if (phone) {
+        const dialog = await openFilters(page);
+        await dialog.getByRole('button', { name: 'Reset filter', exact: true }).first().click();
+        await dialog.getByRole('button', { name: /^Show/ }).click();
+      } else {
+        await page.getByRole('button', { name: 'Reset filter', exact: true }).first().click();
+      }
       await expect(page).not.toHaveURL(/uncategorized/);
       await shown(page, 'Delivery', 'Dining', 'Grocery', 'Unsorted');
     });
@@ -59,7 +77,7 @@ for (const viewport of VIEWPORTS) {
     test('Uncategorized plus a category widen each other (OR)', async ({ page }) => {
       await open(page, '?uncategorized=1&category=groceries');
       await shown(page, 'Grocery', 'Unsorted');
-      await expect(page.getByRole('button', { name: 'Category · 2' })).toBeVisible();
+      await chipShows(page, 'Category · 2');
     });
 
     test('a sub-category narrows its own category: category=food&subcategory=food.delivery keeps only Delivery', async ({ page }) => {
@@ -67,46 +85,63 @@ for (const viewport of VIEWPORTS) {
       await shown(page, 'Delivery', 'Dining');
       await open(page, '?category=food&subcategory=food.delivery');
       await shown(page, 'Delivery');
-      await expect(page.getByRole('button', { name: 'Category · Delivery' })).toBeVisible();
+      await chipShows(page, 'Category · Delivery');
       // The sub-category alone works too.
       await open(page, '?subcategory=food.dining');
       await shown(page, 'Dining');
     });
 
-    test('the Category dropdown: Uncategorized first, a sub-category found by search; the address is written when it closes', async ({ page }) => {
+    test('the Category field in the Filters dialog: Uncategorized first, a sub-category found by search; the address is written on Show', async ({ page }) => {
       await open(page, '');
-      await page.getByRole('button', { name: 'Category', exact: true }).click();
-      await page.getByPlaceholder('Search categories').waitFor();
-      await page.getByText('Uncategorized', { exact: true }).click();
-      await expect(page.getByRole('button', { name: 'Show sub-categories' }).first()).toBeVisible();
+      const dialog = await openFilters(page);
+      await dialog.getByRole('combobox', { name: 'Category' }).click();
+      const search = page.getByPlaceholder('Search categories');
+      await search.waitFor();
+      const options = page.getByRole('option');
+      await expect(options.first()).toHaveText(/^Uncategorized/);
+      await options.first().click();
+      await expect(page.getByRole('button', { name: 'Expand' }).first()).toBeVisible();
       // A search for a sub-category opens its category; ticking the sub-category narrows to it.
-      await page.getByPlaceholder('Search categories').fill('deliver');
-      await page.getByText('Delivery', { exact: true }).click();
-      await page.getByPlaceholder('Search categories').fill('');
-      await page.keyboard.press('Escape');
+      await search.fill('deliver');
+      await page.getByRole('option', { name: 'Delivery', exact: true }).click();
+      await search.fill('');
+      await page.getByRole('button', { name: 'Done' }).click();
+      await expect(page).not.toHaveURL(/uncategorized/);
+      await dialog.getByRole('button', { name: /^Show/ }).click();
       await expect(page).toHaveURL(/uncategorized=1/);
       await expect(page).toHaveURL(/subcategory=food\.delivery/);
       await shown(page, 'Delivery', 'Unsorted');
     });
 
+    test('the Filters dialog\'s Tags field lists Untagged first and applies on Show', async ({ page }) => {
+      await open(page, '');
+      const dialog = await openFilters(page);
+      await dialog.getByRole('combobox', { name: 'Tags' }).click();
+      await expect(page.getByRole('option').first()).toHaveText(/^Untagged/);
+      await page.getByRole('option', { name: /Trip/ }).click();
+      await page.getByRole('button', { name: 'Done' }).click();
+      await dialog.getByRole('button', { name: /^Show/ }).click();
+      await expect(page).toHaveURL(new RegExp(`tag=${tagId}`));
+      await shown(page, 'Delivery');
+    });
+
     test('?tag=<id> lists the tagged, ?untagged=1 the rest; the Tags chip names the tag', async ({ page }) => {
       await open(page, `?tag=${tagId}`);
       await shown(page, 'Delivery');
-      await expect(page.getByRole('button', { name: 'Tags · Trip' })).toBeVisible();
+      await chipShows(page, 'Tags · Trip');
       await open(page, '?untagged=1');
       await shown(page, 'Dining', 'Grocery', 'Unsorted');
-      await expect(page.getByRole('button', { name: 'Tags · Untagged' })).toBeVisible();
+      await chipShows(page, 'Tags · Untagged');
       // Untagged and a tag widen each other.
       await open(page, `?untagged=1&tag=${tagId}`);
       await shown(page, 'Delivery', 'Dining', 'Grocery', 'Unsorted');
-      await expect(page.getByRole('button', { name: 'Tags · 2' })).toBeVisible();
+      await chipShows(page, 'Tags · 2');
     });
 
     test('an old link whose category was a tag name filters by that tag', async ({ page }) => {
       await open(page, '?category=Trip');
       await shown(page, 'Delivery');
-      await expect(page.getByRole('button', { name: 'Tags · Trip' })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Category', exact: true })).toBeVisible();
+      await chipShows(page, 'Tags · Trip');
     });
   });
 }

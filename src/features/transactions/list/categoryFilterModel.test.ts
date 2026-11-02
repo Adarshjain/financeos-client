@@ -4,17 +4,23 @@ import { CATEGORY_LIST_FIXTURE as LIST } from '@/lib/categoryList.fixtures';
 
 import {
   categoryChipLabel,
+  categoryFieldValue,
+  categoryFilterFromField,
   categoryFilterSize,
   categoryRowState,
   categorySubtitle,
   NO_CATEGORY_FILTER,
   subRowState,
   tagChipLabel,
+  tagFieldValue,
+  tagFilterFromField,
   toggleCategory,
   toggleSub,
   toggleTag,
   toggleUncategorized,
   toggleUntagged,
+  UNCATEGORIZED_VALUE,
+  UNTAGGED_VALUE,
   visibleCategories,
 } from './categoryFilterModel';
 
@@ -100,5 +106,19 @@ describe('the Tags filter', () => {
     expect(tagChipLabel({ untagged: true, tags: [] }, tags)).toBe('Tags · Untagged');
     expect(tagChipLabel({ untagged: false, tags: ['t1'] }, tags)).toBe('Tags · Goa trip');
     expect(tagChipLabel({ untagged: false, tags: ['t1', 't2'] }, tags)).toBe('Tags · 2');
+  });
+});
+
+describe('category field value', () => {
+  const list = LIST;
+  it('maps a whole category, a narrowed one and Uncategorized to a flat list and back', () => {
+    const f = { uncategorized: true, categories: ['food', 'transport'], subcategories: ['food.delivery'] };
+    const value = categoryFieldValue(f, list);
+    expect(value).toEqual([UNCATEGORIZED_VALUE, 'food.delivery', 'transport']);
+    expect(categoryFilterFromField(value, list)).toEqual(f);
+  });
+  it('maps tags the same way', () => {
+    expect(tagFieldValue({ untagged: true, tags: ['t1'] })).toEqual([UNTAGGED_VALUE, 't1']);
+    expect(tagFilterFromField([UNTAGGED_VALUE, 't1'])).toEqual({ untagged: true, tags: ['t1'] });
   });
 });

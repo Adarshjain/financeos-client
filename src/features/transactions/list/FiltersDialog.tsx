@@ -14,10 +14,14 @@ import { TextField } from '@/components/ds/TextField/TextField';
 import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import type { Account } from '@/lib/account.types';
 import { watchSession } from '@/lib/authExpiry';
+import type { CategoryDef } from '@/lib/categoryList.types';
 import { pluralize } from '@/lib/format';
 import { keys } from '@/lib/query/keys';
+import type { Tag } from '@/lib/tags.types';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
+import { CategoryField, TagsField } from './CategoryField';
+import { categoryChipLabel, tagChipLabel } from './categoryFilterModel';
 import {
   AMOUNT_OP_OPTIONS,
   amountLabel,
@@ -77,6 +81,10 @@ export interface FiltersDialogProps {
   today: string;
   /** Null when they could not be loaded: their fields are then off. */
   accounts: Account[] | null;
+  /** The fixed category list; null when it could not be loaded (the Category field is then off). */
+  categoryList?: CategoryDef[] | null;
+  /** The user's tags with their counts; null when they could not be loaded (the Tags field is then off). */
+  tags?: Tag[] | null;
   /** "Show": the query to open. */
   onApply: (query: TransactionsQuery) => void;
   onClose: () => void;
@@ -92,6 +100,8 @@ export function FiltersDialog({
   query,
   today,
   accounts,
+  categoryList = null,
+  tags = null,
   onApply,
   onClose,
 }: FiltersDialogProps) {
@@ -116,6 +126,8 @@ export function FiltersDialog({
       draft.accounts.length === 1
         ? (accountList.find((a) => a.id === draft.accounts[0])?.name ?? '1 account')
         : `${draft.accounts.length} accounts`,
+    category: categoryChipLabel(draft.category, categoryList ?? []),
+    tags: tagChipLabel(draft.tagFilter, tags ?? []),
     type: TYPE_OPTIONS.find((o) => o.value === draft.type)?.label ?? '',
     amount: draftQuery.amount ? amountLabel(draftQuery.amount) : '',
     review: draftQuery.review ? reviewLabel(draftQuery.review) : '',
@@ -207,6 +219,14 @@ export function FiltersDialog({
                   value={draft.type}
                   onValueChange={(type) => set({ type: type as TypeFilter })}
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
+                <CategoryField
+                  value={draft.category}
+                  categories={categoryList}
+                  onValueChange={(category) => set({ category })}
+                />
+                <TagsField value={draft.tagFilter} tags={tags} onValueChange={(tagFilter) => set({ tagFilter })} />
               </div>
             </div>
 

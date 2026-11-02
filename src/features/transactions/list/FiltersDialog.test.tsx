@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('./transactionsActions', () => ({ loadMatchingCount: vi.fn().mockResolvedValue({ success: true, data: 3 }) }));
 
+import { CATEGORY_LIST_FIXTURE } from '@/lib/categoryList.fixtures';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { FiltersDialog } from './FiltersDialog';
@@ -75,5 +76,40 @@ describe('FiltersDialog reset', () => {
     fireEvent.submit(screen.getByLabelText('From').closest('form')!);
     expect(onApply).toHaveBeenCalledTimes(1);
     expect(onApply.mock.calls[0]![0]).toMatchObject({ q: 'coffee', type: DEFAULT_QUERY.type });
+  });
+});
+
+describe('FiltersDialog category and tags', () => {
+  const tags = [{ id: 't1', name: 'Work', transactionCount: 3 }];
+  const open = () => {
+    const onApply = vi.fn();
+    const onClose = vi.fn();
+    renderWithQuery(
+      <FiltersDialog query={DEFAULT_QUERY} today="2026-10-29" accounts={[]} categoryList={CATEGORY_LIST_FIXTURE} tags={tags} onApply={onApply} onClose={onClose} />,
+    );
+    return { onApply, onClose };
+  };
+
+  it('a picked category and tag are drafts: they show in the strip and apply on Show', () => {
+    const { onApply } = open();
+    fireEvent.click(screen.getByRole('combobox', { name: 'Category' }));
+    fireEvent.click(screen.getByRole('option', { name: /^Food/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    fireEvent.click(screen.getByRole('combobox', { name: 'Tags' }));
+    fireEvent.click(screen.getByRole('option', { name: /Work/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.getByTestId('changed-filters')).toHaveTextContent('Category · Food');
+    expect(screen.getByTestId('changed-filters')).toHaveTextContent('Tags · Work');
+    expect(onApply).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: /^Show/ }));
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ categories: ['food'], tags: ['t1'] }));
+  });
+
+  it('Cancel on the menu puts the category field back', () => {
+    open();
+    fireEvent.click(screen.getByRole('combobox', { name: 'Category' }));
+    fireEvent.click(screen.getByRole('option', { name: /^Food/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByTestId('changed-filters')).toBeNull();
   });
 });

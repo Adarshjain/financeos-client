@@ -193,6 +193,8 @@ export function TransactionsListPane({
           query={query}
           today={today}
           accounts={accounts}
+          categoryList={categoryList}
+          tags={categories}
           onApply={(next) => {
             setFiltersOpen(false);
             go(next, false);
