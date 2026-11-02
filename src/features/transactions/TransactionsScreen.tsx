@@ -89,9 +89,11 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
   const linkDialog = useLazyDialog(loadLinkDialog);
   const setDetailId = (id: string | null) => {
     if (id !== view.query.txn || id === null) dropTxn();
-    // The first open waits for the panel's code; closing never does.
-    if (id === null) setDetailIdState(null);
-    else void detail.run(() => setDetailIdState(id));
+    // The first open waits for the panel's code; closing never does, and it drops an open still waiting for it.
+    if (id === null) {
+      detail.cancel();
+      setDetailIdState(null);
+    } else void detail.run(() => setDetailIdState(id));
   };
   // A link with ?txn (on load, or a later one) loads the panel at once; the state is already set by then.
   const loadDetail = detail.run;
