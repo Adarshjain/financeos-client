@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   groups: vi.fn(),
   transactions: vi.fn(),
   apply: vi.fn(),
+  undo: vi.fn(),
   recent: vi.fn(),
   toast: vi.fn(),
 }));
@@ -23,6 +24,7 @@ vi.mock('@/lib/query/actions/uncategorizedActions', () => ({
   loadUncategorizedGroups: mocks.groups,
   loadGroupTransactions: mocks.transactions,
   applyUncategorized: mocks.apply,
+  undoUncategorized: mocks.undo,
   loadCategoryRecent: mocks.recent,
 }));
 
@@ -50,7 +52,8 @@ beforeEach(() => {
     ok(page(key === 'sharma' ? SHARMA_TXNS : [txn('r1', -3000, 'RAVI KUMAR'), txn('r2', -3000, 'RAVI KUMAR'), txn('r3', -3000, 'RAVI KUMAR')])),
   );
   mocks.recent.mockResolvedValue(ok([]));
-  mocks.apply.mockResolvedValue(ok({ updated: 3, skipped: 0, ruleId: null }));
+  mocks.apply.mockResolvedValue(ok({ updated: 3, skipped: 0, ruleCreated: false, previousRuleCategoryKey: null, previousRuleSubcategoryKey: null, updatedIds: ['r1', 'r2', 'r3'], userClearedIds: [], ruleMerchantKey: null, ruleMatchType: null }));
+  mocks.undo.mockResolvedValue(ok({ restored: 3, skipped: 0, ruleDeleted: false, ruleRestored: false }));
 });
 
 const setup = () => {
@@ -71,7 +74,7 @@ describe('SortThemDialog', () => {
     expect(screen.getByText('28 Oct · ₹740')).toBeInTheDocument();
     // The groups page counts groups and one-offs together: 3 items less the 2 groups of two or more.
     expect(oneOffs.parentElement).toHaveTextContent(/One-offs\s*1/i);
-    expect(screen.getByRole('button', { name: 'Save 0 groups' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: /^Save/ })).toBeNull();
   });
 
   it('reads the summary when it opens, and shows loading rows and the neutral title until it arrives', async () => {
@@ -111,16 +114,13 @@ describe('SortThemDialog', () => {
     expect(screen.getByRole('switch', { name: 'Do the same next time' })).not.toBeChecked();
   });
 
-  it('stages a reason, shows it on the row, and Save applies the ticked transactions with no rule', async () => {
+  it('sets a reason at once: applies the ticked transactions with no rule, closes the group, and the toast offers Undo', async () => {
     const { user, onClose } = setup();
     await user.click(await screen.findByText('Ravi Kumar'));
     await screen.findAllByRole('checkbox', { name: /Include/ });
     await user.click(screen.getAllByRole('checkbox', { name: /Include RAVI KUMAR/ })[0]);
     await user.click(screen.getByRole('button', { name: 'Lent' }));
     await user.click(screen.getByRole('button', { name: 'Set for 2' }));
-    expect(await screen.findByRole('button', { name: 'Save 1 group' })).toBeEnabled();
-    expect(within(screen.getByText('Ravi Kumar').closest('[role="button"]') as HTMLElement).getByText('Lent')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Save 1 group' }));
     await waitFor(() => expect(mocks.apply).toHaveBeenCalledTimes(1));
     expect(mocks.apply).toHaveBeenCalledWith({
       transactionIds: ['r2', 'r3'],
@@ -128,9 +128,52 @@ describe('SortThemDialog', () => {
       subcategoryKey: null,
       rule: undefined,
     });
-    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByText('Why did you pay Ravi?')).toBeNull());
+    expect(onClose).not.toHaveBeenCalled();
     expect(mocks.refresh).toHaveBeenCalled();
-    expect(mocks.toast).toHaveBeenCalledWith('Set the category of 3 transactions');
+    expect(mocks.toast).toHaveBeenCalledWith('Set the category of 3 transactions', expect.objectContaining({ action: expect.objectContaining({ label: 'Undo' }) }));
+    expect(screen.queryByRole('button', { name: /^Save/ })).toBeNull();
+  });
+
+  it('Undo in the toast sends what the apply returned and refreshes', async () => {
+    mocks.apply.mockResolvedValue(ok({ updated: 4, skipped: 0, ruleId: 'rule-1', ruleCreated: true, previousRuleCategoryKey: 'food', previousRuleSubcategoryKey: null, updatedIds: ['s1', 's2', 's3', 's4'], userClearedIds: ['s2'], ruleMerchantKey: 'sharma', ruleMatchType: 'CONTAINS' }));
+    const { user } = setup();
+    await user.click(await screen.findByText('Sharma Medicals'));
+    await screen.findAllByRole('checkbox', { name: /Include/ });
+    await user.click(screen.getByText('Pick a category'));
+    await user.click(await screen.findByRole('button', { name: 'Health' }));
+    await user.click(await screen.findByText('Medicines'));
+    await user.click(await screen.findByRole('button', { name: 'Set for 4' }));
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalled());
+    mocks.refresh.mockClear();
+    const options = mocks.toast.mock.calls[0]![1] as { action: { onSelect: () => void } };
+    options.action.onSelect();
+    await waitFor(() => expect(mocks.undo).toHaveBeenCalledTimes(1));
+    expect(mocks.undo).toHaveBeenCalledWith({
+      transactionIds: ['s1', 's2', 's3', 's4'],
+      categoryKey: 'health',
+      subcategoryKey: 'health.medicines',
+      ruleId: 'rule-1',
+      ruleCreated: true,
+      previousRuleCategoryKey: 'food',
+      previousRuleSubcategoryKey: null,
+      userClearedIds: ['s2'],
+      ruleMerchantKey: 'sharma',
+      ruleMatchType: 'CONTAINS',
+    });
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith('Put 3 transactions back'));
+    expect(mocks.refresh).toHaveBeenCalled();
+  });
+
+  it('a failed Undo says so', async () => {
+    mocks.undo.mockResolvedValue({ success: false, error: { message: 'Too late', code: 'X' } });
+    const { user } = setup();
+    await user.click(await screen.findByText('Ravi Kumar'));
+    await user.click(await screen.findByRole('button', { name: 'Lent' }));
+    await user.click(await screen.findByRole('button', { name: 'Set for 3' }));
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalled());
+    (mocks.toast.mock.calls[0]![1] as { action: { onSelect: () => void } }).action.onSelect();
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith('Too late', { tone: 'danger' }));
   });
 
   it('a shop with the rule switch on sends the rule, uppercase, Contains', async () => {
@@ -141,7 +184,6 @@ describe('SortThemDialog', () => {
     await user.click(await screen.findByRole('button', { name: 'Health' }));
     await user.click(await screen.findByText('Medicines'));
     await user.click(await screen.findByRole('button', { name: 'Set for 4' }));
-    await user.click(await screen.findByRole('button', { name: 'Save 1 group' }));
     await waitFor(() => expect(mocks.apply).toHaveBeenCalled());
     expect(mocks.apply).toHaveBeenCalledWith({
       transactionIds: ['s1', 's2', 's3', 's4'],
@@ -168,8 +210,30 @@ describe('SortThemDialog', () => {
     await user.click(await screen.findByText('Ravi Kumar'));
     await user.click(await screen.findByRole('button', { name: 'Gifts' }));
     await user.click(await screen.findByRole('button', { name: 'Set for 3' }));
-    await user.click(await screen.findByRole('button', { name: 'Save 1 group' }));
     await waitFor(() => expect(mocks.apply).toHaveBeenCalled());
     expect(mocks.apply.mock.calls[0]![0].transactionIds).toEqual(['r0', 'r1']);
+  });
+
+  it('search sends the trimmed text after a pause, starts on the first page, and clears back to everything', async () => {
+    const { user } = setup();
+    await screen.findByText('Ravi Kumar');
+    mocks.groups.mockResolvedValue(ok(page([SHARMA])));
+    await user.type(screen.getByRole('searchbox', { name: 'Search groups' }), ' sharma ');
+    await waitFor(() => expect(mocks.groups).toHaveBeenLastCalledWith(0, 10, 'sharma'));
+    await waitFor(() => expect(screen.queryByText('Ravi Kumar')).toBeNull());
+    expect(screen.getByText('Sharma Medicals')).toBeInTheDocument();
+    mocks.groups.mockResolvedValue(ok(page([RAVI, SHARMA, PAI])));
+    await user.click(screen.getByRole('button', { name: 'Clear search' }));
+    await waitFor(() => expect(mocks.groups).toHaveBeenLastCalledWith(0, 10));
+    expect(await screen.findByText('Ravi Kumar')).toBeInTheDocument();
+  });
+
+  it('says no groups match when the search finds none', async () => {
+    const { user } = setup();
+    await screen.findByText('Ravi Kumar');
+    mocks.groups.mockResolvedValue(ok({ content: [], totalElements: 0, totalPages: 0, size: 10, number: 0 }));
+    await user.type(screen.getByRole('searchbox', { name: 'Search groups' }), 'zzz');
+    expect(await screen.findByText('No groups match')).toBeInTheDocument();
+    expect(screen.getByText('No group has "zzz" in its name.')).toBeInTheDocument();
   });
 });

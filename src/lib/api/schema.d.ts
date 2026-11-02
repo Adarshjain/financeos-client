@@ -4074,6 +4074,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/transactions/uncategorized/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["undo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/transactions/undo-approve": {
         parameters: {
             query?: never;
@@ -4208,12 +4224,19 @@ export interface components {
             transactionIds: string[];
         };
         ApplyUncategorizedResponse: {
+            previousRuleCategoryKey?: string | null;
+            previousRuleSubcategoryKey?: string | null;
+            ruleCreated: boolean;
             /** Format: uuid */
             ruleId?: string | null;
+            ruleMatchType?: string | null;
+            ruleMerchantKey?: string | null;
             /** Format: int32 */
             skipped: number;
             /** Format: int32 */
             updated: number;
+            updatedIds: string[];
+            userClearedIds: string[];
         };
         AssignAttentionRequest: {
             /** Format: uuid */
@@ -8914,6 +8937,27 @@ export interface components {
         UndoApproveResponse: {
             restoredTransactionIds: string[];
             skippedTransactionIds: string[];
+        };
+        UndoUncategorizedRequest: {
+            categoryKey: string;
+            previousRuleCategoryKey?: string | null;
+            previousRuleSubcategoryKey?: string | null;
+            ruleCreated?: boolean;
+            /** Format: uuid */
+            ruleId?: string | null;
+            ruleMatchType?: string | null;
+            ruleMerchantKey?: string | null;
+            subcategoryKey?: string | null;
+            transactionIds: string[];
+            userClearedIds?: (string | null)[] | null;
+        };
+        UndoUncategorizedResponse: {
+            /** Format: int32 */
+            restored: number;
+            ruleDeleted: boolean;
+            ruleRestored: boolean;
+            /** Format: int32 */
+            skipped: number;
         };
         UnlockVerifyRequest: {
             credential: unknown;
@@ -19330,6 +19374,7 @@ export interface operations {
     groups: {
         parameters: {
             query?: {
+                q?: string;
                 /** @description Zero-based page index (0..N) */
                 page?: number;
                 /** @description The size of the page to be returned */
@@ -19417,6 +19462,39 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["UncategorizedSummaryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    undo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UndoUncategorizedRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UndoUncategorizedResponse"];
                 };
             };
             /** @description Error response */

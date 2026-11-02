@@ -10,6 +10,8 @@ import type {
   UncategorizedGroup,
   UncategorizedSummary,
   UncategorizedTransaction,
+  UndoUncategorizedRequest,
+  UndoUncategorizedResponse,
 } from '@/lib/uncategorized.types';
 
 /** The category picks to offer first, by direction. */
@@ -26,7 +28,8 @@ export const loadUncategorizedSummary = createDomainAction(
 
 export const loadUncategorizedGroups = createDomainAction(
   { fallbackError: "Couldn't load the groups. Try again." },
-  async (page: number, size: number): Promise<Page<UncategorizedGroup>> => transactionsApi.uncategorizedGroups({ page, size }),
+  async (page: number, size: number, q?: string): Promise<Page<UncategorizedGroup>> =>
+    transactionsApi.uncategorizedGroups(q ? { page, size, q } : { page, size }),
 );
 
 export const loadGroupTransactions = createDomainAction(
@@ -38,4 +41,9 @@ export const loadGroupTransactions = createDomainAction(
 export const applyUncategorized = createDomainAction(
   { fallbackError: "Couldn't set the categories. Try again." },
   async (body: ApplyUncategorizedRequest): Promise<ApplyUncategorizedResponse> => transactionsApi.applyUncategorized(body),
+);
+
+export const undoUncategorized = createDomainAction(
+  { fallbackError: "Couldn't put the categories back. Try again." },
+  async (body: UndoUncategorizedRequest): Promise<UndoUncategorizedResponse> => transactionsApi.undoUncategorized(body),
 );

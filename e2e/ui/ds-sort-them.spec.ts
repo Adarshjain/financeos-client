@@ -50,7 +50,7 @@ for (const viewport of VIEWPORTS) {
       await expect(picker).not.toBeVisible();
     };
 
-    test('the card opens Sort them; a shop group takes a category with "Do the same next time"; Save categorises the rows and the rule is on the Tags tab', async ({ page }) => {
+    test('the card opens Sort them; a shop group takes a category with "Do the same next time"; Set for 3 categorises the rows at once and the rule is on the Tags tab', async ({ page }) => {
       const api = makeApi(user.cookie);
       const bank = await createBankAccount(api, { name: 'Sort Bank' });
       const shop = unknownShop('sort');
@@ -65,7 +65,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByText(shop, { exact: true })).toBeVisible();
       await expect(dialog.getByText('One-offs')).toBeVisible();
       await expect(dialog.getByText(oneOff, { exact: true })).toBeVisible();
-      await expect(dialog.getByRole('button', { name: /^Save/ })).toBeDisabled();
+      await expect(dialog.getByRole('button', { name: /^Save/ })).toHaveCount(0);
 
       const group = await openGroup(page, shop);
       // A shop group lists what the choice applies to, all ticked, and the rule switch is on by default.
@@ -77,14 +77,13 @@ for (const viewport of VIEWPORTS) {
       await pickFoodDelivery(page);
       await group.getByRole('button', { name: 'Set for 3' }).click();
 
-      // Back on the list the group shows what it was staged as; nothing is saved until Save.
-      await expect(group).not.toBeVisible();
-      await expect(dialog.getByText('Food · Delivery')).toBeVisible();
-      expect((await searchAll(api)).filter((t) => t.category).length).toBe(0);
-      await dialog.getByRole('button', { name: 'Save 1 group' }).click();
-
+      // The group is applied at once: a toast with Undo, and the group has left the list (the one-off stays).
       await expect(page.getByText('Set the category of 3 transactions')).toBeVisible();
-      await expect(dialog).not.toBeVisible();
+      await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
+      await expect(group).not.toBeVisible();
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByText(shop, { exact: true })).toHaveCount(0);
+      await expect(dialog.getByText(oneOff, { exact: true })).toBeVisible();
       const after = await searchAll(api);
       for (const r of rows) {
         const t = after.find((x) => x.id === r.id)!;
@@ -122,7 +121,6 @@ for (const viewport of VIEWPORTS) {
       // Leave the first transaction out: "Set for" counts the ticked ones only.
       await group.getByRole('checkbox').first().click();
       await group.getByRole('button', { name: 'Set for 1' }).click();
-      await sortDialog(page).getByRole('button', { name: 'Save 1 group' }).click();
 
       await expect(page.getByText('Set the category of 1 transaction')).toBeVisible();
       const after = await searchAll(api);
@@ -135,7 +133,55 @@ for (const viewport of VIEWPORTS) {
       expect(((await api.GET('/api/v1/rules')).data as { content: unknown[] }).content).toHaveLength(0);
     });
 
-    test('Later closes the dialog without saving what was staged', async ({ page }) => {
+    test('Undo in the toast puts the group back, rows and rule', async ({ page }) => {
+      const api = makeApi(user.cookie);
+      const bank = await createBankAccount(api, { name: 'Sort Bank' });
+      const shop = unknownShop('undo');
+      const rows = await seedShopRows(api, bank.id, shop, 2);
+      await open(page);
+      await openSort(page);
+      const group = await openGroup(page, shop);
+      await group.getByRole('combobox', { name: /Category/ }).click();
+      await pickFoodDelivery(page);
+      await group.getByRole('button', { name: 'Set for 2' }).click();
+      await expect(page.getByText('Set the category of 2 transactions')).toBeVisible();
+      await expect(sortDialog(page).getByText(shop, { exact: true })).toHaveCount(0);
+      expect(((await api.GET('/api/v1/rules')).data as { content: unknown[] }).content).toHaveLength(1);
+
+      await page.getByRole('button', { name: 'Undo' }).click();
+      await expect(page.getByText('Put 2 transactions back')).toBeVisible();
+      const after = await searchAll(api);
+      for (const r of rows) expect(after.find((x) => x.id === r.id)?.category ?? null).toBeNull();
+      expect(((await api.GET('/api/v1/rules')).data as { content: unknown[] }).content).toHaveLength(0);
+      // The group is back in the list.
+      await expect(sortDialog(page).getByText(shop, { exact: true })).toBeVisible();
+    });
+
+    test('search narrows the groups by name, and says when none match', async ({ page }) => {
+      const api = makeApi(user.cookie);
+      const bank = await createBankAccount(api, { name: 'Sort Bank' });
+      const alpha = unknownShop('alphasearch');
+      const beta = unknownShop('betasearch');
+      await seedShopRows(api, bank.id, alpha, 2);
+      await seedShopRows(api, bank.id, beta, 2);
+      await open(page);
+      await openSort(page);
+      const dialog = sortDialog(page);
+      await expect(dialog.getByText(alpha, { exact: true })).toBeVisible();
+      await expect(dialog.getByText(beta, { exact: true })).toBeVisible();
+
+      await dialog.getByRole('searchbox', { name: 'Search groups' }).fill('ALPHASEARCH');
+      await expect(dialog.getByText(beta, { exact: true })).toHaveCount(0);
+      await expect(dialog.getByText(alpha, { exact: true })).toBeVisible();
+
+      await dialog.getByRole('searchbox', { name: 'Search groups' }).fill('no such shop anywhere');
+      await expect(dialog.getByText('No groups match')).toBeVisible();
+
+      await dialog.getByRole('button', { name: 'Clear search' }).click();
+      await expect(dialog.getByText(beta, { exact: true })).toBeVisible();
+    });
+
+    test('Later closes the dialog; a group opened but not set changes nothing', async ({ page }) => {
       const api = makeApi(user.cookie);
       const bank = await createBankAccount(api, { name: 'Sort Bank' });
       const shop = unknownShop('defer');
@@ -145,8 +191,9 @@ for (const viewport of VIEWPORTS) {
       const group = await openGroup(page, shop);
       await group.getByRole('combobox', { name: /Category/ }).click();
       await pickFoodDelivery(page);
-      await group.getByRole('button', { name: /^Set for/ }).click();
-      await expect(sortDialog(page).getByRole('button', { name: 'Save 1 group' })).toBeEnabled();
+      await expect(group.getByRole('button', { name: 'Set for 2' })).toBeEnabled();
+      await page.keyboard.press('Escape');
+      await expect(group).not.toBeVisible();
       await sortDialog(page).getByRole('button', { name: 'Later', exact: true }).click();
       await expect(sortDialog(page)).not.toBeVisible();
       expect((await searchAll(api)).filter((t) => t.category)).toHaveLength(0);

@@ -9,9 +9,10 @@ import { SORT_PAGE_SIZE } from './sortModel';
 /** Zero: every open re-reads; the cache only shows meanwhile. */
 const STALE = 0;
 
-export const sortGroupsQuery = (page: number) => ({
-  queryKey: keys.transactions.uncategorizedGroups(page, SORT_PAGE_SIZE),
-  queryFn: () => unwrapAction(loadUncategorizedGroups(page, SORT_PAGE_SIZE)),
+/** One page of groups; `q` (trimmed by the caller) narrows them by name on the server. */
+export const sortGroupsQuery = (page: number, q = '') => ({
+  queryKey: keys.transactions.uncategorizedGroups(page, SORT_PAGE_SIZE, q),
+  queryFn: () => unwrapAction(q ? loadUncategorizedGroups(page, SORT_PAGE_SIZE, q) : loadUncategorizedGroups(page, SORT_PAGE_SIZE)),
   staleTime: STALE,
 });
 

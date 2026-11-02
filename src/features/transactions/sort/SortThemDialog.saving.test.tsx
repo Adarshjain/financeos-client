@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   groups: vi.fn(),
   transactions: vi.fn(),
   apply: vi.fn(),
+  undo: vi.fn(),
   recent: vi.fn(),
   toast: vi.fn(),
 }));
@@ -23,6 +24,7 @@ vi.mock('@/lib/query/actions/uncategorizedActions', () => ({
   loadUncategorizedGroups: mocks.groups,
   loadGroupTransactions: mocks.transactions,
   applyUncategorized: mocks.apply,
+  undoUncategorized: mocks.undo,
   loadCategoryRecent: mocks.recent,
 }));
 
@@ -50,7 +52,7 @@ beforeEach(() => {
     ok(page(key === 'sharma' ? SHARMA_TXNS : [txn('r1', -3000, 'RAVI KUMAR'), txn('r2', -3000, 'RAVI KUMAR'), txn('r3', -3000, 'RAVI KUMAR')])),
   );
   mocks.recent.mockResolvedValue(ok([]));
-  mocks.apply.mockResolvedValue(ok({ updated: 3, skipped: 0, ruleId: null }));
+  mocks.apply.mockResolvedValue(ok({ updated: 3, skipped: 0, ruleCreated: false, previousRuleCategoryKey: null, previousRuleSubcategoryKey: null, updatedIds: ['r1', 'r2', 'r3'], userClearedIds: [], ruleMerchantKey: null, ruleMatchType: null }));
 });
 
 
@@ -60,55 +62,59 @@ const setup = (queryClient = createTestQueryClient()) => {
   return { onClose, view, user: userEvent.setup({ pointerEventsCheck: 0 }) };
 };
 
-/** Stages "Lent" for Ravi (3 payments) and presses Save; the apply request is left pending until `finish` is called. */
-async function stageRaviAndSave() {
+/** Picks "Lent" for Ravi (3 payments) and presses Set for 3; the apply request is left pending until `finish` is called. */
+async function setRavi() {
   const ctx = setup();
   await ctx.user.click(await screen.findByText('Ravi Kumar'));
   await ctx.user.click(await screen.findByRole('button', { name: 'Lent' }));
   await ctx.user.click(await screen.findByRole('button', { name: 'Set for 3' }));
-  await ctx.user.click(await screen.findByRole('button', { name: 'Save 1 group' }));
   return ctx;
 }
 
-describe('SortThemDialog while Save runs', () => {
-  it('locks Later, the close ×, Escape and the rows until the save answers, then closes', async () => {
+const APPLIED = ok({ updated: 3, skipped: 0, ruleCreated: false, previousRuleCategoryKey: null, previousRuleSubcategoryKey: null, updatedIds: ['r1', 'r2', 'r3'], userClearedIds: [], ruleMerchantKey: null, ruleMatchType: null });
+
+describe('SortThemDialog while a group is being set', () => {
+  it('locks Later, the close ×, Escape and the rows until the apply answers, then closes only the group', async () => {
     let finish!: (v: unknown) => void;
     mocks.apply.mockReturnValue(new Promise((resolve) => (finish = resolve)));
-    const { onClose, user } = await stageRaviAndSave();
+    const { onClose, user } = await setRavi();
     await waitFor(() => expect(mocks.apply).toHaveBeenCalled());
-    expect(screen.getByRole('button', { name: 'Later' })).toBeDisabled();
-    const dialog = screen.getByRole('button', { name: 'Later' }).closest('[role="dialog"]') as HTMLElement;
+    const later = screen.getByRole('button', { name: 'Later', hidden: true });
+    expect(later).toBeDisabled();
+    const dialog = later.closest('[role="dialog"]') as HTMLElement;
     const closers = within(dialog).queryAllByRole('button', { name: 'Close' });
     // The drawn × is gone; the screen-reader-only close that a drag-down or the backdrop presses is guarded.
     expect(closers.filter((b) => !b.classList.contains('sr-only'))).toHaveLength(0);
     closers.forEach((b) => b.click());
     await user.keyboard('{Escape}');
     expect(onClose).not.toHaveBeenCalled();
-    expect(document.querySelector('[inert]')).not.toBeNull();
-    finish(ok({ updated: 3, skipped: 0, ruleId: null }));
-    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
-  });
-
-  it('a group that failed stays staged and visible with its pick, and the dialog stays open and unlocked', async () => {
-    mocks.apply.mockResolvedValue({ success: false, error: { message: 'Server said no', code: 'X' } });
-    const { onClose } = await stageRaviAndSave();
-    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith('Server said no', { tone: 'danger' }));
+    expect(screen.getByText('Why did you pay Ravi?')).toBeInTheDocument();
+    finish(APPLIED);
+    await waitFor(() => expect(screen.queryByText('Why did you pay Ravi?')).toBeNull());
     expect(onClose).not.toHaveBeenCalled();
-    expect(await screen.findByRole('button', { name: 'Save 1 group' })).toBeEnabled();
-    expect(screen.getByRole('button', { name: 'Later' })).toBeEnabled();
-    expect(screen.getByText('Ravi Kumar').closest('[role="button"]')).toHaveTextContent('Lent');
+    expect(await screen.findByRole('button', { name: 'Later' })).toBeEnabled();
     expect(document.querySelector('[inert]')).toBeNull();
   });
 
-  it('does nothing to a gone dialog when the save answers after it unmounted', async () => {
+  it('a group that failed says what failed, stays open with its pick, and nothing stays locked', async () => {
+    mocks.apply.mockResolvedValue({ success: false, error: { message: 'Server said no', code: 'X' } });
+    const { onClose } = await setRavi();
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith('Server said no', { tone: 'danger' }));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(await screen.findByRole('button', { name: 'Set for 3' })).toBeEnabled();
+    expect(screen.getByText('Why did you pay Ravi?')).toBeInTheDocument();
+    expect(document.querySelector('[inert]')).toBeNull();
+  });
+
+  it('does nothing to a gone dialog when the apply answers after it unmounted', async () => {
     let finish!: (v: unknown) => void;
     mocks.apply.mockReturnValue(new Promise((resolve) => (finish = resolve)));
-    const { onClose, view } = await stageRaviAndSave();
+    const { onClose, view } = await setRavi();
     await waitFor(() => expect(mocks.apply).toHaveBeenCalled());
     const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     view.unmount();
-    finish(ok({ updated: 3, skipped: 0, ruleId: null }));
-    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith('Set the category of 3 transactions'));
+    finish(APPLIED);
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith('Set the category of 3 transactions', expect.anything()));
     expect(onClose).not.toHaveBeenCalled();
     expect(errors).not.toHaveBeenCalled();
     errors.mockRestore();

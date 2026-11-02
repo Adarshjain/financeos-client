@@ -8,5 +8,7 @@ export type UncategorizedGroup = Schemas['UncategorizedGroupResponse'];
 export type UncategorizedTransaction = Schemas['UncategorizedTransactionResponse'];
 export type ApplyUncategorizedRequest = Schemas['ApplyUncategorizedRequest'];
 export type ApplyUncategorizedResponse = Schemas['ApplyUncategorizedResponse'];
+export type UndoUncategorizedRequest = Schemas['UndoUncategorizedRequest'];
+export type UndoUncategorizedResponse = Schemas['UndoUncategorizedResponse'];
 /** Transactions per category and sub-category: the Category filter's counts. */
 export type CategoryCounts = Schemas['CategoryCountsResponse'];

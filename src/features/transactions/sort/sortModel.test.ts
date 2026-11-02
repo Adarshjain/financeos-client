@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { CATEGORY_LIST_FIXTURE as LIST } from '@/lib/categoryList.fixtures';
 
-import { groupLine, groupRow, pickWords, reasonChips, rulePattern, savedWords, saveLabel, tickedCount } from './sortModel';
+import { groupLine, groupRow, pickWords, reasonChips, rulePattern, savedWords,
+tickedCount,  undoneWords } from './sortModel';
 
 describe('reasonChips', () => {
   it('offers the money-out reasons for a person you paid, as real picks', () => {
@@ -39,9 +40,9 @@ describe('group words', () => {
     expect(tickedCount({ count: 1 }, ['a', 'b'])).toBe(0);
   });
 
-  it('words Save and the saved toast', () => {
-    expect(saveLabel(1)).toBe('Save 1 group');
-    expect(saveLabel(2)).toBe('Save 2 groups');
+  it('words the saved and the undone toasts', () => {
+    expect(undoneWords(3, 0)).toBe('Put 3 transactions back');
+    expect(undoneWords(1, 2)).toBe('Put 1 transaction back · 2 changed since and stayed');
     expect(savedWords(5, 0)).toBe('Set the category of 5 transactions');
     expect(savedWords(1, 2)).toBe('Set the category of 1 transaction · 2 left as they were');
   });

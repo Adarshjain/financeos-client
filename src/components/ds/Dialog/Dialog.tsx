@@ -532,6 +532,9 @@ const DialogTrigger = DialogPrimitive.Trigger;
 const DialogClose = DialogPrimitive.Close;
 const DialogPortal = DialogPrimitive.Portal;
 
+/** A toast (its Undo) is outside the dialog but pressing it must not close the dialog. */
+const isToastTarget = (target: EventTarget | null) => target instanceof Element && target.closest('[data-sonner-toaster]') !== null;
+
 export interface DialogContentProps extends Omit<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>,
   'title'
@@ -600,7 +603,7 @@ const DialogContent = forwardRef<
     const handlePointerDownOutside: DialogContentProps['onPointerDownOutside'] = (
       e,
     ) => {
-      if (!dismissible) {
+      if (!dismissible || isToastTarget(e.target)) {
         e.preventDefault();
         return;
       }
@@ -609,7 +612,7 @@ const DialogContent = forwardRef<
 
     // Side panel: the page behind stays usable, so a click or focus outside never closes it.
     const handleInteractOutside: DialogContentProps['onInteractOutside'] = (e) => {
-      if (variant === 'side-panel') {
+      if (variant === 'side-panel' || isToastTarget(e.target)) {
         e.preventDefault();
         return;
       }
