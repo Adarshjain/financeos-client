@@ -104,14 +104,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const isEffectivelyDisabled = disabled || loading;
     const isPrimary = variant === 'primary';
 
-    // Links carry no height or padding: `size` only sets their text (sm = label, md/xl = body).
-    // Without a `size` a link inherits the text around it.
+    // Links carry no height or padding: `size` only sets their text (sm or no size = label, md/xl = body).
+    // A link is never large by default (owner, 2026-11-02): without a `size` it uses the label style, not the surrounding size.
     const sizeClasses = isLink
-      ? sizeProp === 'sm'
-        ? 'text-label'
-        : sizeProp
-          ? 'text-body'
-          : ''
+      ? sizeProp === 'md' || sizeProp === 'xl'
+        ? 'text-body'
+        : 'text-label'
       : isStacked
         ? 'h-space-64 px-space-8 py-space-8 gap-space-4 rounded-ds-lg text-label font-semibold flex-col items-center justify-center text-center'
         : {

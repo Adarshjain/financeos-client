@@ -19,7 +19,7 @@ export interface UncategorizedCardProps {
 export function UncategorizedCard({ onSort, onSortPress }: UncategorizedCardProps) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-space-6">
-      <Text variant="body" tone="ink-2" as="span">
+      <Text variant="label" tone="ink-2" as="span">
         Some transactions need a category
       </Text>
       <Button variant="link" onClick={onSort} onPointerDown={onSortPress}>
