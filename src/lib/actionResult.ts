@@ -1,6 +1,6 @@
 import { ApiError } from '@/lib/api/client';
 import { notifyIfAppLocked } from '@/lib/appLock';
-import { AUTH_EXPIRED_EVENT, isSessionExpiredResult } from '@/lib/authExpiry';
+import { currentSessionGeneration, isSessionExpiredResult, raiseAuthExpired } from '@/lib/authExpiry';
 import type { ApiResult, ErrorResponse } from '@/lib/types';
 
 /**
@@ -27,9 +27,10 @@ export class ActionError extends ApiError {
  * answer raises the lock event.
  */
 export async function unwrapAction<T>(result: Promise<ApiResult<T>>): Promise<T> {
+  const startedIn = currentSessionGeneration();
   const value = await result;
   if (value.success) return value.data;
-  if (typeof window !== 'undefined' && isSessionExpiredResult(value)) window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+  if (isSessionExpiredResult(value)) raiseAuthExpired(startedIn);
   notifyIfAppLocked(value);
   throw new ActionError(value.error, value.status);
 }

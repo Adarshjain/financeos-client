@@ -1,6 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { claimAuthExpired, isSessionExpiredResult, notifyIfSessionExpired, watchSession } from '../authExpiry';
+import {
+  claimAuthExpired,
+  currentSessionGeneration,
+  isSessionExpiredResult,
+  markSessionRenewed,
+  notifyIfSessionExpired,
+  raiseAuthExpired,
+  SESSION_RENEWED_GRACE_MS,
+  watchSession,
+} from '../authExpiry';
 
 const expired = { success: false, error: { code: 'UNAUTHORIZED', message: 'x', timestamp: 't' } };
 
@@ -49,5 +58,50 @@ describe('watchSession (server actions called outside react-query)', () => {
   it('lets a rejection through unchanged', async () => {
     await expect(watchSession(Promise.reject(new Error('boom')))).rejects.toThrow('boom');
     notifyIfSessionExpired(undefined);
+  });
+});
+
+describe('a sign-in starts a new session: late 401s of older requests are ignored', () => {
+  it('raises for a request of the current generation and drops one stamped before the sign-in', () => {
+    const { handler, off } = listen();
+    const before = currentSessionGeneration();
+    raiseAuthExpired(before);
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    markSessionRenewed();
+    expect(currentSessionGeneration()).toBe(before + 1);
+    raiseAuthExpired(before);
+    expect(handler).toHaveBeenCalledTimes(1);
+    // A request that started after the sign-in is a real expiry again.
+    raiseAuthExpired(currentSessionGeneration());
+    expect(handler).toHaveBeenCalledTimes(2);
+    off();
+  });
+
+  it('an unstamped 401 is ignored for a grace window after the sign-in, then raised again', () => {
+    const { handler, off } = listen();
+    const now = vi.spyOn(Date, 'now');
+    now.mockReturnValue(1_000_000);
+    markSessionRenewed();
+    now.mockReturnValue(1_000_000 + SESSION_RENEWED_GRACE_MS - 1);
+    raiseAuthExpired();
+    expect(handler).not.toHaveBeenCalled();
+    now.mockReturnValue(1_000_000 + SESSION_RENEWED_GRACE_MS + 1);
+    raiseAuthExpired();
+    expect(handler).toHaveBeenCalledTimes(1);
+    off();
+  });
+
+  it('watchSession drops the 401 of a call that was in flight while the visitor signed in', async () => {
+    const release = claimAuthExpired();
+    const { handler, off } = listen();
+    let answer!: (v: unknown) => void;
+    const pending = watchSession(new Promise((resolve) => (answer = resolve)));
+    markSessionRenewed();
+    answer(expired);
+    await pending;
+    expect(handler).not.toHaveBeenCalled();
+    off();
+    release();
   });
 });

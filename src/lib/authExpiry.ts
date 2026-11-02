@@ -24,6 +24,37 @@ export function isAuthExpiredClaimed(): boolean {
   return claims > 0;
 }
 
+/**
+ * Signing in again starts a new session generation. A request that started in an older one carries the old cookie,
+ * so its late 401 says nothing about the new session and must not reopen the sign-in dialog.
+ */
+let generation = 0;
+let renewedAt = 0;
+/** Results nobody stamped (query-cache callbacks) are ignored for this long after a sign-in. */
+export const SESSION_RENEWED_GRACE_MS = 3000;
+
+/** Read it when a request starts and hand it back with the answer. */
+export function currentSessionGeneration(): number {
+  return generation;
+}
+
+/** The visitor signed in again (the session-expired dialog's success). */
+export function markSessionRenewed(): void {
+  generation += 1;
+  renewedAt = Date.now();
+}
+
+/**
+ * Raises `financeos:auth-expired`, unless the 401 belongs to a request from before the last sign-in
+ * (`startedIn` is an older generation; with none given, a sign-in within the grace window counts).
+ */
+export function raiseAuthExpired(startedIn?: number): void {
+  if (typeof window === 'undefined') return;
+  const stale = startedIn !== undefined ? startedIn !== generation : Date.now() - renewedAt < SESSION_RENEWED_GRACE_MS;
+  if (stale) return;
+  window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+}
+
 /** The code the backend puts on every 401 body (`ErrorResponse.code`); server actions return it inside an ApiResult. */
 const UNAUTHORIZED_CODE = 'UNAUTHORIZED';
 
@@ -40,15 +71,16 @@ export function isSessionExpiredResult(value: unknown): boolean {
  * event (the shell). The browser API client dispatches the same event
  * itself for direct 401s; this covers server actions, whose 401 comes back as data.
  */
-export function notifyIfSessionExpired(value: unknown): void {
+export function notifyIfSessionExpired(value: unknown, startedIn?: number): void {
   if (typeof window === 'undefined' || !isAuthExpiredClaimed()) return;
-  if (isSessionExpiredResult(value)) window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+  if (isSessionExpiredResult(value)) raiseAuthExpired(startedIn);
 }
 
 /** Passes a server action's result through, raising `financeos:auth-expired` first when it is a 401. For calls made outside react-query. */
 export async function watchSession<T>(result: Promise<T>): Promise<T> {
+  const startedIn = currentSessionGeneration();
   const value = await result;
-  notifyIfSessionExpired(value);
+  notifyIfSessionExpired(value, startedIn);
   notifyIfAppLocked(value);
   return value;
 }

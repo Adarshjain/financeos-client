@@ -8,7 +8,7 @@ import { login, logoutToDinero } from '@/actions/auth';
 import { Banner } from '@/components/ds/Banner/Banner';
 import { Dialog } from '@/components/ds/Dialog/Dialog';
 import { TextField } from '@/components/ds/TextField/TextField';
-import { AUTH_EXPIRED_EVENT, claimAuthExpired } from '@/lib/authExpiry';
+import { AUTH_EXPIRED_EVENT, claimAuthExpired, markSessionRenewed } from '@/lib/authExpiry';
 import type { ApiResult, UserResponse } from '@/lib/types';
 
 const FORM_ID = 'session-expired-form';
@@ -28,6 +28,8 @@ export function SessionExpiredDialog({ email }: { email?: string }) {
     async (_prev: ApiResult<UserResponse> | null, formData: FormData) => {
       const result = await login(null, formData);
       if (result.success) {
+        // Requests already in flight carry the old cookie: their late 401 must not bring this dialog back.
+        markSessionRenewed();
         setOpen(false);
         setPassword('');
         router.refresh();
