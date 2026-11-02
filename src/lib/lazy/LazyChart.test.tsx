@@ -11,11 +11,7 @@ vi.mock('@/components/organisms/Chart/Chart', () => ({
 const data = { chartType: 'bar' as const, categories: ['A'], series: [{ name: 'S', values: [1] }] };
 
 describe('LazyChart', () => {
-  it('shows the chart once its code has loaded, passing the props through', async () => {
-    render(<LazyChart data={data as never} fill />);
-    expect(await screen.findByTestId('chart')).toHaveAttribute('data-fill', 'true');
-  });
-
+  // First: the module's loaded state is shared, so the skeleton can only be seen before any test has loaded the chart.
   it('draws a chart-sized skeleton while loading', () => {
     const { container } = render(<LazyChart data={data as never} />);
     expect(screen.queryByTestId('chart')).toBeNull();
@@ -24,6 +20,11 @@ describe('LazyChart', () => {
     // The chart's aspect ratio, not Skeleton's own 12px height (which drew a thin line).
     expect(sk.className).toContain('h-auto');
     expect(sk.className).not.toContain('h-space-12');
+  });
+
+  it('shows the chart once its code has loaded, passing the props through', async () => {
+    render(<LazyChart data={data as never} fill />);
+    expect(await screen.findByTestId('chart')).toHaveAttribute('data-fill', 'true');
   });
 
   it('preloads the chart code once, and reports it ready after', async () => {
@@ -39,5 +40,13 @@ describe('LazyChart', () => {
       await preloadChart();
     });
     expect(renderHook(() => useChartReady(false)).result.current).toBe(true);
+  });
+
+  it('draws the chart in the first render once its code is in, with no skeleton in between', async () => {
+    await act(async () => {
+      await preloadChart();
+    });
+    render(<LazyChart data={data as never} />);
+    expect(screen.getByTestId('chart')).toBeInTheDocument();
   });
 });
