@@ -34,6 +34,8 @@ export interface TransactionListRow extends TransactionRowData {
   categoryKey?: string;
   /** "Food · Delivery", for the table's Category column. */
   category?: string;
+  /** The tags' names, in the order the server returns them. */
+  tags?: string[];
   /** Amber words: review reasons and Watching. */
   reviewStatus?: string;
   /** Blue words: links and records. */
@@ -145,6 +147,7 @@ export function transactionRow(t: Transaction, ctx: RowContext): TransactionList
     categoryIcon: shown?.icon as IconName | undefined,
     categoryKey: shown?.key,
     category: shown ? categoryLabel(shown.name, t.subcategory?.name) : undefined,
+    tags: (t.tags ?? []).map((tag) => tag.name),
     reviewStatus: reviewWords(t),
     link: linkWords(t),
     provenance: provenance || undefined,

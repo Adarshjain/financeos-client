@@ -880,3 +880,38 @@ describe('TransactionRow account logo', () => {
     });
   });
 });
+
+describe('TransactionRow tags', () => {
+  const meta = (c: HTMLElement) => c.textContent ?? '';
+
+  it('shows nothing without tags', () => {
+    render(<TransactionRow compact description="A" amount="1.00" tags={[]} />);
+    expect(screen.queryByText(/^\+\d+$/)).toBeNull();
+  });
+
+  it('shows one tag with no count', () => {
+    const { container } = render(<TransactionRow compact description="A" amount="1.00" tags={['Household']} />);
+    expect(meta(container)).toContain('Household');
+    expect(screen.queryByText(/^\+\d+$/)).toBeNull();
+  });
+
+  it('shows the first tag and +n for the rest, on the grey meta line', () => {
+    render(<TransactionRow compact description="A" amount="1.00" provenance="Statement" tags={['Household', 'Trip', 'Q4']} />);
+    expect(screen.getByText('Household')).toBeInTheDocument();
+    expect(screen.queryByText('Trip')).toBeNull();
+    expect(screen.getByText('+2')).toBeInTheDocument();
+    const line = screen.getByText('Household').closest('div');
+    expect(line?.textContent).toBe('Statement·Household+2');
+  });
+
+  it('truncates a long name and keeps the count', () => {
+    render(<TransactionRow compact description="A" amount="1.00" tags={['A very long tag name', 'B']} />);
+    expect(screen.getByText('A very long tag name')).toHaveClass('truncate');
+    expect(screen.getByText('+1')).toHaveClass('shrink-0');
+  });
+
+  it('marks a search match in the tag', () => {
+    const { container } = render(<TransactionRow compact description="A" amount="1.00" tags={['Household']} query="house" />);
+    expect(Array.from(container.querySelectorAll('mark')).map((m) => m.textContent)).toContain('House');
+  });
+});

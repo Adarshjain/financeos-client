@@ -75,6 +75,7 @@ export function MergeDialog({ transactions, accounts, onClose, onMerged }: Merge
             categories={t.category ? [t.category.name] : []}
             subCategory={t.subcategory?.name}
             categoryIcon={t.category?.icon as IconName | undefined}
+            tags={t.tags?.map((tag) => tag.name)}
             unsetCategoryLabel="Uncategorized"
             provenance={mergeSourceLabel(t.source)}
             amount={amountOf(t)}
