@@ -16,7 +16,7 @@ import { LazyReportRowBreakdownDialog } from '@/features/reports/underlying/Lazy
 import type { Account } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
-import { LazyChart as Chart } from '@/lib/lazy/LazyChart';
+import { LazyChart as Chart, useChartReady } from '@/lib/lazy/LazyChart';
 import { useAccount } from '@/lib/query/hooks/useAccounts';
 import { useBalanceSeries } from '@/lib/query/hooks/useBalanceSeries';
 import { AccountType } from '@/lib/types';
@@ -30,19 +30,16 @@ function isNotFound(error: unknown): boolean {
   return e?.status === 404 || e?.code === 'NOT_FOUND' || e?.response?.code === 'NOT_FOUND';
 }
 
-/** The last 30 days as a sparkline; nothing while loading, with fewer than two days, or when the series fails. */
-function Trend({ account }: { account: Account }) {
-  const { data } = useBalanceSeries(account.id, ACCOUNT_TILE_DAYS);
-  const points = Array.isArray(data) ? data : [];
-  if (points.length < 2) return null;
+/** The last 30 days as a sparkline. */
+function Trend({ account, balances, dates }: { account: Account; balances: number[]; dates: string[] }) {
   return (
     <div data-testid="account-trend">
       <Chart
         money
         data={{
           chartType: 'sparkline',
-          categories: points.map((p) => p.date),
-          series: [{ name: account.name, data: trendValues(account, points.map((p) => p.balance)) }],
+          categories: dates,
+          series: [{ name: account.name, data: trendValues(account, balances) }],
           measure: { field: 'balance', aggregation: 'sum' },
         }}
       />
@@ -54,11 +51,18 @@ export function AccountTileBody({ params, className }: BuiltinBodyProps) {
   const accountId = stringParam(params, 'accountId');
   const { data: account, isLoading, error, refetch } = useAccount(accountId ?? '');
   const [open, setOpen] = React.useState(false);
+  // The trend's series and the chart's code are waited for with the account, under the tile's one skeleton; no trend with
+  // fewer than two days, for a broker, or when the series fails.
+  const withTrend = Boolean(account) && account?.type !== AccountType.BROKER;
+  const series = useBalanceSeries(account?.id ?? '', ACCOUNT_TILE_DAYS, { enabled: withTrend });
+  const points = withTrend && Array.isArray(series.data) ? series.data : [];
+  const trending = points.length >= 2;
+  const chartReady = useChartReady(trending);
 
   let body: React.ReactNode;
   if (!accountId) {
     body = <BuiltinNote>Pick an account in Widget settings.</BuiltinNote>;
-  } else if (isLoading && !account) {
+  } else if ((isLoading && !account) || (withTrend && series.isLoading) || (trending && !chartReady)) {
     body = <AccountTileSkeleton />;
   } else if (error || !account) {
     body =
@@ -82,7 +86,7 @@ export function AccountTileBody({ params, className }: BuiltinBodyProps) {
             {figure}
           </Button>
         </Text>
-        {account.type !== AccountType.BROKER ? <Trend account={account} /> : null}
+        {trending ? <Trend account={account} dates={points.map((p) => p.date)} balances={points.map((p) => p.balance)} /> : null}
       </div>
     );
   }
