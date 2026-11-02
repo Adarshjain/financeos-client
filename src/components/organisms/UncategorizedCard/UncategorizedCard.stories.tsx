@@ -15,5 +15,5 @@ const meta: Meta<typeof UncategorizedCard> = {
 export default meta;
 type Story = StoryObj<typeof UncategorizedCard>;
 
-/** No count and no group line, on phone and desktop: the numbers load when Sort them opens. */
+/** One line: the words with a Sort them link, wrapping on phone. No count and no group line. */
 export const Default: Story = {};

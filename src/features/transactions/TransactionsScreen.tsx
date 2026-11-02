@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
@@ -21,6 +22,7 @@ import { defaultAccountId } from './form/transactionFormModel';
 import { TransactionsListPane, type TransactionsListPaneProps } from './list/TransactionsListPane';
 import { parseTxn, transactionsUrl } from './list/transactionsUrl';
 import { OptimisticProvider, useOptimisticLayer } from './optimistic/OptimisticTransactions';
+import { prefetchSort } from './sort/sortQueries';
 
 export interface TransactionsScreenProps extends Omit<TransactionsListPaneProps, 'onAdd' | 'addLoading' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen' | 'selection' | 'onSelectionChange' | 'selectionHeader' | 'wrapRow' | 'onSortThem'> {
   /** The transactions of the open page, in full: the detail reads them instead of asking again. */
@@ -108,6 +110,7 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
   const [tagging, setTagging] = React.useState<Transaction[] | null>(null);
   const [sorting, setSorting] = React.useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
   const addTransaction = useAddTransaction();
   const byId = React.useMemo(() => new Map(transactions.map((t) => [t.id, t])), [transactions]);
   const pageIds = React.useMemo(() => view.list.ok ? view.list.rows.map((r) => r.id) : [], [view.list]);
@@ -138,7 +141,11 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
         detailOpen={detailId !== null}
         onEditCategories={editCategories}
         categoryList={categoryList}
-        onSortThem={() => void sortDialog.run(() => setSorting(true))}
+        onSortThem={() => {
+          // The groups read runs while the dialog's code loads.
+          prefetchSort(queryClient);
+          void sortDialog.run(() => setSorting(true));
+        }}
         selection={selection.ids}
         onSelectionChange={selection.select}
         selectionHeader={
