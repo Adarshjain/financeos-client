@@ -74,12 +74,12 @@ async function setRavi() {
 const APPLIED = ok({ updated: 3, skipped: 0, ruleCreated: false, previousRuleCategoryKey: null, previousRuleSubcategoryKey: null, updatedIds: ['r1', 'r2', 'r3'], userClearedIds: [], ruleMerchantKey: null, ruleMatchType: null });
 
 describe('SortThemDialog while a group is being set', () => {
-  it('locks Later, the close ×, Escape and the rows until the apply answers, then closes only the group', async () => {
+  it('locks Done, the close ×, Escape and the rows until the apply answers, then closes only the group', async () => {
     let finish!: (v: unknown) => void;
     mocks.apply.mockReturnValue(new Promise((resolve) => (finish = resolve)));
     const { onClose, user } = await setRavi();
     await waitFor(() => expect(mocks.apply).toHaveBeenCalled());
-    const later = screen.getByRole('button', { name: 'Later', hidden: true });
+    const later = screen.getByRole('button', { name: 'Done', hidden: true });
     expect(later).toBeDisabled();
     const dialog = later.closest('[role="dialog"]') as HTMLElement;
     const closers = within(dialog).queryAllByRole('button', { name: 'Close' });
@@ -92,7 +92,7 @@ describe('SortThemDialog while a group is being set', () => {
     finish(APPLIED);
     await waitFor(() => expect(screen.queryByText('Why did you pay Ravi?')).toBeNull());
     expect(onClose).not.toHaveBeenCalled();
-    expect(await screen.findByRole('button', { name: 'Later' })).toBeEnabled();
+    expect(await screen.findByRole('button', { name: 'Done' })).toBeEnabled();
     expect(document.querySelector('[inert]')).toBeNull();
   });
 
