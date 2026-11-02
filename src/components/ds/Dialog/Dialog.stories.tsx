@@ -345,3 +345,20 @@ export const Full: Story = {
     </Dialog>
   ),
 };
+
+/** `footer` is pinned above the action buttons while the body scrolls. */
+export const FooterSlot: Story = {
+  render: (args) => (
+    <Dialog open>
+      <Dialog.Content {...args} title="Sort Sharma Medicals" primary={{ label: 'Set for 4' }} footer={<Text variant="body">Applies from the next statement</Text>}>
+        <Dialog.Body>
+          {Array.from({ length: 30 }, (_, i) => (
+            <Text key={i} variant="body" as="p">
+              Row {i + 1}
+            </Text>
+          ))}
+        </Dialog.Body>
+      </Dialog.Content>
+    </Dialog>
+  ),
+};

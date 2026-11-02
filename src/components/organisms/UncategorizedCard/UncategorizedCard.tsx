@@ -8,19 +8,21 @@ import { Text } from '@/components/ds/Text/Text';
 export interface UncategorizedCardProps {
   /** "Sort them" was pressed. */
   onSort?: () => void;
+  /** The pointer went down on "Sort them": the page starts loading before the press completes. */
+  onSortPress?: () => void;
 }
 
 /**
  * The Uncategorized line above the Transactions list: says some transactions need a category, with a "Sort them" link on the same line
  * (it wraps on phone). It carries no count and no groups (they load when Sort them opens). The page shows it only while something is uncategorized.
  */
-export function UncategorizedCard({ onSort }: UncategorizedCardProps) {
+export function UncategorizedCard({ onSort, onSortPress }: UncategorizedCardProps) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-space-6">
       <Text variant="body" tone="ink-2" as="span">
         Some transactions need a category
       </Text>
-      <Button variant="link" onClick={onSort}>
+      <Button variant="link" onClick={onSort} onPointerDown={onSortPress}>
         Sort them
       </Button>
     </div>
