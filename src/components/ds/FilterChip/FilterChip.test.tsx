@@ -179,4 +179,41 @@ describe('FilterChip', () => {
     render(<FilterChip changed>Stocks</FilterChip>);
     expect(screen.queryByRole('button', { name: 'Reset filter' })).toBeNull();
   });
+
+  it('does not toggle to the selected look when a dropdown chip is clicked', () => {
+    const handleSelectedChange = vi.fn();
+    const handleClick = vi.fn();
+    render(
+      <FilterChip hasDropdown onClick={handleClick} onSelectedChange={handleSelectedChange}>
+        Category
+      </FilterChip>,
+    );
+    const chip = screen.getByRole('button', { name: 'Category' });
+    const resting = chip.className;
+    fireEvent.click(chip);
+    fireEvent.click(chip);
+    expect(handleClick).toHaveBeenCalledTimes(2);
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+    expect(chip.className).toBe(resting);
+    expect(chip.className).not.toContain('bg-brand-tint');
+  });
+
+  it('keeps a dropdown chip that has a value in its changed look after clicks', () => {
+    render(
+      <FilterChip hasDropdown changed>
+        Groceries
+      </FilterChip>,
+    );
+    const chip = screen.getByRole('button', { name: 'Groceries' });
+    fireEvent.click(chip);
+    expect(chip.className).toContain('bg-ink');
+    expect(chip.className).not.toContain('bg-brand-tint');
+  });
+
+  it('shows the focus ring for keyboard focus only (focus-visible, not focus)', () => {
+    render(<FilterChip hasDropdown>Account</FilterChip>);
+    const cls = screen.getByRole('button', { name: 'Account' }).className;
+    expect(cls).toContain('focus-visible:ring-2');
+    expect(cls).not.toMatch(/(^|\s)focus:/);
+  });
 });
