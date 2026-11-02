@@ -288,8 +288,8 @@ describe('ReportUnderlyingDialog filters and transaction rows', () => {
     response({
       rowAction: 'transaction',
       filters: [
-        { field: 'account', fieldLabel: 'Account', operator: 'is', text: 'is HDFC Regalia' },
-        { field: 'category', fieldLabel: 'Category', operator: 'is', text: 'is Food' },
+        { field: 'account', fieldLabel: 'Account', operator: 'is', text: 'is HDFC Regalia', valueType: 'text', values: ['HDFC Regalia'] },
+        { field: 'category', fieldLabel: 'Category', operator: 'is', text: 'is Food', valueType: 'text', values: ['Food'] },
       ],
     });
 
@@ -309,7 +309,12 @@ describe('ReportUnderlyingDialog filters and transaction rows', () => {
     vi.mocked(api.POST).mockResolvedValue({
       data: response({
         rowAction: 'transaction',
-        filters: [{ field: 'date', fieldLabel: 'Date', operator: 'between', text: 'Between 01/09/2026 and 30/09/2026' }],
+        filters: [
+          {
+            field: 'date', fieldLabel: 'Date', operator: 'between', text: 'Between 01/09/2026 and 30/09/2026',
+            valueType: 'date', valueFormat: null, datePreset: null, values: ['2026-09-01', '2026-09-30'],
+          },
+        ],
       }),
     } as never);
     renderWithQuery(<ReportUnderlyingDialog request={request} onClose={vi.fn()} />);
