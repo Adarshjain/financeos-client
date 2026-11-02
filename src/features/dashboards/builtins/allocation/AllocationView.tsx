@@ -10,7 +10,7 @@ import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { LazyReportUnderlyingDialog } from '@/features/reports/underlying/LazyReportUnderlyingDialogs';
 import { formatMoney } from '@/lib/format';
-import { LazyChart as Chart } from '@/lib/lazy/LazyChart';
+import { LazyChart as Chart, useChartReady } from '@/lib/lazy/LazyChart';
 import type { ChartData } from '@/lib/reports.types';
 
 import { positionsValueRequest } from '../investmentsLoansData';
@@ -34,7 +34,10 @@ export function AllocationSkeleton() {
 export function AllocationView({ data }: TemplateViewProps) {
   const donut = React.useMemo(() => (data.type === 'CHART' ? allocationDonut(data as ChartData) : null), [data]);
   const [opened, setOpened] = React.useState<{ key: string; label: string; value: number } | null>(null);
+  // The chart's code is fetched once there is a donut to draw, and waited for under the widget's own skeleton.
+  const chartReady = useChartReady(donut !== null);
   if (!donut) return <EmptyState compact description="No open holdings to split yet" />;
+  if (!chartReady) return <AllocationSkeleton />;
   return (
     <div className="px-space-16 pb-space-12" data-testid="allocation-view">
       <Chart

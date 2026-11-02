@@ -18,7 +18,7 @@ import { isAccountClosed } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatCount, formatMoney } from '@/lib/format';
-import { LazyChart as Chart } from '@/lib/lazy/LazyChart';
+import { LazyChart as Chart, useChartReady } from '@/lib/lazy/LazyChart';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { type EmergencyFund, useEmergencyFund } from '@/lib/query/hooks/useEmergencyFund';
 import type { RunReportRequest } from '@/lib/reports.types';
@@ -79,8 +79,11 @@ export function EmergencyFundBody({ className }: BuiltinBodyProps) {
   const { data: fund, isLoading, error, refetch } = useEmergencyFund();
   const [drill, setDrill] = React.useState<{ title: string; request: RunReportRequest } | null>(null);
 
+  // The month bars' code is fetched once the fund is known to have accounts, and waited for under the same skeleton.
+  const chartReady = useChartReady(Boolean(fund && fund.accounts.length > 0));
+
   let body: React.ReactNode;
-  if (isLoading && !fund) {
+  if ((isLoading && !fund) || (fund && fund.accounts.length > 0 && !chartReady)) {
     body = <EmergencyFundSkeleton />;
   } else if (error || !fund) {
     body = <BuiltinError message={getErrorMessage(error, "Couldn't load the emergency fund.")} action={{ label: 'Retry', onSelect: () => void refetch() }} />;
