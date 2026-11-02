@@ -13,8 +13,7 @@ import type { CategoryDef } from '@/lib/categoryList.types';
 import type { Tag } from '@/lib/tags.types';
 import type { AccountType } from '@/lib/types';
 
-import { CategoryFilterChip, TagsFilterChip } from './CategoryFilterChips';
-import { categoryFilterOf } from './categoryFilterModel';
+import { categoryChipLabel, categoryFilterOf, categoryFilterSize, NO_CATEGORY_FILTER, tagChipLabel } from './categoryFilterModel';
 import {
   activeFilterCount,
   amountLabel,
@@ -243,9 +242,9 @@ export interface FilterChipsProps {
   /** Today, YYYY-MM-DD, for the period's date fields. */
   today: string;
   accounts: Account[] | null;
-  /** The user's tags with their counts (the Tags chip). Named `categories` since tags were categories; null when they could not be loaded. */
+  /** The user's tags (names for the Tags chip, shown once set). Named `categories` since tags were categories; null when they could not be loaded. */
   categories: Tag[] | null;
-  /** The fixed category list (the Category chip); null when it could not be loaded. */
+  /** The fixed category list (names for the Category chip, shown once set); null when it could not be loaded. */
   categoryList?: CategoryDef[] | null;
   onChange: (next: Change) => void;
   onOpenFilters: () => void;
@@ -253,12 +252,12 @@ export interface FilterChipsProps {
   search?: FilterBarSearch;
 }
 
-// Phone shows Period, Category, Tags, Account and "All filters"; the rest is desktop-only (the dialog holds the other filters).
+// Phone shows Period, Account and "All filters"; the rest is desktop-only (the dialog holds the other filters).
 const DESK_ONLY = 'max-desk:hidden';
 
 /**
  * The row under the tabs: the search, then period, the dropdown filters, the Status chip, "+ More" and the sort. Amount and Reason show as chips only once set ("+ More" opens them), so the row fits with "Reset filters".
- * On phone only Period, Category, Tags, Account and "All filters" show; "All filters" carries the number of active filters.
+ * On phone only Period, Account and "All filters" show; "All filters" carries the number of active filters.
  */
 export function FilterChips({
   query,
@@ -310,16 +309,6 @@ export function FilterChips({
       onReset={resetAll}
     >
       <PeriodChip query={query} today={today} onChange={onChange} />
-      <CategoryFilterChip
-        value={categoryFilterOf(query)}
-        categories={categoryList}
-        onCommit={(f) => onChange(f)}
-      />
-      <TagsFilterChip
-        value={{ untagged: query.untagged, tags: query.tags }}
-        tags={categories}
-        onCommit={(f) => onChange(f)}
-      />
       <MultiChip
         label="Account"
         changedLabel={accountsLabel}
@@ -351,6 +340,28 @@ export function FilterChips({
         onReset={() => onChange({ type: 'all' })}
         onCommit={(type) => onChange({ type: type as TypeFilter })}
       />
+      {categoryFilterSize(categoryFilterOf(query), categoryList ?? []) > 0 ? (
+        <FilterChip
+          size="md"
+          className={`shrink-0 ${DESK_ONLY}`}
+          changed
+          onReset={() => onChange(NO_CATEGORY_FILTER)}
+          onClick={onOpenFilters}
+        >
+          {categoryChipLabel(categoryFilterOf(query), categoryList ?? [])}
+        </FilterChip>
+      ) : null}
+      {query.untagged || query.tags.length > 0 ? (
+        <FilterChip
+          size="md"
+          className={`shrink-0 ${DESK_ONLY}`}
+          changed
+          onReset={() => onChange({ untagged: false, tags: [] })}
+          onClick={onOpenFilters}
+        >
+          {tagChipLabel({ untagged: query.untagged, tags: query.tags }, categories ?? [])}
+        </FilterChip>
+      ) : null}
       {query.amount !== null ? (
         <FilterChip
           size="md"

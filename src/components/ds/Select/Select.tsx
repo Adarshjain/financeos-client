@@ -25,6 +25,7 @@ import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { TextField } from '../TextField/TextField';
 import { useControllableState } from '../useControllableState';
 import { fitChips } from './fitChips';
+import { childChecked, flattenOptions, initiallyExpanded, parentState, toggleNested } from './nestedOptions';
 
 export interface SelectOption {
   value: string;
@@ -36,6 +37,8 @@ export interface SelectOption {
   disabled?: boolean;
   disabledReason?: React.ReactNode;
   group?: string;
+  /** Multiple only: options under this one. The value stays flat: the parent's value is the whole parent, a child's value only that child. */
+  children?: SelectOption[];
 }
 
 export interface SelectGroup {
@@ -150,6 +153,10 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       if (!multiple) onOpenChange?.(false);
     };
 
+    const selectedValueList = useMemo(
+      () => (Array.isArray(effectiveValue) ? effectiveValue : effectiveValue ? [effectiveValue] : []),
+      [effectiveValue],
+    );
     const selectedValues = useMemo(() => {
       if (effectiveValue === undefined || effectiveValue === null) return new Set<string>();
       if (Array.isArray(effectiveValue)) return new Set(effectiveValue);
@@ -179,10 +186,10 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       return [{ name: '', options }];
     }, [groups, options]);
 
-    // Filter by search query
-    const filteredGroups = useMemo(() => {
-      if (filter === 'none') return processedGroups;
-      if (!searchQuery.trim()) return processedGroups;
+    // Filter by search query. A parent that stays only for a matching child is listed in `forceOpen`: it shows expanded.
+    const { filteredGroups, forceOpen } = useMemo(() => {
+      const forceOpen = new Set<string>();
+      if (filter === 'none' || !searchQuery.trim()) return { filteredGroups: processedGroups, forceOpen };
       const lower = searchQuery.toLowerCase();
       const filterFn =
         typeof filter === 'function'
@@ -195,13 +202,32 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
               return matchesLabel || matchesSearch;
             };
 
-      return processedGroups
+      // A parent matching keeps all its children; otherwise it stays for the children that match.
+      const filteredGroups = processedGroups
         .map((g) => ({
           name: g.name,
-          options: g.options.filter(filterFn),
+          options: g.options.flatMap((opt) => {
+            if (!opt.children?.length) return filterFn(opt) ? [opt] : [];
+            if (filterFn(opt)) return [opt];
+            const hits = opt.children.filter(filterFn);
+            if (hits.length === 0) return [];
+            forceOpen.add(opt.value);
+            return [{ ...opt, children: hits }];
+          }),
         }))
         .filter((g) => g.options.length > 0);
+      return { filteredGroups, forceOpen };
     }, [processedGroups, searchQuery, filter]);
+
+    const [expanded, setExpanded] = useState<string[]>(() =>
+      initiallyExpanded(
+        selectedValueList,
+        processedGroups.flatMap((g) => g.options),
+      ),
+    );
+    const isExpanded = (opt: SelectOption) => forceOpen.has(opt.value) || expanded.includes(opt.value);
+    const toggleExpanded = (v: string) =>
+      setExpanded((now) => (now.includes(v) ? now.filter((x) => x !== v) : [...now, v]));
 
     const totalMatches = useMemo(
       () => filteredGroups.reduce((acc, g) => acc + g.options.length, 0),
@@ -210,9 +236,13 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
 
     const flatEnabledOptions = useMemo(() => {
       return filteredGroups.flatMap((g) =>
-        g.options.filter((opt) => !opt.disabled),
+        g.options.flatMap((opt) => [
+          ...(opt.disabled ? [] : [opt]),
+          ...(isExpanded(opt) ? (opt.children ?? []).filter((c) => !c.disabled) : []),
+        ]),
       );
-    }, [filteredGroups]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filteredGroups, expanded, forceOpen]);
 
     const [highlightedValue, setHighlightedValue] = useState<string | null>(
       null,
@@ -282,8 +312,15 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       }
     };
 
-    const renderOption = (opt: SelectOption) => {
-      const isSelected = selectedValues.has(opt.value);
+    const renderOption = (opt: SelectOption, parent?: SelectOption): React.ReactNode => {
+      const hasChildren = multiple && (opt.children?.length ?? 0) > 0;
+      const rowState = hasChildren
+        ? parentState(selectedValueList, opt)
+        : parent
+          ? childChecked(selectedValueList, parent, opt.value)
+          : selectedValues.has(opt.value);
+      const isSelected = rowState !== false;
+      const open = hasChildren && isExpanded(opt);
       const isDisabled = Boolean(opt.disabled);
       const isHighlighted = opt.value === effectiveHighlighted;
 
@@ -293,8 +330,8 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       });
 
       return (
+        <React.Fragment key={opt.value}>
         <div
-          key={opt.value}
           id={`${id}-opt-${opt.value}`}
           role="option"
           aria-selected={isSelected}
@@ -312,10 +349,11 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
             isHighlighted && !isDisabled && !isSelected && 'bg-hover',
             // Phone sheet: the tick marks the pick, the row keeps no tint.
             isSelected && !multiple && !showRadio && !isDisabled && 'max-desk:bg-transparent max-desk:hover:bg-transparent max-desk:focus:bg-transparent max-desk:active:bg-transparent max-desk:text-ink',
+            parent && 'pl-space-24',
           )}
         >
           {multiple ? (
-            <Checkbox checked={isSelected} className="pointer-events-none shrink-0" />
+            <Checkbox checked={rowState} className="pointer-events-none shrink-0" />
           ) : null}
 
           {showRadio ? (
@@ -357,7 +395,27 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           ) : isSelected && !multiple && !showRadio ? (
             <Icon name="check" size="md" className="ml-auto text-brand-strong shrink-0" />
           ) : null}
+
+          {hasChildren ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              iconOnly
+              className={opt.hint || opt.disabledReason ? undefined : 'ml-auto'}
+              aria-label={open ? 'Collapse' : 'Expand'}
+              aria-expanded={open}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleExpanded(opt.value);
+              }}
+            >
+              <Icon name={open ? 'chevron-down' : 'chevron-right'} size="sm" />
+            </Button>
+          ) : null}
         </div>
+        {open ? (opt.children ?? []).map((child) => renderOption(child, opt)) : null}
+        </React.Fragment>
       );
     };
 
@@ -615,10 +673,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
 
     // Flatten all options to find labels/icons
     const allOptions = useMemo(() => {
-      if (groups) {
-        return groups.flatMap((g) => g.options);
-      }
-      return options;
+      return flattenOptions(groups ? groups.flatMap((g) => g.options) : options);
     }, [groups, options]);
 
     const selectedOptions = useMemo(() => {
@@ -634,13 +689,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
 
     const handleSelect = (val: string) => {
       if (multiple) {
-        const currentArr = Array.isArray(currentValue) ? [...currentValue] : [];
-        const index = currentArr.indexOf(val);
-        const nextArr =
-          index >= 0
-            ? currentArr.filter((item) => item !== val)
-            : [...currentArr, val];
-        setCurrentValue(nextArr);
+        const currentArr = Array.isArray(currentValue) ? currentValue : [];
+        setCurrentValue(toggleNested(currentArr, groups ? groups.flatMap((g) => g.options) : options, val));
       } else {
         setCurrentValue(val);
         setOpen(false);

@@ -17,7 +17,8 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 
 ## Props
 - `value`, `defaultValue`, `onValueChange`: controlled/uncontrolled value (`string | string[]`).
-- `options`: array of `SelectOption` (`value`, `label`, `searchText`, `icon`, `hint`, `description`, `disabled`, `disabledReason`, `group`).
+- `options`: array of `SelectOption` (`value`, `label`, `searchText`, `icon`, `hint`, `description`, `disabled`, `disabledReason`, `group`, `children`).
+- `children` (on an option, with `multiple`): child options shown under the parent row. The value stays a flat `string[]`: a parent's value in the list means the whole parent, a child's value means only that child. The parent row has a Checkbox (checked when its value is in the list, indeterminate when only some children are) and a ghost icon-only Button with a chevron that expands or collapses the children. Toggling a parent that is checked or partly picked removes it and all its children; otherwise it adds the parent and removes its children. Toggling a child of a checked parent removes the parent and adds its other children; picking every child collapses them into the parent. Parents with some children picked are expanded on open. Search matches parent or child labels; a matching child shows under its parent, expanded. Any line under a row (for example "2 of 5 sub-categories") comes from the page through `description`.
 - `groups`: array of `SelectGroup` (`name`, `options`).
 - `multiple`: boolean, enables multi-selection with checkboxes and badges.
 - `searchable`: boolean, embeds search input.
@@ -41,7 +42,7 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 Popover, SectionHeader (group names), TextField, Checkbox (multi), Radio (`showRadio`), Badge (chips in the field), Icon, Button (Cancel, Clear, Done), FieldFrame.
 
 ## Variants
-- **Single select**; **single with search and icons**; **multi select** (checkboxes, Cancel, Clear and Done; chips on one line with +n); **multi with search and create**; **sectioned list**; **with action rows**; **search · create from typing**; **no results**; **with descriptions**; **disabled option**; **custom trigger** (FilterChip).
+- **Single select**; **single with search and icons**; **multi select** (checkboxes, Cancel, Clear and Done; chips on one line with +n); **multi with search and create**; **sectioned list**; **with action rows**; **search · create from typing**; **no results**; **with descriptions**; **disabled option**; **custom trigger** (FilterChip); **nested options** (multiple, optionally searchable).
 - **Small** (`size="sm"`, inline in a list row).
 - Closed field states: value, placeholder, icon, open, chips, overflow, error, disabled, loading.
 

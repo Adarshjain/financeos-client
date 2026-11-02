@@ -626,6 +626,8 @@ for (const viewport of VIEWPORTS) {
         // Phone shows only Period, Account and All filters.
         await expect(page.getByRole('button', { name: 'Period' })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Account' })).toBeVisible();
+        await expect(page.getByRole('button', { name: /^Category/ })).not.toBeVisible();
+        await expect(page.getByRole('button', { name: /^Tags/ })).not.toBeVisible();
         await expect(page.getByRole('button', { name: /^Type/ })).not.toBeVisible();
         await expect(page.getByRole('button', { name: /^Status/ })).not.toBeVisible();
 

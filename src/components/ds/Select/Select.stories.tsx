@@ -378,3 +378,45 @@ export const PhoneSheetMulti: Story = {
   globals: { viewport: { value: 'phone', isRotated: false } },
   args: { label: 'Categories', multiple: true, options: standardOptions, defaultValue: ['option-a', 'option-b'], defaultOpen: true },
 };
+
+const nestedOptions: SelectOption[] = [
+  { value: 'none', label: 'Unsorted' },
+  {
+    value: 'food',
+    label: 'Food and drink',
+    children: [
+      { value: 'groceries', label: 'Groceries' },
+      { value: 'restaurants', label: 'Restaurants' },
+      { value: 'coffee', label: 'Coffee' },
+    ],
+  },
+  {
+    value: 'travel',
+    label: 'Travel',
+    children: [
+      { value: 'flights', label: 'Flights' },
+      { value: 'hotels', label: 'Hotels' },
+    ],
+  },
+  { value: 'rent', label: 'Rent' },
+];
+
+export const NestedOptions: Story = {
+  parameters: phoneNote('Multiple with `children` on an option: a parent row (checked, or half-ticked when only some children are picked) with a chevron that expands its children. The value stays a flat list.'),
+  render: function Render(args) {
+    const [{ value }, updateArgs] = useArgs<typeof args>();
+    return (
+      <Select
+        {...args}
+        multiple
+        searchable
+        value={(value as string[] | undefined) ?? []}
+        onValueChange={(val) => {
+          updateArgs({ value: val });
+          args.onValueChange?.(val);
+        }}
+      />
+    );
+  },
+  args: { label: 'Category', placeholder: 'Any category', searchPlaceholder: 'Search categories', options: nestedOptions, value: ['groceries', 'coffee'], defaultOpen: true },
+};

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Account } from '@/lib/account.types';
 
 import { activeFilterCount, activeFilterWords, amountLabel, filterAccounts, periodLabel, REASON_OPTIONS } from './filterOptionsModel';
-import { amountFromDraft, changedFilters, draftFromQuery, queryFromDraft } from './filtersDraftModel';
+import { amountFromDraft, changedFilters, draftFromQuery, type FiltersDraft, queryFromDraft } from './filtersDraftModel';
 import { ALL_TIME, DEFAULT_QUERY } from './transactionsUrl';
 
 describe('draft', () => {
@@ -91,7 +91,7 @@ describe('every chip-row filter lives in the draft', () => {
 });
 
 describe('changedFilters', () => {
-  const words = { period: 'Last 14 days', accounts: '2 accounts', categories: 'Groceries', type: 'Expense', amount: 'Over ₹500', review: 'Needs review', reason: 'Duplicate', source: 'Manual' };
+  const words = { period: 'Last 14 days', accounts: '2 accounts', category: 'Groceries', tags: 'Work', type: 'Expense', amount: 'Over ₹500', review: 'Needs review', reason: 'Duplicate', source: 'Manual' };
 
   it('is empty for the defaults', () => {
     expect(changedFilters(draftFromQuery(DEFAULT_QUERY), words)).toEqual([]);
@@ -107,5 +107,28 @@ describe('changedFilters', () => {
     ]);
     const type = changed.find((c) => c.id === 'type')!;
     expect(changedFilters({ ...draft, ...type.reset }, words).some((c) => c.id === 'type')).toBe(false);
+  });
+});
+
+describe('category and tag drafts', () => {
+  const words = { period: '', accounts: '', category: 'Category · Food', tags: 'Tags · 2', type: '', amount: '', review: '', reason: '', source: '' };
+  const base = draftFromQuery(DEFAULT_QUERY);
+
+  it('round-trips through the query and leaves the rest of it alone', () => {
+    const draft = { ...base, category: { uncategorized: true, categories: ['food'], subcategories: ['food.delivery'] }, tagFilter: { untagged: true, tags: ['t1'] } };
+    const query = queryFromDraft(DEFAULT_QUERY, draft);
+    expect(query).toMatchObject({ uncategorized: true, categories: ['food'], subcategories: ['food.delivery'], untagged: true, tags: ['t1'] });
+    expect(draftFromQuery(query)).toEqual(draft);
+  });
+
+  it('lists a changed category and tag filter, each reset putting it back', () => {
+    const draft: FiltersDraft = { ...base, category: { uncategorized: false, categories: ['food'], subcategories: [] }, tagFilter: { untagged: false, tags: ['t1'] } };
+    const changed = changedFilters(draft, words);
+    expect(changed.map((c) => [c.id, c.section, c.label])).toEqual([
+      ['category', 'accountCategory', 'Category · Food'],
+      ['tags', 'accountCategory', 'Tags · 2'],
+    ]);
+    const reset = changed.reduce<FiltersDraft>((d, c) => ({ ...d, ...c.reset }), draft);
+    expect(changedFilters(reset, words)).toEqual([]);
   });
 });

@@ -153,3 +153,44 @@ export function visibleCategories(
   }
   return out;
 }
+
+/** The Category field's value for the uncategorized pick; category and sub-category keys are the rest. */
+export const UNCATEGORIZED_VALUE = '__uncategorized';
+export const UNTAGGED_VALUE = '__untagged';
+
+/** The filter as the Category field's flat list: Uncategorized, a whole category by its key, a narrowed one by its sub-category keys. */
+export function categoryFieldValue(f: CategoryFilter, list: readonly CategoryDef[]): string[] {
+  const out: string[] = f.uncategorized ? [UNCATEGORIZED_VALUE] : [];
+  for (const category of filterCategories(list)) {
+    const narrowed = narrowedTo(f, category);
+    if (narrowed.length > 0 && narrowed.length < category.subs.length) out.push(...subKeysOf(category).filter((k) => narrowed.includes(k)));
+    else if (narrowed.length > 0 || f.categories.includes(category.key)) out.push(category.key);
+  }
+  return out;
+}
+
+/** The inverse of `categoryFieldValue`: a picked category key is whole, picked sub-category keys narrow their category. */
+export function categoryFilterFromField(value: readonly string[], list: readonly CategoryDef[]): CategoryFilter {
+  const categories: string[] = [];
+  const subcategories: string[] = [];
+  for (const category of filterCategories(list)) {
+    if (value.includes(category.key)) {
+      categories.push(category.key);
+      continue;
+    }
+    const hits = subKeysOf(category).filter((k) => value.includes(k));
+    if (hits.length > 0) {
+      categories.push(category.key);
+      subcategories.push(...hits);
+    }
+  }
+  return { uncategorized: value.includes(UNCATEGORIZED_VALUE), categories, subcategories };
+}
+
+export function tagFieldValue(f: TagFilter): string[] {
+  return [...(f.untagged ? [UNTAGGED_VALUE] : []), ...f.tags];
+}
+
+export function tagFilterFromField(value: readonly string[]): TagFilter {
+  return { untagged: value.includes(UNTAGGED_VALUE), tags: value.filter((v) => v !== UNTAGGED_VALUE) };
+}

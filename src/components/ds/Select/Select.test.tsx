@@ -542,3 +542,85 @@ describe('Select single with create (person picker)', () => {
     expect(screen.queryByPlaceholderText('Type a name')).not.toBeInTheDocument();
   });
 });
+
+describe('Select nested options', () => {
+  const nested: SelectOption[] = [
+    { value: 'none', label: 'Unsorted' },
+    {
+      value: 'food',
+      label: 'Food',
+      children: [
+        { value: 'groceries', label: 'Groceries' },
+        { value: 'coffee', label: 'Coffee' },
+        { value: 'dining', label: 'Dining' },
+      ],
+    },
+  ];
+  function Harness({ start = [] as string[], onChange }: { start?: string[]; onChange?: (v: string[]) => void }) {
+    const [value, setValue] = React.useState<string[]>(start);
+    return (
+      <Select
+        multiple
+        searchable
+        defaultOpen
+        label="Category"
+        options={nested}
+        value={value}
+        onValueChange={(v) => {
+          setValue(v as string[]);
+          onChange?.(v as string[]);
+        }}
+      />
+    );
+  }
+  const row = (name: string) => screen.getByRole('option', { name });
+
+  it('shows children only once the parent is expanded, expanding on the chevron', () => {
+    render(<Harness />);
+    expect(screen.queryByText('Groceries')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Expand' }));
+    expect(screen.getByText('Groceries')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse' }));
+    expect(screen.queryByText('Groceries')).toBeNull();
+  });
+
+  it('opens expanded and half-ticked when only some children are picked', () => {
+    render(<Harness start={['coffee']} />);
+    expect(screen.getByText('Groceries')).toBeTruthy();
+    expect(row('Food').querySelector('[aria-checked="mixed"]')).not.toBeNull();
+  });
+
+  it('keeps a whole parent collapsed on open', () => {
+    render(<Harness start={['food']} />);
+    expect(screen.queryByText('Groceries')).toBeNull();
+    expect(row('Food').getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('toggles a parent whole, then clears it with its children', () => {
+    const onChange = vi.fn();
+    render(<Harness start={['coffee']} onChange={onChange} />);
+    fireEvent.click(row('Food'));
+    expect(onChange).toHaveBeenLastCalledWith([]);
+    fireEvent.click(row('Food'));
+    expect(onChange).toHaveBeenLastCalledWith(['food']);
+  });
+
+  it('splits a whole parent when one child is unticked, and folds back when all are picked', () => {
+    const onChange = vi.fn();
+    render(<Harness start={['food']} onChange={onChange} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Expand' }));
+    fireEvent.click(row('Coffee'));
+    expect(onChange).toHaveBeenLastCalledWith(['groceries', 'dining']);
+    fireEvent.click(row('Coffee'));
+    expect(onChange).toHaveBeenLastCalledWith(['food']);
+  });
+
+  it('search matches a child and shows it under its expanded parent', () => {
+    render(<Harness />);
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'coff' } });
+    expect(screen.getByText('Food')).toBeTruthy();
+    expect(screen.getByText('Coffee')).toBeTruthy();
+    expect(screen.queryByText('Groceries')).toBeNull();
+    expect(screen.queryByText('Unsorted')).toBeNull();
+  });
+});
