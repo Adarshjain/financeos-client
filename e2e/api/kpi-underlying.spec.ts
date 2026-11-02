@@ -78,13 +78,16 @@ test.describe('KPI underlying data: transactions (@api)', () => {
       sortKey: null,
       sortDirection: null,
     });
-    expect(current.filters).toEqual([
-      { field: 'tag', fieldLabel: 'Tag', operator: 'in', text: `in ${ds.food.name}, ${ds.travel.name}` },
+    expect(current.filters).toMatchObject([
+      { field: 'tag', fieldLabel: 'Tag', operator: 'in', text: `in ${ds.food.name}, ${ds.travel.name}`, valueType: 'text', values: [ds.food.name, ds.travel.name] },
       {
         field: 'date',
         fieldLabel: 'Date',
         operator: 'between',
         text: `Between ${ddmmyyyy(ds.current.from)} and ${ddmmyyyy(ds.current.to)}`,
+        valueType: 'date',
+        datePreset: null,
+        values: [ds.current.from, ds.current.to],
       },
     ]);
     const table = tableOf(current);
@@ -226,6 +229,19 @@ test.describe('KPI underlying data: transactions (@api)', () => {
         ],
       })
     );
+    expect(res.filters.map((f) => [f.operator, f.valueType, f.valueFormat, f.values])).toEqual([
+      ['in', 'text', null, [ds.food.name, ds.travel.name]],
+      ['not_in', 'text', null, ['Rent']],
+      ['is', 'text', null, [ds.account.name]],
+      ['is_not', 'text', null, ['credit_card']],
+      ['is', 'text', null, ['DEBIT']],
+      ['is', 'boolean', null, [false]],
+      ['contains', 'text', null, ['o']],
+      ['starts_with', 'text', null, ['Z']],
+      ['greater_than', 'number', 'currency', [99.5]],
+      ['between', 'number', 'currency', [100, 1000]],
+      ['last_x_days', 'date', null, [3650]],
+    ]);
     expect(res.filters.map((f) => [f.fieldLabel, f.text])).toEqual([
       ['Tag', `in ${ds.food.name}, ${ds.travel.name}`],
       ['Tag', 'not in Rent'],
@@ -246,7 +262,9 @@ test.describe('KPI underlying data: transactions (@api)', () => {
       api,
       kpiBody('transactions', { measure: 'spend', aggregation: 'sum', filters: [{ field: 'date', operator: 'this_month' }] })
     );
-    expect(named.filters).toEqual([{ field: 'date', fieldLabel: 'Date', operator: 'this_month', text: 'This month' }]);
+    expect(named.filters).toEqual([
+      { field: 'date', fieldLabel: 'Date', operator: 'this_month', text: 'This month', valueType: 'date', valueFormat: null, datePreset: 'this_month', values: [] },
+    ]);
   });
 
   test('a list of rows that needs more than one page is paged 0-based, default 25, capped at 1000', async ({ request }) => {
@@ -468,12 +486,14 @@ test.describe('KPI underlying data: computed datasources (@api)', () => {
       range: { from: current.from, to: current.to },
       previousRange: previousWindowOf(current),
     });
-    expect(now.filters).toEqual([
+    expect(now.filters).toMatchObject([
       {
         field: 'entryDate',
         fieldLabel: 'Entry Date',
         operator: 'between',
         text: `Between ${ddmmyyyy(current.from)} and ${ddmmyyyy(current.to)}`,
+        valueType: 'date',
+        values: [current.from, current.to],
       },
     ]);
     // No identifying-columns hook: the first date field, up to three table dimensions (never id), then the measure.
