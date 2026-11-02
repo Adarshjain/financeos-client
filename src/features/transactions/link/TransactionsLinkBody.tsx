@@ -91,6 +91,7 @@ export function TransactionsLinkBody({ type, state, accounts, multi }: Transacti
                 date={formatDate(t.date, 'list')}
                 account={accountOf(accounts, t.accountId).name}
                 plastic={last4 ? `••${last4}` : undefined}
+                tags={t.tags?.map((tag) => tag.name)}
                 provenance={multi ? undefined : roleLabel(type, role)}
                 amount={item.isCredit ? `+${amount}` : amount}
                 isCredit={item.isCredit}

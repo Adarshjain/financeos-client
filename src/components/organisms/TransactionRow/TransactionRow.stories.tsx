@@ -120,6 +120,10 @@ const meta: Meta<typeof TransactionRow> = {
       control: 'object',
       description: 'Assigned categories array',
     },
+    tags: {
+      control: 'object',
+      description: 'Tag names: the first rides the meta line, "+n" counts the rest',
+    },
     link: {
       control: 'object',
       description: 'Link object or label',
@@ -160,6 +164,7 @@ interface LiveTransaction extends TransactionRowData {
   amount: number;
   account: string;
   categories: string[];
+  tags?: string[];
   balanceInr?: number;
   link?: string | TransactionLink;
   tone?: 'default' | 'warning';
@@ -178,6 +183,7 @@ const liveTransactions: LiveTransaction[] = [
     reviewStatus: 'Unreconciled',
     provenance: 'Statement',
     categories: ['Groceries'],
+    tags: ['Household'],
   },
   {
     id: 'oct-02',
@@ -828,6 +834,7 @@ export const TransactionsList: StoryObj = {
                   link={r.link}
                   provenance={r.provenance}
                   categories={r.categories}
+                  tags={r.tags}
                   unsetCategoryLabel="Set category"
                   onSetCategory={() => editCategories(r)}
                   onCategoryClick={() => editCategories(r)}
@@ -1031,6 +1038,21 @@ export const CategoryPill: Story = {
       <TransactionRow {...args} description="Swiggy" amount="486.00" balance="₹59,919" account="HDFC Bank Savings" accountLogo={<BankLogo bankId="hdfc" name="HDFC Bank Savings" size="sm" />} provenance="UPI" categories={[]} unsetCategoryLabel="Set category" />
     </div>
   ),
+};
+
+/** Tags close the grey meta line: none shows nothing, one shows its name, more show the first and "+n"; a long name truncates and keeps its "+n". */
+export const Tags: Story = {
+  render: (args) => {
+    const row = { ...args, compact: true, date: '12 Oct', account: 'HDFC Bank Savings', provenance: 'UPI', categories: ['Groceries'], categoryIcon: 'cat-shopping-cart' as const };
+    return (
+      <div>
+        <TransactionRow {...row} description="No tags" amount="212.00" />
+        <TransactionRow {...row} description="One tag" amount="1,140.00" tags={['Household']} />
+        <TransactionRow {...row} description="Three tags" amount="486.00" tags={['Household', 'Reimbursable', 'Q4 budget']} />
+        <TransactionRow {...row} description="Long tag name" amount="3,600.00" tags={['Reimbursable by the company after the quarterly review', 'Household']} />
+      </div>
+    );
+  },
 };
 
 /** The phone layout at every width, for rows outside a DataTable (dialogs, pickers, the search palette): the date joins the context line. */
@@ -1272,6 +1294,57 @@ export const Desktop: StoryObj = {
           plastic={row.plastic}
           reviewStatus={row.reviewStatus}
           categories={row.category ? [row.category] : undefined}
+          isCredit={row.isCredit}
+          selectable={rowProps.selectable}
+          selected={rowProps.selected}
+          onSelectedChange={rowProps.onSelectedChange}
+        />
+      )}
+    />
+  ),
+};
+
+const tagRows: TransactionRowData[] = [
+  { ...sampleTransaction, id: 'tag-0', description: 'No tags' },
+  { ...sampleTransaction, id: 'tag-1', description: 'One tag' },
+  { ...sampleTransaction, id: 'tag-3', description: 'Three tags' },
+  { ...sampleTransaction, id: 'tag-long', description: 'Long tag name' },
+];
+
+/** Desktop layout: the tag sits on the grey line under the description, after the other meta words. */
+export const TagsDesktop: StoryObj = {
+  parameters: { frame: 'page' },
+  decorators: [
+    (Story) => (
+      <Card className="w-full max-w-5xl p-0 overflow-hidden">
+        <Story />
+      </Card>
+    ),
+  ],
+  render: () => (
+    <DataTable
+      columns={transactionColumns}
+      data={tagRows}
+      getRowId={(r) => r.id}
+      renderRow={(row, rowProps) => (
+        <TransactionRow
+          key={row.id}
+          date={row.date}
+          description={row.description}
+          amount={row.formattedAmount ?? String(row.amount)}
+          balance={row.balance}
+          account={row.account}
+          plastic={row.plastic}
+          categories={row.category ? [row.category] : undefined}
+          tags={
+            row.id === 'tag-1'
+              ? ['Household']
+              : row.id === 'tag-3'
+                ? ['Household', 'Reimbursable', 'Q4 budget']
+                : row.id === 'tag-long'
+                  ? ['Reimbursable by the company after the quarterly review', 'Household']
+                  : undefined
+          }
           isCredit={row.isCredit}
           selectable={rowProps.selectable}
           selected={rowProps.selected}

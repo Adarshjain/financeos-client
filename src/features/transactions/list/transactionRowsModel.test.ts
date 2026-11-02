@@ -97,6 +97,11 @@ describe('transactionRow', () => {
     expect(transactionRow(t({ cardLast4: '3356', cardLabel: 'You' }), ctx).plastic).toBeUndefined();
   });
 
+  it('carries the tag names, none when the row has no tags', () => {
+    expect(transactionRow(t({ tags: [{ id: '1', name: 'Household' }, { id: '2', name: 'Trip' }] }), ctx).tags).toEqual(['Household', 'Trip']);
+    expect(transactionRow(t(), ctx).tags).toEqual([]);
+  });
+
   it('maps a list', () => {
     expect(transactionRows([t(), t({ id: 't2' })], ctx).map((r) => r.id)).toEqual(['t1', 't2']);
   });

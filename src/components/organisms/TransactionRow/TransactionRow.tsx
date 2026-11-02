@@ -70,6 +70,9 @@ export interface TransactionRowProps
   /** Callback when +n categories chip is clicked */
   onMoreCategoriesClick?: () => void;
 
+  /** The transaction's tags, on the grey meta line: the first one as text and "+n" for the rest (never more than one name). */
+  tags?: string[];
+
   /** Visual tone: 'default' | 'warning' (e.g. monitored) */
   tone?: 'default' | 'warning';
   /** Whether row is disabled: dimmed and not interactive */
@@ -128,6 +131,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       categories,
       subCategory,
       categoryIcon,
+      tags,
       unsetCategoryLabel,
       onSetCategory,
       onCategoryClick,
@@ -321,6 +325,18 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         </>
       );
     };
+    // Tags close the meta line (phone line 2, the desktop line under the description): the first name, then "+n".
+    if (tags && tags.length > 0) {
+      const el = (
+        <span key="tags" className="inline-flex min-w-0 max-w-full items-center gap-x-space-4">
+          <span className="truncate">{mark(tags[0])}</span>
+          {tags.length > 1 && <span className="shrink-0">+{tags.length - 1}</span>}
+        </span>
+      );
+      contextElements.push(el);
+      desktopContextElements.push(el);
+    }
+
     const categoryPills = renderCategories();
     const accountEl =
       account || plastic ? (

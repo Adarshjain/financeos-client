@@ -167,6 +167,7 @@ export function TransactionsList({
                 categories={r.categories}
                 subCategory={r.subCategory}
                 categoryIcon={r.categoryIcon}
+                tags={r.tags}
                 unsetCategoryLabel="Set category"
                 onSetCategory={onEditCategories ? () => onEditCategories(r.id) : undefined}
                 onCategoryClick={onEditCategories ? () => onEditCategories(r.id) : undefined}
