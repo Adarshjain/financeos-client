@@ -329,7 +329,7 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
                     {data.filters.map((f, i) => (
                       <li key={`${f.field}-${i}`}>
                         <Badge variant="outline">
-                          {f.fieldLabel} {filterChipText(f.text)}
+                          {f.fieldLabel} {filterChipText(f)}
                         </Badge>
                       </li>
                     ))}

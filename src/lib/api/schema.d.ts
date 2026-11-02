@@ -8880,10 +8880,16 @@ export interface components {
             value?: number | null;
         };
         UnderlyingFilterChip: {
+            datePreset?: string | null;
             field: string;
             fieldLabel: string;
             operator: string;
             text: string;
+            valueFormat?: string | null;
+            valueType: string;
+            values: ({
+                [key: string]: unknown;
+            } | string | number | boolean)[];
         };
         UnderlyingPnl: {
             pnl: number;
