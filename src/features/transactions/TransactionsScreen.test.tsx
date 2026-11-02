@@ -168,6 +168,7 @@ describe('TransactionsScreen', () => {
         txn({ id: ID, description: 'Old purchase', sourcedDescription: 'UPI/OLD', date: '2024-01-05' }),
       );
       window.history.replaceState(null, '', `/transactions?txn=${ID}`);
+      urlParams.current = new URLSearchParams(`txn=${ID}`);
       const replaceState = vi.spyOn(window.history, 'replaceState');
       setup({ query: { ...DEFAULT_QUERY, txn: ID } });
 
@@ -187,6 +188,7 @@ describe('TransactionsScreen', () => {
       const { fetchTransaction } = await import('./detail/transactionDetailApi');
       vi.mocked(fetchTransaction).mockRejectedValue(Object.assign(new Error('Not found'), { status: 404 }));
       window.history.replaceState(null, '', `/transactions?txn=${ID}`);
+      urlParams.current = new URLSearchParams(`txn=${ID}`);
       setup({ query: { ...DEFAULT_QUERY, txn: ID } });
 
       await waitFor(() => expect(window.location.search).toBe(''));
@@ -196,15 +198,28 @@ describe('TransactionsScreen', () => {
 
     it('opens one already on the page without fetching it', async () => {
       const { fetchTransaction } = await import('./detail/transactionDetailApi');
+      urlParams.current = new URLSearchParams('txn=t1');
       setup({ query: { ...DEFAULT_QUERY, txn: 't1' } });
       expect(screen.getByText('UPI/BIGBASKET')).toBeInTheDocument();
       expect(fetchTransaction).not.toHaveBeenCalled();
+    });
+
+    it('does not reopen a closed detail when the server props still carry its ?txn (Back, router cache) but the address does not', async () => {
+      const { fetchTransaction } = await import('./detail/transactionDetailApi');
+      window.history.replaceState(null, '', '/transactions');
+      urlParams.current = new URLSearchParams();
+      setup({ query: { ...DEFAULT_QUERY, txn: 't1' } });
+      expect(screen.queryByText('UPI/BIGBASKET')).toBeNull();
+      expect(spacer()).toBeNull();
+      expect(fetchTransaction).not.toHaveBeenCalled();
+      expect(screen.getAllByText('BigBasket').length).toBeGreaterThan(0);
     });
 
     it('keeps the panel, its Retry and the address when the load fails for another reason than not found', async () => {
       const { fetchTransaction } = await import('./detail/transactionDetailApi');
       vi.mocked(fetchTransaction).mockRejectedValue(Object.assign(new Error('Server error'), { status: 500 }));
       window.history.replaceState(null, '', `/transactions?txn=${ID}`);
+      urlParams.current = new URLSearchParams(`txn=${ID}`);
       setup({ query: { ...DEFAULT_QUERY, txn: ID } });
 
       expect(await screen.findByText("Couldn't load this transaction.")).toBeInTheDocument();

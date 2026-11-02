@@ -62,11 +62,13 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
   // Seeds the client cache, so the picker opens with its list at hand.
   useCategoryList(categoryList ?? undefined);
   // A link with ?txn=<id> opens that transaction at once; the panel fetches it by id when it is not on this page.
-  const [detailId, setDetailIdState] = React.useState<string | null>(view.query.txn);
-  const [txnInUrl, setTxnInUrl] = React.useState(view.query.txn !== null);
+  // The address is the truth, not the server props: Back (or the router cache) can hand this page the props of an
+  // entry whose ?txn was closed later by a history.replaceState, and those props would reopen a closed detail.
+  const txnParam = parseTxn(useSearchParams().get('txn'));
+  const [detailId, setDetailIdState] = React.useState<string | null>(txnParam);
+  const [txnInUrl, setTxnInUrl] = React.useState(txnParam !== null);
   // The address changing to another ?txn while this page stays mounted (a link from search, a second deep link
   // after one was closed) opens that transaction too.
-  const txnParam = parseTxn(useSearchParams().get('txn'));
   const [seenTxn, setSeenTxn] = React.useState(txnParam);
   if (txnParam !== seenTxn) {
     setSeenTxn(txnParam);
@@ -88,7 +90,7 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
   const formDialog = useLazyDialog(loadFormDialog);
   const linkDialog = useLazyDialog(loadLinkDialog);
   const setDetailId = (id: string | null) => {
-    if (id !== view.query.txn || id === null) dropTxn();
+    if (id !== txnParam || id === null) dropTxn();
     // The first open waits for the panel's code; closing never does, and it drops an open still waiting for it.
     if (id === null) {
       detail.cancel();

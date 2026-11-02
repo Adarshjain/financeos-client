@@ -215,6 +215,47 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     expect(previous.suggestedFilename()).not.toBe(current.suggestedFilename());
   });
 
+  test('a row opened from the underlying data and closed stays closed when the browser comes Back to it @mobile', async ({ page }) => {
+    test.slow();
+    const seed = await seedSpend(api, 3);
+    const report = await spendKpi(api, 'VUD Back', seed);
+    const board = await dashboardWith(api, 'VUD Back Board', [report.id]);
+
+    await page.goto(`/dashboards/${board.id}`);
+    await widgetCard(page).getByRole('button', { name: /₹/ }).click({ timeout: 45_000 });
+    const vud = dialogOf(page);
+    await expect(vud.getByText(/3 transactions make up this figure/)).toBeVisible({ timeout: 45_000 });
+    await bodyRows(vud).filter({ hasText: rowName(2) }).click();
+
+    // The row opens on Transactions with its detail; closing takes ?txn out of the address.
+    const detail = page.getByRole('dialog', { name: rowName(2) });
+    await expect(detail).toBeVisible({ timeout: 45_000 });
+    await expect(page).toHaveURL(new RegExp(`txn=${seed.ids[rowName(2)]}`));
+    await page.keyboard.press('Escape');
+    await expect(detail).toHaveCount(0);
+    await expect(page).not.toHaveURL(/txn=/);
+
+    // Elsewhere through the router (a link, no reload), then Back: the detail must stay closed.
+    const palette = page.getByRole('dialog', { name: 'Search' });
+    const phone = (page.viewportSize()?.width ?? 1440) < 641;
+    const trigger = phone
+      ? page.getByRole('button', { name: 'Search', exact: true })
+      : page.locator('nav.w-container-xs').getByRole('button', { name: /Search/ });
+    await expect(async () => {
+      await trigger.click();
+      await expect(palette).toBeVisible({ timeout: 3_000 });
+    }).toPass({ timeout: 30_000 });
+    await page.getByRole('searchbox').fill('Accounts');
+    await palette.getByRole('option').filter({ hasText: /^Accounts$/ }).click();
+    await expect(page).toHaveURL(/\/accounts/);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/transactions/);
+    await expect(page).not.toHaveURL(/txn=/);
+    await expect(page.getByText(rowName(2)).first()).toBeVisible({ timeout: 30_000 });
+    await page.waitForTimeout(1_000);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  });
+
   test('net worth: one table per side headed by its total, what is not counted, and each row breaks down to its ledger', async ({ page }) => {
     test.slow();
     const savings = await createBankAccount(api, { name: 'NW Savings', openingBalance: 10000 });

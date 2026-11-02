@@ -98,6 +98,52 @@ for (const viewport of VIEWPORTS) {
       await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
     });
 
+    test('a transaction opened from search and closed stays closed on Back, and a deep link still opens it once', async ({ page }) => {
+      test.slow();
+      const { rent } = await seedList();
+      await page.goto('/accounts');
+      const palette = page.getByRole('dialog', { name: 'Search' });
+      const trigger = phone
+        ? page.getByRole('button', { name: 'Search', exact: true })
+        : page.locator('nav.w-container-xs').getByRole('button', { name: /Search/ });
+      // A click before hydration does nothing; retry until the palette opens.
+      await expect(async () => {
+        await trigger.click();
+        await expect(palette).toBeVisible({ timeout: 3_000 });
+      }).toPass({ timeout: 45_000 });
+      await page.getByRole('searchbox').fill('Rent Advance');
+      await palette.getByRole('option', { name: /^Rent Advance / }).click({ timeout: 30_000 });
+
+      const detail = page.getByRole('dialog', { name: 'Rent Advance' });
+      await expect(detail).toBeVisible({ timeout: 30_000 });
+      await expect(page).toHaveURL(new RegExp(`txn=${rent.id}`));
+      await page.keyboard.press('Escape');
+      await expect(detail).toHaveCount(0);
+      await expect(page).not.toHaveURL(/txn=/);
+
+      // Away to another page through the router, then Back: the closed detail must not come back.
+      await expect(async () => {
+        await trigger.click();
+        await expect(palette).toBeVisible({ timeout: 3_000 });
+      }).toPass({ timeout: 15_000 });
+      await page.getByRole('searchbox').fill('Accounts');
+      await palette.getByRole('option').filter({ hasText: /^Accounts$/ }).click();
+      await expect(page).toHaveURL(/\/accounts/);
+      await page.goBack();
+      await expect(page).toHaveURL(/\/transactions/);
+      await expect(page).not.toHaveURL(/txn=/);
+      await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
+      await page.waitForTimeout(1_000);
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+
+      // A deep link still opens the detail once, and closing it takes ?txn out of the address.
+      await open(page, `?txn=${rent.id}`);
+      await expect(page.getByRole('dialog', { name: 'Rent Advance' })).toBeVisible({ timeout: 30_000 });
+      await page.keyboard.press('Escape');
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+      await expect(page).not.toHaveURL(/txn=/);
+    });
+
     test('?txn with an unknown id opens no dialog and the list renders', async ({ page }) => {
       await seedList();
       await open(page, '?txn=00000000-0000-4000-8000-000000000000');
