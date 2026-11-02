@@ -25,8 +25,6 @@ import { initialsOf } from '@/lib/format/initials';
 import {
   applyUncategorized,
   loadGroupTransactions,
-  loadUncategorizedGroups,
-  loadUncategorizedSummary,
 } from '@/lib/query/actions/uncategorizedActions';
 import { useCategoryList } from '@/lib/query/hooks/useCategoryList';
 import { useCategoryRecent } from '@/lib/query/hooks/useCategoryRecent';
@@ -44,6 +42,7 @@ import {
   SORT_PAGE_SIZE,
   type StagedGroup,
 } from './sortModel';
+import { sortGroupsQuery, sortSummaryQuery } from './sortQueries';
 
 export interface SortThemDialogProps {
   /** Closed: Later, ×, or after Save. */
@@ -131,20 +130,13 @@ export function SortThemDialog({ onClose }: SortThemDialogProps) {
   const recent = useCategoryRecent(direction, picking);
 
   const { data, isPending, isError } = useQuery({
-    queryKey: keys.transactions.uncategorizedGroups(page, SORT_PAGE_SIZE),
-    queryFn: () => unwrapAction(loadUncategorizedGroups(page, SORT_PAGE_SIZE)),
+    ...sortGroupsQuery(page),
     placeholderData: keepPreviousData,
-    // Reopening after categorising elsewhere shows fresh rows.
-    staleTime: 0,
+    // Cached rows show at once and are re-read on every open (the prefetch's request is joined while in flight).
     refetchOnMount: 'always',
   });
   // The card carries no number: the title and the one-offs count come from the summary read when the dialog opens.
-  const summary = useQuery({
-    queryKey: keys.transactions.uncategorizedSummary(),
-    queryFn: () => unwrapAction(loadUncategorizedSummary()),
-    staleTime: 0,
-    refetchOnMount: 'always',
-  });
+  const summary = useQuery({ ...sortSummaryQuery(), refetchOnMount: 'always' });
   const count = summary.data?.count;
   const groupCount = summary.data?.groupCount;
   const stagedGroups = Object.entries(staged);

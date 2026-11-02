@@ -4,7 +4,7 @@ import { formatCount, formatDate, formatMoney } from '@/lib/format';
 import type { UncategorizedGroup, UncategorizedTransaction } from '@/lib/uncategorized.types';
 
 /** Groups and their transactions are read this many at a time. */
-export const SORT_PAGE_SIZE = 25;
+export const SORT_PAGE_SIZE = 10;
 /** Applying a group reads every one of its transactions, this many at a time (the server's largest page). */
 export const SORT_FETCH_ALL_SIZE = 200;
 
