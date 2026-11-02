@@ -8,16 +8,14 @@ export const SORT_PAGE_SIZE = 10;
 /** Applying a group reads every one of its transactions, this many at a time (the server's largest page). */
 export const SORT_FETCH_ALL_SIZE = 200;
 
-/** One group's staged choice: what it will be set to, whether to save a rule, and the transactions left out. */
-export interface StagedGroup {
+/** One group's choice, applied at once: the category, whether to save a rule, and the transactions left out. */
+export interface GroupChoice {
   pick: CategoryPick;
   rule: boolean;
-  /** The text the rule matches (Contains), kept so Save can name it after the page has changed. */
+  /** The text the rule matches (Contains). */
   pattern: string;
   /** Ids the user unticked: they stay uncategorized. */
   unticked: string[];
-  /** How many transactions it will touch (the group's count less the unticked). */
-  count: number;
 }
 
 /** A shortcut chip for a person group: its words and the category it sets. */
@@ -110,13 +108,14 @@ export function tickedCount(group: Pick<UncategorizedGroup, 'count'>, unticked: 
   return Math.max(0, group.count - unticked.length);
 }
 
-/** "Save 2 groups" / "Save 1 group". */
-export function saveLabel(n: number): string {
-  return `Save ${formatCount(n, ['group', 'groups'])}`;
-}
-
-/** The toast after saving: how many transactions were set, and how many the server left alone. */
+/** The toast after a group is set: how many transactions were set, and how many the server left alone. */
 export function savedWords(updated: number, skipped: number): string {
   const set = `Set the category of ${formatCount(updated, ['transaction', 'transactions'])}`;
   return skipped > 0 ? `${set} · ${formatCount(skipped)} left as they were` : set;
+}
+
+/** The toast after Undo: how many transactions went back to uncategorized. */
+export function undoneWords(restored: number, skipped: number): string {
+  const back = `Put ${formatCount(restored, ['transaction', 'transactions'])} back`;
+  return skipped > 0 ? `${back} · ${formatCount(skipped)} changed since and stayed` : back;
 }

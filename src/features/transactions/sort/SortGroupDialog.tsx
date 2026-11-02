@@ -21,6 +21,7 @@ import type { UncategorizedGroup } from '@/lib/uncategorized.types';
 
 import { CategoryField } from '../form/CategoryField';
 import {
+  type GroupChoice,
   groupLine,
   groupRow,
   pickWords,
@@ -28,7 +29,6 @@ import {
   rulePattern,
   samePick,
   SORT_PAGE_SIZE,
-  type StagedGroup,
   tickedCount,
 } from './sortModel';
 
@@ -36,26 +36,26 @@ export interface SortGroupDialogProps {
   group: UncategorizedGroup;
   /** The fixed category list. */
   categories: readonly CategoryDef[];
-  /** What this group was staged as before, when it was. */
-  staged?: StagedGroup;
   /** "Something else…", or the Category field, was pressed: the page opens the category picker. */
   onChoose: () => void;
   /** The pick made in the category picker, handed back to the dialog. */
   picked: CategoryPick | null;
-  /** "Set for n": the group is staged. */
-  onSet: (staged: StagedGroup) => void;
+  /** "Set for n": applies the group at once; resolves when it is done (the page then closes this dialog). */
+  onSet: (choice: GroupChoice) => Promise<void>;
+  /** A set is running: nothing closes this dialog until it answers. */
+  saving?: boolean;
   /** Closed without setting. */
   onClose: () => void;
 }
 
 /**
  * One group of Sort them: the category (reasons first for a person), the transactions it applies to with all ticked, and
- * "Do the same next time". "Set for n" only stages the choice; Save on the list applies it.
+ * "Do the same next time". "Set for n" applies the group at once.
  */
-export function SortGroupDialog({ group, categories, staged, onChoose, picked, onSet, onClose }: SortGroupDialogProps) {
-  const [pick, setPick] = React.useState<CategoryPick | null>(staged?.pick ?? null);
-  const [rule, setRule] = React.useState(staged?.rule ?? !group.person);
-  const [unticked, setUnticked] = React.useState<string[]>(staged?.unticked ?? []);
+export function SortGroupDialog({ group, categories, onChoose, picked, onSet, saving = false, onClose }: SortGroupDialogProps) {
+  const [pick, setPick] = React.useState<CategoryPick | null>(null);
+  const [rule, setRule] = React.useState(!group.person);
+  const [unticked, setUnticked] = React.useState<string[]>([]);
   const [page, setPage] = React.useState(0);
   // A pick made in the category picker lands here.
   const [seenPicked, setSeenPicked] = React.useState(picked);
@@ -91,13 +91,16 @@ export function SortGroupDialog({ group, categories, staged, onChoose, picked, o
   ) : null;
 
   return (
-    <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
+    <Dialog open onOpenChange={(open) => (open || saving ? undefined : onClose())}>
       <Dialog.Content
         size="md"
+        dismissible={!saving}
+        showClose={!saving}
         title={group.label}
         description={groupLine(group)}
         footer={
           <ListRow
+            flush
             title="Do the same next time"
             subtitle={`Adds a rule: Contains "${pattern}"`}
             trailing={<Switch checked={rule} onCheckedChange={setRule} aria-label="Do the same next time" />}
@@ -107,7 +110,8 @@ export function SortGroupDialog({ group, categories, staged, onChoose, picked, o
         primary={{
           label: `Set for ${ticked}`,
           disabled: !pick || ticked === 0,
-          onSelect: () => pick && onSet({ pick, rule, pattern, unticked, count: ticked }),
+          loading: saving,
+          onSelect: () => void (pick && onSet({ pick, rule, pattern, unticked })),
         }}
       >
         <Dialog.Body>

@@ -206,6 +206,8 @@ import type {
   UncategorizedGroup,
   UncategorizedSummary,
   UncategorizedTransaction,
+  UndoUncategorizedRequest,
+  UndoUncategorizedResponse,
 } from '@/lib/uncategorized.types';
 
 export { ApiError };
@@ -1543,7 +1545,7 @@ export const transactionsApi = {
     return data!;
   },
   /** One page of the groups: groups of two or more first, then the one-offs. */
-  uncategorizedGroups: async (params: { page: number; size: number }): Promise<Page<UncategorizedGroup>> => {
+  uncategorizedGroups: async (params: { page: number; size: number; q?: string }): Promise<Page<UncategorizedGroup>> => {
     const { data } = await serverApi.GET('/api/v1/transactions/uncategorized/groups', { params: { query: params } });
     return data as unknown as Page<UncategorizedGroup>;
   },
@@ -1559,6 +1561,11 @@ export const transactionsApi = {
   /** Gives the transactions a category; with `rule`, also saves "do the same next time". */
   applyUncategorized: async (body: ApplyUncategorizedRequest): Promise<ApplyUncategorizedResponse> => {
     const { data } = await serverApi.POST('/api/v1/transactions/uncategorized/apply', { body });
+    return data!;
+  },
+  /** Puts an apply back: the categories it set, and the rule it made or changed. */
+  undoUncategorized: async (body: UndoUncategorizedRequest): Promise<UndoUncategorizedResponse> => {
+    const { data } = await serverApi.POST('/api/v1/transactions/uncategorized/undo', { body });
     return data!;
   },
   batchDelete: async (body: BatchDeleteRequest): Promise<BatchDeleteResponse> => {

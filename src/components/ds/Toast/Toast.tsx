@@ -99,6 +99,8 @@ export function Toaster({
   return (
     <SonnerToaster
       id={id}
+      // A modal dialog sets pointer-events: none on the page; a toast with Undo must stay pressable over it.
+      style={{ pointerEvents: 'auto' }}
       position={position}
       visibleToasts={visibleToasts}
       offset={offset ?? { bottom: 'calc(var(--ds-space-24) + var(--ds-docked-bottom, 0px))' }}

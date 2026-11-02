@@ -853,3 +853,24 @@ describe('Dialog footer slot', () => {
     expect(screen.getByText('Only row')).toBeInTheDocument();
   });
 });
+
+describe('Dialog and toasts', () => {
+  it('pressing a toast outside the dialog does not close it', () => {
+    const onOpenChange = vi.fn();
+    render(
+      <>
+        <Dialog open onOpenChange={onOpenChange}>
+          <Dialog.Content title="T" primary={{ label: 'Save' }}>
+            <Dialog.Body>Body</Dialog.Body>
+          </Dialog.Content>
+        </Dialog>
+        <ol data-sonner-toaster>
+          <button type="button">Undo</button>
+        </ol>
+      </>,
+    );
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Undo', hidden: true }));
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+});
+

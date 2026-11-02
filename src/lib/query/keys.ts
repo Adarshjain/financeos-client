@@ -20,7 +20,7 @@ export const keys = {
     uncategorizedGroupsAll: () => [...keys.transactions.all, 'uncategorized-groups'] as const,
     /** Every page of every group's transactions. */
     uncategorizedGroupAll: () => [...keys.transactions.all, 'uncategorized-group'] as const,
-    uncategorizedGroups: (page: number, size: number) => [...keys.transactions.uncategorizedGroupsAll(), page, size] as const,
+    uncategorizedGroups: (page: number, size: number, q = '') => [...keys.transactions.uncategorizedGroupsAll(), page, size, q] as const,
     uncategorizedGroup: (groupKey: string, page: number, size: number) =>
       [...keys.transactions.uncategorizedGroupAll(), groupKey, page, size] as const,
   },
