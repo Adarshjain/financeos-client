@@ -12,6 +12,7 @@ import { ReportUnderlyingDialog } from '@/features/reports/underlying/ReportUnde
 import { categoryEntries, categoryRequest, categoryTarget, hasUnderlying, tableRowRequest, wholeReportRequest } from '@/features/reports/underlying/underlyingRequest';
 import { ReportResult } from '@/features/reports/view/ReportResult';
 import { formatDateRange } from '@/lib/date-range';
+import { useChartReady } from '@/lib/lazy/LazyChart';
 import { isChartData, isPivotTableData } from '@/lib/reports.helpers';
 import type { ChartDefinition, DatasourceCatalog, ReportData, RunReportRequest } from '@/lib/reports.types';
 
@@ -48,6 +49,9 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
   };
   const pivot = shown && isPivotTableData(shown.data) ? shown.data : null;
   const chart = shown && isChartData(shown.data) ? shown.data : null;
+  // A chart's code is fetched as soon as the result is one and waited for under the loading skeleton, so no second placeholder shows.
+  const chartReady = useChartReady(chart !== null);
+  const waitingChart = chart !== null && !chartReady;
   const entries = React.useMemo(() => (chart && shown ? categoryEntries(shown.request, chart, catalog) : undefined), [chart, shown, catalog]);
   return (
     <Card>
@@ -95,7 +99,7 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
           </Banner>
         ) : null}
 
-        {shown ? (
+        {shown && !waitingChart ? (
           <ReportResult
             data={shown.data}
             catalog={catalog}
@@ -130,7 +134,7 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
             canOpenBreakdownRow={chart ? (index) => categoryRequest(shown.request, chart, index, catalog) !== null : undefined}
             canOpenTableRow={pivot ? (key) => tableRowRequest(shown.request, pivot, key, catalog) !== null : undefined}
           />
-        ) : loading ? (
+        ) : loading || waitingChart ? (
           <div className="flex flex-col gap-space-8">
             <Skeleton height={16} width="40%" />
             <Skeleton height={160} />

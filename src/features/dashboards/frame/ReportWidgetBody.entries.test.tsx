@@ -1,6 +1,8 @@
 import { screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+// The chart's code is treated as already loaded: these tests are about what the result opens, not the load.
+vi.mock('@/lib/lazy/LazyChart', async (orig) => ({ ...(await orig<typeof import('@/lib/lazy/LazyChart')>()), useChartReady: () => true }));
 
 // The actions run in-process here and reach the API through the same mocked `api` these tests already drive.
 vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));

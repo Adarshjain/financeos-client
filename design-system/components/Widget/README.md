@@ -3,7 +3,7 @@
 A dashboard tile: title, subtitle and a ⋮ menu, then a figure, rows, a chart or a table. Widgets size to their content.
 
 ## States
-- Loading: a skeleton in the widget's own shape (a figure or rows).
+- Loading: a skeleton in the widget's own shape (a figure or rows), else the default three lines (`WidgetSkeleton`). A body that is still waiting on anything (its report, its chart code) shows that same skeleton, never a second, different placeholder.
 - Failed: an inline error with Retry action; the rest of the dashboard still renders.
 - Unavailable: shown when the content can't be shown (e.g. report deleted); offers Remove action.
 - Report tables sort by header and page inside the widget.
