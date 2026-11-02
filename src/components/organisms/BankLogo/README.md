@@ -1,6 +1,6 @@
 # BankLogo
 
-One bank's logo in the small square frame (24px, `rounded-ds-sm`) Avatar `square` `sm` uses. Used as the icon in the bank Select and its selected value.
+One bank's logo in the small square frame (24px, square corners; owner 2026-11-02: bank logos never get a radius). Used as the icon in the bank Select and its selected value.
 
 ## Props
 - `bankId`: `string | null` (the server's id, such as `hdfc`)
