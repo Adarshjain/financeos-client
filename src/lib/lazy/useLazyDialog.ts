@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import React from 'react';
 
 import { notify } from '@/lib/notify';
@@ -53,8 +54,11 @@ export interface LazyDialog<C> {
   /**
    * Runs `onReady` once the code is loaded: at once when it already is, else after the import (the trigger shows `loading`).
    * On a failed import it stops loading, shows the error toast and does not call `onReady`. Resolves to whether `onReady` ran.
+   * Only the latest run opens: a newer `run`, `cancel`, an unmount or a change of page drops every earlier one that is still waiting.
    */
   run: (onReady: () => void) => Promise<boolean>;
+  /** Drops the run that is still waiting for the code (the user closed or moved on); nothing opens late. */
+  cancel: () => void;
 }
 
 /**
@@ -67,6 +71,25 @@ export function useLazyDialog<C>(importer: Importer<C>): LazyDialog<C> {
     return entry.loaded ? (entry.value as C) : null;
   });
   const [loading, setLoading] = React.useState(false);
+  // Which run may still open: each run takes the next number, and cancel / unmount / a new page moves it on.
+  const latest = React.useRef(0);
+  const cancel = React.useCallback(() => {
+    latest.current += 1;
+    setLoading(false);
+  }, []);
+  const pathname = usePathname();
+  const lastPathname = React.useRef(pathname);
+  React.useEffect(() => {
+    if (lastPathname.current === pathname) return;
+    lastPathname.current = pathname;
+    cancel();
+  }, [pathname, cancel]);
+  React.useEffect(
+    () => () => {
+      latest.current += 1;
+    },
+    [],
+  );
 
   const preload = React.useCallback(() => {
     start(importer).catch(() => undefined);
@@ -75,8 +98,10 @@ export function useLazyDialog<C>(importer: Importer<C>): LazyDialog<C> {
   const run = React.useCallback(
     async (onReady: () => void) => {
       const entry = entryOf(importer);
+      const mine = (latest.current += 1);
       if (entry.loaded) {
         setComponent(() => entry.value as C);
+        setLoading(false);
         onReady();
         return true;
       }
@@ -84,10 +109,13 @@ export function useLazyDialog<C>(importer: Importer<C>): LazyDialog<C> {
       try {
         const value = await start(importer);
         setComponent(() => value);
+        // Something newer (another press, a close, another page) took over while the code was loading: stay closed.
+        if (latest.current !== mine) return false;
         setLoading(false);
         onReady();
         return true;
       } catch {
+        if (latest.current !== mine) return false;
         setLoading(false);
         notify.error('Could not load this. Check your connection and try again.');
         return false;
@@ -96,5 +124,5 @@ export function useLazyDialog<C>(importer: Importer<C>): LazyDialog<C> {
     [importer],
   );
 
-  return { Component, loading, preload, run };
+  return { Component, loading, preload, run, cancel };
 }

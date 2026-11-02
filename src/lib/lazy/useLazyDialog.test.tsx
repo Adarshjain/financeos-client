@@ -5,6 +5,8 @@ import { useLazyDialog } from './useLazyDialog';
 
 const error = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/notify', () => ({ notify: { error } }));
+const route = vi.hoisted(() => ({ pathname: '/a' }));
+vi.mock('next/navigation', () => ({ usePathname: () => route.pathname }));
 
 function deferred<T>() {
   let resolve!: (v: T) => void;
@@ -17,7 +19,10 @@ function deferred<T>() {
 }
 
 describe('useLazyDialog', () => {
-  beforeEach(() => error.mockClear());
+  beforeEach(() => {
+    error.mockClear();
+    route.pathname = '/a';
+  });
 
   it('is loading while the import is pending, then opens once it resolves', async () => {
     const d = deferred<string>();
@@ -115,5 +120,93 @@ describe('useLazyDialog', () => {
       await Promise.resolve();
     });
     expect(error).not.toHaveBeenCalled();
+  });
+
+  describe('a slow chunk never opens late', () => {
+    it('repeated taps open once: only the latest run fires', async () => {
+      const d = deferred<string>();
+      const importer = vi.fn(() => d.promise);
+      const { result } = renderHook(() => useLazyDialog(importer));
+      const first = vi.fn();
+      const second = vi.fn();
+      const third = vi.fn();
+      let done!: Promise<boolean[]>;
+      act(() => {
+        done = Promise.all([result.current.run(first), result.current.run(second), result.current.run(third)]);
+      });
+      let ran: boolean[] = [];
+      await act(async () => {
+        d.resolve('dialog');
+        ran = await done;
+      });
+      expect(ran).toEqual([false, false, true]);
+      expect(first).not.toHaveBeenCalled();
+      expect(second).not.toHaveBeenCalled();
+      expect(third).toHaveBeenCalledTimes(1);
+      expect(result.current.loading).toBe(false);
+    });
+
+    it('cancel (the user closed it) drops the waiting run and stops loading', async () => {
+      const d = deferred<string>();
+      const importer = vi.fn(() => d.promise);
+      const { result } = renderHook(() => useLazyDialog(importer));
+      const onReady = vi.fn();
+      let done!: Promise<boolean>;
+      act(() => {
+        done = result.current.run(onReady);
+      });
+      expect(result.current.loading).toBe(true);
+      act(() => result.current.cancel());
+      expect(result.current.loading).toBe(false);
+      let ran = true;
+      await act(async () => {
+        d.resolve('dialog');
+        ran = await done;
+      });
+      expect(ran).toBe(false);
+      expect(onReady).not.toHaveBeenCalled();
+      // The code still arrived and is cached: the next press opens at once.
+      const next = vi.fn();
+      act(() => {
+        void result.current.run(next);
+      });
+      expect(next).toHaveBeenCalledTimes(1);
+    });
+
+    it('an unmount drops the waiting run', async () => {
+      const d = deferred<string>();
+      const importer = vi.fn(() => d.promise);
+      const { result, unmount } = renderHook(() => useLazyDialog(importer));
+      const onReady = vi.fn();
+      let done!: Promise<boolean>;
+      act(() => {
+        done = result.current.run(onReady);
+      });
+      unmount();
+      await act(async () => {
+        d.resolve('dialog');
+        await done;
+      });
+      expect(onReady).not.toHaveBeenCalled();
+    });
+
+    it('moving to another page drops the waiting run', async () => {
+      const d = deferred<string>();
+      const importer = vi.fn(() => d.promise);
+      const { result, rerender } = renderHook(() => useLazyDialog(importer));
+      const onReady = vi.fn();
+      let done!: Promise<boolean>;
+      act(() => {
+        done = result.current.run(onReady);
+      });
+      route.pathname = '/b';
+      rerender();
+      expect(result.current.loading).toBe(false);
+      await act(async () => {
+        d.resolve('dialog');
+        await done;
+      });
+      expect(onReady).not.toHaveBeenCalled();
+    });
   });
 });
