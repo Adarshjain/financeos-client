@@ -30,7 +30,9 @@ describe('ReportPreviewCard chart load', () => {
     chart.ready = false;
     const { container } = card(state(chartData));
     expect(screen.queryByTestId('result')).toBeNull();
-    expect(container.querySelectorAll('.animate-pulse')).toHaveLength(2);
+    // One block, the same height as the editor's loading shape holds for the preview.
+    expect(container.querySelectorAll('.animate-pulse')).toHaveLength(1);
+    expect((container.querySelector('.animate-pulse') as HTMLElement).style.height).toBe('200px');
     expect(chart.wanted).toHaveBeenLastCalledWith(true);
   });
 
