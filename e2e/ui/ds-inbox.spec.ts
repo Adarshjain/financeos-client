@@ -20,8 +20,19 @@ const reviewSeedSpec: BankSpec = {
   opening: 50000.0,
   rows: [
     { date: '2026-04-05', description: 'SWIGGY ORDER BANGALORE', debit: 450.0 },
-    { date: '2026-04-05', description: 'SWIGGY ORDER BANGALORE', debit: 450.0 },
     { date: '2026-04-12', description: 'UBER TRIP AIRPORT', debit: 1250.0 },
+  ],
+};
+
+// The Swiggy row repeats in this overlapping statement, so both copies are possible duplicates
+// (the only reason a statement row waits for review now).
+const reviewOverlapSpec: BankSpec = {
+  ...reviewSeedSpec,
+  periodStart: '2026-04-05',
+  periodEnd: '2026-05-04',
+  rows: [
+    { date: '2026-04-05', description: 'SWIGGY ORDER BANGALORE', debit: 450.0 },
+    { date: '2026-04-25', description: 'NETFLIX SUBSCRIPTION', debit: 649.0 },
   ],
 };
 
@@ -63,7 +74,10 @@ test.describe('/ds Inbox right-click menu, desktop 1440px (@ui)', () => {
     await resetLlm(api);
     await setLlmMode(api, 'SCHEMA_DEFAULT');
     const bank = await createBankAccount(api, { name: 'Ds Inbox Bank', openingBalance: reviewSeedSpec.opening });
-    await uploadAndIngest(api, bank.id, [{ filename: 'ds-inbox-review.pdf', buffer: await genBankPdf(reviewSeedSpec) }]);
+    await uploadAndIngest(api, bank.id, [
+      { filename: 'ds-inbox-review.pdf', buffer: await genBankPdf(reviewSeedSpec) },
+      { filename: 'ds-inbox-review-overlap.pdf', buffer: await genBankPdf(reviewOverlapSpec) },
+    ]);
 
     await page.goto('/inbox');
     await expect(row(page, 'review')).toBeVisible({ timeout: 45_000 });
