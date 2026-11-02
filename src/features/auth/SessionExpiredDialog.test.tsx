@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { unwrapAction } from '@/lib/actionResult';
 import { isAuthExpiredClaimed } from '@/lib/authExpiry';
 
 import { SessionExpiredDialog } from './SessionExpiredDialog';
@@ -75,6 +76,31 @@ describe('SessionExpiredDialog', () => {
     expect(formData.get('password')).toBe('secret');
     expect(invalidate).toHaveBeenCalled();
     await waitFor(() => expect(screen.queryByText('Sign in again')).toBeNull());
+  });
+
+  it('stays closed when a request that started before the sign-in answers 401 afterwards, and opens again for a new one', async () => {
+    login.mockResolvedValue({ success: true, data: { email: 'a@example.test' } });
+    setup('a@example.test');
+    await expire();
+    // A request in flight while the visitor signs in (it carries the old cookie).
+    let late!: (v: never) => void;
+    const stale = unwrapAction(new Promise<never>((resolve) => (late = resolve))).catch(() => undefined);
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await waitFor(() => expect(screen.queryByText('Sign in again')).toBeNull());
+    await act(async () => {
+      late({ success: false, status: 401, error: { code: 'UNAUTHORIZED', message: 'x', timestamp: 't' } } as never);
+      await stale;
+    });
+    expect(screen.queryByText('Sign in again')).toBeNull();
+
+    // A request made after the sign-in that is refused means the session really ended again.
+    await act(async () => {
+      await unwrapAction(
+        Promise.resolve({ success: false, status: 401, error: { code: 'UNAUTHORIZED', message: 'x', timestamp: 't' } }) as Promise<never>,
+      ).catch(() => undefined);
+    });
+    expect(screen.getByText('Sign in again')).toBeInTheDocument();
   });
 
   it('shows the login error inline and stays open', async () => {

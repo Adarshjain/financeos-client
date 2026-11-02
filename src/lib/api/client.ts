@@ -4,6 +4,7 @@ import { getFaro } from '@/instrumentation-client';
 import type { paths } from '@/lib/api/schema';
 import type { ErrorResponse } from '@/lib/api/types';
 import { APP_LOCKED_EVENT } from '@/lib/appLock';
+import { currentSessionGeneration, raiseAuthExpired } from '@/lib/authExpiry';
 
 export class ApiError extends Error {
   public requestId?: string;
@@ -24,11 +25,14 @@ export class ApiError extends Error {
 }
 
 const clientRequestTimings = new WeakMap<Request, number>();
+// The sign-in generation a request started in, so a 401 that arrives after a re-sign-in is not taken for the new session.
+const requestGenerations = new WeakMap<Request, number>();
 
 const browserMiddleware: Middleware = {
   async onRequest({ request }) {
     // Record start time locally for Faro measurement
     clientRequestTimings.set(request, performance.now());
+    requestGenerations.set(request, currentSessionGeneration());
 
     // Attach unique client request ID
     const requestId = crypto.randomUUID().replace(/-/g, '').slice(0, 20);
@@ -62,9 +66,7 @@ const browserMiddleware: Middleware = {
     }
 
     if (response.status === 401) {
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('financeos:auth-expired'));
-      }
+      raiseAuthExpired(requestGenerations.get(request));
     }
 
     if (response.status === 423) {

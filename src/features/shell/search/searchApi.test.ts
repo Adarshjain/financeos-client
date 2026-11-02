@@ -30,7 +30,7 @@ describe('fetchGlobalSearch', () => {
     const spy = vi.spyOn(authExpiry, 'notifyIfSessionExpired').mockImplementation(() => undefined);
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 401 }));
     await expect(fetchGlobalSearch('abc')).rejects.toThrow('401');
-    expect(spy).toHaveBeenCalledWith({ status: 401 });
+    expect(spy).toHaveBeenCalledWith({ status: 401 }, expect.any(Number));
   });
 
   it('raises the app-locked event on a 423', async () => {
