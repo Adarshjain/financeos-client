@@ -193,10 +193,10 @@ describe('SortThemDialog', () => {
     });
   });
 
-  it('Later closes without applying anything', async () => {
+  it('Done closes without applying anything', async () => {
     const { user, onClose } = setup();
     await screen.findByText('Ravi Kumar');
-    await user.click(screen.getByRole('button', { name: 'Later' }));
+    await user.click(screen.getByRole('button', { name: 'Done' }));
     expect(onClose).toHaveBeenCalled();
     expect(mocks.apply).not.toHaveBeenCalled();
   });

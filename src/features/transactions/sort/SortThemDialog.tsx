@@ -47,7 +47,7 @@ import {
 import { sortGroupsQuery, sortSummaryQuery } from './sortQueries';
 
 export interface SortThemDialogProps {
-  /** Closed: Later, ×, or after Save. */
+  /** Closed: Done or ×. */
   onClose: () => void;
 }
 
@@ -193,7 +193,7 @@ export function SortThemDialog({ onClose }: SortThemDialogProps) {
     }
   };
 
-  /** Nothing closes the dialog while a group is being set: Later, ×, Escape, the backdrop and a drag down all wait. */
+  /** Nothing closes the dialog while a group is being set: Done, ×, Escape, the backdrop and a drag down all wait. */
   const close = () => {
     if (!saving) onClose();
   };
@@ -226,7 +226,7 @@ export function SortThemDialog({ onClose }: SortThemDialogProps) {
               </span>
             </>
           }
-          secondary={{ label: 'Later', onSelect: close, disabled: saving }}
+          secondary={{ label: 'Done', onSelect: close, disabled: saving }}
         >
           <Dialog.Body inert={saving}>
             <TextField

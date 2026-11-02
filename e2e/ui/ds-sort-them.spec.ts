@@ -181,7 +181,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByText(beta, { exact: true })).toBeVisible();
     });
 
-    test('Later closes the dialog; a group opened but not set changes nothing', async ({ page }) => {
+    test('Done closes the dialog; a group opened but not set changes nothing', async ({ page }) => {
       const api = makeApi(user.cookie);
       const bank = await createBankAccount(api, { name: 'Sort Bank' });
       const shop = unknownShop('defer');
@@ -194,7 +194,7 @@ for (const viewport of VIEWPORTS) {
       await expect(group.getByRole('button', { name: 'Set for 2' })).toBeEnabled();
       await page.keyboard.press('Escape');
       await expect(group).not.toBeVisible();
-      await sortDialog(page).getByRole('button', { name: 'Later', exact: true }).click();
+      await sortDialog(page).getByRole('button', { name: 'Done', exact: true }).click();
       await expect(sortDialog(page)).not.toBeVisible();
       expect((await searchAll(api)).filter((t) => t.category)).toHaveLength(0);
     });
