@@ -825,3 +825,31 @@ describe('Dialog.Bleed', () => {
     expect(screen.getByText('Band')).toBeInTheDocument();
   });
 });
+
+describe('Dialog footer slot', () => {
+  it('draws the footer node inside the footer, above the action buttons', () => {
+    render(
+      <Dialog open>
+        <Dialog.Content title="T" primary={{ label: 'Save' }} footer={<span>Pinned row</span>}>
+          <Dialog.Body>Body</Dialog.Body>
+        </Dialog.Content>
+      </Dialog>,
+    );
+    const pinned = screen.getByText('Pinned row');
+    const save = screen.getByRole('button', { name: 'Save' });
+    expect(pinned.compareDocumentPosition(save) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(pinned.closest('.bg-sunken')).toBe(save.closest('.bg-sunken'));
+    expect(screen.getByText('Body').closest('.bg-sunken')).toBeNull();
+  });
+
+  it('shows a footer with only the slot and no actions', () => {
+    render(
+      <Dialog open>
+        <Dialog.Content title="T" footer={<span>Only row</span>}>
+          <Dialog.Body>Body</Dialog.Body>
+        </Dialog.Content>
+      </Dialog>,
+    );
+    expect(screen.getByText('Only row')).toBeInTheDocument();
+  });
+});

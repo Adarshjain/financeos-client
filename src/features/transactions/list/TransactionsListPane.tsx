@@ -51,6 +51,8 @@ export interface TransactionsListPaneProps {
   hasUncategorized?: boolean;
   /** "Sort them" on the Uncategorized card. */
   onSortThem?: () => void;
+  /** The pointer went down on "Sort them" (the screen starts its reads early). */
+  onSortPress?: () => void;
   /** Everything that needs review; null when it could not be loaded. */
   needsReviewCount: number | null;
   /** The app bar's +: opens Add transaction (piece 3 wires it). */
@@ -88,6 +90,7 @@ export function TransactionsListPane({
   categoryList,
   hasUncategorized,
   onSortThem,
+  onSortPress,
   needsReviewCount,
   onAdd = noop,
   addLoading,
@@ -157,7 +160,7 @@ export function TransactionsListPane({
               onOpenFilters={() => void runFilters(() => setFiltersOpen(true))}
               search={{ value: text, onValueChange: setText }}
             />
-            {hasUncategorized ? <UncategorizedCard onSort={onSortThem} /> : null}
+            {hasUncategorized ? <UncategorizedCard onSort={onSortThem} onSortPress={onSortPress} /> : null}
             {list.ok ? (
               <TransactionsList
                 query={query}

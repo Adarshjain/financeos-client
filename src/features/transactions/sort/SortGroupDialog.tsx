@@ -96,6 +96,14 @@ export function SortGroupDialog({ group, categories, staged, onChoose, picked, o
         size="md"
         title={group.label}
         description={groupLine(group)}
+        footer={
+          <ListRow
+            title="Do the same next time"
+            subtitle={`Adds a rule: Contains "${pattern}"`}
+            trailing={<Switch checked={rule} onCheckedChange={setRule} aria-label="Do the same next time" />}
+            wrap
+          />
+        }
         primary={{
           label: `Set for ${ticked}`,
           disabled: !pick || ticked === 0,
@@ -168,12 +176,6 @@ export function SortGroupDialog({ group, categories, staged, onChoose, picked, o
             )}
             {pager}
           </div>
-          <ListRow
-            title="Do the same next time"
-            subtitle={`Adds a rule: Contains "${pattern}"`}
-            trailing={<Switch checked={rule} onCheckedChange={setRule} aria-label="Do the same next time" />}
-            wrap
-          />
         </Dialog.Body>
       </Dialog.Content>
     </Dialog>

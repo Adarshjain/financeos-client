@@ -24,7 +24,7 @@ import { parseTxn, transactionsUrl } from './list/transactionsUrl';
 import { OptimisticProvider, useOptimisticLayer } from './optimistic/OptimisticTransactions';
 import { prefetchSort } from './sort/sortQueries';
 
-export interface TransactionsScreenProps extends Omit<TransactionsListPaneProps, 'onAdd' | 'addLoading' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen' | 'selection' | 'onSelectionChange' | 'selectionHeader' | 'wrapRow' | 'onSortThem'> {
+export interface TransactionsScreenProps extends Omit<TransactionsListPaneProps, 'onAdd' | 'addLoading' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen' | 'selection' | 'onSelectionChange' | 'selectionHeader' | 'wrapRow' | 'onSortThem' | 'onSortPress'> {
   /** The transactions of the open page, in full: the detail reads them instead of asking again. */
   transactions: Transaction[];
   /** The fixed category list, read once on the server; null when it could not be loaded (the picker then fetches it). */
@@ -111,6 +111,7 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
   const [sorting, setSorting] = React.useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const prefetchedOnPress = React.useRef(false);
   const addTransaction = useAddTransaction();
   const byId = React.useMemo(() => new Map(transactions.map((t) => [t.id, t])), [transactions]);
   const pageIds = React.useMemo(() => view.list.ok ? view.list.rows.map((r) => r.id) : [], [view.list]);
@@ -141,9 +142,15 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
         detailOpen={detailId !== null}
         onEditCategories={editCategories}
         categoryList={categoryList}
-        onSortThem={() => {
-          // The groups read runs while the dialog's code loads.
+        onSortPress={() => {
+          // Starts the groups read on pointer down, a click later than the press and a code load ahead of the dialog.
+          prefetchedOnPress.current = true;
           prefetchSort(queryClient);
+        }}
+        onSortThem={() => {
+          // A keyboard press has no pointer down: start the read here. The groups read runs while the dialog's code loads.
+          if (!prefetchedOnPress.current) prefetchSort(queryClient);
+          prefetchedOnPress.current = false;
           void sortDialog.run(() => setSorting(true));
         }}
         selection={selection.ids}

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -17,5 +17,14 @@ describe('UncategorizedCard', () => {
     render(<UncategorizedCard onSort={onSort} />);
     await userEvent.click(screen.getByRole('button', { name: 'Sort them' }));
     expect(onSort).toHaveBeenCalledTimes(1);
+  });
+
+  it('Sort them reports the pointer going down before the press completes', async () => {
+    const onSortPress = vi.fn();
+    const onSort = vi.fn();
+    render(<UncategorizedCard onSort={onSort} onSortPress={onSortPress} />);
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Sort them' }));
+    expect(onSortPress).toHaveBeenCalledTimes(1);
+    expect(onSort).not.toHaveBeenCalled();
   });
 });

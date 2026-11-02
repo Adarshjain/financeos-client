@@ -215,7 +215,7 @@ const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
         )}
         {...props}
       >
-        {children}
+        {children ? <div className={hasActions ? 'mb-space-8 desk:mb-space-12' : undefined}>{children}</div> : null}
         {hasActions && (
           <div className="grid grid-flow-col auto-cols-fr gap-space-8 desk:flex desk:justify-end">
             {tertiary && (
@@ -290,6 +290,8 @@ export interface DialogPanelProps extends Omit<React.HTMLAttributes<HTMLDivEleme
   primary?: DialogPrimaryAction;
   secondary?: DialogAction;
   tertiary?: DialogAction;
+  /** Pinned in the footer above the action buttons (a row that stays visible while the body scrolls). */
+  footer?: React.ReactNode;
   dismissible?: boolean;
   isRadix?: boolean;
 }
@@ -310,13 +312,14 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
       primary,
       secondary,
       tertiary,
+      footer,
       dismissible = true,
       isRadix = false,
       ...props
     },
     ref
   ) => {
-    const hasFooter = Boolean(primary || secondary || tertiary);
+    const hasFooter = Boolean(primary || secondary || tertiary || footer);
     const hasVisibleHeader = Boolean(title || description || showClose);
     const isFull = size === 'full';
 
@@ -418,7 +421,9 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
             primary={primary}
             secondary={secondary}
             tertiary={tertiary}
-          />
+          >
+            {footer}
+          </DialogFooter>
         )}
       </div>
     );
@@ -442,6 +447,8 @@ export interface DialogShellProps extends Omit<
   primary?: DialogPrimaryAction;
   secondary?: DialogAction;
   tertiary?: DialogAction;
+  /** Pinned in the footer above the action buttons (a row that stays visible while the body scrolls). */
+  footer?: React.ReactNode;
   dismissible?: boolean;
 }
 
@@ -539,6 +546,8 @@ export interface DialogContentProps extends Omit<
   primary?: DialogPrimaryAction;
   secondary?: DialogAction;
   tertiary?: DialogAction;
+  /** Pinned in the footer above the action buttons (a row that stays visible while the body scrolls). */
+  footer?: React.ReactNode;
   dismissible?: boolean;
 }
 
@@ -561,6 +570,7 @@ const DialogContent = forwardRef<
       primary,
       secondary,
       tertiary,
+      footer,
       dismissible = true,
       onPointerDownOutside,
       onInteractOutside,
@@ -691,6 +701,7 @@ const DialogContent = forwardRef<
               primary={primary}
               secondary={secondary}
               tertiary={tertiary}
+              footer={footer}
               dismissible={dismissible}
               isRadix
               className="border-0 rounded-none shadow-none bg-transparent"

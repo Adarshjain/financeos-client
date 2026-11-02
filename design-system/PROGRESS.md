@@ -231,6 +231,7 @@ When every page is migrated:
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
 
+- 2026-11-02: **Sticky Sort them rule row** (owner): owner 11-02: sticky 'Do the same next time' → Dialog footer slot (`footer` on Dialog.Content, above the action buttons).
 - 2026-11-02: **Select nested options** (owner): an option may carry `children`; with `multiple` the list shows a parent row (checkbox, indeterminate when some children are picked, chevron to expand) over its child rows. Value stays a flat list: a parent's value is the whole parent, a child's value only that child. Category and Tags filters move from the Transactions chip row into the Filters dialog (Category = nested Select, Tags = multiple Select).
 - 2026-11-01: **Uncategorized card** (owner): 11-01 owner: card shows no count ('Some transactions need a category'); Sort them data loads on open.
 - 2026-10-28: **Consistency audit answered** (owner; artifact 6L54qWbsezHpjU1fBmiPYJ, 71 findings): all suggestions accepted except: one format function per kind with params, not several helpers (N1, N5); 12-hour time everywhere incl. debug (N4); overdue = danger (N8); "Retry", not "Try again" (W2); look at generic card-header actions (E10); rename file names in one sweep (F6); tidy imports/tests now (F10). Build waits for the owner's go.
