@@ -135,10 +135,8 @@ export function ReportPreviewCard({ preview, catalog, missing, onPreview }: Repo
             canOpenTableRow={pivot ? (key) => tableRowRequest(shown.request, pivot, key, catalog) !== null : undefined}
           />
         ) : loading || waitingChart ? (
-          <div className="flex flex-col gap-space-8">
-            <Skeleton height={16} width="40%" />
-            <Skeleton height={160} />
-          </div>
+          // The same block the editor's own loading shape (ReportEditorSkeleton) holds under the heading, so it does not change.
+          <Skeleton height={200} />
         ) : error || missing.length > 0 ? null : (
           <EmptyState compact description="Click Preview to run this report." />
         )}
