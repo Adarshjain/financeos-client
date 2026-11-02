@@ -49,9 +49,10 @@ describe('Button component', () => {
     expect(screen.getByRole('button')).toHaveClass('underline', 'font-bold', 'decoration-line-heavy');
   });
 
-  it('link text size follows the size prop and defaults to the surrounding text', () => {
+  it('link text size follows the size prop and defaults to label', () => {
     const { rerender } = render(<Button variant="link">Reset</Button>);
-    expect(screen.getByRole('button')).not.toHaveClass('text-label', 'text-body');
+    expect(screen.getByRole('button')).toHaveClass('text-label');
+    expect(screen.getByRole('button')).not.toHaveClass('text-body');
     rerender(<Button variant="link" size="sm">Reset</Button>);
     expect(screen.getByRole('button')).toHaveClass('text-label');
     expect(screen.getByRole('button')).not.toHaveClass('h-control-sm');

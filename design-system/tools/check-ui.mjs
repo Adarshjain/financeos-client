@@ -238,6 +238,9 @@ function check(lines, all = false, classes = true) {
       };
       (/ds-allow:/.test(text) ? allowed : errors).push(hit);
     }
+    if (/\.tsx$/.test(file) && !/\.(?:test|stories)\.tsx$/.test(file) && !/auth/i.test(file) && /variant=["'](?:danger-)?link["']/.test(text) && /\bsize=["'](?:md|xl)["']/.test(text)) {
+      errors.push({ file, line, rule: 'link-size', why: 'link buttons are never large: drop `size="md"`/`"xl"` (links default to label size, owner 2026-11-02)', text: text.trim().slice(0, 160) });
+    }
     if (/^src\/(?:app\/\(ds\)|features\/shell)\//.test(file) && /\.tsx$/.test(file) && !/\.(?:test|stories)\.tsx$/.test(file)) {
       if (/\bstyle=\{/.test(text)) {
         errors.push({ file, line, rule: 'page-styling', why: 'inline `style` in a page or the shell — use a Dinero component prop or flag the gap (RULES §5d)', text: text.trim().slice(0, 160) });

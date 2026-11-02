@@ -722,3 +722,4 @@ Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log
   - Deviations: none beyond the owner decisions above.
 
 - 2026-10-21 · Phase 2 · Claude · ProgressBar split variant (owner-approved, loan Interest vs principal): `segments` + `ProgressBar.Legend`, README, Split and Split with three series stories, tests. Swatch uses new generic `radius-2xs` (2px, owner chose b). Existing variants unchanged. Owner approved split + square swatches 10-21.
+- 2026-11-02 · Link size · Claude: Button `link`/`danger-link` with no `size` now uses `label` text (was inherit, rendered large); UncategorizedCard sentence set to `label`; README. All existing link Buttons already pass `size="sm"`; none use md/xl.
