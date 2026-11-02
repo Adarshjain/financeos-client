@@ -104,7 +104,8 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       onClick?.(e);
-      if (!e.defaultPrevented && !disabled) {
+      // A dropdown chip opens a menu; it is not a toggle. Its look comes from `changed` / `selected`, never from a click.
+      if (!e.defaultPrevented && !disabled && !hasDropdown) {
         setIsSelected(!isSelected);
       }
     };

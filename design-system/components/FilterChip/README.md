@@ -11,6 +11,7 @@ A chip in the filter row under the search. Chips filter the list in place and co
 
 ## Use
 - Status chips first (Unverified · Verified · All), then Category, then the rest. The row never wraps; on phone it scrolls and bleeds to the edges using standard layout classes.
+- A dropdown chip (`hasDropdown`) is not a toggle: clicking it never turns it "on". Its look comes only from `changed` (ink, a value is set) or `selected`; once its menu closes it is back to its resting look, with the focus ring for keyboard focus only.
 - Toggles the user did not set stay off ("Up to statement").
 
 ## Built from
