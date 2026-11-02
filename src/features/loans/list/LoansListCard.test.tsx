@@ -6,7 +6,7 @@ import { LoansListCard, type LoansListCardProps } from './LoansListCard';
 import type { LoanRow } from './loansListModel';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/', useRouter: () => router }));
 
 const toast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({

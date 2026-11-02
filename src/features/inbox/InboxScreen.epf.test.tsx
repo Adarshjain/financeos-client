@@ -8,7 +8,7 @@ vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/components/ds/Toast/Toast')>()),
   showToast: (...args: unknown[]) => showToast(...args),
 }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/', useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock('./InboxBillHost', () => ({ InboxBillHost: () => null }));
 vi.mock('@/components/ds/SwipeActions/SwipeActions', () => ({
   SwipeActions: ({ children, right }: { children: React.ReactNode; right?: { onTrigger?: () => void } }) => (

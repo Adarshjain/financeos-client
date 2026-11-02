@@ -13,7 +13,7 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { AddTransactionProvider, useAddTransaction } from './AddTransactionProvider';
 
 const navigate = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/', useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock('./useTransactionMutations', () => ({
   useTransactionMutations: () => ({
     createMutation: { mutateAsync: vi.fn(), isPending: false },

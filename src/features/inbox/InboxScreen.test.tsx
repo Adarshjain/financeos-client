@@ -10,7 +10,7 @@ vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
   showToast: (...args: unknown[]) => showToast(...args),
 }));
 const push = vi.hoisted(() => vi.fn());
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/', useRouter: () => ({ push, refresh: vi.fn() }) }));
 vi.mock('./InboxBillHost', () => ({
   InboxBillHost: ({ pending }: { pending: unknown }) => (
     <div data-testid="bill-host" data-pending={JSON.stringify(pending)} />

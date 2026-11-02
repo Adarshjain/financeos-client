@@ -10,7 +10,7 @@ import { employerRow, epfFigures, epfRow, fyOptions, missingMonths, parseEpfUrl,
 import { EpfScreen, type EpfScreenProps } from './EpfScreen';
 
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
-vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, useRouter: () => router }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/', unstable_rethrow: () => undefined, useRouter: () => router }));
 vi.mock('@/lib/date-range', () => ({ todayInAppZone: () => '2026-10-27' }));
 vi.mock('@/features/transactions/TransactionPickerField', () => ({ TransactionPickerField: () => <div /> }));
 vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: [] }) }));

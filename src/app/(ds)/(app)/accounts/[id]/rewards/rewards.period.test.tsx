@@ -10,7 +10,7 @@ import { AccountType } from '@/lib/types';
 import DsAccountRewardsPage from './page';
 
 const push = vi.fn();
-vi.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({ usePathname: () => '/',
   notFound: () => {
     throw new Error('NEXT_NOT_FOUND');
   },

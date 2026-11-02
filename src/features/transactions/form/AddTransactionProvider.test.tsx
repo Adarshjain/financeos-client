@@ -10,7 +10,7 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { AddTransactionProvider, useAddTransaction } from './AddTransactionProvider';
 
 const router = { push: vi.fn(), refresh: vi.fn() };
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/', useRouter: () => router }));
 vi.mock('@/features/accounts/form/ds/AccountDialogs', () => ({
   useAccountDialogs: () => ({ open: vi.fn(), openEdit: vi.fn() }),
   AccountDialogs: ({ children }: { children: React.ReactNode }) => <>{children}</>,
