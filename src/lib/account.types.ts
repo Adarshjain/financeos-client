@@ -14,6 +14,10 @@ export type BankAccountRequest = AccountRequestBase & {
   bank?: string | null;
   openingBalance?: number;
   last4?: string;
+  /** The account's one open debit card, on its primary holder (create only). */
+  debitCard?: { last4: string };
+  /** Earlier numbers of the debit card, saved closed; `closedOn` defaults to today on the server (create only). */
+  earlierCards?: { last4: string; closedOn?: string }[];
   ingestFromDate?: string | null;
   /**
    * Write-only. Verified against the running backend: the value is accepted on
@@ -68,6 +72,10 @@ export type CreditCardRequest = AccountRequestBase & {
   replacesAccountId?: string | null;
   issuer?: string | null;
   productName?: string | null;
+  /** Add-on cards saved with the account, each on its own holder (create only). */
+  addonCards?: { last4: string; relationship: Exclude<CardholderRelationship, 'SELF'>; holderName?: string }[];
+  /** Earlier numbers of the primary card, saved closed; `closedOn` defaults to today on the server (create only). */
+  earlierCards?: { last4: string; closedOn?: string }[];
 };
 
 export type BrokerRequest = AccountRequestBase & {

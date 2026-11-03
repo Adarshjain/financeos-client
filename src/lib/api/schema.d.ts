@@ -4189,6 +4189,12 @@ export interface components {
             emis: components["schemas"]["Emi"][];
         };
         AccountResponse: components["schemas"]["BankAccountResponse"] | components["schemas"]["CreditCardAccountResponse"] | components["schemas"]["BrokerAccountResponse"] | components["schemas"]["GenericAccountResponse"];
+        AddonCardRequest: {
+            holderName?: string | null;
+            last4: string;
+            /** @enum {string} */
+            relationship: "SELF" | "SPOUSE" | "PARENT" | "CHILD" | "SIBLING" | "OTHER";
+        };
         AppLockStatusResponse: {
             armed: boolean;
             /** Format: int32 */
@@ -4258,7 +4264,9 @@ export interface components {
         };
         BankAccountRequest: {
             bank?: string | null;
+            debitCard?: components["schemas"]["DebitCardRequest"];
             description?: string;
+            earlierCards?: components["schemas"]["EarlierCardRequest"][] | null;
             excludeFromNetAsset?: boolean;
             /** @enum {string} */
             financialPosition?: "asset" | "liability";
@@ -5287,11 +5295,13 @@ export interface components {
             warnings: string[];
         };
         CreditCardRequest: {
+            addonCards?: components["schemas"]["AddonCardRequest"][] | null;
             /** Format: date */
             anniversaryDate: string;
             bank?: string | null;
             creditLimit?: number | null;
             description?: string;
+            earlierCards?: components["schemas"]["EarlierCardRequest"][] | null;
             excludeFromNetAsset?: boolean;
             /** @enum {string} */
             financialPosition?: "asset" | "liability";
@@ -5356,6 +5366,9 @@ export interface components {
             absolute: string[];
             cycle: string[];
             relative: string[];
+        };
+        DebitCardRequest: {
+            last4: string;
         };
         DeleteAccountRequest: {
             confirmEmail?: string;
@@ -5513,6 +5526,11 @@ export interface components {
         };
         DraftResultRequest: {
             draftResult?: unknown;
+        };
+        EarlierCardRequest: {
+            /** Format: date */
+            closedOn?: string | null;
+            last4: string;
         };
         EmergencyFundResponse: {
             accounts: components["schemas"]["LiquidAccount"][];

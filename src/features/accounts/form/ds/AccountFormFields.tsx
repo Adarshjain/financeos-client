@@ -14,6 +14,7 @@ import { resolveAmountExpression } from '@/lib/amountExpression';
 import { formatCount, formatMoney } from '@/lib/format';
 import { AccountType } from '@/lib/types';
 
+import { CreditCardsFields, DebitCardFields } from './AccountCardsFields';
 import {
   type AccountFormValues,
   BROKER_PROVIDERS,
@@ -236,7 +237,7 @@ export function AccountFormFields({
         ) : null}
       </Section>
 
-      {isCard ? (
+      {isCard && isEdit ? (
         <Section title="Card details">
           <Pair>
             <TextField
@@ -257,6 +258,19 @@ export function AccountFormFields({
             />
           </Pair>
           {password}
+        </Section>
+      ) : null}
+
+      {isCard && !isEdit ? (
+        <Section title="Cards">
+          <CreditCardsFields values={values} errors={errors} today={today} onChange={onChange} />
+          {password}
+        </Section>
+      ) : null}
+
+      {isBank && !isEdit ? (
+        <Section title="Your debit card">
+          <DebitCardFields values={values} errors={errors} onChange={onChange} />
         </Section>
       ) : null}
 

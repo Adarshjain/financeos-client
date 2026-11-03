@@ -115,7 +115,7 @@ describe('Add account', () => {
   it('opens with the type from the link preselected and its fields shown', () => {
     renderDialog({ initialType: AccountType.CREDIT_CARD });
     expect(screen.getByRole('radio', { name: 'Credit card' })).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByText('Card details')).toBeInTheDocument();
+    expect(screen.getByText('Cards')).toBeInTheDocument();
     expect(screen.getByText('Limit')).toBeInTheDocument();
     expect(screen.getByText('Sync & net worth')).toBeInTheDocument();
     expect(screen.getByText('Liability')).toBeInTheDocument();
@@ -145,6 +145,33 @@ describe('Add account', () => {
     expect(screen.getByText('Enter the card anniversary.')).toBeInTheDocument();
     expect(screen.getByText('Enter a credit limit.')).toBeInTheDocument();
     expect(mutations.createAccountMutation.mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('adds and removes add-on cards, and blocks saving one without a relationship', async () => {
+    renderDialog({ initialType: AccountType.CREDIT_CARD });
+    expect(screen.getByText('Your card')).toBeInTheDocument();
+    expect(screen.queryByText('Add-on card')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Add an add-on card' }));
+    expect(screen.getByText('Add-on card')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /^Holder is your/ })).toBeInTheDocument();
+    fill('Account name', 'Infinia');
+    fill('Card anniversary', '15032024');
+    fill('Credit limit', '200000');
+    fireEvent.change(screen.getAllByRole('textbox', { name: /^Last 4 digits/ })[0], { target: { value: '1111' } });
+    fireEvent.change(screen.getAllByRole('textbox', { name: /^Last 4 digits/ })[1], { target: { value: '1111' } });
+    submit('Add account');
+    expect(await screen.findByText('Pick who the holder is.')).toBeInTheDocument();
+    expect(screen.getByText('This number is already listed above.')).toBeInTheDocument();
+    expect(mutations.createAccountMutation.mutateAsync).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Remove add-on card 1' }));
+    expect(screen.queryByText('Add-on card')).toBeNull();
+  });
+
+  it('offers one optional debit card field on a bank account, with no add button', () => {
+    renderDialog({ initialType: AccountType.BANK_ACCOUNT });
+    expect(screen.getByText('Your debit card')).toBeInTheDocument();
+    expect(screen.getAllByRole('textbox', { name: /^Last 4 digits/ })).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: 'Add a debit card' })).toBeNull();
   });
 
   it('creates a card with its own limit, a typed anniversary and identifiers, then opens it', { timeout: 20000 }, async () => {
