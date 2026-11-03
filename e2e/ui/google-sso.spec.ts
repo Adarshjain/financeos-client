@@ -32,7 +32,7 @@ test.describe('Google SSO UI (@ui)', () => {
     // Consent stub → client callback page → exchange → hard navigation to the dashboard.
     await page.waitForURL(/\/auth\/google\/callback\?/, { timeout: 20_000 });
     // A new sign-in lands on Hello (via the app gate); finish it like pressing Let's go, then carry on.
-    await page.waitForURL(/\/hello/, { timeout: 30_000 });
+    await page.waitForURL(/\/welcome/, { timeout: 30_000 });
     const helloSession = (await page.context().cookies(E2E_CLIENT_URL)).find((c) => c.name === 'FINANCEOS_SESSION')?.value;
     await markHelloDone(helloSession!);
 

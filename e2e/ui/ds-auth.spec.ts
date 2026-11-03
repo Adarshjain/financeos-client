@@ -36,8 +36,8 @@ test.describe('/ds Auth UI (@ui)', () => {
     await page.getByLabel('Invite code', { exact: true }).fill(INVITE_CODE);
     await page.getByRole('button', { name: 'Create account' }).click();
 
-    await page.waitForURL('**/hello', { timeout: 15000 });
-    expect(page.url()).toContain('/hello');
+    await page.waitForURL('**/welcome', { timeout: 15000 });
+    expect(page.url()).toContain('/welcome');
   });
 
   test('signup password under 8 characters shows danger banner before submit', async ({ page }) => {

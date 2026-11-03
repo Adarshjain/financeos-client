@@ -23,8 +23,8 @@ export default async function DsAppLayout({
   children: React.ReactNode;
 }) {
   const user = await requireAuth();
-  // Everyone sees Hello once. /hello lives outside this layout, so this can't loop.
-  if (user.helloDone === false) redirect('/hello');
+  // Everyone sees Hello once. /welcome lives outside this layout, so this can't loop.
+  if (user.helloDone === false) redirect('/welcome');
   const hideAmounts = await readHideAmounts();
   const railCollapsed = await readRailCollapsed();
 

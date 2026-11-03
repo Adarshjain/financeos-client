@@ -15,9 +15,9 @@ test.describe('Hello and profile (@ui)', () => {
     const user = await createUser(request, 'ui-hello', { helloDone: false });
     await loginContext(context, user.cookie);
 
-    // The app gate sends a user without a finished Hello to /hello.
+    // The app gate sends a user without a finished Hello to /welcome.
     await page.goto('/dashboard');
-    await page.waitForURL('**/hello');
+    await page.waitForURL('**/welcome');
     await expect(page.getByRole('heading', { name: "Hi there. Let's find all your money." })).toBeVisible();
     await expect(page.getByText('1 of 2')).toBeVisible();
 
@@ -50,7 +50,7 @@ test.describe('Hello and profile (@ui)', () => {
     // Hello is done for good.
     await page.reload();
     await expect(page).toHaveURL(/\/dashboard/);
-    await page.goto('/hello');
+    await page.goto('/welcome');
     await expect(page).toHaveURL(/\/dashboard/);
 
     const me = await makeApi(user.cookie).GET('/api/v1/auth/me');
@@ -61,7 +61,7 @@ test.describe('Hello and profile (@ui)', () => {
     const user = await createUser(request, 'ui-hello-empty', { helloDone: false });
     await loginContext(context, user.cookie);
 
-    await page.goto('/hello');
+    await page.goto('/welcome');
     await page.getByRole('checkbox').click();
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Continue anyway' })).toBeVisible();
