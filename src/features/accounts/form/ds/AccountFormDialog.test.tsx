@@ -170,7 +170,8 @@ describe('Add account', () => {
   it('offers one optional debit card field on a bank account, with no add button', () => {
     renderDialog({ initialType: AccountType.BANK_ACCOUNT });
     expect(screen.getByText('Your debit card')).toBeInTheDocument();
-    expect(screen.getAllByRole('textbox', { name: /^Last 4 digits/ })).toHaveLength(2);
+    expect(screen.getAllByRole('textbox', { name: /^Last 4 digits/ })).toHaveLength(1);
+    expect(screen.getByRole('textbox', { name: /^Debit card last 4 digits/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Add a debit card' })).toBeNull();
   });
 

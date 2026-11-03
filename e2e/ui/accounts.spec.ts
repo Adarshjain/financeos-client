@@ -107,7 +107,7 @@ test.describe('Accounts UI (@ui)', () => {
     const bank = dialogOf(page, 'Add account');
     await bank.getByRole('textbox', { name: /^Account name/ }).fill('Debit Savings');
     await pickBank(page, bank, 'HDFC Bank');
-    await bank.getByRole('textbox', { name: /^Last 4 digits/ }).last().fill('5566');
+    await bank.getByRole('textbox', { name: /^Debit card last 4 digits/ }).fill('5566');
     await bank.getByRole('button', { name: 'Add account' }).click();
 
     await page.waitForURL(/\/accounts\/[0-9a-f-]{36}$/);
