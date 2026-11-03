@@ -26,6 +26,17 @@ import type {
   CardBaseRow,
   WalletRow,
 } from './accountsListModel';
+import { SuggestionActionsProvider, SuggestionButtons, useSuggestionActions } from './SuggestionRows';
+import {
+  foundBandLabel,
+  isSuggestionRow,
+  maybeBandLabel,
+  olderBandLabel,
+  type SectionSuggestions,
+  type SuggestionBands,
+  type SuggestionRow,
+  type SuggestionSection,
+} from './suggestionsModel';
 
 const ACCOUNTS_HREF = appHref('/accounts');
 
@@ -104,6 +115,87 @@ function useClosedToggle() {
   return { showing, toggle: () => setShowing((v) => !v) };
 }
 
+type BandToggle = ReturnType<typeof useClosedToggle>;
+
+/** The collapsed bands of a section that lists suggestions: older, maybe and closed each show and hide on their own. */
+function useSectionBands() {
+  return { older: useClosedToggle(), maybe: useClosedToggle(), closed: useClosedToggle() };
+}
+
+/**
+ * The band above each group of rows in a section with suggestions: "Found in your email" (always open), the
+ * collapsible "Older …" and "Maybe yours" bands, then the closed accounts. Rows without a band get none.
+ */
+export function sectionBand<Row extends { closed: boolean }>(opts: {
+  section: SuggestionSection;
+  bands: SuggestionBands;
+  closedLine: string | null;
+  toggles: ReturnType<typeof useSectionBands>;
+}) {
+  const { section, bands, closedLine: closedText, toggles } = opts;
+  return (row: Row | SuggestionRow) => {
+    if (isSuggestionRow(row)) {
+      if (row.band === 'FOUND') return { key: 'found', label: foundBandLabel(bands.found.length) };
+      if (row.band === 'OLDER') {
+        return {
+          key: 'older',
+          label: olderBandLabel(section, bands.older.length),
+          action: <ClosedToggleButton showing onToggle={toggles.older.toggle} />,
+        };
+      }
+      return {
+        key: 'maybe',
+        label: maybeBandLabel(bands.maybe.length),
+        action: <ClosedToggleButton showing onToggle={toggles.maybe.toggle} />,
+      };
+    }
+    return row.closed
+      ? { key: 'closed', label: closedText, action: <ClosedToggleButton showing onToggle={toggles.closed.toggle} /> }
+      : null;
+  };
+}
+
+/** Existing rows, then Found, Older and Maybe rows (the collapsed ones only while shown), then the closed ones. */
+function withSuggestions<Row extends { closed: boolean }>(
+  { rows, closedRows }: { rows: Row[]; closedRows: Row[] },
+  bands: SuggestionBands,
+  toggles: ReturnType<typeof useSectionBands>,
+): (Row | SuggestionRow)[] {
+  return [
+    ...rows,
+    ...bands.found,
+    ...(toggles.older.showing ? bands.older : []),
+    ...(toggles.maybe.showing ? bands.maybe : []),
+    ...(toggles.closed.showing ? closedRows : []),
+  ];
+}
+
+/** The "Show" line of each collapsed band that has rows, in row order. */
+function BandFooters({
+  section,
+  bands,
+  closedLine: closedText,
+  toggles,
+}: {
+  section: SuggestionSection;
+  bands: SuggestionBands;
+  closedLine: string | null;
+  toggles: ReturnType<typeof useSectionBands>;
+}) {
+  const line = (count: number, label: string, toggle: BandToggle) => (
+    <ClosedFooter line={count > 0 ? label : null} showing={toggle.showing} onToggle={toggle.toggle} />
+  );
+  return (
+    <>
+      {line(bands.older.length, olderBandLabel(section, bands.older.length), toggles.older)}
+      {line(bands.maybe.length, maybeBandLabel(bands.maybe.length), toggles.maybe)}
+      <ClosedFooter line={closedText} showing={toggles.closed.showing} onToggle={toggles.closed.toggle} />
+    </>
+  );
+}
+
+const NO_BANDS: SuggestionBands = { found: [], older: [], maybe: [] };
+
 export function ClosedToggleButton({
   showing,
   onToggle,
@@ -123,6 +215,10 @@ export function ClosedToggleButton({
 
 /** Closed rows read muted but stay clickable, so their details still open. */
 export const mutedWhenClosed = (row: { closed: boolean }) => (row.closed ? { muted: true } : undefined);
+
+/** Like `mutedWhenClosed`, and a suggestion row opens nothing: its buttons are its actions. */
+const mutedUnlessSuggestion = (row: { closed: boolean }) =>
+  isSuggestionRow(row) ? { pressable: false } : mutedWhenClosed(row);
 
 /** The closed line as a band above the closed rows, so they sit below it. */
 export function closedBand<Row extends { closed: boolean }>(
@@ -192,49 +288,55 @@ function withClosed<Row>(
 
 // ---- Bank accounts ---------------------------------------------------------
 
-const bankCh = createDataTableColumnHelper<BankRow>();
+type BankListRow = BankRow | SuggestionRow;
+const bankCh = createDataTableColumnHelper<BankListRow>();
 const bankBaseColumns = [
   bankCh.display({
     id: 'account',
     header: 'Account',
     meta: { size: 'fill', grow: 2, phone: 'main' },
-    cell: ({ row }) => (
-      <NameCell
-        name={row.original.name}
-        last4={row.original.last4}
-        accountId={row.original.id}
-      />
-    ),
+    cell: ({ row }) =>
+      isSuggestionRow(row.original) ? (
+        <NameCell name={row.original.name} last4={row.original.last4} sub={row.original.sub} />
+      ) : (
+        <NameCell
+          name={row.original.name}
+          last4={row.original.last4}
+          accountId={row.original.id}
+        />
+      ),
   }),
   bankCh.display({
     id: 'status',
     header: 'Status',
     meta: { size: 'md', align: 'start', phone: 'status', wrap: true },
-    cell: ({ row }) => (
-      <div className="flex flex-wrap items-center gap-space-4">
-        <StatusWord tone={row.original.synced ? 'success' : 'neutral'}>
-          {row.original.synced ? 'Gmail synced' : 'Manual'}
-        </StatusWord>
-        {row.original.gapLabel ? (
-          <StatusWord tone="warning">{row.original.gapLabel}</StatusWord>
-        ) : null}
-      </div>
-    ),
+    cell: ({ row }) =>
+      isSuggestionRow(row.original) ? null : (
+        <div className="flex flex-wrap items-center gap-space-4">
+          <StatusWord tone={row.original.synced ? 'success' : 'neutral'}>
+            {row.original.synced ? 'Gmail synced' : 'Manual'}
+          </StatusWord>
+          {row.original.gapLabel ? (
+            <StatusWord tone="warning">{row.original.gapLabel}</StatusWord>
+          ) : null}
+        </div>
+      ),
   }),
   bankCh.display({
     id: 'balance',
     header: 'Balance',
     meta: { size: 'md', align: 'end', phone: 'amount' },
-    cell: ({ row }) => (
-      <Text variant="body-strong" fraction="small">{row.original.balance}</Text>
-    ),
+    cell: ({ row }) =>
+      isSuggestionRow(row.original) ? null : (
+        <Text variant="body-strong" fraction="small">{row.original.balance}</Text>
+      ),
   }),
   bankCh.display({
     id: 'asOf',
     header: 'As of',
     meta: { size: 'md', phone: 'hidden' },
     cell: ({ row }) =>
-      row.original.asOf ? (
+      !isSuggestionRow(row.original) && row.original.asOf ? (
         <Text variant="body" tone="ink-3">
           {row.original.asOf}
         </Text>
@@ -248,22 +350,27 @@ function makeBankColumns(onEdit: (row: BankRow) => void) {
     bankCh.display({
       id: 'actions',
       header: '',
-      meta: { size: 'sm', align: 'end', phone: 'hidden' },
-      cell: ({ row }) => (
-        <RowControls>
-          <EditButton onEdit={() => onEdit(row.original)} />
-        </RowControls>
-      ),
+      meta: { size: 'lg', align: 'end', phone: 'hidden' },
+      cell: ({ row }) =>
+        isSuggestionRow(row.original) ? (
+          <SuggestionButtons row={row.original} />
+        ) : (
+          <RowControls>
+            <EditButton onEdit={() => onEdit(row.original as BankRow)} />
+          </RowControls>
+        ),
     }),
   ];
 }
 const bankColumns = makeBankColumns(() => undefined);
 
-export function BankSection(props: SectionProps<BankRow>) {
+export function BankSection(props: SectionProps<BankRow> & { suggestions?: SectionSuggestions; emptyText?: string }) {
   const router = useRouter();
-  const closed = useClosedToggle();
+  const toggles = useSectionBands();
   const [editing, setEditing] = useState<BankRow | null>(null);
   const { Component: AccountFormDialog, run } = useLazyDialog(loadAccountForm);
+  const bands = props.suggestions?.bands ?? NO_BANDS;
+  const actions = useSuggestionActions(props.suggestions?.parents ?? []);
   const columns = useMemo(() => makeBankColumns((row) => void run(() => setEditing(row))), [run]);
   return (
     <Card
@@ -275,28 +382,28 @@ export function BankSection(props: SectionProps<BankRow>) {
         </AddLink>
       }
     >
-      <DataTable
-        columns={columns}
-        data={withClosed(props, closed.showing)}
-        band={closedBand<BankRow>(props.closedLine, closed.toggle)}
-        getRowId={(row) => row.id}
-        rowState={mutedWhenClosed}
-        onRowSelect={(row) => router.push(rowHref(row))}
-        leading={(r) => <BankLogo bankId={r.bank ?? null} name={r.name} />}
-        phoneSub={(row) => row.phoneSub}
-        empty={<EmptyState compact description="No bank accounts yet" />}
-      />
-      <ClosedFooter
-        line={props.closedLine}
-        showing={closed.showing}
-        onToggle={closed.toggle}
-      />
+      <SuggestionActionsProvider value={actions}>
+        <DataTable
+          columns={columns}
+          data={withSuggestions(props, bands, toggles)}
+          band={sectionBand<BankRow>({ section: 'bank', bands, closedLine: props.closedLine, toggles })}
+          getRowId={(row) => row.id}
+          rowState={mutedUnlessSuggestion}
+          onRowSelect={(row) => router.push(rowHref(row))}
+          leading={(r) => <BankLogo bankId={isSuggestionRow(r) ? r.bankId : (r.bank ?? null)} name={r.name} />}
+          phoneSub={(row) => (isSuggestionRow(row) ? null : row.phoneSub)}
+          phoneActions={(row) => (isSuggestionRow(row) ? <SuggestionButtons row={row} /> : null)}
+          empty={<EmptyState compact description={props.emptyText ?? 'No bank accounts yet'} />}
+        />
+      </SuggestionActionsProvider>
+      <BandFooters section="bank" bands={bands} closedLine={props.closedLine} toggles={toggles} />
       {editing && AccountFormDialog ? (
         <AccountFormDialog
           account={editing.account}
           onClose={() => setEditing(null)}
         />
       ) : null}
+      {actions.dialog}
     </Card>
   );
 }
@@ -329,40 +436,47 @@ function CardBadges({ row }: { row: CardListRow }) {
   );
 }
 
-const cardCh = createDataTableColumnHelper<CardListRow>();
+type CardRowOrSuggestion = CardListRow | SuggestionRow;
+
+const cardCh = createDataTableColumnHelper<CardRowOrSuggestion>();
 const cardColumns = [
   cardCh.display({
     id: 'card',
     header: 'Card',
     meta: { size: 'fill', grow: 2, phone: 'main', wrap: true },
-    cell: ({ row }) => (
-      <NameCell
-        name={row.original.name}
-        last4={row.original.last4}
-        sub={row.original.sharedLimit}
-        accountId={row.original.id}
-      />
-    ),
+    cell: ({ row }) =>
+      isSuggestionRow(row.original) ? (
+        <NameCell name={row.original.name} last4={row.original.last4} sub={row.original.sub} />
+      ) : (
+        <NameCell
+          name={row.original.name}
+          last4={row.original.last4}
+          sub={row.original.sharedLimit}
+          accountId={row.original.id}
+        />
+      ),
   }),
   cardCh.display({
     id: 'nextBill',
     header: 'Next bill',
     meta: { size: 'sm', align: 'start', phone: 'status', wrap: true },
-    cell: ({ row }) => <CardBadges row={row.original} />,
+    cell: ({ row }) => (isSuggestionRow(row.original) ? null : <CardBadges row={row.original} />),
   }),
   cardCh.display({
     id: 'outstanding',
     header: 'Outstanding',
     meta: { size: 'sm', align: 'end', phone: 'amount' },
-    cell: ({ row }) => (
-      <Text variant="body-strong" fraction="small">{row.original.outstanding}</Text>
-    ),
+    cell: ({ row }) =>
+      isSuggestionRow(row.original) ? null : (
+        <Text variant="body-strong" fraction="small">{row.original.outstanding}</Text>
+      ),
   }),
   cardCh.display({
     id: 'limitUsed',
     header: 'Limit used',
     meta: { size: 'lg', phone: 'hidden', wrap: true },
     cell: ({ row }) => {
+      if (isSuggestionRow(row.original)) return null;
       const used = row.original.limitUsed;
       if (!used)
         return (
@@ -389,11 +503,18 @@ const cardColumns = [
     id: 'rewards',
     header: 'Rewards',
     meta: { size: 'sm', phone: 'hidden' },
-    cell: ({ row }) => row.original.rewardsSlot,
+    cell: ({ row }) => (isSuggestionRow(row.original) ? null : row.original.rewardsSlot),
+  }),
+  cardCh.display({
+    id: 'actions',
+    header: '',
+    meta: { size: 'lg', align: 'end', phone: 'hidden' },
+    cell: ({ row }) => (isSuggestionRow(row.original) ? <SuggestionButtons row={row.original} /> : null),
   }),
 ];
 
-function cardPhoneSub(row: CardListRow): React.ReactNode {
+function cardPhoneSub(row: CardRowOrSuggestion): React.ReactNode {
+  if (isSuggestionRow(row)) return null;
   const used = row.limitUsed;
   const parts: React.ReactNode[] = [];
   if (row.cardholders > 1) parts.push(`${row.cardholders} cardholders`);
@@ -421,10 +542,12 @@ function cardPhoneSub(row: CardListRow): React.ReactNode {
 }
 
 export function CardsSection(
-  props: SectionProps<CardListRow> & { subtitle: string }
+  props: SectionProps<CardListRow> & { subtitle: string; suggestions?: SectionSuggestions; emptyText?: string }
 ) {
   const router = useRouter();
-  const closed = useClosedToggle();
+  const toggles = useSectionBands();
+  const bands = props.suggestions?.bands ?? NO_BANDS;
+  const actions = useSuggestionActions(props.suggestions?.parents ?? []);
   return (
     <Card
       title="Credit cards"
@@ -435,22 +558,22 @@ export function CardsSection(
         </AddLink>
       }
     >
-      <DataTable
-        columns={cardColumns}
-        data={withClosed(props, closed.showing)}
-        band={closedBand<CardListRow>(props.closedLine, closed.toggle)}
-        getRowId={(row) => row.id}
-        rowState={mutedWhenClosed}
-        onRowSelect={(row) => router.push(rowHref(row))}
-        leading={(r) => <BankLogo bankId={r.bank ?? null} name={r.name} />}
-        phoneSub={cardPhoneSub}
-        empty={<EmptyState compact description="No credit cards yet" />}
-      />
-      <ClosedFooter
-        line={props.closedLine}
-        showing={closed.showing}
-        onToggle={closed.toggle}
-      />
+      <SuggestionActionsProvider value={actions}>
+        <DataTable
+          columns={cardColumns}
+          data={withSuggestions(props, bands, toggles)}
+          band={sectionBand<CardListRow>({ section: 'card', bands, closedLine: props.closedLine, toggles })}
+          getRowId={(row) => row.id}
+          rowState={mutedUnlessSuggestion}
+          onRowSelect={(row) => router.push(rowHref(row))}
+          leading={(r) => <BankLogo bankId={isSuggestionRow(r) ? r.bankId : (r.bank ?? null)} name={r.name} />}
+          phoneSub={cardPhoneSub}
+          phoneActions={(row) => (isSuggestionRow(row) ? <SuggestionButtons row={row} /> : null)}
+          empty={<EmptyState compact description={props.emptyText ?? 'No credit cards yet'} />}
+        />
+      </SuggestionActionsProvider>
+      <BandFooters section="card" bands={bands} closedLine={props.closedLine} toggles={toggles} />
+      {actions.dialog}
     </Card>
   );
 }
@@ -483,7 +606,7 @@ const brokerColumns = [
   }),
 ];
 
-export function BrokersSection(props: SectionProps<BrokerRow>) {
+export function BrokersSection(props: SectionProps<BrokerRow> & { emptyText?: string }) {
   const router = useRouter();
   const closed = useClosedToggle();
   return (
@@ -504,7 +627,7 @@ export function BrokersSection(props: SectionProps<BrokerRow>) {
         rowState={mutedWhenClosed}
         onRowSelect={(row) => router.push(rowHref(row))}
         phoneSub={(row) => row.phoneSub}
-        empty={<EmptyState compact description="No broker accounts yet" />}
+        empty={<EmptyState compact description={props.emptyText ?? 'No broker accounts yet'} />}
       />
       <ClosedFooter
         line={props.closedLine}

@@ -3,6 +3,7 @@ import React, { Suspense } from 'react';
 import { GRID_GAP } from '@/components/ds/gridGap';
 import { Hero } from '@/components/ds/Hero/Hero';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import type { AccountSuggestions } from '@/features/accounts/list/suggestionsModel';
 import { LoadError } from '@/features/shell/LoadError';
 
 import type { AccountsListData, AccountsResult } from './accountsListData';
@@ -30,13 +31,39 @@ import {
   NetWorthValue,
   streamedCardRow,
 } from './AccountsStreamed';
+import { ScanProgressCard } from './ScanProgressCard';
+import {
+  accountsBodyMode,
+  isScanProgressShown,
+  scanningEmptyCopy,
+  splitSuggestions,
+  suggestionCount,
+} from './suggestionsModel';
 
 /** The Accounts list body: the KPI tiles and the four sections. The accounts are loaded; the other pieces stream in. */
-export function AccountsScreen({ streams, data, today }: { streams: AccountsListData; data: AccountsResult; today: string }) {
+export function AccountsScreen({
+  streams,
+  data,
+  suggestions,
+  today,
+}: {
+  streams: AccountsListData;
+  data: AccountsResult;
+  suggestions: AccountSuggestions | null;
+  today: string;
+}) {
   let body: React.ReactNode;
+  const scan = suggestions?.scan ?? null;
+  const progressShown = isScanProgressShown(scan);
+  const found = splitSuggestions(suggestions?.items ?? [], data.accounts ?? []);
+  const mode = accountsBodyMode({
+    accountCount: data.accounts?.length ?? 0,
+    progressShown,
+    suggestionCount: suggestionCount(found.bank.bands) + suggestionCount(found.card.bands),
+  });
   if (data.accounts === null) {
     body = <LoadError what="accounts" reference={data.errorReference} />;
-  } else if (data.accounts.length === 0) {
+  } else if (mode === 'empty') {
     body = <AccountsEmpty />;
   } else {
     const sections = groupAccounts(data.accounts, today);
@@ -48,6 +75,8 @@ export function AccountsScreen({ streams, data, today }: { streams: AccountsList
 
     body = (
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
+        {progressShown && scan ? <ScanProgressCard scan={scan} /> : null}
+        {mode === 'full' ? (
         <Hero
           label="Net worth"
           value={
@@ -69,11 +98,14 @@ export function AccountsScreen({ streams, data, today }: { streams: AccountsList
             },
           ]}
         />
+        ) : null}
 
         <BankSection
           rows={sections.banks.open.map((a) => bankRow(a, today))}
           closedRows={sections.banks.closed.map((a) => bankRow(a, today))}
           closedLine={closedLineFor(sections.banks.closed)}
+          suggestions={found.bank}
+          emptyText={scanningEmptyCopy('bank', progressShown)}
         />
 
         <CardsSection
@@ -81,6 +113,8 @@ export function AccountsScreen({ streams, data, today }: { streams: AccountsList
           rows={cardRows(sections.cards.open)}
           closedRows={cardRows(sections.cards.closed)}
           closedLine={closedLineFor(sections.cards.closed)}
+          suggestions={found.card}
+          emptyText={scanningEmptyCopy('card', progressShown)}
         />
 
         <div className={`grid grid-cols-1 desk:grid-cols-2 items-start ${GRID_GAP}`}>
@@ -88,6 +122,7 @@ export function AccountsScreen({ streams, data, today }: { streams: AccountsList
             rows={sections.brokers.open.map((a) => brokerRow(a, today))}
             closedRows={sections.brokers.closed.map((a) => brokerRow(a, today))}
             closedLine={closedLineFor(sections.brokers.closed)}
+            emptyText={scanningEmptyCopy('broker', progressShown)}
           />
           <WalletsSection
             rows={sections.wallets.open.map((a) => walletRow(a, today))}

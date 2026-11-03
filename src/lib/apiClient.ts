@@ -1,6 +1,7 @@
 import { cookies, headers as nextHeaders } from 'next/headers';
 import { unstable_rethrow } from 'next/navigation';
 
+import type { AccountSuggestions } from '@/features/accounts/list/suggestionsModel';
 import type { Conversation, ConversationSummary, DraftResult } from '@/features/chat/conversation.types';
 import type {
   Account,
@@ -462,6 +463,22 @@ export const appLockApi = {
 // ---------------------------------------------------------------------------
 // Accounts & Cardholders
 // ---------------------------------------------------------------------------
+
+export const accountSuggestionsApi = {
+  list: async (): Promise<AccountSuggestions> => {
+    const { data } = await serverApi.GET('/api/v1/account-suggestions');
+    return data as unknown as AccountSuggestions;
+  },
+  notMine: async (id: string): Promise<void> => {
+    await serverApi.POST('/api/v1/account-suggestions/{id}/not-mine', { params: { path: { id } } });
+  },
+  undo: async (id: string): Promise<void> => {
+    await serverApi.POST('/api/v1/account-suggestions/{id}/undo', { params: { path: { id } } });
+  },
+  isThis: async (id: string, accountId: string, yes: boolean): Promise<void> => {
+    await serverApi.POST('/api/v1/account-suggestions/{id}/is-this', { params: { path: { id } }, body: { accountId, yes } });
+  },
+};
 
 export const accountsApi = {
   list: async (): Promise<Account[]> => {

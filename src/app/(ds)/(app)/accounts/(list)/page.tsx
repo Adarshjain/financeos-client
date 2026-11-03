@@ -5,8 +5,8 @@ import { todayInAppZone } from '@/lib/date-range';
 export const metadata = { title: 'Accounts' };
 
 export default async function DsAccountsPage() {
-  // All five requests start now; only the accounts are awaited, the rest stream in.
+  // All six requests start now; the accounts and the suggestions are awaited together (the rows need both), the rest stream in.
   const streams = loadAccountsListData();
-  const data = await streams.accounts;
-  return <AccountsScreen streams={streams} data={data} today={todayInAppZone()} />;
+  const [data, suggestions] = await Promise.all([streams.accounts, streams.suggestions]);
+  return <AccountsScreen streams={streams} data={data} suggestions={suggestions} today={todayInAppZone()} />;
 }

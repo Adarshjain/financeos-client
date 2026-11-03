@@ -88,3 +88,48 @@ export async function resetCoverage(api: ApiClient): Promise<void> {
   const res = await (api as any).POST('/api/e2e/coverage/reset');
   expectStatus(res, 204);
 }
+
+export interface AccountDetectSeedEntity {
+  /** The server BankDirectory issuer id, e.g. "hdfc", "axis". */
+  bank: string;
+  last4: string;
+  kind: 'ACCOUNT' | 'CREDIT_CARD' | 'DEBIT_CARD';
+  existsConf: 'HIGH' | 'MEDIUM' | 'LOW';
+  kindConf: 'HIGH' | 'MEDIUM' | 'LOW';
+  variant?: string;
+  variantConf?: 'HIGH' | 'MEDIUM' | 'LOW';
+  variantCandidates?: string[];
+  lifecycle?: string;
+  lifecycleConf?: 'HIGH' | 'MEDIUM' | 'LOW';
+  /** The parent entity's key, for a card that belongs to an account. */
+  linkedTo?: string;
+  first?: string;
+  last?: string;
+  evidenceMails?: number;
+  limitBucket?: string;
+  limitConf?: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export interface AccountDetectSeedScan {
+  status: 'IDLE' | 'RUNNING' | 'PAUSED_AUTH' | 'FAILED';
+  mailsSeen: number;
+  mailsTotal: number;
+  firstScanDone: boolean;
+}
+
+/** Seeds the current user's account suggestions (and optionally the scan state) as if the detect job had just run. */
+export async function seedAccountDetect(
+  api: ApiClient,
+  body: { entities: AccountDetectSeedEntity[]; scan?: AccountDetectSeedScan }
+): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await (api as any).POST('/api/e2e/account-detect/seed', { body });
+  expectStatus(res, 204);
+}
+
+/** Clears the current user's suggestions and scan state. */
+export async function clearAccountDetect(api: ApiClient): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await (api as any).DELETE('/api/e2e/account-detect');
+  expectStatus(res, 204);
+}

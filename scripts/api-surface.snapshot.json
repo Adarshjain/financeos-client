@@ -2,6 +2,7 @@
   "exports": [
     "WebAuthnOptionsJson",
     "accountCardsApi",
+    "accountSuggestionsApi",
     "accountsApi",
     "appLockApi",
     "authApi",
@@ -46,11 +47,14 @@
       "getDeletionSummary",
       "googleStart",
       "handleGoogleCallback",
+      "hello",
       "login",
       "logout",
       "me",
       "signup",
-      "startGoogleAuth"
+      "startGoogleAuth",
+      "startGoogleBirthday",
+      "updateProfile"
     ],
     "appLockApi": [
       "disable",
@@ -60,6 +64,12 @@
       "unlockOptions",
       "unlockVerify",
       "updateSettings"
+    ],
+    "accountSuggestionsApi": [
+      "isThis",
+      "list",
+      "notMine",
+      "undo"
     ],
     "accountsApi": [
       "close",
@@ -348,10 +358,11 @@
       "merge",
       "search",
       "setCategory",
-      "uncategorizedGroupTransactions",
       "uncategorizedExists",
+      "uncategorizedGroupTransactions",
       "uncategorizedGroups",
       "uncategorizedSummary",
+      "undoUncategorized",
       "update"
     ],
     "transactionLinksApi": [

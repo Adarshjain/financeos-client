@@ -26,6 +26,7 @@ export function toStreams(data: PlainListData): AccountsListData {
     rewards: Promise.resolve(data.rewards),
     netWorth: Promise.resolve(data.netWorth),
     dayChangePct: Promise.resolve(data.dayChangePct),
+    suggestions: Promise.resolve(null),
   };
 }
 

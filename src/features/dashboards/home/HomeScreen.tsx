@@ -12,6 +12,9 @@ import React from 'react';
 import { Button } from '@/components/ds/Button/Button';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { Select } from '@/components/ds/Select/Select';
+import { ScanProgressCard } from '@/features/accounts/list/ScanProgressCard';
+import type { ScanState } from '@/features/accounts/list/suggestionsModel';
+import { isScanProgressShown } from '@/features/accounts/list/suggestionsModel';
 import { useAddWidgetNow, useRestoreHome, useSaveWidgetSettings, useToggleDefault } from '@/features/dashboards/data/useDashboardMutations';
 import { builtinWidgetResponse, reportWidgetResponse } from '@/features/dashboards/editor/dashboardEditorModel';
 import { withTitle } from '@/features/dashboards/editor/editorStateModel';
@@ -30,7 +33,7 @@ import { DashboardWidgets } from '../view/DashboardWidgets';
 
 const noop = () => undefined;
 
-export function HomeScreen() {
+export function HomeScreen({ scan }: { scan?: ScanState | null }) {
   const router = useRouter();
   const { data: dashboards = [] } = useDashboards();
   const catalog = useBuiltins().data;
@@ -44,12 +47,14 @@ export function HomeScreen() {
   const restoreHome = useRestoreHome(() => router.refresh());
   const toggleDefault = useToggleDefault(noop);
 
+  const progress = scan && isScanProgressShown(scan) ? <ScanProgressCard scan={scan} className="mb-space-12 desk:mb-space-16" /> : null;
   const active = dashboards.find((d) => d.id === currentId) ?? dashboards.find((d) => d.isDefault);
   const saveSettings = useSaveWidgetSettings(active, noop);
 
   if (!active) {
     return (
       <ShellPage title="Home">
+        {progress}
         <EmptyState title="No default dashboard" description="Home shows your default dashboard. Restore the built-in Home or pick another.">
           <div className="flex w-full max-w-container-sm flex-col gap-space-8">
             <Button variant="primary" loading={restoreHome.pending} onClick={restoreHome.restore}>
@@ -100,6 +105,7 @@ export function HomeScreen() {
 
   return (
     <ShellPage title={switcher}>
+      {progress}
       {active.widgets.length === 0 ? (
         <EmptyState
           title="No widgets yet"

@@ -287,7 +287,7 @@ describe('Notifications tab: kinds and grouping', () => {
     const groups: Record<string, string[]> = {
       'Bills & EMIs': ['Bill due', 'Bill overdue', 'EMI due', 'EMI overdue', 'Money due back'],
       Statements: ['Statement arrived', 'Statement missing', 'Unreviewed after a statement'],
-      'Gmail & jobs': ['Mailbox needs reconnecting', 'Emails needing attention', 'Jobs finished or failed'],
+      'Gmail & jobs': ['Mailbox needs reconnecting', 'Emails needing attention', 'Accounts found', 'Jobs finished or failed'],
       Rewards: ['Milestone close or reached', 'Cap reached'],
     };
     for (const [title, labels] of Object.entries(groups)) {

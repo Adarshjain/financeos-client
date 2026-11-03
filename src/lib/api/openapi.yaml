@@ -8,6 +8,93 @@ servers:
 - description: Relative Server
   url: /
 paths:
+  /api/v1/account-suggestions:
+    get:
+      operationId: list_3
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountSuggestionsResponse"
+          description: OK
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Error response
+      tags:
+      - account-suggestion-controller
+  /api/v1/account-suggestions/{id}/is-this:
+    post:
+      operationId: isThis
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IsThisRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Error response
+      tags:
+      - account-suggestion-controller
+  /api/v1/account-suggestions/{id}/not-mine:
+    post:
+      operationId: notMine
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Error response
+      tags:
+      - account-suggestion-controller
+  /api/v1/account-suggestions/{id}/undo:
+    post:
+      operationId: undo_1
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: Error response
+      tags:
+      - account-suggestion-controller
   /api/v1/accounts:
     get:
       operationId: getAllAccounts
@@ -9642,6 +9729,185 @@ components:
       - $ref: "#/components/schemas/CreditCardAccountResponse"
       - $ref: "#/components/schemas/BrokerAccountResponse"
       - $ref: "#/components/schemas/GenericAccountResponse"
+    AccountSuggestionBank:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - name
+    AccountSuggestionCandidateAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+      - id
+      - name
+    AccountSuggestionChild:
+      type: object
+      properties:
+        band:
+          type: string
+        evidenceMails:
+          type: integer
+          format: int32
+        firstSeenOn:
+          type: string
+          format: date
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+        last4:
+          type: string
+        lastSeenOn:
+          type: string
+          format: date
+        lifecycle:
+          type: string
+        lifecycleConf:
+          type: string
+      required:
+      - band
+      - evidenceMails
+      - firstSeenOn
+      - id
+      - kind
+      - last4
+      - lastSeenOn
+      - lifecycle
+      - lifecycleConf
+    AccountSuggestionItem:
+      type: object
+      properties:
+        band:
+          type: string
+        bank:
+          $ref: "#/components/schemas/AccountSuggestionBank"
+        candidateAccount:
+          $ref: "#/components/schemas/AccountSuggestionCandidateAccount"
+        caption:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountSuggestionChild"
+        evidenceMails:
+          type: integer
+          format: int32
+        firstSeenOn:
+          type: string
+          format: date
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+        kindConf:
+          type: string
+        last4:
+          type: string
+        lastSeenOn:
+          type: string
+          format: date
+        lifecycle:
+          type: string
+        lifecycleConf:
+          type: string
+        limitBucket:
+          type: string
+        limitConf:
+          type: string
+        parentAccount:
+          $ref: "#/components/schemas/AccountSuggestionParentAccount"
+        parentSuggestionId:
+          type: string
+          format: uuid
+        variant:
+          type: string
+        variantCandidates:
+          type: array
+          items:
+            type: string
+        variantConf:
+          type: string
+      required:
+      - band
+      - bank
+      - candidateAccount
+      - caption
+      - children
+      - evidenceMails
+      - firstSeenOn
+      - id
+      - kind
+      - kindConf
+      - last4
+      - lastSeenOn
+      - lifecycle
+      - lifecycleConf
+      - limitBucket
+      - limitConf
+      - parentAccount
+      - parentSuggestionId
+      - variant
+      - variantCandidates
+      - variantConf
+    AccountSuggestionParentAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        last4:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - last4
+      - name
+    AccountSuggestionScan:
+      type: object
+      properties:
+        firstScanDone:
+          type: boolean
+        gmailConnected:
+          type: boolean
+        mailsSeen:
+          type: integer
+          format: int32
+        mailsTotal:
+          type: integer
+          format: int32
+        status:
+          type: string
+      required:
+      - firstScanDone
+      - gmailConnected
+      - mailsSeen
+      - mailsTotal
+      - status
+    AccountSuggestionsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountSuggestionItem"
+        scan:
+          $ref: "#/components/schemas/AccountSuggestionScan"
+      required:
+      - items
+      - scan
     AddonCardRequest:
       type: object
       properties:
@@ -9876,6 +10142,11 @@ components:
           enum:
           - asset
           - liability
+        fromSuggestionId:
+          type: string
+          format: uuid
+          nullable: true
+          x-nullable: true
         ingestFromDate:
           type: string
           format: date
@@ -11916,6 +12187,9 @@ components:
     CreateCardRequest:
       type: object
       properties:
+        fromSuggestionId:
+          type: string
+          format: uuid
         issuedOn:
           type: string
           format: date
@@ -11928,6 +12202,9 @@ components:
     CreateCardholderRequest:
       type: object
       properties:
+        fromSuggestionId:
+          type: string
+          format: uuid
         issuedOn:
           type: string
           format: date
@@ -12674,6 +12951,11 @@ components:
           enum:
           - asset
           - liability
+        fromSuggestionId:
+          type: string
+          format: uuid
+          nullable: true
+          x-nullable: true
         ingestFromDate:
           type: string
           format: date
@@ -15926,6 +16208,19 @@ components:
       - totalCharges
       - tradeDate
       - type
+    IsThisRequest:
+      type: object
+      properties:
+        accountId:
+          type: string
+          format: uuid
+          x-required: true
+        "yes":
+          type: boolean
+          x-required: true
+      required:
+      - accountId
+      - "yes"
     Item:
       type: object
       properties:
@@ -19247,6 +19542,9 @@ components:
     ReplaceCardRequest:
       type: object
       properties:
+        fromSuggestionId:
+          type: string
+          format: uuid
         issuedOn:
           type: string
           format: date

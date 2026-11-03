@@ -1,13 +1,16 @@
 import { dehydrate, type DehydratedState } from '@tanstack/react-query';
 
+import type { ScanState } from '@/features/accounts/list/suggestionsModel';
 import { type Loaded, loaded, signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
-import { dashboardsApi } from '@/lib/apiClient';
+import { accountSuggestionsApi, dashboardsApi } from '@/lib/apiClient';
 import { getQueryClient } from '@/lib/query/client';
 import { keys } from '@/lib/query/keys';
 
 export interface HomeData {
   /** The cache to hydrate: the dashboards and the built-in catalog. Widget data loads in the browser as each widget scrolls into view. */
   state: DehydratedState;
+  /** The Gmail account scan's progress, for the "Finding your accounts" card; null when it could not be read. */
+  scan: ScanState | null;
 }
 
 /**
@@ -17,12 +20,13 @@ export interface HomeData {
  */
 export async function loadHome(): Promise<Loaded<HomeData>> {
   const queryClient = getQueryClient();
-  const [list] = await Promise.all([
+  const [list, scan] = await Promise.all([
     loaded(dashboardsApi.list()),
+    accountSuggestionsApi.list().then((s) => s.scan, () => null),
     queryClient.prefetchQuery({ queryKey: keys.dashboards.builtins(), queryFn: () => dashboardsApi.builtins() }),
   ]);
   if (!list.ok) return list;
   await signInIfPrefetchFailed(queryClient, keys.dashboards.builtins());
   queryClient.setQueryData(keys.dashboards.list(), list.data);
-  return { ok: true, data: { state: dehydrate(queryClient) } };
+  return { ok: true, data: { state: dehydrate(queryClient), scan } };
 }

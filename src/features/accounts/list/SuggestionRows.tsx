@@ -1,0 +1,117 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import React from 'react';
+
+import { Button } from '@/components/ds/Button/Button';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { loadAccountForm, useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
+import type { Account } from '@/lib/account.types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+
+import { answerIsThis, hideSuggestion, undoHideSuggestion } from './suggestionActions';
+import type { SuggestionRow } from './suggestionsModel';
+
+/** What "Add" opens for a suggestion: the matching Add account type, or Edit on the account it belongs to. */
+export function addTarget(row: Pick<SuggestionRow, 'kind' | 'parentAccountId'>, parentIds: ReadonlySet<string>):
+  | { open: 'bank_account' | 'credit_card' }
+  | { edit: string } {
+  if (row.parentAccountId && parentIds.has(row.parentAccountId) && row.kind !== 'BANK_ACCOUNT' && row.kind !== 'CREDIT_CARD') {
+    return { edit: row.parentAccountId };
+  }
+  return { open: row.kind === 'BANK_ACCOUNT' || row.kind === 'DEBIT_CARD' ? 'bank_account' : 'credit_card' };
+}
+
+/**
+ * The actions behind a section's suggestion rows: Not mine (toast with Undo), the "Is this your …?" answers and Add.
+ * Render `dialog` once in the section: it holds the Edit account dialog that Add opens for a card on an account.
+ */
+export function useSuggestionActions(parents: readonly Account[]) {
+  const router = useRouter();
+  const { open, preload } = useAccountDialogs();
+  const { Component: AccountFormDialog, run } = useLazyDialog(loadAccountForm);
+  const [editing, setEditing] = React.useState<Account | null>(null);
+  const [pendingId, setPendingId] = React.useState<string | null>(null);
+
+  const fail = (message: string) => showToast(message, { tone: 'danger' });
+
+  const undo = async (id: string) => {
+    const result = await undoHideSuggestion(id);
+    if (!result.success) fail(result.error.message);
+    router.refresh();
+  };
+
+  const notMine = async (row: SuggestionRow) => {
+    setPendingId(row.id);
+    try {
+      const result = await hideSuggestion(row.id);
+      if (!result.success) return fail(result.error.message);
+      router.refresh();
+      showToast(`Hidden ${row.name}${row.last4 ? ` ••${row.last4}` : ''}`, {
+        action: { label: 'Undo', onSelect: () => void undo(row.id) },
+      });
+    } finally {
+      setPendingId(null);
+    }
+  };
+
+  const answer = async (row: SuggestionRow, yes: boolean) => {
+    if (!row.isThis) return;
+    setPendingId(row.id);
+    try {
+      const result = await answerIsThis(row.id, row.isThis.accountId, yes);
+      if (!result.success) return fail(result.error.message);
+      router.refresh();
+    } finally {
+      setPendingId(null);
+    }
+  };
+
+  const add = (row: SuggestionRow) => {
+    const target = addTarget(row, new Set(parents.map((p) => p.id)));
+    if ('open' in target) return open(target.open);
+    const account = parents.find((p) => p.id === target.edit);
+    if (account) void run(() => setEditing(account));
+  };
+
+  const dialog =
+    editing && AccountFormDialog ? <AccountFormDialog account={editing} onClose={() => setEditing(null)} /> : null;
+
+  return { pendingId, notMine, answer, add, preload, dialog };
+}
+
+export type SuggestionActionsApi = ReturnType<typeof useSuggestionActions>;
+
+const SuggestionActionsContext = React.createContext<SuggestionActionsApi | null>(null);
+
+/** Gives the buttons in a section's table cells the section's current actions, so the columns stay fixed. */
+export const SuggestionActionsProvider = SuggestionActionsContext.Provider;
+
+/** The buttons at the end of a suggestion row (a table cell on desktop, the last line on phone). */
+export function SuggestionButtons({ row }: { row: SuggestionRow }) {
+  const actions = React.useContext(SuggestionActionsContext);
+  if (!actions) return null;
+  const busy = actions.pendingId === row.id;
+  if (row.isThis) {
+    return (
+      <div className="flex items-center justify-end gap-space-4">
+        <Button variant="ghost" size="sm" disabled={busy} onClick={() => void actions.answer(row, false)}>
+          No
+        </Button>
+        <Button variant="secondary" size="sm" disabled={busy} onClick={() => void actions.answer(row, true)}>
+          Yes
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center justify-end gap-space-4">
+      <Button variant="ghost" size="sm" disabled={busy} onClick={() => void actions.notMine(row)}>
+        Not mine
+      </Button>
+      <Button variant="secondary" size="sm" disabled={busy} onPointerDown={actions.preload} onClick={() => actions.add(row)}>
+        Add
+      </Button>
+    </div>
+  );
+}
