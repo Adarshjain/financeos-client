@@ -57,7 +57,7 @@ export function ScanProgressCard({ scan: initial, className }: { scan: ScanState
       <Card.Row className="flex-col items-stretch">
         <Text variant="body">{scanProgressLine(scan)}</Text>
         <Text variant="body" tone="ink-3">
-          Keep using FinanceOS. We&apos;ll let you know when it&apos;s done.
+          Keep using FinanceOS. We&apos;ll let you know what we find.
         </Text>
         <ProgressBar value={scanProgressValue(scan)} />
       </Card.Row>
