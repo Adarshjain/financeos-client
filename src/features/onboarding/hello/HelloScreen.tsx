@@ -20,7 +20,7 @@ import {
   NAME_CAPTION_GOOGLE,
   NAME_LABEL,
 } from '../birthDate';
-import { startGmailOAuthToHome, startGoogleBirthday, submitHello } from './helloActions';
+import { startGmailOAuthToHome, submitHello } from './helloActions';
 import { BIRTH_WARNING, CONSENT_ERROR, helloView, NAME_WARNING, pressOutcome, stepCounterVisible } from './helloModel';
 
 export interface HelloScreenProps {
@@ -29,7 +29,6 @@ export interface HelloScreenProps {
   nameFromGoogle: boolean;
   birthDate: string | null;
   birthDateFromGoogle: boolean;
-  googleBirthdayAvailable: boolean;
   hasGmail: boolean;
   today: string;
 }
@@ -44,7 +43,6 @@ export function HelloScreen({
   nameFromGoogle,
   birthDate,
   birthDateFromGoogle,
-  googleBirthdayAvailable,
   hasGmail,
   today,
 }: HelloScreenProps) {
@@ -57,7 +55,6 @@ export function HelloScreen({
   const [consentError, setConsentError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [connecting, setConnecting] = useState(false);
-  const [filling, setFilling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const counter = stepCounterVisible(hasGmail);
@@ -93,17 +90,6 @@ export function HelloScreen({
     }
     setSaving(false);
     setStep(2);
-  };
-
-  const fillFromGoogle = async () => {
-    setFilling(true);
-    const result = await startGoogleBirthday();
-    if (result.success) {
-      window.location.href = result.data;
-    } else {
-      setError(result.error.message);
-      setFilling(false);
-    }
   };
 
   const connect = async () => {
@@ -232,13 +218,6 @@ export function HelloScreen({
               ) : undefined
             }
           />
-          {googleBirthdayAvailable ? (
-            <div>
-              <Button type="button" variant="link" loading={filling} loadingLabel="Opening Google…" onClick={fillFromGoogle}>
-                Fill from Google
-              </Button>
-            </div>
-          ) : null}
         </div>
 
         <Text variant="caption" tone="ink-3">

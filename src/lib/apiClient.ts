@@ -405,10 +405,6 @@ export const authApi = {
     const { data } = await serverApi.PATCH('/api/v1/me/profile', { body });
     return data! as UserResponse;
   },
-  startGoogleBirthday: async (): Promise<{ url: string }> => {
-    const { data } = await serverApi.GET('/api/v1/me/google-birthday/start');
-    return data! as { url: string };
-  },
   logout: async (): Promise<void> => {
     await serverApi.POST('/api/v1/auth/logout');
   },

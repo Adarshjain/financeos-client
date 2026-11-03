@@ -44,7 +44,6 @@ export interface UserResponse {
   birthDate?: string | null;
   birthDateSource?: 'TYPED' | 'GOOGLE' | null;
   helloDone?: boolean;
-  googleBirthdayAvailable?: boolean;
 }
 
 export interface DeleteAccountRequest {

@@ -25,7 +25,6 @@ export default async function HelloPage() {
       nameFromGoogle={user.hasPassword === false && Boolean(user.displayName?.trim())}
       birthDate={user.birthDate ?? null}
       birthDateFromGoogle={user.birthDateSource === 'GOOGLE'}
-      googleBirthdayAvailable={user.googleBirthdayAvailable === true}
       hasGmail={hasGmail}
       today={todayInAppZone()}
     />

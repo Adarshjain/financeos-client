@@ -3098,38 +3098,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/me/google-birthday/callback": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["googleBirthdayCallback"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/me/google-birthday/start": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["startGoogleBirthday"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/me/hello": {
         parameters: {
             query?: never;
@@ -6309,9 +6277,6 @@ export interface components {
         GoogleAuthStartResponse: {
             authorizationUrl: string;
         };
-        GoogleBirthdayStartResponse: {
-            url: string;
-        };
         Group: {
             /** @enum {string} */
             assetType: "stock" | "mutual_fund" | "etf";
@@ -9447,7 +9412,6 @@ export interface components {
             createdAt: string;
             displayName?: string | null;
             email: string;
-            googleBirthdayAvailable: boolean;
             hasPassword: boolean;
             helloDone: boolean;
             /** Format: uuid */
@@ -17129,66 +17093,6 @@ export interface operations {
                     "*/*": {
                         [key: string]: components["schemas"]["InstallmentDto"][];
                     };
-                };
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    googleBirthdayCallback: {
-        parameters: {
-            query?: {
-                code?: string;
-                state?: string;
-                error?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Error response */
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    startGoogleBirthday: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["GoogleBirthdayStartResponse"];
                 };
             };
             /** @description Error response */
