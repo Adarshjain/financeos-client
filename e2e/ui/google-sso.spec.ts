@@ -1,4 +1,5 @@
 import { makeApi } from '../fixtures/api';
+import { markHelloDone } from '../fixtures/auth';
 import { E2E_CLIENT_URL } from '../fixtures/config';
 import type { GoogleIdentity } from '../fixtures/google-stubs';
 import { cleanupIdentity, registerIdentity } from '../fixtures/google-stubs';
@@ -21,7 +22,7 @@ test.describe('Google SSO UI (@ui)', () => {
     identity = undefined;
   });
 
-  test('Sign in with Google lands on the dashboard and the settings page shows the Google profile', async ({ page }) => {
+  test('Sign in with Google lands on Hello, then the settings page shows the Google profile', async ({ page }) => {
     test.slow();
     identity = await registerIdentity({ browserSso: true });
 
@@ -30,7 +31,10 @@ test.describe('Google SSO UI (@ui)', () => {
 
     // Consent stub → client callback page → exchange → hard navigation to the dashboard.
     await page.waitForURL(/\/auth\/google\/callback\?/, { timeout: 20_000 });
-    await page.waitForURL(/\/dashboard/, { timeout: 30_000 });
+    // A new sign-in lands on Hello (via the app gate); finish it like pressing Let's go, then carry on.
+    await page.waitForURL(/\/hello/, { timeout: 30_000 });
+    const helloSession = (await page.context().cookies(E2E_CLIENT_URL)).find((c) => c.name === 'FINANCEOS_SESSION')?.value;
+    await markHelloDone(helloSession!);
 
     await page.goto('/settings');
     // Shown in the sidebar and in the profile card, hence .first().

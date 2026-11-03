@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import React, { Suspense } from 'react';
 
 import { SessionExpiredDialog } from '@/features/auth/SessionExpiredDialog';
@@ -22,6 +23,8 @@ export default async function DsAppLayout({
   children: React.ReactNode;
 }) {
   const user = await requireAuth();
+  // Everyone sees Hello once. /hello lives outside this layout, so this can't loop.
+  if (user.helloDone === false) redirect('/hello');
   const hideAmounts = await readHideAmounts();
   const railCollapsed = await readRailCollapsed();
 

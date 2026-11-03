@@ -21,6 +21,8 @@ export function getJobTypeLabel(type: JobType): string {
       return 'Broker reconcile commit';
     case 'RULE_APPLY':
       return 'Rule apply';
+    case 'ACCOUNT_DETECT':
+      return 'Account detection';
     default:
       return type;
   }

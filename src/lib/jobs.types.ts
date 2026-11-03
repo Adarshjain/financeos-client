@@ -5,7 +5,8 @@ export type JobType =
   | 'INVESTMENT_IMPORT_COMMIT'
   | 'BROKER_RECONCILE_COMMIT'
   | 'RULE_APPLY'
-  | 'CATEGORY_BACKFILL';
+  | 'CATEGORY_BACKFILL'
+  | 'ACCOUNT_DETECT';
 
 export type JobStatus =
   | 'PENDING'
