@@ -1,0 +1,180 @@
+import type { Page } from '@playwright/test';
+
+import { makeApi } from '../fixtures/api';
+import type { CreatedUser } from '../fixtures/auth';
+import { createUser } from '../fixtures/auth';
+import { loginContext } from '../fixtures/browser';
+import { type AccountDetectSeedEntity, clearAccountDetect, seedAccountDetect } from '../fixtures/control';
+import { istToday } from '../fixtures/dates';
+import { cleanupIdentity, type GoogleIdentity, registerIdentity } from '../fixtures/google-stubs';
+import { createBankAccount } from '../fixtures/seed/accounts';
+import { connectGmail } from '../fixtures/seed/gmail';
+import { expect, test } from '../fixtures/test';
+import { expectToast } from '../fixtures/ui';
+
+/** A card HDFC mails mention often and recently: a Found row. */
+const card = (over: Partial<AccountDetectSeedEntity> = {}): AccountDetectSeedEntity => ({
+  bank: 'hdfc',
+  last4: '4321',
+  kind: 'CREDIT_CARD',
+  existsConf: 'HIGH',
+  kindConf: 'HIGH',
+  first: '2025-01-10',
+  last: istToday(),
+  evidenceMails: 6,
+  ...over,
+});
+
+const foundBand = (page: Page, n: number) => page.getByText(`Found in your email · ${n}`);
+
+test.describe('Account suggestions (@ui)', () => {
+  let currentUser: CreatedUser;
+
+  test.beforeEach(async ({ context, request, page }) => {
+    currentUser = await createUser(request, 'ui-account-suggestions');
+    await loginContext(context, currentUser.cookie);
+    await page.setViewportSize({ width: 1440, height: 900 });
+  });
+
+  test.afterEach(async () => {
+    await clearAccountDetect(makeApi(currentUser.cookie));
+  });
+
+  test('a Found card shows under Credit cards with its band', async ({ page }) => {
+    const api = makeApi(currentUser.cookie);
+    await createBankAccount(api, { name: 'Suggest anchor', last4: '1111' });
+    await seedAccountDetect(api, { entities: [card()] });
+
+    await page.goto('/accounts');
+    await expect(foundBand(page, 1)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('••4321').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Not mine' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Add', exact: true }).first()).toBeVisible();
+  });
+
+  test('an entity that matches an existing account stays hidden', async ({ page }) => {
+    const api = makeApi(currentUser.cookie);
+    await createBankAccount(api, { name: 'Existing HDFC', last4: '1111', bank: 'hdfc' });
+    await seedAccountDetect(api, {
+      entities: [card(), { ...card({ last4: '1111' }), kind: 'ACCOUNT' }],
+    });
+
+    await page.goto('/accounts');
+    // Only the card is new: the account the user already has is not suggested again.
+    await expect(foundBand(page, 1)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('••1111')).toHaveCount(1);
+  });
+
+  test('Not mine hides a row, Undo brings it back, and a re-seed keeps it hidden', async ({ page }) => {
+    const api = makeApi(currentUser.cookie);
+    await createBankAccount(api, { name: 'Suggest anchor', last4: '1111' });
+    await seedAccountDetect(api, { entities: [card()] });
+
+    await page.goto('/accounts');
+    await expect(foundBand(page, 1)).toBeVisible({ timeout: 15_000 });
+    const notMine = page.getByRole('button', { name: 'Not mine' });
+    await expect(async () => {
+      await notMine.click();
+      await expectToast(page, /Hidden .* ••4321/);
+    }).toPass({ timeout: 15_000 });
+    await expect(foundBand(page, 1)).toHaveCount(0);
+    await expect(page.getByText('••4321')).toHaveCount(0);
+
+    await page
+      .locator('[data-sonner-toast]')
+      .getByRole('button', { name: 'Undo' })
+      .click();
+    await expect(foundBand(page, 1)).toBeVisible({ timeout: 15_000 });
+
+    await notMine.click();
+    await expect(foundBand(page, 1)).toHaveCount(0);
+    await seedAccountDetect(api, { entities: [card()] });
+    await page.reload();
+    await expect(page.getByText('Bank accounts')).toBeVisible();
+    await expect(page.getByText('••4321')).toHaveCount(0);
+  });
+
+  test('a low-confidence entity waits in a collapsed Maybe yours band until Show', async ({ page }) => {
+    const api = makeApi(currentUser.cookie);
+    await createBankAccount(api, { name: 'Suggest anchor', last4: '1111' });
+    await seedAccountDetect(api, { entities: [card({ existsConf: 'LOW', kindConf: 'LOW' })] });
+
+    await page.goto('/accounts');
+    await expect(page.getByText('Maybe yours · 1')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('••4321')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Show' }).click();
+    await expect(page.getByText('••4321').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Hide' })).toBeVisible();
+  });
+
+  test('Add on a card row opens Add account with Credit card chosen', async ({ page }) => {
+    const api = makeApi(currentUser.cookie);
+    await createBankAccount(api, { name: 'Suggest anchor', last4: '1111' });
+    await seedAccountDetect(api, { entities: [card()] });
+
+    await page.goto('/accounts');
+    await expect(foundBand(page, 1)).toBeVisible({ timeout: 15_000 });
+    const dialog = page.getByRole('dialog', { name: 'Add account' });
+    // A click before hydration is dropped: click again until the dialog opens.
+    await expect(async () => {
+      await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+      await expect(dialog).toBeVisible({ timeout: 2000 });
+    }).toPass({ timeout: 15_000 });
+    await expect(dialog.getByRole('radio', { name: 'Credit card' })).toHaveAttribute('aria-checked', 'true');
+  });
+
+  test.describe('while the first scan runs', () => {
+    let identity: GoogleIdentity;
+
+    test.beforeEach(async () => {
+      // The progress card needs a connected mailbox.
+      identity = await registerIdentity();
+      await connectGmail(makeApi(currentUser.cookie), identity);
+    });
+
+    test.afterEach(async () => {
+      await cleanupIdentity(identity);
+    });
+
+    test('Accounts and Home show the Finding your accounts card', async ({ page }) => {
+      const api = makeApi(currentUser.cookie);
+      await seedAccountDetect(api, {
+        entities: [],
+        scan: { status: 'RUNNING', mailsSeen: 4020, mailsTotal: 10600, firstScanDone: false },
+      });
+
+      await page.goto('/accounts');
+      await expect(page.getByText('Finding your accounts')).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText('Read 4,020 of 10,600 emails', { exact: false })).toBeVisible();
+      await expect(page.getByText('Accounts we find in your email show up here.')).toBeVisible();
+      await expect(page.getByText('Cards we find in your email show up here.')).toBeVisible();
+
+      await page.goto('/dashboard');
+      await expect(page.getByText('Finding your accounts')).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText('Read 4,020 of 10,600 emails', { exact: false })).toBeVisible();
+    });
+  });
+
+  test('the row actions fit at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const api = makeApi(currentUser.cookie);
+    await createBankAccount(api, { name: 'Suggest anchor', last4: '1111' });
+    await seedAccountDetect(api, { entities: [card()] });
+
+    await page.goto('/accounts');
+    await expect(foundBand(page, 1)).toBeVisible({ timeout: 15_000 });
+    const notMine = page.getByRole('button', { name: 'Not mine' });
+    const add = page.getByRole('button', { name: 'Add', exact: true });
+    await expect(notMine).toBeVisible();
+    await expect(add.last()).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+
+    await expect(async () => {
+      await notMine.click();
+      await expectToast(page, /Hidden .* ••4321/);
+    }).toPass({ timeout: 15_000 });
+    await expect(foundBand(page, 1)).toHaveCount(0);
+  });
+});

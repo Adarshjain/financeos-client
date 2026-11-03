@@ -13,7 +13,7 @@ export default async function DsHomePage() {
   if (!result.ok) return <LoadError what="dashboards" reference={result.reference} />;
   return (
     <HydrationBoundary state={result.data.state}>
-      <HomeScreen />
+      <HomeScreen scan={result.data.scan} />
     </HydrationBoundary>
   );
 }

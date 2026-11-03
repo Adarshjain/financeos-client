@@ -4,6 +4,70 @@
  */
 
 export interface paths {
+    "/api/v1/account-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_3"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account-suggestions/{id}/is-this": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["isThis"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account-suggestions/{id}/not-mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["notMine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account-suggestions/{id}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["undo_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts": {
         parameters: {
             query?: never;
@@ -4253,6 +4317,77 @@ export interface components {
             emis: components["schemas"]["Emi"][];
         };
         AccountResponse: components["schemas"]["BankAccountResponse"] | components["schemas"]["CreditCardAccountResponse"] | components["schemas"]["BrokerAccountResponse"] | components["schemas"]["GenericAccountResponse"];
+        AccountSuggestionBank: {
+            id: string;
+            name: string;
+        };
+        AccountSuggestionCandidateAccount: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        AccountSuggestionChild: {
+            band: string;
+            /** Format: int32 */
+            evidenceMails: number;
+            /** Format: date */
+            firstSeenOn: string;
+            /** Format: uuid */
+            id: string;
+            kind: string;
+            last4: string;
+            /** Format: date */
+            lastSeenOn: string;
+            lifecycle: string;
+            lifecycleConf: string;
+        };
+        AccountSuggestionItem: {
+            band: string;
+            bank: components["schemas"]["AccountSuggestionBank"];
+            candidateAccount: components["schemas"]["AccountSuggestionCandidateAccount"];
+            caption: string;
+            children: components["schemas"]["AccountSuggestionChild"][];
+            /** Format: int32 */
+            evidenceMails: number;
+            /** Format: date */
+            firstSeenOn: string;
+            /** Format: uuid */
+            id: string;
+            kind: string;
+            kindConf: string;
+            last4: string;
+            /** Format: date */
+            lastSeenOn: string;
+            lifecycle: string;
+            lifecycleConf: string;
+            limitBucket: string;
+            limitConf: string;
+            parentAccount: components["schemas"]["AccountSuggestionParentAccount"];
+            /** Format: uuid */
+            parentSuggestionId: string;
+            variant: string;
+            variantCandidates: string[];
+            variantConf: string;
+        };
+        AccountSuggestionParentAccount: {
+            /** Format: uuid */
+            id: string;
+            last4: string;
+            name: string;
+        };
+        AccountSuggestionScan: {
+            firstScanDone: boolean;
+            gmailConnected: boolean;
+            /** Format: int32 */
+            mailsSeen: number;
+            /** Format: int32 */
+            mailsTotal: number;
+            status: string;
+        };
+        AccountSuggestionsResponse: {
+            items: components["schemas"]["AccountSuggestionItem"][];
+            scan: components["schemas"]["AccountSuggestionScan"];
+        };
         AddonCardRequest: {
             holderName?: string | null;
             last4: string;
@@ -4334,6 +4469,8 @@ export interface components {
             excludeFromNetAsset?: boolean;
             /** @enum {string} */
             financialPosition?: "asset" | "liability";
+            /** Format: uuid */
+            fromSuggestionId?: string | null;
             /** Format: date */
             ingestFromDate?: string;
             last4?: string;
@@ -5087,11 +5224,15 @@ export interface components {
         };
         CreateAccountRequest: components["schemas"]["BankAccountRequest"] | components["schemas"]["CreditCardRequest"] | components["schemas"]["BrokerRequest"] | components["schemas"]["GenericAccountRequest"];
         CreateCardRequest: {
+            /** Format: uuid */
+            fromSuggestionId?: string;
             /** Format: date */
             issuedOn?: string;
             last4: string;
         };
         CreateCardholderRequest: {
+            /** Format: uuid */
+            fromSuggestionId?: string;
             /** Format: date */
             issuedOn?: string;
             last4?: string;
@@ -5369,6 +5510,8 @@ export interface components {
             excludeFromNetAsset?: boolean;
             /** @enum {string} */
             financialPosition?: "asset" | "liability";
+            /** Format: uuid */
+            fromSuggestionId?: string | null;
             /** Format: date */
             ingestFromDate?: string;
             issuer?: string;
@@ -6551,6 +6694,11 @@ export interface components {
             tradeDate: string;
             /** @enum {string} */
             type: "buy" | "sell";
+        };
+        IsThisRequest: {
+            /** Format: uuid */
+            accountId: string;
+            yes: boolean;
         };
         Item: {
             amount: number;
@@ -7790,6 +7938,8 @@ export interface components {
             orderedIds: string[];
         };
         ReplaceCardRequest: {
+            /** Format: uuid */
+            fromSuggestionId?: string;
             /** Format: date */
             issuedOn?: string;
             newLast4: string;
@@ -9291,6 +9441,126 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AccountSuggestionsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    isThis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IsThisRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    notMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    undo_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getAllAccounts: {
         parameters: {
             query?: never;

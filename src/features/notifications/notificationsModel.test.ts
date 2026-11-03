@@ -29,6 +29,10 @@ describe('notificationHref', () => {
     expect(notificationHref(n({ kind: 'gmail_disconnected' }))).toBe('/settings/connections');
   });
 
+  it('accounts_found opens Accounts', () => {
+    expect(notificationHref(n({ kind: 'accounts_found' }))).toBe('/accounts');
+  });
+
   it('reward kinds open the account rewards, or nothing without an account', () => {
     for (const kind of ['reward_milestone', 'reward_cap']) {
       expect(notificationHref(n({ kind, refs: { accountId: 'a1' } as never }))).toBe('/accounts/a1/rewards');

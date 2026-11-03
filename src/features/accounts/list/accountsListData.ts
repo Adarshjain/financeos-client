@@ -1,9 +1,10 @@
+import type { AccountSuggestions } from '@/features/accounts/list/suggestionsModel';
 import { signInIfSessionEnded } from '@/features/shell/loadHelpers';
 import type { Account } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
 import { serverApi } from '@/lib/api/server';
 import type { CardBillResponse } from '@/lib/api/types';
-import { accountsApi, billsApi, dashboardsApi, investmentsApi } from '@/lib/apiClient';
+import { accountsApi, accountSuggestionsApi, billsApi, dashboardsApi, investmentsApi } from '@/lib/apiClient';
 import { BUILTIN_NET_WORTH } from '@/lib/dashboards.helpers';
 
 import type { RewardTotal } from './accountsListModel';
@@ -43,10 +44,12 @@ export interface AccountsListData {
   rewards: Promise<RewardTotal[] | null>;
   netWorth: Promise<number | null>;
   dayChangePct: Promise<number | null>;
+  /** The accounts found in the user's email and the scan's progress; null when the request failed. */
+  suggestions: Promise<AccountSuggestions | null>;
 }
 
 /**
- * Starts all five requests at once and returns their promises without awaiting the optional
+ * Starts all six requests at once and returns their promises without awaiting the optional
  * ones, so the page can render as soon as the accounts arrive and stream the rest in.
  */
 export function loadAccountsListData(): AccountsListData {
@@ -62,5 +65,6 @@ export function loadAccountsListData(): AccountsListData {
     rewards: orNull(rewardTotals()),
     netWorth: orNull(netWorth()),
     dayChangePct: orNull(dayChangePct()),
+    suggestions: orNull(accountSuggestionsApi.list()),
   };
 }

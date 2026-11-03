@@ -10,7 +10,8 @@ vi.mock('@/lib/query/client', async () => {
 const dashboardsApi = vi.hoisted(() => ({ list: vi.fn(), builtins: vi.fn() }));
 const inboxApi = vi.hoisted(() => ({ summary: vi.fn() }));
 const gmailApi = vi.hoisted(() => ({ listConnections: vi.fn() }));
-vi.mock('@/lib/apiClient', () => ({ dashboardsApi, inboxApi, gmailApi }));
+const accountSuggestionsApi = vi.hoisted(() => ({ list: vi.fn() }));
+vi.mock('@/lib/apiClient', () => ({ dashboardsApi, inboxApi, gmailApi, accountSuggestionsApi }));
 const prefetchWidgetData = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/dashboards.server', () => ({ prefetchWidgetData }));
 
@@ -26,6 +27,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   dashboardsApi.list.mockResolvedValue([board('money', false), board('home', true)]);
   dashboardsApi.builtins.mockResolvedValue([]);
+  accountSuggestionsApi.list.mockResolvedValue({ scan: { status: 'RUNNING', firstScanDone: false, mailsSeen: 10, mailsTotal: 100, gmailConnected: true }, items: [] });
 });
 
 describe('loadHome', () => {
@@ -44,6 +46,19 @@ describe('loadHome', () => {
     expect(gmailApi.listConnections).not.toHaveBeenCalled();
     expect(prefetchWidgetData).not.toHaveBeenCalled();
     expect(queries(result.data.state)).not.toContain(JSON.stringify(keys.inbox.summary()));
+  });
+
+  it('hands over the account scan progress', async () => {
+    const result = await loadHome();
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.scan).toMatchObject({ status: 'RUNNING', mailsSeen: 10 });
+  });
+
+  it('still loads Home when the scan cannot be read', async () => {
+    accountSuggestionsApi.list.mockRejectedValue(new Error('down'));
+    const result = await loadHome();
+    if (!result.ok) throw new Error('expected ok');
+    expect(result.data.scan).toBeNull();
   });
 
   it('works with no default dashboard', async () => {

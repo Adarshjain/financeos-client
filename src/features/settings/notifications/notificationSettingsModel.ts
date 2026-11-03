@@ -99,6 +99,11 @@ export const KIND_GROUPS: KindGroup[] = [
         label: 'Emails needing attention',
         description: 'A daily digest of imported emails that could not be matched to an account or failed to import.',
       },
+      {
+        key: 'ACCOUNTS_FOUND',
+        label: 'Accounts found',
+        description: 'When we find new accounts and cards in your email.',
+      },
     ],
   },
   {

@@ -59,6 +59,7 @@ describe('notificationSettings.helpers kinds', () => {
       'REWARD_CAP',
       'GMAIL_RECONNECT',
       'GMAIL_ATTENTION',
+      'ACCOUNTS_FOUND',
       'JOB_FINISHED',
     ]);
     for (const kind of KIND_OPTIONS) {

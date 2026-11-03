@@ -33,6 +33,7 @@ export const KIND_GROUPS: KindGroup[] = [
     kinds: [
       { key: 'GMAIL_RECONNECT', label: 'Mailbox needs reconnecting' },
       { key: 'GMAIL_ATTENTION', label: 'Emails needing attention' },
+      { key: 'ACCOUNTS_FOUND', label: 'Accounts found', description: 'When we find new accounts and cards in your email.' },
       { key: 'JOB_FINISHED', label: 'Jobs finished or failed', description: 'Imports, reconcile and rule apply you started.' },
     ],
   },

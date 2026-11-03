@@ -67,6 +67,7 @@ describe('/accounts streaming', () => {
       rewards: never(),
       netWorth: never(),
       dayChangePct: never(),
+      suggestions: Promise.resolve(null),
     });
     const ui = await DsAccountsPage();
     const html = await renderShellHtml(ui as React.ReactElement);
