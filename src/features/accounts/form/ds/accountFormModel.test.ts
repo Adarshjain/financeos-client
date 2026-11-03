@@ -8,6 +8,7 @@ import {
   buildAccountRequest,
   defaultFinancialPosition,
   diffIdentifiers,
+  DUPLICATE_LAST4,
   emptyValues,
   fieldsFor,
   LIMIT_POOL_NEW,
@@ -367,5 +368,114 @@ describe('identifiers', () => {
       remove: [{ id: 'i1', value: '7741' }],
     });
     expect(diffIdentifiers([], ['A1'])).toEqual({ add: ['A1'], remove: [] });
+  });
+});
+
+describe('cards saved with a new account', () => {
+  const card = () => ({
+    ...emptyValues(AccountType.CREDIT_CARD),
+    name: 'Infinia',
+    bank: 'hdfc',
+    last4: '1111',
+    anniversaryDate: '2026-01-15',
+    creditLimit: '200000',
+  });
+  const bank = () => ({ ...emptyValues(AccountType.BANK_ACCOUNT), name: 'Salary', bank: 'hdfc' });
+
+  it('starts with no extra cards and sends none', () => {
+    expect(emptyValues(AccountType.CREDIT_CARD).addonCards).toEqual([]);
+    expect(buildAccountRequest(card())).not.toHaveProperty('addonCards');
+    expect(buildAccountRequest(card())).not.toHaveProperty('earlierCards');
+    expect(buildAccountRequest(bank())).not.toHaveProperty('debitCard');
+    expect(buildAccountRequest(bank())).not.toHaveProperty('earlierCards');
+  });
+
+  it('sends add-ons with relationship and a trimmed name, leaving a blank name out', () => {
+    const request = buildAccountRequest({
+      ...card(),
+      addonCards: [
+        { last4: '2222', relationship: 'SPOUSE', holderName: ' Asha ' },
+        { last4: '3333', relationship: 'CHILD', holderName: '  ' },
+      ],
+    });
+    expect(request).toMatchObject({
+      addonCards: [
+        { last4: '2222', relationship: 'SPOUSE', holderName: 'Asha' },
+        { last4: '3333', relationship: 'CHILD' },
+      ],
+    });
+    expect((request as { addonCards: object[] }).addonCards[1]).not.toHaveProperty('holderName');
+  });
+
+  it('sends earlier cards with their closed date only when set', () => {
+    const request = buildAccountRequest({
+      ...card(),
+      earlierCards: [
+        { last4: '4444', closedOn: '2026-03-01' },
+        { last4: '5555', closedOn: '' },
+      ],
+    });
+    expect(request).toMatchObject({ earlierCards: [{ last4: '4444', closedOn: '2026-03-01' }, { last4: '5555' }] });
+    expect((request as { earlierCards: object[] }).earlierCards[1]).not.toHaveProperty('closedOn');
+  });
+
+  it('sends the debit card and earlier numbers of a bank account', () => {
+    expect(
+      buildAccountRequest({
+        ...bank(),
+        debitCardLast4: ' 6666 ',
+        earlierCards: [{ last4: '7777', closedOn: '' }],
+      })
+    ).toMatchObject({ debitCard: { last4: '6666' }, earlierCards: [{ last4: '7777' }] });
+  });
+
+  it('needs a last 4 and a relationship on every add-on', () => {
+    const errors = validateAccountForm({
+      ...card(),
+      addonCards: [
+        { last4: '', relationship: 'SPOUSE', holderName: '' },
+        { last4: '2222', relationship: '', holderName: '' },
+        { last4: '3333', relationship: 'PARENT', holderName: '' },
+      ],
+    });
+    expect(errors.addonCards?.[0]).toEqual({ last4: 'Enter the last 4 digits.' });
+    expect(errors.addonCards?.[1]).toEqual({ relationship: 'Pick who the holder is.' });
+    expect(errors.addonCards?.[2]).toEqual({});
+  });
+
+  it('flags a last 4 repeated across the primary, earlier and add-on cards', () => {
+    const errors = validateAccountForm({
+      ...card(),
+      earlierCards: [{ last4: '1111', closedOn: '' }],
+      addonCards: [
+        { last4: '2222', relationship: 'SPOUSE', holderName: '' },
+        { last4: '2222', relationship: 'CHILD', holderName: '' },
+      ],
+    });
+    expect(errors.earlierCards?.[0].last4).toBe(DUPLICATE_LAST4);
+    expect(errors.addonCards?.[0]).toEqual({});
+    expect(errors.addonCards?.[1].last4).toBe(DUPLICATE_LAST4);
+  });
+
+  it('checks the debit card: four digits, and not repeated by an earlier number', () => {
+    expect(validateAccountForm({ ...bank(), debitCardLast4: '12' }).debitCardLast4).toBe('Enter the last 4 digits.');
+    const errors = validateAccountForm({
+      ...bank(),
+      debitCardLast4: '1234',
+      earlierCards: [{ last4: '1234', closedOn: '' }],
+    });
+    expect(errors.earlierCards?.[0].last4).toBe(DUPLICATE_LAST4);
+  });
+
+  it('is clean with valid cards, and with none', () => {
+    expect(validateAccountForm(card())).toEqual({});
+    expect(
+      validateAccountForm({
+        ...card(),
+        addonCards: [{ last4: '2222', relationship: 'SIBLING', holderName: '' }],
+        earlierCards: [{ last4: '3333', closedOn: '' }],
+      })
+    ).toEqual({});
+    expect(validateAccountForm({ ...bank(), debitCardLast4: '5555' })).toEqual({});
   });
 });

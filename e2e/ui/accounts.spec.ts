@@ -74,6 +74,47 @@ test.describe('Accounts UI (@ui)', () => {
     await expect(cardRow.getByText('••9876')).toBeVisible();
   });
 
+  test('create a credit card with an add-on and a bank account with a debit card, saved with the account', async ({
+    page,
+  }) => {
+    await page.goto('/accounts');
+
+    // Credit card with one add-on (Spouse, named)
+    await page.getByRole('button', { name: 'Add account', exact: true }).first().click();
+    const dialog = dialogOf(page, 'Add account');
+    await dialog.getByRole('radio', { name: 'Credit card' }).click();
+    await dialog.getByRole('textbox', { name: /^Account name/ }).fill('Addon Visa');
+    await pickBank(page, dialog, 'HDFC Bank');
+    await dialog.getByRole('textbox', { name: /^Last 4 digits/ }).fill('4321');
+    await dialog.getByRole('textbox', { name: /^Card anniversary/ }).fill('01042024');
+    await dialog.getByRole('textbox', { name: /^Credit limit/ }).fill('500000');
+    await dialog.getByRole('button', { name: 'Add an add-on card' }).click();
+    await dialog.getByRole('textbox', { name: /^Last 4 digits/ }).nth(1).fill('8765');
+    await dialog.getByRole('combobox', { name: /^Holder is your/ }).click();
+    await page.getByRole('option', { name: 'Spouse' }).click();
+    await dialog.getByRole('textbox', { name: /^Holder name/ }).fill('Asha Rao');
+    await dialog.getByRole('button', { name: 'Add account' }).click();
+
+    await page.waitForURL(/\/accounts\/[0-9a-f-]{36}$/);
+    await page.goto(`${new URL(page.url()).pathname}/cards`);
+    await expect(page.locator('main').getByText('Asha Rao').first()).toBeVisible();
+    await expect(page.getByText('••8765').first()).toBeVisible();
+    await expect(page.getByText('••4321').first()).toBeVisible();
+
+    // Bank account with one debit card: the bank account's Cards tab lists it on the primary holder
+    await page.goto('/accounts');
+    await page.getByRole('button', { name: 'Add account', exact: true }).first().click();
+    const bank = dialogOf(page, 'Add account');
+    await bank.getByRole('textbox', { name: /^Account name/ }).fill('Debit Savings');
+    await pickBank(page, bank, 'HDFC Bank');
+    await bank.getByRole('textbox', { name: /^Last 4 digits/ }).last().fill('5566');
+    await bank.getByRole('button', { name: 'Add account' }).click();
+
+    await page.waitForURL(/\/accounts\/[0-9a-f-]{36}$/);
+    await page.goto(`${new URL(page.url()).pathname}/cards`);
+    await expect(page.getByText('••5566').first()).toBeVisible();
+  });
+
   test('edit account name and identifiers, cards (add, replace, close), close and reopen account, delete empty account', async ({
     page,
   }) => {

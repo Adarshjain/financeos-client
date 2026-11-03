@@ -1,6 +1,7 @@
 import {
   type Account,
   type AccountRequest,
+  type CardholderRelationship,
   type CreditLimitPool,
   getIngestFromDate,
   supportsIngestion,
@@ -50,6 +51,21 @@ export function defaultFinancialPosition(type: AccountType): FinancialPosition {
   return type === AccountType.CREDIT_CARD ? 'liability' : 'asset';
 }
 
+export type AddonRelationship = Exclude<CardholderRelationship, 'SELF'>;
+
+/** An add-on card of a new credit card; `relationship` is '' until one is picked. */
+export interface AddonCardValue {
+  last4: string;
+  relationship: AddonRelationship | '';
+  holderName: string;
+}
+
+/** A closed earlier number of the primary card (prefilled, never typed in by hand). */
+export interface EarlierCardValue {
+  last4: string;
+  closedOn: string;
+}
+
 export interface AccountFormValues {
   type: AccountType | null;
   name: string;
@@ -70,9 +86,17 @@ export interface AccountFormValues {
   ingestFromDate: string;
   identifiers: string[];
   excludeFromNetAsset: boolean;
+  /** Create only: credit card add-ons. */
+  addonCards: AddonCardValue[];
+  /** Create only: closed earlier numbers of the primary card. */
+  earlierCards: EarlierCardValue[];
+  /** Create only: the bank account's debit card last 4 (optional). */
+  debitCardLast4: string;
 }
 
-export type FieldKey = Exclude<keyof AccountFormValues, 'type'>;
+type CardListKey = 'addonCards' | 'earlierCards';
+
+export type FieldKey = Exclude<keyof AccountFormValues, 'type' | CardListKey>;
 
 const FIELDS_BY_TYPE: Record<AccountType, readonly FieldKey[]> = {
   [AccountType.BANK_ACCOUNT]: [
@@ -145,6 +169,9 @@ export function emptyValues(type: AccountType | null): AccountFormValues {
     ingestFromDate: '',
     identifiers: [],
     excludeFromNetAsset: false,
+    addonCards: [],
+    earlierCards: [],
+    debitCardLast4: '',
   };
 }
 
@@ -230,10 +257,35 @@ export function parseAmount(raw: string): number | undefined {
   return Number.isFinite(n) ? n : Number.NaN;
 }
 
-export type FormErrors = Partial<Record<FieldKey, string>>;
+/** Errors of one card row; rows without a problem are empty objects, so indexes line up with the values. */
+export interface CardRowErrors {
+  last4?: string;
+  relationship?: string;
+}
+
+export type FormErrors = Partial<Record<FieldKey, string>> & Partial<Record<CardListKey, CardRowErrors[]>>;
 
 const FOUR_DIGITS = /^\d{4}$/;
 const INVALID_AMOUNT = 'Enter a valid amount.';
+export const DUPLICATE_LAST4 = 'This number is already listed above.';
+
+/** Checks each card row's last 4 (and relationship) and flags a number that repeats one before it. */
+function cardRowErrors(
+  rows: readonly { last4: string; relationship?: string }[],
+  taken: Set<string>,
+  needsRelationship: boolean
+): CardRowErrors[] | undefined {
+  const result = rows.map((row): CardRowErrors => {
+    const last4 = row.last4.trim();
+    const error: CardRowErrors = {};
+    if (!FOUR_DIGITS.test(last4)) error.last4 = 'Enter the last 4 digits.';
+    else if (taken.has(last4)) error.last4 = DUPLICATE_LAST4;
+    else taken.add(last4);
+    if (needsRelationship && !row.relationship) error.relationship = 'Pick who the holder is.';
+    return error;
+  });
+  return result.some((e) => e.last4 || e.relationship) ? result : undefined;
+}
 
 export function validateAccountForm(values: AccountFormValues): FormErrors {
   const { type } = values;
@@ -254,10 +306,19 @@ export function validateAccountForm(values: AccountFormValues): FormErrors {
   if (type === AccountType.BANK_ACCOUNT) {
     const last4 = values.last4.trim();
     if (last4 && !FOUR_DIGITS.test(last4)) errors.last4 = 'Enter the last 4 digits.';
+    const debit = values.debitCardLast4.trim();
+    if (debit && !FOUR_DIGITS.test(debit)) errors.debitCardLast4 = 'Enter the last 4 digits.';
+    const earlier = cardRowErrors(values.earlierCards, new Set(FOUR_DIGITS.test(debit) ? [debit] : []), false);
+    if (earlier) errors.earlierCards = earlier;
   }
 
   if (type === AccountType.CREDIT_CARD) {
     if (!FOUR_DIGITS.test(values.last4.trim())) errors.last4 = 'Enter the last 4 digits of the card.';
+    const taken = new Set<string>(FOUR_DIGITS.test(values.last4.trim()) ? [values.last4.trim()] : []);
+    const earlier = cardRowErrors(values.earlierCards, taken, false);
+    if (earlier) errors.earlierCards = earlier;
+    const addons = cardRowErrors(values.addonCards, taken, true);
+    if (addons) errors.addonCards = addons;
     if (!values.anniversaryDate) errors.anniversaryDate = 'Enter the card anniversary.';
     const pooled = values.limitPoolChoice !== LIMIT_POOL_NONE;
     if (!pooled) {
@@ -281,6 +342,9 @@ export function validateAccountForm(values: AccountFormValues): FormErrors {
   return errors;
 }
 
+const earlierCardsBody = (rows: readonly EarlierCardValue[]) =>
+  rows.map((c) => ({ last4: c.last4.trim(), ...(c.closedOn ? { closedOn: c.closedOn } : {}) }));
+
 /** The create/update body for the picked type. Call only when `validateAccountForm` is clean. */
 export function buildAccountRequest(values: AccountFormValues): AccountRequest {
   const type = values.type;
@@ -303,6 +367,8 @@ export function buildAccountRequest(values: AccountFormValues): AccountRequest {
         ingestFromDate,
         last4: values.last4.trim(),
         openingBalance: parseAmount(values.openingBalance),
+        ...(values.debitCardLast4.trim() ? { debitCard: { last4: values.debitCardLast4.trim() } } : {}),
+        ...(values.earlierCards.length > 0 ? { earlierCards: earlierCardsBody(values.earlierCards) } : {}),
         ...password,
       };
     case AccountType.CREDIT_CARD: {
@@ -322,6 +388,16 @@ export function buildAccountRequest(values: AccountFormValues): AccountRequest {
             }
           : null,
         anniversaryDate: values.anniversaryDate,
+        ...(values.addonCards.length > 0
+          ? {
+              addonCards: values.addonCards.map((c) => ({
+                last4: c.last4.trim(),
+                relationship: c.relationship as AddonRelationship,
+                ...(c.holderName.trim() ? { holderName: c.holderName.trim() } : {}),
+              })),
+            }
+          : {}),
+        ...(values.earlierCards.length > 0 ? { earlierCards: earlierCardsBody(values.earlierCards) } : {}),
         ...password,
       };
     }
