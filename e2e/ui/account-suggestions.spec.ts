@@ -77,9 +77,7 @@ test.describe('Account suggestions (@ui)', () => {
       await notMine.click();
       await expectToast(page, /Hidden .* ••4321/);
     }).toPass({ timeout: 15_000 });
-    await expect(foundBand(page, 1)).toHaveCount(0);
-    await expect(page.getByText('••4321')).toHaveCount(0);
-
+    // Undo first: the toast does not wait for the slow row-gone checks.
     await page
       .locator('[data-sonner-toast]')
       .getByRole('button', { name: 'Undo' })
@@ -122,6 +120,72 @@ test.describe('Account suggestions (@ui)', () => {
       await expect(dialog).toBeVisible({ timeout: 2000 });
     }).toPass({ timeout: 15_000 });
     await expect(dialog.getByRole('radio', { name: 'Credit card' })).toHaveAttribute('aria-checked', 'true');
+  });
+
+  /** Presses Add on the first suggestion row until the Add account dialog is up (a click before hydration is dropped). */
+  async function openAddDialog(page: Page) {
+    const dialog = page.getByRole('dialog', { name: 'Add account' });
+    await expect(async () => {
+      await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+      await expect(dialog).toBeVisible({ timeout: 2000 });
+    }).toPass({ timeout: 15_000 });
+    return dialog;
+  }
+
+  test('Add on a found card opens a prefilled dialog, and creating it removes the row', async ({ page }) => {
+    const api = makeApi(currentUser.cookie);
+    await createBankAccount(api, { name: 'Suggest anchor', last4: '1111' });
+    await seedAccountDetect(api, { entities: [card({ variant: 'Regalia', variantConf: 'HIGH' })] });
+
+    await page.goto('/accounts');
+    await expect(foundBand(page, 1)).toBeVisible({ timeout: 15_000 });
+    const dialog = await openAddDialog(page);
+    await expect(dialog.getByText('Filled in from your email. Check it, then create.')).toBeVisible();
+    await expect(dialog.getByRole('textbox', { name: /^Account name/ })).toHaveValue('HDFC Bank Regalia');
+    await expect(dialog.getByRole('combobox', { name: /^Bank/ })).toContainText('HDFC Bank');
+    await expect(dialog.getByRole('textbox', { name: /^Last 4 digits/ })).toHaveValue('4321');
+    await expect(dialog.getByText('From your email', { exact: true })).toHaveCount(3);
+
+    await dialog.getByRole('textbox', { name: /^Card anniversary/ }).fill('01042024');
+    await dialog.getByRole('textbox', { name: /^Credit limit/ }).fill('500000');
+    await dialog.getByRole('button', { name: 'Add account' }).click();
+
+    // The page stays on the list, the row is gone and the card is an account now.
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
+    await expect(foundBand(page, 1)).toHaveCount(0, { timeout: 15_000 });
+    await expect(page.getByText('HDFC Bank Regalia').first()).toBeVisible();
+    await expect(page.getByText('••4321').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Not mine' })).toHaveCount(0);
+  });
+
+  test('a card with an add-on child prefills the add-on number and blocks Create until a relationship is picked', async ({ page }) => {
+    const api = makeApi(currentUser.cookie);
+    await createBankAccount(api, { name: 'Suggest anchor', last4: '1111' });
+    await seedAccountDetect(api, {
+      entities: [
+        card({ variant: 'Regalia', variantConf: 'HIGH' }),
+        card({ last4: '0082', lifecycle: 'ADD_ON', lifecycleConf: 'HIGH', linkedTo: 'hdfc:4321', evidenceMails: 4 }),
+      ],
+    });
+
+    await page.goto('/accounts');
+    await expect(foundBand(page, 1)).toBeVisible({ timeout: 15_000 });
+    const dialog = await openAddDialog(page);
+    await expect(dialog.getByText('Add-on card', { exact: true })).toBeVisible();
+    await expect(dialog.getByRole('textbox', { name: /^Last 4 digits/ }).nth(1)).toHaveValue('0082');
+    await expect(dialog.getByRole('combobox', { name: /^Holder is your/ })).toContainText('Pick one');
+
+    await dialog.getByRole('textbox', { name: /^Card anniversary/ }).fill('01042024');
+    await dialog.getByRole('textbox', { name: /^Credit limit/ }).fill('500000');
+    await dialog.getByRole('button', { name: 'Add account' }).click();
+    await expect(dialog.getByText('Pick who the holder is.')).toBeVisible();
+    await expect(dialog).toBeVisible();
+
+    await dialog.getByRole('combobox', { name: /^Holder is your/ }).click();
+    await page.getByRole('option', { name: 'Spouse' }).click();
+    await dialog.getByRole('button', { name: 'Add account' }).click();
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
+    await expect(foundBand(page, 1)).toHaveCount(0, { timeout: 15_000 });
   });
 
   test.describe('while the first scan runs', () => {

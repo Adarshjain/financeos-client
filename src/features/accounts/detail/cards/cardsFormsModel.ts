@@ -40,7 +40,11 @@ function result<T>(errors: Record<string, string>, body: T): Built<T> {
 export interface AddCardValues {
   last4: string;
   issuedOn: string;
+  /** The suggestion this card is added from; sent only when set. */
+  fromSuggestionId?: string;
 }
+
+const fromSuggestion = (id: string | undefined) => (id ? { fromSuggestionId: id } : {});
 
 /** Add a card to a holder, or the first debit card of a bank account. */
 export function buildAddCard(
@@ -52,21 +56,25 @@ export function buildAddCard(
   if (v.last4.length !== 4) errors.last4 = message;
   const date = futureDateError('issued', v.issuedOn, today);
   if (date) errors.issuedOn = date;
-  return result(errors, { last4: v.last4.trim(), issuedOn: v.issuedOn || undefined });
+  return result(errors, { last4: v.last4.trim(), issuedOn: v.issuedOn || undefined, ...fromSuggestion(v.fromSuggestionId) });
 }
 
 export interface AddHolderValues {
   name: string;
-  relationship: CardholderRelationship;
+  /** '' until one is picked (an add-on from a suggestion has no default). */
+  relationship: CardholderRelationship | '';
   spendLimit: string;
   openedOn: string;
   last4: string;
   issuedOn: string;
+  /** The suggestion this holder is added from; sent only when set. */
+  fromSuggestionId?: string;
 }
 
 export function buildAddHolder(v: AddHolderValues, today: string): Built<CreateCardholderRequest> {
   const errors: Record<string, string> = {};
   if (!v.name.trim()) errors.name = 'Cardholder name is required.';
+  if (!v.relationship) errors.relationship = 'Pick who the holder is.';
   if (v.last4 && v.last4.length !== 4) errors.last4 = 'Card last 4 digits must be exactly 4 digits.';
   const limit = spendLimitError(v.spendLimit);
   if (limit) errors.spendLimit = limit;
@@ -76,11 +84,12 @@ export function buildAddHolder(v: AddHolderValues, today: string): Built<CreateC
   if (issued) errors.issuedOn = issued;
   return result(errors, {
     personName: v.name.trim(),
-    relationship: v.relationship,
+    relationship: v.relationship || undefined,
     spendLimit: spendLimitOf(v.spendLimit),
     last4: v.last4.trim() || undefined,
     openedOn: v.openedOn || undefined,
     issuedOn: v.last4 ? v.issuedOn || v.openedOn || undefined : undefined,
+    ...fromSuggestion(v.fromSuggestionId),
   });
 }
 
@@ -114,6 +123,8 @@ export function buildEditHolder(
 export interface ReplaceCardValues {
   newLast4: string;
   issuedOn: string;
+  /** The suggestion this replacement is added from; sent only when set. */
+  fromSuggestionId?: string;
 }
 
 export function buildReplaceCard(v: ReplaceCardValues, today: string): Built<ReplaceCardRequest> {
@@ -121,7 +132,7 @@ export function buildReplaceCard(v: ReplaceCardValues, today: string): Built<Rep
   if (v.newLast4.length !== 4) errors.newLast4 = 'New last 4 digits must be exactly 4 digits.';
   const date = futureDateError('issued', v.issuedOn, today);
   if (date) errors.issuedOn = date;
-  return result(errors, { newLast4: v.newLast4.trim(), issuedOn: v.issuedOn || undefined });
+  return result(errors, { newLast4: v.newLast4.trim(), issuedOn: v.issuedOn || undefined, ...fromSuggestion(v.fromSuggestionId) });
 }
 
 /** The close date of a card or a cardholder. */

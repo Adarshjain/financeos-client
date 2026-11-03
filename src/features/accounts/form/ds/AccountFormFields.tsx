@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { Button } from '@/components/ds/Button/Button';
 import { DateField } from '@/components/ds/DateField/DateField';
 import { Select, type SelectOption } from '@/components/ds/Select/Select';
 import { Text } from '@/components/ds/Text/Text';
@@ -24,6 +25,7 @@ import {
   LIMIT_POOL_NONE,
   otherPoolMembersNote,
 } from './accountFormModel';
+import { FROM_EMAIL_CAPTION, type NameHint, type PrefilledFields } from './suggestionPrefill';
 
 export interface AccountFormFieldsProps {
   values: AccountFormValues;
@@ -41,6 +43,30 @@ export interface AccountFormFieldsProps {
   onLimitPoolChoice: (choice: string) => void;
   onCreateIdentifier: (raw: string) => void;
   onIdentifiersChange: (values: string[]) => void;
+  /** Add from a suggestion: the fields that were filled in get the "From your email" caption. */
+  prefilled?: PrefilledFields;
+  /** Add from a suggestion: the values it filled in; a caption shows only while its field still holds one. */
+  prefilledValues?: Pick<AccountFormValues, 'name' | 'bank' | 'last4'>;
+  /** Add from a suggestion: the card names the emails mention, each one tappable to use as the name. */
+  nameHints?: NameHint[];
+}
+
+/** "Your emails mention A and B. Tap one to use it." with each name a link. */
+function NameHints({ hints, onPick }: { hints: NameHint[]; onPick: (name: string) => void }) {
+  return (
+    <Text variant="caption" tone="ink-3" as="p">
+      {hints.length === 1 ? 'Maybe ' : 'Your emails mention '}
+      {hints.map((hint, i) => (
+        <React.Fragment key={hint.candidate}>
+          {i === 0 ? '' : i === hints.length - 1 ? ' and ' : ', '}
+          <Button variant="link" type="button" onClick={() => onPick(hint.name)}>
+            {hint.candidate}
+          </Button>
+        </React.Fragment>
+      ))}
+      {hints.length === 1 ? '. Tap it to use it.' : '. Tap one to use it.'}
+    </Text>
+  );
 }
 
 const BANK_OPTIONS: SelectOption[] = BANKS.map((b) => ({
@@ -115,6 +141,9 @@ export function AccountFormFields({
   onLimitPoolChoice,
   onCreateIdentifier,
   onIdentifiersChange,
+  prefilled,
+  prefilledValues,
+  nameHints = [],
 }: AccountFormFieldsProps) {
   const type = values.type;
   if (!type) return null;
@@ -158,10 +187,12 @@ export function AccountFormFields({
           label="Account name"
           placeholder={isBroker ? 'e.g., Zerodha Demat' : 'e.g., HDFC Savings'}
           autoComplete="off"
+          helper={prefilled?.name && values.name === prefilledValues?.name ? FROM_EMAIL_CAPTION : undefined}
           error={errors.name}
           value={values.name}
           onValueChange={(v) => onChange({ name: v })}
         />
+        {nameHints.length >= 1 ? <NameHints hints={nameHints} onPick={(name) => onChange({ name })} /> : null}
         <TextField
           label="Description"
           optional
@@ -178,6 +209,7 @@ export function AccountFormFields({
             searchPlaceholder="Search banks…"
             options={BANK_OPTIONS}
             value={values.bank}
+            helper={prefilled?.bank && values.bank === prefilledValues?.bank ? FROM_EMAIL_CAPTION : undefined}
             error={errors.bank}
             onValueChange={(v) => onChange({ bank: v as string })}
           />
@@ -198,6 +230,7 @@ export function AccountFormFields({
               inputMode="numeric"
               maxLength={4}
               placeholder="1234"
+              helper={prefilled?.last4 && values.last4 === prefilledValues?.last4 ? FROM_EMAIL_CAPTION : undefined}
               error={errors.last4}
               value={values.last4}
               onValueChange={(v) => onChange({ last4: v })}
@@ -263,14 +296,14 @@ export function AccountFormFields({
 
       {isCard && !isEdit ? (
         <Section title="Cards">
-          <CreditCardsFields values={values} errors={errors} today={today} onChange={onChange} />
+          <CreditCardsFields values={values} errors={errors} today={today} prefilled={prefilled} prefilledLast4={prefilledValues?.last4} onChange={onChange} />
           {password}
         </Section>
       ) : null}
 
       {isBank && !isEdit ? (
         <Section title="Your debit card">
-          <DebitCardFields values={values} errors={errors} onChange={onChange} />
+          <DebitCardFields values={values} errors={errors} prefilled={prefilled} onChange={onChange} />
         </Section>
       ) : null}
 
