@@ -8,6 +8,7 @@ import { Text } from '@/components/ds/Text/Text';
 import { TextField } from '@/components/ds/TextField/TextField';
 import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { RELATIONSHIP_LABELS } from '@/features/accounts/cards/constants';
+import { FROM_EMAIL_CAPTION } from '@/features/accounts/form/ds/suggestionPrefill';
 import type {
   Cardholder,
   CardholderRelationship,
@@ -15,6 +16,7 @@ import type {
 } from '@/lib/account.types';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 
+import type { CardFromSuggestion } from './CardFormDialogs';
 import {
   buildAddHolder,
   buildEditHolder,
@@ -37,20 +39,23 @@ export function AddHolderDialog({
   isBank,
   accountName,
   today,
+  fromSuggestion,
   onSubmit,
   onClose,
 }: {
   isBank: boolean;
   accountName: string;
   today: string;
+  /** An add-on card found in the emails: its number fills the first card and the relationship starts unpicked. */
+  fromSuggestion?: CardFromSuggestion;
   onSubmit: (body: CreateCardholderRequest) => ActionResult;
   onClose: () => void;
 }) {
   const [name, setName] = React.useState('');
-  const [relationship, setRelationship] = React.useState<CardholderRelationship>('SPOUSE');
+  const [relationship, setRelationship] = React.useState<CardholderRelationship | ''>(fromSuggestion ? '' : 'SPOUSE');
   const [spendLimit, setSpendLimit] = React.useState('');
   const [openedOn, setOpenedOn] = React.useState(today);
-  const [last4, setLast4] = React.useState('');
+  const [last4, setLast4] = React.useState(fromSuggestion?.last4 ?? '');
   const [issuedOn, setIssuedOn] = React.useState(today);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const { pending, error, submit } = useDialogSubmit(onClose);
@@ -59,7 +64,7 @@ export function AddHolderDialog({
     const resolvedLimit = resolveAmountExpression(spendLimit);
     setSpendLimit(resolvedLimit);
     const built = buildAddHolder(
-      { name, relationship, spendLimit: resolvedLimit, openedOn, last4, issuedOn },
+      { name, relationship, spendLimit: resolvedLimit, openedOn, last4, issuedOn, fromSuggestionId: fromSuggestion?.id },
       today
     );
     if (!built.ok) {
@@ -83,9 +88,11 @@ export function AddHolderDialog({
       <TextField label="Name" value={name} onValueChange={setName} error={errors.name} />
       <Select
         label="Relationship"
+        placeholder={fromSuggestion ? 'Pick one' : undefined}
         value={relationship}
         onValueChange={(v) => setRelationship(v as CardholderRelationship)}
         options={RELATIONSHIP_OPTIONS}
+        error={errors.relationship}
       />
       <AmountField
         label="Monthly spend limit"
@@ -114,6 +121,7 @@ export function AddHolderDialog({
         maxLength={4}
         value={last4}
         onValueChange={(v) => setLast4(digitsOnly(v))}
+        helper={fromSuggestion?.last4 && last4 === fromSuggestion.last4 ? FROM_EMAIL_CAPTION : undefined}
         error={errors.last4}
       />
       <DateField

@@ -5,12 +5,14 @@ import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
 import { showToast } from '@/components/ds/Toast/Toast';
+import { loadCardholders } from '@/features/accounts/accountActions';
 import { loadAccountForm, useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import type { Account } from '@/lib/account.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
 import { answerIsThis, hideSuggestion, undoHideSuggestion } from './suggestionActions';
-import type { SuggestionRow } from './suggestionsModel';
+import { loadSuggestionCardDialog, type SuggestionCardTarget } from './SuggestionCardDialog';
+import type { SuggestionItem, SuggestionRow } from './suggestionsModel';
 
 /** What "Add" opens for a suggestion: the matching Add account type, or Edit on the account it belongs to. */
 export function addTarget(row: Pick<SuggestionRow, 'kind' | 'parentAccountId'>, parentIds: ReadonlySet<string>):
@@ -24,13 +26,15 @@ export function addTarget(row: Pick<SuggestionRow, 'kind' | 'parentAccountId'>, 
 
 /**
  * The actions behind a section's suggestion rows: Not mine (toast with Undo), the "Is this your …?" answers and Add.
- * Render `dialog` once in the section: it holds the Edit account dialog that Add opens for a card on an account.
+ * Render `dialog` once in the section: it holds the card dialogs (and the Edit account fallback) that Add opens for a card on an account.
  */
 export function useSuggestionActions(parents: readonly Account[]) {
   const router = useRouter();
   const { open, preload } = useAccountDialogs();
   const { Component: AccountFormDialog, run } = useLazyDialog(loadAccountForm);
+  const { Component: CardDialog, run: runCard } = useLazyDialog(loadSuggestionCardDialog);
   const [editing, setEditing] = React.useState<Account | null>(null);
+  const [cardTarget, setCardTarget] = React.useState<SuggestionCardTarget | null>(null);
   const [pendingId, setPendingId] = React.useState<string | null>(null);
 
   const fail = (message: string) => showToast(message, { tone: 'danger' });
@@ -49,6 +53,7 @@ export function useSuggestionActions(parents: readonly Account[]) {
       router.refresh();
       showToast(`Hidden ${row.name}${row.last4 ? ` ••${row.last4}` : ''}`, {
         action: { label: 'Undo', onSelect: () => void undo(row.id) },
+        duration: 10_000,
       });
     } finally {
       setPendingId(null);
@@ -67,15 +72,44 @@ export function useSuggestionActions(parents: readonly Account[]) {
     }
   };
 
-  const add = (row: SuggestionRow) => {
-    const target = addTarget(row, new Set(parents.map((p) => p.id)));
-    if ('open' in target) return open(target.open);
-    const account = parents.find((p) => p.id === target.edit);
-    if (account) void run(() => setEditing(account));
+  /** A card of an account we have opens that account's own card dialog; the Edit dialog is the way out when it can't. */
+  const addCardTo = async (item: SuggestionItem, parent: Account) => {
+    const edit = () => void run(() => setEditing(parent));
+    const show = (next: SuggestionCardTarget) => void runCard(() => setCardTarget(next));
+    if (item.kind === 'ADDON_CARD') return show({ kind: 'ADDON_CARD', item, parent });
+    try {
+      const result = await loadCardholders(parent.id);
+      if (!result.success) return fail(result.error.message);
+      const holder = result.data.find((h) => h.role === 'PRIMARY') ?? null;
+      if (item.kind === 'DEBIT_CARD') return show({ kind: 'DEBIT_CARD', item, parent, holder });
+      const card = holder?.cards.find((c) => !c.closedOn);
+      if (holder && card) return show({ kind: 'REPLACEMENT_CARD', item, parent, holder, card });
+      edit();
+    } catch {
+      fail("Couldn't load the cardholders. Try again.");
+    }
   };
 
-  const dialog =
-    editing && AccountFormDialog ? <AccountFormDialog account={editing} onClose={() => setEditing(null)} /> : null;
+  const add = (row: SuggestionRow) => {
+    const target = addTarget(row, new Set(parents.map((p) => p.id)));
+    if ('open' in target) {
+      // An add-on or replacement card without its account in the list has nothing to prefill: the plain Add dialog.
+      const orphanCard = row.kind === 'ADDON_CARD' || row.kind === 'REPLACEMENT_CARD';
+      return row.item && !orphanCard ? open(target.open, { fromSuggestion: row.item, onCreated: () => router.refresh() }) : open(target.open);
+    }
+    const account = parents.find((p) => p.id === target.edit);
+    if (!account) return;
+    if (!row.item) return void run(() => setEditing(account));
+    setPendingId(row.id);
+    void addCardTo(row.item, account).finally(() => setPendingId(null));
+  };
+
+  const dialog = (
+    <>
+      {editing && AccountFormDialog ? <AccountFormDialog account={editing} onClose={() => setEditing(null)} /> : null}
+      {cardTarget && CardDialog ? <CardDialog target={cardTarget} onClose={() => setCardTarget(null)} /> : null}
+    </>
+  );
 
   return { pendingId, notMine, answer, add, preload, dialog };
 }

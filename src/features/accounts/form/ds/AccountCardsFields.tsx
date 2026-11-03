@@ -12,6 +12,7 @@ import { TextField } from '@/components/ds/TextField/TextField';
 import { RELATIONSHIP_LABELS } from '@/features/accounts/cards/constants';
 
 import type { AccountFormValues, AddonRelationship, FormErrors } from './accountFormModel';
+import { FROM_EMAIL_CAPTION, type PrefilledFields } from './suggestionPrefill';
 
 const RELATIONSHIP_OPTIONS = Object.entries(RELATIONSHIP_LABELS)
   .filter(([value]) => value !== 'SELF')
@@ -48,6 +49,8 @@ function Pair({ children }: { children: React.ReactNode }) {
 interface CardsProps {
   values: AccountFormValues;
   errors: FormErrors;
+  /** Add from a suggestion: the numbers that were filled in get the "From your email" caption. */
+  prefilled?: PrefilledFields;
   onChange: (patch: Partial<AccountFormValues>) => void;
 }
 
@@ -56,8 +59,10 @@ export function CreditCardsFields({
   values,
   errors,
   today,
+  prefilled,
+  prefilledLast4,
   onChange,
-}: CardsProps & { today: string }) {
+}: CardsProps & { today: string; prefilledLast4?: string }) {
   const { addonCards } = values;
   return (
     <>
@@ -68,6 +73,7 @@ export function CreditCardsFields({
             inputMode="numeric"
             maxLength={4}
             placeholder="1234"
+            helper={prefilled?.last4 && values.last4 === prefilledLast4 ? FROM_EMAIL_CAPTION : undefined}
             error={errors.last4}
             value={values.last4}
             onValueChange={(v) => onChange({ last4: v })}
@@ -103,6 +109,7 @@ export function CreditCardsFields({
               inputMode="numeric"
               maxLength={4}
               placeholder="1234"
+              helper={card.last4 && prefilled?.addonCards.includes(card.last4) ? FROM_EMAIL_CAPTION : undefined}
               error={errors.addonCards?.[i]?.last4}
               value={card.last4}
               onValueChange={(v) => onChange({ addonCards: replaceAt(addonCards, i, { last4: digitsOnly(v) }) })}
@@ -179,7 +186,7 @@ function EarlierCardRows({ values, errors, onChange }: CardsProps) {
 }
 
 /** The bank account form's optional debit card (create only), then any prefilled earlier numbers. */
-export function DebitCardFields({ values, errors, onChange }: CardsProps) {
+export function DebitCardFields({ values, errors, prefilled, onChange }: CardsProps) {
   return (
     <>
       <TextField
@@ -188,6 +195,7 @@ export function DebitCardFields({ values, errors, onChange }: CardsProps) {
         inputMode="numeric"
         maxLength={4}
         placeholder="1234"
+        helper={prefilled?.debitCardLast4 ? FROM_EMAIL_CAPTION : undefined}
         error={errors.debitCardLast4}
         value={values.debitCardLast4}
         onValueChange={(v) => onChange({ debitCardLast4: digitsOnly(v) })}

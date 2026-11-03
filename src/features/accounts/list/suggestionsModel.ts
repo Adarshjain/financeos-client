@@ -72,6 +72,8 @@ export interface SuggestionRow {
   parentAccountId: string | null;
   /** Set while the server asks "is this your {account}?". */
   isThis: { accountId: string; accountName: string } | null;
+  /** The whole suggestion, for the prefilled Add dialogs. */
+  item?: SuggestionItem;
 }
 
 export function isSuggestionRow(row: object): row is SuggestionRow {
@@ -100,6 +102,11 @@ function sameBankWord(variant: string, bankName: string): boolean {
   return variant.toLowerCase().startsWith(bankName.toLowerCase());
 }
 
+/** A card name with the bank in front: catalogue names are short ("Regalia"), so the bank goes first unless it is already there. */
+export function withBankName(item: Pick<SuggestionItem, 'bank'>, variant: string): string {
+  return sameBankWord(variant, item.bank.name) ? variant : `${item.bank.name} ${variant}`;
+}
+
 export function suggestionTitle(item: SuggestionItem): string {
   switch (item.kind) {
     case 'BANK_ACCOUNT':
@@ -107,8 +114,7 @@ export function suggestionTitle(item: SuggestionItem): string {
     case 'CREDIT_CARD': {
       const named = item.variant && (item.variantConf === 'HIGH' || item.variantConf === 'MEDIUM');
       if (!named) return `${item.bank.name} card`;
-      // Catalogue names are short ("Regalia"), so the bank goes in front unless it is already there.
-      return sameBankWord(item.variant!, item.bank.name) ? item.variant! : `${item.bank.name} ${item.variant}`;
+      return withBankName(item, item.variant!);
     }
     case 'DEBIT_CARD':
       return 'Debit card';
@@ -139,6 +145,7 @@ export function suggestionRow(item: SuggestionItem): SuggestionRow {
     sub: suggestionSecondLine(item),
     parentAccountId: item.parentAccount?.id ?? null,
     isThis: item.candidateAccount ? { accountId: item.candidateAccount.id, accountName: item.candidateAccount.name } : null,
+    item,
   };
 }
 

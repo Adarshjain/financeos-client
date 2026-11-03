@@ -6,6 +6,8 @@ export interface AccountRequestBase {
   excludeFromNetAsset?: boolean;
   financialPosition?: FinancialPosition;
   description?: string;
+  /** Create only: the suggestion this account is created from; the server marks it added. */
+  fromSuggestionId?: string | null;
 }
 
 export type BankAccountRequest = AccountRequestBase & {
@@ -204,6 +206,7 @@ export interface CreateCardholderRequest {
   last4?: string;
   openedOn?: string;
   issuedOn?: string;
+  fromSuggestionId?: string;
 }
 
 export interface UpdateCardholderRequest {
@@ -215,11 +218,13 @@ export interface UpdateCardholderRequest {
 export interface CreateCardRequest {
   last4: string;
   issuedOn?: string;
+  fromSuggestionId?: string;
 }
 
 export interface ReplaceCardRequest {
   newLast4: string;
   issuedOn?: string;
+  fromSuggestionId?: string;
 }
 
 export interface CloseCardholderRequest {

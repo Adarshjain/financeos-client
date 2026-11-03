@@ -5,6 +5,7 @@ import React from 'react';
 import { DateField } from '@/components/ds/DateField/DateField';
 import { Text } from '@/components/ds/Text/Text';
 import { TextField } from '@/components/ds/TextField/TextField';
+import { FROM_EMAIL_CAPTION } from '@/features/accounts/form/ds/suggestionPrefill';
 import type { Card, CreateCardRequest, ReplaceCardRequest } from '@/lib/account.types';
 
 import { buildAddCard, buildClose, buildReplaceCard, digitsOnly, futureDateError } from './cardsFormsModel';
@@ -13,6 +14,12 @@ import type { ActionResult } from './useCardholderMutations';
 
 const iso = (v: string | { start?: string; end?: string }) => (typeof v === 'string' ? v : '');
 
+/** The suggestion a card dialog is opened from: its id goes with the request and its number fills the field. */
+export interface CardFromSuggestion {
+  id: string;
+  last4: string;
+}
+
 /** Add a card to a holder with none active, or the first debit card of a bank account. */
 export function AddCardDialog({
   title,
@@ -20,6 +27,7 @@ export function AddCardDialog({
   submitLabel,
   last4Message,
   today,
+  fromSuggestion,
   onSubmit,
   onClose,
 }: {
@@ -29,16 +37,17 @@ export function AddCardDialog({
   /** The live validation message for this flow. */
   last4Message?: string;
   today: string;
+  fromSuggestion?: CardFromSuggestion;
   onSubmit: (body: CreateCardRequest) => ActionResult;
   onClose: () => void;
 }) {
-  const [last4, setLast4] = React.useState('');
+  const [last4, setLast4] = React.useState(fromSuggestion?.last4 ?? '');
   const [issuedOn, setIssuedOn] = React.useState(today);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const { pending, error, submit } = useDialogSubmit(onClose);
 
   const handle = () => {
-    const built = buildAddCard({ last4, issuedOn }, today, last4Message);
+    const built = buildAddCard({ last4, issuedOn, fromSuggestionId: fromSuggestion?.id }, today, last4Message);
     if (!built.ok) {
       setErrors(built.errors);
       return;
@@ -64,6 +73,7 @@ export function AddCardDialog({
         maxLength={4}
         value={last4}
         onValueChange={(v) => setLast4(digitsOnly(v))}
+        helper={fromSuggestion?.last4 && last4 === fromSuggestion.last4 ? FROM_EMAIL_CAPTION : undefined}
         error={errors.last4}
       />
       <DateField
@@ -82,22 +92,24 @@ export function ReplaceCardDialog({
   card,
   holderName,
   today,
+  fromSuggestion,
   onSubmit,
   onClose,
 }: {
   card: Card;
   holderName: string;
   today: string;
+  fromSuggestion?: CardFromSuggestion;
   onSubmit: (body: ReplaceCardRequest) => ActionResult;
   onClose: () => void;
 }) {
-  const [newLast4, setNewLast4] = React.useState('');
+  const [newLast4, setNewLast4] = React.useState(fromSuggestion?.last4 ?? '');
   const [issuedOn, setIssuedOn] = React.useState(today);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const { pending, error, submit } = useDialogSubmit(onClose);
 
   const handle = () => {
-    const built = buildReplaceCard({ newLast4, issuedOn }, today);
+    const built = buildReplaceCard({ newLast4, issuedOn, fromSuggestionId: fromSuggestion?.id }, today);
     if (!built.ok) {
       setErrors(built.errors);
       return;
@@ -127,6 +139,7 @@ export function ReplaceCardDialog({
         maxLength={4}
         value={newLast4}
         onValueChange={(v) => setNewLast4(digitsOnly(v))}
+        helper={fromSuggestion?.last4 && newLast4 === fromSuggestion.last4 ? FROM_EMAIL_CAPTION : undefined}
         error={errors.newLast4}
       />
       <DateField

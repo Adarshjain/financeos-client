@@ -11,6 +11,7 @@ import { Text } from '@/components/ds/Text/Text';
 import { showToast } from '@/components/ds/Toast/Toast';
 import { useAccountFormMutations } from '@/features/accounts/form/useAccountFormMutations';
 import { useAccountIdentifiers } from '@/features/accounts/form/useAccountIdentifiers';
+import type { SuggestionItem } from '@/features/accounts/list/suggestionsModel';
 import { appHref } from '@/features/shell/routes';
 import type { Account, AccountRequest } from '@/lib/account.types';
 import { resolveAmountExpression } from '@/lib/amountExpression';
@@ -41,6 +42,7 @@ import {
   withLimitPoolChoice,
 } from './accountFormModel';
 import { CloseAccountSection, DeleteAccountSection } from './AccountLifecycleSections';
+import { buildSuggestionPrefill, FROM_EMAIL_SUBTITLE } from './suggestionPrefill';
 
 const ACCOUNTS_HREF = appHref('/accounts');
 const FORM_ID = 'account-form';
@@ -60,18 +62,21 @@ export interface AccountFormDialogProps {
   onClose: () => void;
   /** Add mode: called with the new account instead of opening its page; the dialog closes and the page stays put. */
   onCreated?: (account: Account) => void;
+  /** Add mode: the suggestion to fill the form from; creating it marks the suggestion added. */
+  fromSuggestion?: SuggestionItem;
 }
 
 /** Add account and Edit account: one dialog, the fields follow the picked type. */
-export function AccountFormDialog({ account, initialType = null, onClose, onCreated }: AccountFormDialogProps) {
+export function AccountFormDialog({ account, initialType = null, onClose, onCreated, fromSuggestion }: AccountFormDialogProps) {
   const router = useRouter();
   const isEdit = Boolean(account);
   const today = todayInAppZone();
   const mutations = useAccountFormMutations();
   const idApi = useAccountIdentifiers(account?.id);
 
+  const [prefill] = React.useState(() => (!account && fromSuggestion ? buildSuggestionPrefill(fromSuggestion) : null));
   const [values, setValues] = React.useState<AccountFormValues>(() =>
-    account ? valuesFromAccount(account) : emptyValues(initialType)
+    account ? valuesFromAccount(account) : (prefill?.values ?? emptyValues(initialType))
   );
   const [errors, setErrors] = React.useState<FormErrors>({});
   const [identifierError, setIdentifierError] = React.useState<string | null>(null);
@@ -200,7 +205,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
         await finishUpdate('Account updated');
       } else {
         const { account: created, failedIdentifiers } = await mutations.createAccountMutation.mutateAsync({
-          body: request,
+          body: prefill && fromSuggestion ? { ...request, fromSuggestionId: fromSuggestion.id } : request,
           identifiers,
         });
         showToast('Account created');
@@ -289,7 +294,9 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
         <Dialog.Content
           size="md"
           title={isEdit ? 'Edit account' : 'Add account'}
-          description={account ? `${account.name} · ${accountTypeLabel(account.type)}` : undefined}
+          description={
+            account ? `${account.name} · ${accountTypeLabel(account.type)}` : prefill ? FROM_EMAIL_SUBTITLE : undefined
+          }
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: busy }}
           primary={{
             label: isEdit ? 'Save account' : 'Add account',
@@ -316,7 +323,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
                   fullWidth
                   aria-label="Account type"
                   options={ACCOUNT_TYPE_OPTIONS}
-                  defaultValue={initialType ?? undefined}
+                  defaultValue={prefill?.values.type ?? initialType ?? undefined}
                   onValueChange={pickType}
                 />
               ) : null}
@@ -330,6 +337,9 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
                 identifiersLoading={isEdit && !identifiersSeeded}
                 identifierError={identifierError}
                 identifierOptions={identifierOptions}
+                prefilled={prefill && type === prefill.values.type ? prefill.filled : undefined}
+                prefilledValues={prefill && type === prefill.values.type ? prefill.values : undefined}
+                nameHints={prefill && type === prefill.values.type ? prefill.nameHints : undefined}
                 onChange={change}
                 onLimitPoolChoice={(choice) => setValues((v) => withLimitPoolChoice(v, choice, pools))}
                 onCreateIdentifier={createIdentifier}

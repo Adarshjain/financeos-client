@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import type { SuggestionItem } from '@/features/accounts/list/suggestionsModel';
 import type { Account } from '@/lib/account.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { AccountType } from '@/lib/types';
@@ -11,11 +12,13 @@ import { parseAddType } from './accountFormModel';
 // The form is not in the page: it loads when an Add / Edit trigger is pressed (see useLazyDialog).
 export const loadAccountForm = () => import('./AccountFormDialog').then((m) => m.AccountFormDialog);
 
-type OpenState = { kind: 'add'; type: AccountType; onCreated?: (account: Account) => void } | { kind: 'edit' } | null;
+type OpenState =
+  | { kind: 'add'; type: AccountType; onCreated?: (account: Account) => void; fromSuggestion?: SuggestionItem }
+  | { kind: 'edit' } | null;
 
 interface AccountDialogsApi {
-  /** Opens Add account; `type` (a slug like "credit_card") picks that type, otherwise Bank. With `onCreated`, creating closes the dialog and calls it instead of opening the new account's page. */
-  open: (type?: string, options?: { onCreated?: (account: Account) => void }) => void;
+  /** Opens Add account; `type` (a slug like "credit_card") picks that type, otherwise Bank. With `onCreated`, creating closes the dialog and calls it instead of opening the new account's page. With `fromSuggestion`, the form starts filled from that suggestion and creating it marks it added. */
+  open: (type?: string, options?: { onCreated?: (account: Account) => void; fromSuggestion?: SuggestionItem }) => void;
   /** Opens Edit account for the provider's account. */
   openEdit: () => void;
   /** Starts loading the form's code; call it on pointerdown of a trigger. */
@@ -41,7 +44,7 @@ export function AccountDialogs({ account, children }: { account?: Account; child
   const api = React.useMemo<AccountDialogsApi>(
     () => ({
       open: (type, options) =>
-        void run(() => setState({ kind: 'add', type: parseAddType(type) ?? AccountType.BANK_ACCOUNT, onCreated: options?.onCreated })),
+        void run(() => setState({ kind: 'add', type: parseAddType(type) ?? AccountType.BANK_ACCOUNT, onCreated: options?.onCreated, fromSuggestion: options?.fromSuggestion })),
       openEdit: () => void run(() => setState({ kind: 'edit' })),
       preload,
       loading,
@@ -52,7 +55,7 @@ export function AccountDialogs({ account, children }: { account?: Account; child
   return (
     <AccountDialogsContext.Provider value={api}>
       {children}
-      {state?.kind === 'add' && AccountFormDialog ? <AccountFormDialog key={state.type} initialType={state.type} onCreated={state.onCreated} onClose={close} /> : null}
+      {state?.kind === 'add' && AccountFormDialog ? <AccountFormDialog key={`${state.type}:${state.fromSuggestion?.id ?? ''}`} initialType={state.type} fromSuggestion={state.fromSuggestion} onCreated={state.onCreated} onClose={close} /> : null}
       {state?.kind === 'edit' && account && AccountFormDialog ? <AccountFormDialog account={account} onClose={close} /> : null}
     </AccountDialogsContext.Provider>
   );
