@@ -73,14 +73,16 @@ test.describe('Gmail connect, senders and empty sync', () => {
     for (const extra of extras) await cleanupIdentity(extra);
   });
 
-  test('oauth start returns a consent URL scoped to gmail.readonly with the server callback', async () => {
+  test('oauth start returns a consent URL scoped to gmail.readonly and the birthday with the server callback', async () => {
     const res = await api.GET('/api/v1/gmail/oauth/start');
     expectStatus(res, 200);
     const url = new URL(res.data!.authorizationUrl);
     expect(res.data!.authorizationUrl.startsWith(`${GOOGLE_AUTH_URL}?`)).toBe(true);
     expect(url.searchParams.get('client_id')).toBe('e2e-client-id');
     expect(url.searchParams.get('redirect_uri')).toBe(GMAIL_REDIRECT_URI);
-    expect(url.searchParams.get('scope')).toBe('https://www.googleapis.com/auth/gmail.readonly');
+    expect(url.searchParams.get('scope')).toBe(
+      'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/user.birthday.read',
+    );
     expect(url.searchParams.get('access_type')).toBe('offline');
     expect(url.searchParams.get('prompt')).toBe('consent');
     expect(url.searchParams.has('approval_prompt')).toBe(false);
