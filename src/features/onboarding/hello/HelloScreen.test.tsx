@@ -93,6 +93,17 @@ describe('HelloScreen', () => {
     await waitFor(() => expect(replace).toHaveBeenCalledWith('/dashboard'));
   });
 
+  it('Back on Connect Gmail returns to the Hello step with the values kept', async () => {
+    render(<HelloScreen {...props} birthDate="1990-04-05" />);
+    tick();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Back' }));
+    expect(screen.getByRole('heading', { name: "Hi Asha. Let's find all your money." })).toBeInTheDocument();
+    expect(screen.getByText('1 of 2')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Asha Rao')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+  });
+
   it('Connect Gmail asks the server to come back to Home', async () => {
     startGmailOAuthToHome.mockResolvedValue({ success: false, error: { message: 'Nope' } });
     render(<HelloScreen {...props} birthDate="1990-04-05" />);

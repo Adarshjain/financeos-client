@@ -34,7 +34,7 @@ describe('ScanProgressCard', () => {
     render(<ScanProgressCard scan={scan()} />);
     expect(screen.getByText('Finding your accounts')).toBeInTheDocument();
     expect(screen.getByText('Read 4,020 of 10,600 emails. About 6 minutes left.')).toBeInTheDocument();
-    expect(screen.getByText("Keep using FinanceOS. We'll let you know when it's done.")).toBeInTheDocument();
+    expect(screen.getByText("Keep using FinanceOS. We'll let you know what we find.")).toBeInTheDocument();
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 

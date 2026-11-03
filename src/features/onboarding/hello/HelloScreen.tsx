@@ -7,6 +7,10 @@ import { Banner } from '@/components/ds/Banner/Banner';
 import { Button } from '@/components/ds/Button/Button';
 import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
 import { DateField } from '@/components/ds/DateField/DateField';
+import { Highlight } from '@/components/ds/Highlight/Highlight';
+import { PageFooter } from '@/components/ds/PageFooter/PageFooter';
+import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { StepList } from '@/components/ds/StepList/StepList';
 import { Text } from '@/components/ds/Text/Text';
 import { TextField } from '@/components/ds/TextField/TextField';
 import { appHref } from '@/features/shell/routes';
@@ -21,7 +25,14 @@ import {
   NAME_LABEL,
 } from '../birthDate';
 import { startGmailOAuthToHome, submitHello } from './helloActions';
-import { BIRTH_WARNING, CONSENT_ERROR, helloView, NAME_WARNING, pressOutcome, stepCounterVisible } from './helloModel';
+import {
+  BIRTH_WARNING,
+  CONSENT_ERROR,
+  helloView,
+  NAME_WARNING,
+  pressOutcome,
+  stepCounterVisible,
+} from './helloModel';
 
 export interface HelloScreenProps {
   displayName: string | null;
@@ -57,13 +68,24 @@ export function HelloScreen({
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const counter = stepCounterVisible(hasGmail);
-  const view = helloView({ name, birthDate: birth, consent, warned, onlyScreen: hasGmail });
+  const view = helloView({
+    name,
+    birthDate: birth,
+    consent,
+    warned,
+    onlyScreen: hasGmail,
+  });
   const home = () => router.replace(appHref('/dashboard'));
 
   const submit = async () => {
     setError(null);
-    const outcome = pressOutcome({ name, birthDate: birth, consent, warned, onlyScreen: hasGmail });
+    const outcome = pressOutcome({
+      name,
+      birthDate: birth,
+      consent,
+      warned,
+      onlyScreen: hasGmail,
+    });
     if (outcome === 'warn') {
       setWarned(true);
       setConsentError(!consent);
@@ -99,80 +121,130 @@ export function HelloScreen({
     if (result.success && result.data?.authorizationUrl) {
       window.location.href = result.data.authorizationUrl;
     } else {
-      setError(result.success ? "Couldn't connect Gmail. Try again." : result.error.message);
+      setError(
+        result.success
+          ? "Couldn't connect Gmail. Try again."
+          : result.error.message
+      );
       setConnecting(false);
     }
   };
 
-  const shell = (children: React.ReactNode) => (
-    <div className="min-h-dvh flex items-start desk:items-center justify-center px-space-20 pt-space-24 pb-space-20 desk:p-space-40">
-      <div className="w-full max-w-md flex flex-col gap-space-16">{children}</div>
+  const twoSteps = stepCounterVisible(hasGmail);
+
+  // Top row, body, then the footer pinned to the bottom on a phone; a centred column on desktop.
+  const shell = (
+    top: { back?: () => void; counter: string | null; progress: number },
+    body: React.ReactNode,
+    footer: React.ReactNode
+  ) => (
+    <div className="min-h-dvh flex flex-col desk:items-center desk:justify-center desk:p-space-40">
+      <div className="w-full flex-1 desk:flex-none desk:max-w-md flex flex-col px-space-16">
+        <div className="flex items-center gap-space-10 pt-space-16 pb-space-6">
+          {top.back ? (
+            <Button variant="link" onClick={top.back} disabled={connecting}>
+              Back
+            </Button>
+          ) : (
+            <Button
+              variant="link"
+              className="invisible"
+              tabIndex={-1}
+              aria-hidden
+            >
+              Back
+            </Button>
+          )}
+          <ProgressBar className="flex-1" value={top.progress} />
+          {top.counter ? (
+            <Text variant="caption" tone="ink-3">
+              {top.counter}
+            </Text>
+          ) : null}
+        </div>
+        <div className="flex flex-col gap-space-12 pt-space-12 pb-space-16">
+          {body}
+        </div>
+        {footer}
+      </div>
     </div>
+  );
+
+  const headline = (before: string, marked: string, after: string) => (
+    <Text as="h1" variant="page-title" family="display">
+      {before}
+      <Highlight text={marked} query={marked} />
+      {after}
+    </Text>
   );
 
   if (step === 2) {
     return shell(
+      { back: () => setStep(1), counter: '2 of 2', progress: 100 },
       <>
-        <div className="flex flex-col gap-space-4">
-          <Text variant="caption" tone="ink-3">
-            2 of 2
-          </Text>
-          <Text as="h1" variant="page-title" family="display">
-            Connect the Gmail your bank writes to
-          </Text>
+        <div className="flex flex-col gap-space-8">
+          {headline('Connect the Gmail your ', 'bank', ' writes to')}
           <Text variant="body" tone="ink-3">
             That&apos;s where your cards and accounts are hiding.
           </Text>
         </div>
-        <div className="flex flex-col gap-space-8">
-          <Text variant="body">We find your bank accounts and cards from bank emails, so you don&apos;t type them in.</Text>
-          <Text variant="body">We read only bank and card mail. Read-only: we never send or delete.</Text>
-          <Text variant="body">New statements and spends come in on their own after that.</Text>
-        </div>
-        <Text variant="caption" tone="ink-3">
-          Google will say FinanceOS wants to &quot;read your email&quot;. Untick nothing on that screen, or we can&apos;t find
-          your accounts.
-        </Text>
+        <StepList
+          variant="live"
+          steps={[
+            {
+              id: 'find',
+              state: 'done',
+              label:
+                "We find your bank accounts and cards from bank emails, so you don't type them in.",
+            },
+            {
+              id: 'read',
+              state: 'done',
+              label:
+                'We read only bank and card mail. Read-only: we never send or delete.',
+            },
+            {
+              id: 'sync',
+              state: 'done',
+              label:
+                'New statements and spends come in on their own after that.',
+            },
+          ]}
+        />
+        <Banner tone="neutral">
+          Google will say FinanceOS wants to &quot;read your email&quot;. Untick
+          nothing on that screen, or we can&apos;t find your accounts.
+        </Banner>
         {error ? <Banner tone="danger">{error}</Banner> : null}
-        <div className="flex gap-space-8">
-          <Button variant="secondary" size="xl" disabled={connecting} onClick={home}>
-            Skip
-          </Button>
-          <Button
-            variant="primary"
-            size="xl"
-            className="flex-1"
-            loading={connecting}
-            loadingLabel="Opening Google…"
-            onClick={connect}
-          >
-            Connect Gmail
-          </Button>
-        </div>
       </>,
+      <PageFooter
+        sticky
+        secondary={{ label: 'Skip', onSelect: home, disabled: connecting }}
+        primary={{
+          label: connecting ? 'Opening Google…' : 'Connect Gmail',
+          loading: connecting,
+          onSelect: connect,
+        }}
+      />
     );
   }
 
   const first = firstName(displayName);
   return shell(
+    { counter: twoSteps ? '1 of 2' : null, progress: twoSteps ? 50 : 100 },
     <>
-      <div className="flex flex-col gap-space-4">
-        {counter ? (
-          <Text variant="caption" tone="ink-3">
-            1 of 2
-          </Text>
-        ) : null}
-        <Text as="h1" variant="page-title" family="display">
-          {first ? `Hi ${first}. Let's find all your money.` : "Hi there. Let's find all your money."}
-        </Text>
+      <div className="flex flex-col gap-space-8">
+        {headline(`Hi ${first ?? 'there'}. Let's find `, 'all', ' your money.')}
         <Text variant="body" tone="ink-3">
-          One minute. We&apos;ll find your cards and accounts from your bank emails.
+          One minute. We&apos;ll find your cards and accounts from your bank
+          emails.
         </Text>
       </div>
 
       <form
+        id="hello-form"
         noValidate
-        className="flex flex-col gap-space-16"
+        className="flex flex-col gap-space-12"
         onSubmit={(e) => {
           e.preventDefault();
           void submit();
@@ -198,32 +270,31 @@ export function HelloScreen({
           }
         />
 
-        <div className="flex flex-col gap-space-4">
-          <DateField
-            id="hello-birth"
-            label={BIRTH_LABEL}
-            today={today}
-            minDate="1900-01-01"
-            maxDate={today}
-            value={birth}
-            onValueChange={(v) => setBirth(typeof v === 'string' ? v : '')}
-            disabled={saving}
-            helper={
-              view.birthWarning ? (
-                <Text as="span" variant="caption" tone="warning">
-                  {BIRTH_WARNING}
-                </Text>
-              ) : birthDateFromGoogle && birth ? (
-                BIRTH_CAPTION_GOOGLE
-              ) : undefined
-            }
-          />
-        </div>
+        <DateField
+          id="hello-birth"
+          label={BIRTH_LABEL}
+          today={today}
+          minDate="1900-01-01"
+          maxDate={today}
+          value={birth}
+          onValueChange={(v) => setBirth(typeof v === 'string' ? v : '')}
+          disabled={saving}
+          helper={
+            view.birthWarning ? (
+              <Text as="span" variant="caption" tone="warning">
+                {BIRTH_WARNING}
+              </Text>
+            ) : birthDateFromGoogle && birth ? (
+              BIRTH_CAPTION_GOOGLE
+            ) : undefined
+          }
+        />
 
-        <Text variant="caption" tone="ink-3">
-          Banks lock statement PDFs with a password made from your name and birth date. We use these only to open your
-          statements. You can change them later in Settings.
-        </Text>
+        <Banner tone="neutral">
+          Banks lock statement PDFs with a password made from your name and
+          birth date. We use these only to open your statements. You can change
+          them later in Settings.
+        </Banner>
 
         <div className="flex flex-col gap-space-4">
           <label className="flex items-start gap-space-8 cursor-pointer">
@@ -237,7 +308,8 @@ export function HelloScreen({
               disabled={saving}
             />
             <Text variant="body">
-              I agree to the Terms and Privacy policy. FinanceOS only reads; it never moves money or sends email.
+              I agree to the Terms and Privacy policy. FinanceOS only reads; it
+              never moves money or sends email.
             </Text>
           </label>
           {consentError ? (
@@ -248,11 +320,16 @@ export function HelloScreen({
         </div>
 
         {error ? <Banner tone="danger">{error}</Banner> : null}
-
-        <Button type="submit" variant="primary" size="xl" fullWidth loading={saving} loadingLabel="Saving…">
-          {view.label}
-        </Button>
       </form>
     </>,
+    <PageFooter
+      sticky
+      primary={{
+        label: saving ? 'Saving…' : view.label,
+        type: 'submit',
+        form: 'hello-form',
+        loading: saving,
+      }}
+    />
   );
 }
