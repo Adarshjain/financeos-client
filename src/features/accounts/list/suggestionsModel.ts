@@ -16,7 +16,7 @@ export type ScanState = Omit<Schemas['AccountSuggestionScan'], 'status'> & { sta
 
 export type SuggestionItem = Omit<
   GeneratedItem,
-  'kind' | 'kindConf' | 'band' | 'variant' | 'variantConf' | 'parentAccount' | 'candidateAccount' | 'parentSuggestionId' | 'lifecycle' | 'lifecycleConf' | 'limitBucket' | 'limitConf' | 'firstSeenOn' | 'lastSeenOn' | 'evidenceMails' | 'variantCandidates' | 'children'
+  'kind' | 'kindConf' | 'band' | 'variant' | 'variantConf' | 'parentAccount' | 'candidateAccount' | 'parentSuggestionId' | 'lifecycle' | 'lifecycleConf' | 'limitBucket' | 'limitConf' | 'limitAmount' | 'passwordFromProfile' | 'notInYourName' | 'firstSeenOn' | 'lastSeenOn' | 'evidenceMails' | 'variantCandidates' | 'children'
 > & {
   kind: SuggestionKind;
   kindConf: SuggestionConfidence;
@@ -27,6 +27,12 @@ export type SuggestionItem = Omit<
   lifecycle?: string | null;
   lifecycleConf?: SuggestionConfidence | null;
   limitBucket?: string | null;
+  /** The limit the statements state, when they state one exactly. */
+  limitAmount?: number | null;
+  /** The server can build the statement password from the profile (name and birth date) for this bank. */
+  passwordFromProfile?: boolean;
+  /** Its statements are not in the user's name; the server already put it under Maybe yours. */
+  notInYourName?: boolean;
   limitConf?: SuggestionConfidence | null;
   firstSeenOn?: string | null;
   lastSeenOn?: string | null;

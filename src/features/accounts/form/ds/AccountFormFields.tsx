@@ -46,9 +46,13 @@ export interface AccountFormFieldsProps {
   /** Add from a suggestion: the fields that were filled in get the "From your email" caption. */
   prefilled?: PrefilledFields;
   /** Add from a suggestion: the values it filled in; a caption shows only while its field still holds one. */
-  prefilledValues?: Pick<AccountFormValues, 'name' | 'bank' | 'last4'>;
+  prefilledValues?: Pick<AccountFormValues, 'name' | 'bank' | 'last4' | 'creditLimit'>;
   /** Add from a suggestion: the card names the emails mention, each one tappable to use as the name. */
   nameHints?: NameHint[];
+  /** Add from a suggestion: what the statements show of the credit limit when they give a range. */
+  limitHint?: string | null;
+  /** Add from a suggestion: shown under the statement password while it is empty. */
+  passwordCaption?: string | null;
 }
 
 /** "Your emails mention A and B. Tap one to use it." with each name a link. */
@@ -144,6 +148,8 @@ export function AccountFormFields({
   prefilled,
   prefilledValues,
   nameHints = [],
+  limitHint,
+  passwordCaption,
 }: AccountFormFieldsProps) {
   const type = values.type;
   if (!type) return null;
@@ -175,6 +181,7 @@ export function AccountFormFields({
       type="password"
       autoComplete="new-password"
       placeholder="If the PDF is protected"
+      helper={passwordCaption && !values.statementPassword ? passwordCaption : undefined}
       value={values.statementPassword}
       onValueChange={(v) => onChange({ statementPassword: v })}
     />
@@ -346,6 +353,11 @@ export function AccountFormFields({
             <AmountField
               label="Credit limit"
               placeholder="50,000"
+              helper={
+                prefilled?.creditLimit && values.creditLimit === prefilledValues?.creditLimit
+                  ? FROM_EMAIL_CAPTION
+                  : (limitHint ?? undefined)
+              }
               value={values.creditLimit}
               error={errors.creditLimit}
               onValueChange={(v) => onChange({ creditLimit: v })}

@@ -158,6 +158,28 @@ describe('Add account from a suggestion', () => {
     expect(screen.getAllByText('From your email')).toHaveLength(3);
   });
 
+  it('fills the exact limit with the caption only while it is unchanged', () => {
+    renderDialog({ fromSuggestion: suggestion({ limitAmount: 350000 }) });
+    expect(field('Credit limit')).toHaveValue('350000');
+    expect(screen.getAllByText('From your email')).toHaveLength(4);
+    fill('Credit limit', '400000');
+    expect(screen.getAllByText('From your email')).toHaveLength(3);
+  });
+
+  it('shows the bucket as a hint under an empty limit', () => {
+    renderDialog({ fromSuggestion: suggestion({ limitBucket: '3-5L' }) });
+    expect(field('Credit limit')).toHaveValue('');
+    expect(screen.getByText('Your statements show a limit of ₹3L–₹5L.')).toBeInTheDocument();
+  });
+
+  it('captions an empty statement password filled by the profile, until one is typed', () => {
+    renderDialog({ fromSuggestion: suggestion({ passwordFromProfile: true }) });
+    const caption = 'From your name and birth date (HDFC Bank rule). Type one to use a different password.';
+    expect(screen.getByText(caption)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/Statement PDF password/), { target: { value: 'abc' } });
+    expect(screen.queryByText(caption)).not.toBeInTheDocument();
+  });
+
   it('sends fromSuggestionId with the create', async () => {
     mutations.createAccountMutation.mutateAsync.mockResolvedValue({ account: { ...card, id: 'new1' }, failedIdentifiers: [] });
     renderDialog({ fromSuggestion: suggestion() });
