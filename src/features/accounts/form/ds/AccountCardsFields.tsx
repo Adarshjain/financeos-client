@@ -183,7 +183,7 @@ export function DebitCardFields({ values, errors, onChange }: CardsProps) {
   return (
     <>
       <TextField
-        label="Last 4 digits"
+        label="Debit card last 4 digits"
         optional
         inputMode="numeric"
         maxLength={4}
