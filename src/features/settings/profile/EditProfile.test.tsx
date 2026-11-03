@@ -41,6 +41,15 @@ describe('EditProfile', () => {
     await waitFor(() => expect(screen.queryByText('Edit profile')).toBeNull());
   });
 
+  it('omits birthDate when a year-less stored date is left empty', async () => {
+    render(<EditProfile user={{ ...user, birthDate: '--04-05' }} today="2026-11-03" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    expect(screen.getByLabelText('Date of birth')).toHaveValue('');
+    fireEvent.change(screen.getByLabelText('Your name, as your bank prints it'), { target: { value: 'Asha R' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ displayName: 'Asha R' }));
+  });
+
   it('needs a name and shows a failed save', async () => {
     render(<EditProfile user={user} today="2026-11-03" />);
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));

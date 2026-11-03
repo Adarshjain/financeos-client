@@ -5,6 +5,7 @@
 import type { components } from '../../../src/lib/api/schema.d.ts';
 import type { ApiClient, JobResponse } from '../api';
 import { expectStatus, makeApi, waitForJob } from '../api';
+import { markHelloDone } from '../auth';
 import { E2E_API_URL, E2E_CLIENT_URL, E2E_WIREMOCK_URL } from '../config';
 import type { ScriptResponseEntry } from '../control';
 import { scriptLlm } from '../control';
@@ -115,14 +116,21 @@ export async function ssoCallback(
   return { status: res.status, error: body as { code?: string; message?: string } };
 }
 
-/** Signs in through the stubbed Google identity and returns an authenticated client. */
+/**
+ * Signs in through the stubbed Google identity and returns an authenticated client. Hello is marked done
+ * (like createUser) so the app gate lets the user in; pass `helloDone: false` to test the Hello landing.
+ */
 export async function ssoLogin(
   identity: GoogleIdentity,
-  codeIndex = 0
+  codeIndex = 0,
+  options?: { helloDone?: boolean }
 ): Promise<{ user: UserResponse; cookie: string; api: ApiClient }> {
   const res = await ssoCallback({ code: identity.codes[codeIndex] });
   if (res.status !== 200 || !res.cookie || !res.user) {
     throw new Error(`SSO callback failed (${res.status}): ${JSON.stringify(res.error)}`);
+  }
+  if (options?.helloDone !== false) {
+    await markHelloDone(res.cookie);
   }
   return { user: res.user, cookie: res.cookie, api: makeApi(res.cookie) };
 }

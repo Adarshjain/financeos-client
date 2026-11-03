@@ -11,6 +11,7 @@ import {
   BIRTH_CAPTION_GOOGLE,
   BIRTH_LABEL,
   birthDateFieldValue,
+  isPartialBirthDate,
   MAX_NAME_LENGTH,
   NAME_CAPTION_GOOGLE,
   NAME_LABEL,
@@ -42,7 +43,11 @@ export function EditProfile({ user, today }: { user: UserResponse; today: string
     }
     setSaving(true);
     setError(null);
-    const result = await updateProfile({ displayName: name.trim(), birthDate: birth });
+    // A year-less stored date shows as an empty field; leaving it empty must not clear it.
+    const keepsPartial = birth === '' && isPartialBirthDate(user.birthDate);
+    const result = await updateProfile(
+      keepsPartial ? { displayName: name.trim() } : { displayName: name.trim(), birthDate: birth },
+    );
     setSaving(false);
     if (!result.success) {
       setError(result.error.message);
