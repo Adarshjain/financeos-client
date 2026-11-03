@@ -9,7 +9,7 @@ export interface HelloInput {
   birthDate?: string;
 }
 
-// No revalidatePath: the screen stays on /hello for the Connect Gmail step.
+// No revalidatePath: the screen stays on /welcome for the Connect Gmail step.
 export const submitHello = createDomainAction(
   { fallbackError: "Couldn't save that. Try again." },
   async (input: HelloInput) => {

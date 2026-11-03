@@ -24,7 +24,7 @@ export function parseSessionCookie(headers: { name: string; value: string }[]): 
   return undefined;
 }
 
-/** The app sends every user without a finished Hello to /hello; this finishes it, like pressing Let's go. */
+/** The app sends every user without a finished Hello to /welcome; this finishes it, like pressing Let's go. */
 export async function markHelloDone(cookie: string): Promise<void> {
   const res = await fetch(`${E2E_API_URL}/api/v1/me/hello`, {
     method: 'POST',

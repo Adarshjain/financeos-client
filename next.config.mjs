@@ -33,7 +33,11 @@ const nextConfig = {
   // Storybook (built into public/storybook on Vercel) uses relative asset
   // paths, so its entry must be the real index.html URL, not a rewrite.
   async redirects() {
-    return [{ source: '/storybook', destination: '/storybook/index.html', permanent: false }];
+    return [
+      { source: '/storybook', destination: '/storybook/index.html', permanent: false },
+      // The one-time onboarding screen used to live at /hello.
+      { source: '/hello', destination: '/welcome', permanent: true },
+    ];
   },
   // public/ files are not content-hashed (Next serves them max-age=0), so give them a day plus a week of
   // stale-while-revalidate. Hashed /_next/static files are already immutable.

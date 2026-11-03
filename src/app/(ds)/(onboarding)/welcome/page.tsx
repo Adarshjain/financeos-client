@@ -8,7 +8,7 @@ import { gmailApi } from '@/lib/apiClient';
 import { requireAuth } from '@/lib/auth';
 import { todayInAppZone } from '@/lib/date-range';
 
-export const metadata: Metadata = { title: 'Hello' };
+export const metadata: Metadata = { title: 'Welcome' };
 
 /** The one-time Hello. It lives outside the app layout (no rail, no tab bar), so its gate never loops. */
 export default async function HelloPage() {
