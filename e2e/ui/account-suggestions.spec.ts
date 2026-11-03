@@ -190,7 +190,7 @@ test.describe('Account suggestions (@ui)', () => {
 
   test('Part of another account files a card as an older number on a card the user has', async ({ page }) => {
     const api = makeApi(currentUser.cookie);
-    const mine = await createCreditCard(api, { name: 'My HDFC card', last4: '1111', issuer: 'HDFC' });
+    const mine = await createCreditCard(api, { name: 'My HDFC card', last4: '1111', issuer: 'HDFC', bank: 'hdfc' });
     await seedAccountDetect(api, { entities: [card()] });
 
     await page.goto('/accounts');

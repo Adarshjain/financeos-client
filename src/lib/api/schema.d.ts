@@ -4392,11 +4392,14 @@ export interface components {
             lastSeenOn: string;
             lifecycle: string;
             lifecycleConf: string;
+            limitAmount: number;
             limitBucket: string;
             limitConf: string;
+            notInYourName: boolean;
             parentAccount: components["schemas"]["AccountSuggestionParentAccount"];
             /** Format: uuid */
             parentSuggestionId: string;
+            passwordFromProfile: boolean;
             variant: string;
             variantCandidates: string[];
             variantConf: string;

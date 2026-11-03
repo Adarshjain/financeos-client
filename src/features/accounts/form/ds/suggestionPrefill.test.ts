@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { SuggestionChild, SuggestionItem } from '@/features/accounts/list/suggestionsModel';
 import { AccountType } from '@/lib/types';
 
-import { buildSuggestionPrefill, joinCandidates } from './suggestionPrefill';
+import { buildSuggestionPrefill, joinCandidates, limitHintOf } from './suggestionPrefill';
 
 const item = (over: Partial<SuggestionItem> = {}): SuggestionItem => ({
   id: 's1',
@@ -34,7 +34,7 @@ describe('buildSuggestionPrefill', () => {
     const { values, filled } = buildSuggestionPrefill(item());
     expect(values).toMatchObject({ type: AccountType.CREDIT_CARD, bank: 'hdfc', name: 'HDFC Bank Regalia', last4: '4321' });
     expect(values.financialPosition).toBe('liability');
-    expect(filled).toEqual({ name: true, bank: true, last4: true, debitCardLast4: false, addonCards: [] });
+    expect(filled).toEqual({ name: true, bank: true, last4: true, debitCardLast4: false, addonCards: [], creditLimit: false });
   });
 
   it('never fills the limit, password, anniversary or earlier numbers', () => {
@@ -109,6 +109,42 @@ describe('name hints', () => {
     expect(buildSuggestionPrefill(item({ variantCandidates: ['Regalia'] })).nameHints).toEqual([]);
     expect(buildSuggestionPrefill(item({ variantCandidates: null })).nameHints).toEqual([]);
     expect(buildSuggestionPrefill(item({ kind: 'BANK_ACCOUNT', variantCandidates: ['A', 'B'] })).nameHints).toEqual([]);
+  });
+});
+
+describe('limit and password from the suggestion', () => {
+  it('fills the exact limit of a credit card', () => {
+    const { values, filled, limitHint } = buildSuggestionPrefill(item({ limitAmount: 350000, limitBucket: '3-5L' }));
+    expect(values.creditLimit).toBe('350000');
+    expect(filled.creditLimit).toBe(true);
+    expect(limitHint).toBeNull();
+  });
+
+  it('turns a bucket into a hint and leaves the limit empty', () => {
+    const r = buildSuggestionPrefill(item({ limitBucket: '3-5L' }));
+    expect(r.values.creditLimit).toBe('');
+    expect(r.filled.creditLimit).toBe(false);
+    expect(r.limitHint).toBe('Your statements show a limit of ₹3L–₹5L.');
+  });
+
+  it('words open-ended buckets and ignores unknown ones', () => {
+    expect(limitHintOf('<1L')).toBe('Your statements show a limit under ₹1L.');
+    expect(limitHintOf('>10L')).toBe('Your statements show a limit over ₹10L.');
+    expect(limitHintOf('weird')).toBeNull();
+    expect(limitHintOf(null)).toBeNull();
+  });
+
+  it('gives a bank account no limit or hint', () => {
+    const r = buildSuggestionPrefill(item({ kind: 'BANK_ACCOUNT', limitAmount: 100000, limitBucket: '1-3L' }));
+    expect(r.values.creditLimit).toBe('');
+    expect(r.limitHint).toBeNull();
+  });
+
+  it('captions the password from the profile and keeps the field empty', () => {
+    const r = buildSuggestionPrefill(item({ passwordFromProfile: true }));
+    expect(r.values.statementPassword).toBe('');
+    expect(r.passwordCaption).toBe('From your name and birth date (HDFC Bank rule). Type one to use a different password.');
+    expect(buildSuggestionPrefill(item()).passwordCaption).toBeNull();
   });
 });
 

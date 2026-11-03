@@ -340,6 +340,8 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
                 prefilled={prefill && type === prefill.values.type ? prefill.filled : undefined}
                 prefilledValues={prefill && type === prefill.values.type ? prefill.values : undefined}
                 nameHints={prefill && type === prefill.values.type ? prefill.nameHints : undefined}
+                limitHint={prefill && type === prefill.values.type ? prefill.limitHint : undefined}
+                passwordCaption={prefill && type === prefill.values.type ? prefill.passwordCaption : undefined}
                 onChange={change}
                 onLimitPoolChoice={(choice) => setValues((v) => withLimitPoolChoice(v, choice, pools))}
                 onCreateIdentifier={createIdentifier}
