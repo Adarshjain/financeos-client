@@ -370,7 +370,7 @@ export function BankSection(props: SectionProps<BankRow> & { suggestions?: Secti
   const [editing, setEditing] = useState<BankRow | null>(null);
   const { Component: AccountFormDialog, run } = useLazyDialog(loadAccountForm);
   const bands = props.suggestions?.bands ?? NO_BANDS;
-  const actions = useSuggestionActions(props.suggestions?.parents ?? []);
+  const actions = useSuggestionActions(props.suggestions?.parents ?? [], props.suggestions?.accounts ?? []);
   const columns = useMemo(() => makeBankColumns((row) => void run(() => setEditing(row))), [run]);
   return (
     <Card
@@ -547,7 +547,7 @@ export function CardsSection(
   const router = useRouter();
   const toggles = useSectionBands();
   const bands = props.suggestions?.bands ?? NO_BANDS;
-  const actions = useSuggestionActions(props.suggestions?.parents ?? []);
+  const actions = useSuggestionActions(props.suggestions?.parents ?? [], props.suggestions?.accounts ?? []);
   return (
     <Card
       title="Credit cards"
