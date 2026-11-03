@@ -24,10 +24,20 @@ export function parseSessionCookie(headers: { name: string; value: string }[]): 
   return undefined;
 }
 
+/** The app sends every user without a finished Hello to /hello; this finishes it, like pressing Let's go. */
+export async function markHelloDone(cookie: string): Promise<void> {
+  const res = await fetch(`${E2E_API_URL}/api/v1/me/hello`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: `FINANCEOS_SESSION=${cookie}` },
+    body: JSON.stringify({ termsAccepted: true }),
+  });
+  expect(res.status, `Hello failed: ${await res.text()}`).toBe(200);
+}
+
 export async function createUser(
   _request: APIRequestContext,
   label: string,
-  options?: { password?: string; inviteCode?: string }
+  options?: { password?: string; inviteCode?: string; helloDone?: boolean }
 ): Promise<CreatedUser> {
   userCounter += 1;
   const rand = Math.random().toString(36).slice(2, 7);
@@ -63,6 +73,10 @@ export async function createUser(
   const cookie = match ? match[1] : undefined;
   if (!cookie) {
     throw new Error('FINANCEOS_SESSION cookie not found in login response headers');
+  }
+
+  if (options?.helloDone !== false) {
+    await markHelloDone(cookie);
   }
 
   return { email, password, cookie };
@@ -108,6 +122,8 @@ export async function createAdminUser(
   if (!cookie) {
     throw new Error('FINANCEOS_SESSION cookie not found in admin login response headers');
   }
+
+  await markHelloDone(cookie);
 
   return { email, password, cookie };
 }

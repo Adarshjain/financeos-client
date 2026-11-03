@@ -11,7 +11,7 @@ test.describe('/ds Auth UI (@ui)', () => {
     return `ui-ds-${runId}-${label}-${uiUserCounter}@example.test`;
   }
 
-  test('signup flow: fill form, submit -> dashboard; wrong invite shows error', async ({ page }) => {
+  test('signup flow: fill form, submit -> hello; wrong invite shows error', async ({ page }) => {
     // 1. Wrong invite shows user-readable error message
     await page.goto(`${E2E_CLIENT_URL}/signup`);
     await expect(page).toHaveTitle('Create account · FinanceOS');
@@ -29,15 +29,15 @@ test.describe('/ds Auth UI (@ui)', () => {
     expect(errorText).not.toBe('500');
     expect(errorText).toMatch(/invalid|invite|closed|error/i);
 
-    // 2. Successful signup lands on the Dinero dashboard
+    // 2. Successful signup lands on Hello (the app gate sends a new user there)
     const goodEmail = nextEmail('good-signup');
     await page.getByLabel('Email').fill(goodEmail);
     await page.getByLabel('Password', { exact: true }).fill(DEFAULT_PASSWORD);
     await page.getByLabel('Invite code', { exact: true }).fill(INVITE_CODE);
     await page.getByRole('button', { name: 'Create account' }).click();
 
-    await page.waitForURL('**/dashboard', { timeout: 15000 });
-    expect(page.url()).toContain('/dashboard');
+    await page.waitForURL('**/hello', { timeout: 15000 });
+    expect(page.url()).toContain('/hello');
   });
 
   test('signup password under 8 characters shows danger banner before submit', async ({ page }) => {

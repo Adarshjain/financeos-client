@@ -60,3 +60,4 @@ src/features/dashboards/list/
 src/app/(ds)/(app)/dashboard/
 src/features/chat/
 src/app/(ds)/(app)/chat/
+src/features/onboarding/

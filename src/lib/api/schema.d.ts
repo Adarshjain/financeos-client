@@ -3002,6 +3002,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/google-birthday/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["googleBirthdayCallback"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/google-birthday/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["startGoogleBirthday"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/hello": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["hello"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateProfile"];
+        trace?: never;
+    };
     "/api/v1/notifications/accounts/{accountId}/mute": {
         parameters: {
             query?: never;
@@ -6058,6 +6122,9 @@ export interface components {
         GoogleAuthStartResponse: {
             authorizationUrl: string;
         };
+        GoogleBirthdayStartResponse: {
+            url: string;
+        };
         Group: {
             /** @enum {string} */
             assetType: "stock" | "mutual_fund" | "etf";
@@ -6155,6 +6222,11 @@ export interface components {
             unrealisedPct?: number | null;
             /** Format: double */
             xirr?: number | null;
+        };
+        HelloRequest: {
+            birthDate?: string | null;
+            displayName?: string | null;
+            termsAccepted?: boolean;
         };
         HoldingDetailResponse: {
             /** @enum {string} */
@@ -6531,7 +6603,7 @@ export interface components {
             /** @enum {string} */
             triggerSource: "USER" | "CRON";
             /** @enum {string} */
-            type: "STATEMENT_INGEST" | "GMAIL_SYNC" | "PRICE_REFRESH" | "INVESTMENT_IMPORT_COMMIT" | "BROKER_RECONCILE_COMMIT" | "RULE_APPLY" | "CATEGORY_BACKFILL";
+            type: "STATEMENT_INGEST" | "GMAIL_SYNC" | "PRICE_REFRESH" | "INVESTMENT_IMPORT_COMMIT" | "BROKER_RECONCILE_COMMIT" | "RULE_APPLY" | "CATEGORY_BACKFILL" | "ACCOUNT_DETECT";
         };
         Keys: {
             auth: string;
@@ -9127,6 +9199,10 @@ export interface components {
             asOf?: string;
             price: number;
         };
+        UpdateProfileRequest: {
+            birthDate?: string | null;
+            displayName?: string | null;
+        };
         UpdateReportRequest: {
             definition: unknown;
             description?: string;
@@ -9171,11 +9247,15 @@ export interface components {
         };
         UserResponse: {
             admin: boolean;
+            birthDate?: string | null;
+            birthDateSource?: string | null;
             /** Format: date-time */
             createdAt: string;
             displayName?: string | null;
             email: string;
+            googleBirthdayAvailable: boolean;
             hasPassword: boolean;
+            helloDone: boolean;
             /** Format: uuid */
             id: string;
             pictureUrl?: string | null;
@@ -12955,7 +13035,9 @@ export interface operations {
     };
     startOAuth: {
         parameters: {
-            query?: never;
+            query?: {
+                returnTo?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -16671,6 +16753,132 @@ export interface operations {
                     "*/*": {
                         [key: string]: components["schemas"]["InstallmentDto"][];
                     };
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    googleBirthdayCallback: {
+        parameters: {
+            query?: {
+                code?: string;
+                state?: string;
+                error?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    startGoogleBirthday: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GoogleBirthdayStartResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    hello: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HelloRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserResponse"];
                 };
             };
             /** @description Error response */

@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/me/google-birthday/start",
+    "reason": "Needs a real Google consent for the user.birthday.read scope and is off by default (financeos.google-birthday.enabled); unit-tested on the server, with the Hello button hidden while the property is off.",
+    "phase": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/me/google-birthday/callback",
+    "reason": "Needs a real Google consent for the user.birthday.read scope and is off by default (financeos.google-birthday.enabled); unit-tested on the server, with the Hello button hidden while the property is off.",
+    "phase": null
+  }
+]

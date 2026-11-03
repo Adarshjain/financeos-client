@@ -40,6 +40,11 @@ export interface UserResponse {
   hasPassword?: boolean;
   createdAt: string;
   admin?: boolean;
+  /** "yyyy-MM-dd", or "--MM-dd" when the year is unknown. */
+  birthDate?: string | null;
+  birthDateSource?: 'TYPED' | 'GOOGLE' | null;
+  helloDone?: boolean;
+  googleBirthdayAvailable?: boolean;
 }
 
 export interface DeleteAccountRequest {

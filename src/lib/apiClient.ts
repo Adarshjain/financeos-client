@@ -396,6 +396,18 @@ export const authApi = {
     return data! as UserResponse;
   },
   getCurrentUser: async (): Promise<UserResponse> => authApi.me(),
+  hello: async (body: { displayName?: string; birthDate?: string; termsAccepted: boolean }): Promise<UserResponse> => {
+    const { data } = await serverApi.POST('/api/v1/me/hello', { body });
+    return data! as UserResponse;
+  },
+  updateProfile: async (body: { displayName?: string; birthDate?: string }): Promise<UserResponse> => {
+    const { data } = await serverApi.PATCH('/api/v1/me/profile', { body });
+    return data! as UserResponse;
+  },
+  startGoogleBirthday: async (): Promise<{ url: string }> => {
+    const { data } = await serverApi.GET('/api/v1/me/google-birthday/start');
+    return data! as { url: string };
+  },
   logout: async (): Promise<void> => {
     await serverApi.POST('/api/v1/auth/logout');
   },
