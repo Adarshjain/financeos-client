@@ -8,12 +8,10 @@ const replace = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace, push: vi.fn() }) }));
 
 const submitHello = vi.fn();
-const startGoogleBirthday = vi.fn();
 const startGmailOAuthToHome = vi.fn();
 vi.mock('./helloActions', () => ({
   startGmailOAuthToHome: (...a: unknown[]) => startGmailOAuthToHome(...a),
   submitHello: (...a: unknown[]) => submitHello(...a),
-  startGoogleBirthday: (...a: unknown[]) => startGoogleBirthday(...a),
 }));
 
 const props: HelloScreenProps = {
@@ -21,7 +19,6 @@ const props: HelloScreenProps = {
   nameFromGoogle: true,
   birthDate: null,
   birthDateFromGoogle: false,
-  googleBirthdayAvailable: false,
   hasGmail: false,
   today: '2026-11-03',
 };
@@ -31,7 +28,6 @@ const BIRTH_WARNING = /Without it we can't open statements your bank locks with 
 beforeEach(() => {
   replace.mockReset();
   submitHello.mockReset().mockResolvedValue({ success: true, data: undefined });
-  startGoogleBirthday.mockReset();
   startGmailOAuthToHome.mockReset();
 });
 
@@ -105,13 +101,5 @@ describe('HelloScreen', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Connect Gmail' }));
     expect(await screen.findByText('Nope')).toBeInTheDocument();
     expect(startGmailOAuthToHome).toHaveBeenCalled();
-  });
-
-  it('shows Fill from Google only when the server offers it', () => {
-    const { unmount } = render(<HelloScreen {...props} />);
-    expect(screen.queryByRole('button', { name: 'Fill from Google' })).toBeNull();
-    unmount();
-    render(<HelloScreen {...props} googleBirthdayAvailable />);
-    expect(screen.getByRole('button', { name: 'Fill from Google' })).toBeInTheDocument();
   });
 });

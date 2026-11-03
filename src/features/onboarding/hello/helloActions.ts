@@ -17,11 +17,6 @@ export const submitHello = createDomainAction(
   },
 );
 
-export const startGoogleBirthday = createDomainAction(
-  { fallbackError: "Couldn't reach Google. Try again." },
-  async () => (await authApi.startGoogleBirthday()).url,
-);
-
 /** Connect Gmail from Hello: the server sends the browser back to Home instead of Settings. */
 export const startGmailOAuthToHome = createDomainAction(
   { fallbackError: "Couldn't connect Gmail. Try again." },
