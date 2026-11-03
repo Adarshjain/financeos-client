@@ -31,6 +31,7 @@ export function DialogFrame({
   onClose,
   loading,
   error,
+  submitDisabled,
   children,
 }: {
   title: React.ReactNode;
@@ -40,6 +41,7 @@ export function DialogFrame({
   onClose: () => void;
   loading: boolean;
   error: string | null;
+  submitDisabled?: boolean;
   children: React.ReactNode;
 }) {
   const formId = React.useId();
@@ -55,6 +57,7 @@ export function DialogFrame({
           type: 'submit',
           form: formId,
           loading,
+          disabled: submitDisabled,
         }}
       >
         <Dialog.Body>

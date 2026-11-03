@@ -478,6 +478,12 @@ export const accountSuggestionsApi = {
   isThis: async (id: string, accountId: string, yes: boolean): Promise<void> => {
     await serverApi.POST('/api/v1/account-suggestions/{id}/is-this', { params: { path: { id } }, body: { accountId, yes } });
   },
+  belongs: async (id: string, body: Schemas['BelongsRequest']): Promise<void> => {
+    await serverApi.POST('/api/v1/account-suggestions/{id}/belongs', { params: { path: { id } }, body });
+  },
+  notPart: async (id: string): Promise<void> => {
+    await serverApi.POST('/api/v1/account-suggestions/{id}/not-part', { params: { path: { id } } });
+  },
 };
 
 export const accountsApi = {

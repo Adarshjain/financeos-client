@@ -28,7 +28,7 @@ import { roleLabel } from './cardsModel';
 import { DialogFrame, useDialogSubmit } from './DialogFrame';
 import type { ActionResult } from './useCardholderMutations';
 
-const RELATIONSHIP_OPTIONS = Object.entries(RELATIONSHIP_LABELS)
+export const RELATIONSHIP_OPTIONS = Object.entries(RELATIONSHIP_LABELS)
   .filter(([value]) => value !== 'SELF')
   .map(([value, label]) => ({ value, label }));
 

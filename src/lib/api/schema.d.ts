@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/account-suggestions/{id}/belongs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["belongs"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/account-suggestions/{id}/is-this": {
         parameters: {
             query?: never;
@@ -46,6 +62,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["notMine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account-suggestions/{id}/not-part": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["notPart"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4555,6 +4587,15 @@ export interface components {
             failures: components["schemas"]["BatchFailure"][];
             skippedIds: string[];
             succeededIds: string[];
+        };
+        BelongsRequest: {
+            /** Format: uuid */
+            accountId: string;
+            /** @enum {string} */
+            as: "OLDER_NUMBER" | "ADDON" | "OPEN_CARD" | "DEBIT_CARD" | "ALIAS";
+            holderName?: string;
+            /** @enum {string} */
+            relationship?: "SELF" | "SPOUSE" | "PARENT" | "CHILD" | "SIBLING" | "OTHER";
         };
         BillDigestResponse: {
             creditLimit?: number | null;
@@ -9470,6 +9511,39 @@ export interface operations {
             };
         };
     };
+    belongs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BelongsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     isThis: {
         parameters: {
             query?: never;
@@ -9504,6 +9578,35 @@ export interface operations {
         };
     };
     notMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    notPart: {
         parameters: {
             query?: never;
             header?: never;

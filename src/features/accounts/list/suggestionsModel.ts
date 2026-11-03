@@ -1,6 +1,7 @@
 import type { Account } from '@/lib/account.types';
 import type { Schemas } from '@/lib/api/types';
 import { formatCount } from '@/lib/format';
+import { AccountType } from '@/lib/types';
 
 // The generated types say every field is a plain, always-present string; these narrow the ones the page switches on
 // and mark the ones the server leaves null.
@@ -72,6 +73,8 @@ export interface SuggestionRow {
   parentAccountId: string | null;
   /** Set while the server asks "is this your {account}?". */
   isThis: { accountId: string; accountName: string } | null;
+  /** Set on an older card number that sits on an account we have: "Older number on {account}?". */
+  olderOn?: { accountId: string; accountName: string } | null;
   /** The whole suggestion, for the prefilled Add dialogs. */
   item?: SuggestionItem;
 }
@@ -90,6 +93,8 @@ export interface SectionSuggestions {
   bands: SuggestionBands;
   /** The existing accounts the rows hang off, for the Edit dialog behind "Add". */
   parents: Account[];
+  /** Every account of the section's type: where "Part of another account" can put a suggestion. */
+  accounts?: Account[];
 }
 
 export const EMPTY_BANDS: SuggestionBands = { found: [], older: [], maybe: [] };
@@ -125,8 +130,14 @@ export function suggestionTitle(item: SuggestionItem): string {
   }
 }
 
+/** An older credit card number whose account is known: the server's guess that it is a past number of that card. */
+export function isOlderNumberGuess(item: Pick<SuggestionItem, 'kind' | 'band' | 'parentAccount' | 'candidateAccount'>): boolean {
+  return item.kind === 'CREDIT_CARD' && item.band === 'OLDER' && !!item.parentAccount && !item.candidateAccount;
+}
+
 export function suggestionSecondLine(item: SuggestionItem): string {
   if (item.candidateAccount) return `Is this your ${item.candidateAccount.name}?`;
+  if (isOlderNumberGuess(item)) return `Older number on ${item.parentAccount!.name}?`;
   const parent = item.parentAccount;
   const on = parent ? `On ${parent.name}${parent.last4 ? ` ••${parent.last4}` : ''}` : '';
   return [on, item.caption].filter((part) => part && part.trim()).join(' · ');
@@ -145,8 +156,15 @@ export function suggestionRow(item: SuggestionItem): SuggestionRow {
     sub: suggestionSecondLine(item),
     parentAccountId: item.parentAccount?.id ?? null,
     isThis: item.candidateAccount ? { accountId: item.candidateAccount.id, accountName: item.candidateAccount.name } : null,
+    olderOn: isOlderNumberGuess(item) ? { accountId: item.parentAccount!.id, accountName: item.parentAccount!.name } : null,
     item,
   };
+}
+
+/** The accounts a suggestion can be filed under: same bank, and a credit card for a card, a bank account for a bank-side one. */
+export function fittingAccounts(row: Pick<SuggestionRow, 'kind' | 'bankId'>, accounts: readonly Account[]): Account[] {
+  const type = sectionOfKind(row.kind) === 'bank' ? AccountType.BANK_ACCOUNT : AccountType.CREDIT_CARD;
+  return accounts.filter((a) => a.type === type && !!a.bank && a.bank === row.bankId);
 }
 
 function toBands(rows: SuggestionRow[]): SuggestionBands {
@@ -171,6 +189,7 @@ export function splitSuggestions(
   const of = (section: SuggestionSection) => ({
     bands: toBands(rows.filter((r) => sectionOfKind(r.kind) === section)),
     parents,
+    accounts: accounts.filter((a) => a.type === (section === 'bank' ? AccountType.BANK_ACCOUNT : AccountType.CREDIT_CARD)),
   });
   return { bank: of('bank'), card: of('card') };
 }

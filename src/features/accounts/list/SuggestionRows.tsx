@@ -10,9 +10,10 @@ import { loadAccountForm, useAccountDialogs } from '@/features/accounts/form/ds/
 import type { Account } from '@/lib/account.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
-import { answerIsThis, hideSuggestion, undoHideSuggestion } from './suggestionActions';
+import { answerIsThis, declineOlderNumber, hideSuggestion, saveBelongs, undoHideSuggestion } from './suggestionActions';
+import { SuggestionBelongsDialog } from './SuggestionBelongsDialog';
 import { loadSuggestionCardDialog, type SuggestionCardTarget } from './SuggestionCardDialog';
-import type { SuggestionItem, SuggestionRow } from './suggestionsModel';
+import { fittingAccounts, type SuggestionItem, type SuggestionRow } from './suggestionsModel';
 
 /** What "Add" opens for a suggestion: the matching Add account type, or Edit on the account it belongs to. */
 export function addTarget(row: Pick<SuggestionRow, 'kind' | 'parentAccountId'>, parentIds: ReadonlySet<string>):
@@ -28,7 +29,7 @@ export function addTarget(row: Pick<SuggestionRow, 'kind' | 'parentAccountId'>, 
  * The actions behind a section's suggestion rows: Not mine (toast with Undo), the "Is this your …?" answers and Add.
  * Render `dialog` once in the section: it holds the card dialogs (and the Edit account fallback) that Add opens for a card on an account.
  */
-export function useSuggestionActions(parents: readonly Account[]) {
+export function useSuggestionActions(parents: readonly Account[], accounts: readonly Account[] = []) {
   const router = useRouter();
   const { open, preload } = useAccountDialogs();
   const { Component: AccountFormDialog, run } = useLazyDialog(loadAccountForm);
@@ -36,6 +37,7 @@ export function useSuggestionActions(parents: readonly Account[]) {
   const [editing, setEditing] = React.useState<Account | null>(null);
   const [cardTarget, setCardTarget] = React.useState<SuggestionCardTarget | null>(null);
   const [pendingId, setPendingId] = React.useState<string | null>(null);
+  const [belongsRow, setBelongsRow] = React.useState<SuggestionRow | null>(null);
 
   const fail = (message: string) => showToast(message, { tone: 'danger' });
 
@@ -71,6 +73,27 @@ export function useSuggestionActions(parents: readonly Account[]) {
       setPendingId(null);
     }
   };
+
+  const savedToast = (row: Pick<SuggestionRow, 'last4'>, account: Account) =>
+    showToast(`Saved ${row.last4 ? `••${row.last4} ` : ''}on ${account.name}`);
+
+  /** "Older number on {account}?": Yes files it as a closed card there, No declines the link. */
+  const answerOlder = async (row: SuggestionRow, yes: boolean) => {
+    if (!row.olderOn) return;
+    setPendingId(row.id);
+    try {
+      const result = yes
+        ? await saveBelongs(row.id, { accountId: row.olderOn.accountId, as: 'OLDER_NUMBER' })
+        : await declineOlderNumber(row.id);
+      if (!result.success) return fail(result.error.message);
+      router.refresh();
+      if (yes) showToast(`Saved ${row.last4 ? `••${row.last4} ` : ''}on ${row.olderOn.accountName}`);
+    } finally {
+      setPendingId(null);
+    }
+  };
+
+  const canBelong = (row: SuggestionRow) => fittingAccounts(row, accounts).length > 0;
 
   /** A card of an account we have opens that account's own card dialog; the Edit dialog is the way out when it can't. */
   const addCardTo = async (item: SuggestionItem, parent: Account) => {
@@ -108,10 +131,21 @@ export function useSuggestionActions(parents: readonly Account[]) {
     <>
       {editing && AccountFormDialog ? <AccountFormDialog account={editing} onClose={() => setEditing(null)} /> : null}
       {cardTarget && CardDialog ? <CardDialog target={cardTarget} onClose={() => setCardTarget(null)} /> : null}
+      {belongsRow ? (
+        <SuggestionBelongsDialog
+          row={belongsRow}
+          accounts={accounts}
+          onClose={() => setBelongsRow(null)}
+          onSaved={(account) => {
+            router.refresh();
+            savedToast(belongsRow, account);
+          }}
+        />
+      ) : null}
     </>
   );
 
-  return { pendingId, notMine, answer, add, preload, dialog };
+  return { pendingId, notMine, answer, answerOlder, canBelong, openBelongs: setBelongsRow, add, preload, dialog };
 }
 
 export type SuggestionActionsApi = ReturnType<typeof useSuggestionActions>;
@@ -126,6 +160,18 @@ export function SuggestionButtons({ row }: { row: SuggestionRow }) {
   const actions = React.useContext(SuggestionActionsContext);
   if (!actions) return null;
   const busy = actions.pendingId === row.id;
+  if (row.olderOn) {
+    return (
+      <div className="flex items-center justify-end gap-space-4">
+        <Button variant="ghost" size="sm" disabled={busy} onClick={() => void actions.answerOlder(row, false)}>
+          No
+        </Button>
+        <Button variant="secondary" size="sm" disabled={busy} onClick={() => void actions.answerOlder(row, true)}>
+          Yes
+        </Button>
+      </div>
+    );
+  }
   if (row.isThis) {
     return (
       <div className="flex items-center justify-end gap-space-4">
@@ -143,6 +189,11 @@ export function SuggestionButtons({ row }: { row: SuggestionRow }) {
       <Button variant="ghost" size="sm" disabled={busy} onClick={() => void actions.notMine(row)}>
         Not mine
       </Button>
+      {actions.canBelong(row) ? (
+        <Button variant="ghost" size="sm" disabled={busy} onClick={() => actions.openBelongs(row)}>
+          Part of another account
+        </Button>
+      ) : null}
       <Button variant="secondary" size="sm" disabled={busy} onPointerDown={actions.preload} onClick={() => actions.add(row)}>
         Add
       </Button>

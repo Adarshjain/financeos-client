@@ -7,7 +7,7 @@ import { loginContext } from '../fixtures/browser';
 import { type AccountDetectSeedEntity, clearAccountDetect, seedAccountDetect } from '../fixtures/control';
 import { istToday } from '../fixtures/dates';
 import { cleanupIdentity, type GoogleIdentity, registerIdentity } from '../fixtures/google-stubs';
-import { createBankAccount } from '../fixtures/seed/accounts';
+import { createBankAccount, createCreditCard } from '../fixtures/seed/accounts';
 import { connectGmail } from '../fixtures/seed/gmail';
 import { expect, test } from '../fixtures/test';
 import { expectToast } from '../fixtures/ui';
@@ -186,6 +186,35 @@ test.describe('Account suggestions (@ui)', () => {
     await dialog.getByRole('button', { name: 'Add account' }).click();
     await expect(dialog).toBeHidden({ timeout: 15_000 });
     await expect(foundBand(page, 1)).toHaveCount(0, { timeout: 15_000 });
+  });
+
+  test('Part of another account files a card as an older number on a card the user has', async ({ page }) => {
+    const api = makeApi(currentUser.cookie);
+    const mine = await createCreditCard(api, { name: 'My HDFC card', last4: '1111', issuer: 'HDFC' });
+    await seedAccountDetect(api, { entities: [card()] });
+
+    await page.goto('/accounts');
+    await expect(foundBand(page, 1)).toBeVisible({ timeout: 15_000 });
+    const dialog = page.getByRole('dialog', { name: /Where does ••4321 belong\?/ });
+    // A click before hydration is dropped: click again until the dialog opens.
+    await expect(async () => {
+      await page.getByRole('button', { name: 'Part of another account' }).first().click();
+      await expect(dialog).toBeVisible({ timeout: 2000 });
+    }).toPass({ timeout: 15_000 });
+    await expect(dialog.getByRole('button', { name: 'Save' })).toBeDisabled();
+
+    await dialog.getByRole('combobox', { name: /^Account/ }).click();
+    await page.getByRole('option', { name: 'My HDFC card' }).click();
+    await dialog.getByRole('combobox', { name: /^It's/ }).click();
+    await page.getByRole('option', { name: /An older number of this card/ }).click();
+    await dialog.getByRole('button', { name: 'Save' }).click();
+
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
+    await expectToast(page, /Saved ••4321 on My HDFC card/);
+    await expect(foundBand(page, 1)).toHaveCount(0, { timeout: 15_000 });
+
+    await page.goto(`/accounts/${mine.id}/cards`);
+    await expect(page.getByText('••4321').first()).toBeVisible();
   });
 
   test.describe('while the first scan runs', () => {
