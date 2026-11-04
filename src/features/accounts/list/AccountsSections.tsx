@@ -283,7 +283,7 @@ function makeBankColumns(onEdit: (row: BankRow) => void) {
     bankCh.display({
       id: 'actions',
       header: '',
-      meta: { size: 'lg', align: 'end', phone: 'hidden' },
+      meta: { size: 'sm', align: 'end', phone: 'hidden' },
       cell: ({ row }) => (
         <RowControls>
           <EditButton onEdit={() => onEdit(row.original)} />
