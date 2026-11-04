@@ -1,5 +1,5 @@
 import { billStatusLabel } from '@/features/bills/billsModel';
-import type { CardBillResponse } from '@/lib/api/types';
+import type { CardBillResponse, StatementSkipsResponse } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatDate,formatMoney } from '@/lib/format';
 import type { StatementSummary, StatementVerdict } from '@/lib/statement.types';
@@ -178,4 +178,65 @@ export function buildStatementRow(
     badge: !isCard || (detailsMissing && bill?.status === 'DUE_UNKNOWN') ? null : billBadge(bill),
     selected: s.id === selectedId,
   };
+}
+
+/** "1 Sep 26 to 30 Sep 26". */
+function periodText(start: string, end: string): string {
+  return `${formatDate(start, 'full')} to ${formatDate(end, 'full')}`;
+}
+
+/** A card cycle in the list that has no statement: still missing (needs you) or marked "No statement this period". */
+export interface GapRowModel {
+  kind: 'missing' | 'skipped';
+  /** The skip's id; the missing cycle has none. */
+  id: string | null;
+  title: string;
+  caption: string;
+  periodEnd: string;
+}
+
+export type StatementsListRow =
+  | { kind: 'statement'; row: StatementRowModel }
+  | GapRowModel;
+
+/**
+ * The list's rows: the missing cycle first (always, whichever year is shown), then the shown year's statements
+ * and skipped periods together, newest first (a statement files under its period end, a skip under its own).
+ */
+export function buildListRows(
+  inFy: readonly StatementSummary[],
+  rowOf: (s: StatementSummary) => StatementRowModel,
+  skips: StatementSkipsResponse | null | undefined,
+  fy: string
+): StatementsListRow[] {
+  const rows: StatementsListRow[] = [];
+  if (skips?.missing) {
+    const { periodStart, periodEnd } = skips.missing;
+    rows.push({
+      kind: 'missing',
+      id: null,
+      title: 'Statement missing',
+      caption: periodText(periodStart, periodEnd),
+      periodEnd,
+    });
+  }
+  const dated: { date: string; row: StatementsListRow }[] = inFy.map((s) => ({
+    date: statementDate(s),
+    row: { kind: 'statement', row: rowOf(s) },
+  }));
+  for (const skip of skips?.skipped ?? []) {
+    if (fyOf(skip.periodEnd) !== fy) continue;
+    dated.push({
+      date: skip.periodEnd,
+      row: {
+        kind: 'skipped',
+        id: skip.id,
+        title: 'No statement',
+        caption: periodText(skip.periodStart, skip.periodEnd),
+        periodEnd: skip.periodEnd,
+      },
+    });
+  }
+  dated.sort((a, b) => b.date.localeCompare(a.date));
+  return [...rows, ...dated.map((d) => d.row)];
 }

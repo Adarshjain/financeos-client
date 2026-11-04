@@ -26,8 +26,13 @@ export interface RowButton {
   bill?: BillActionType;
   /** An EPF suggestion's own buttons: attach the credit, or say it is not this one. */
   epf?: 'link' | 'dismiss';
+  /** "No statement this period": the card and the period end to mark as having no statement. */
+  skip?: { accountId: string; periodEnd: string };
   disabled?: boolean;
 }
+
+/** The server's action type for marking a card's cycle as having no statement. */
+export const NO_STATEMENT = 'no_statement';
 
 const DOING = new Set(['mark_paid', 'upload', 'reconnect']);
 
@@ -79,6 +84,18 @@ export function rowButtons(item: InboxItemResponse): RowButton[] {
   actions.forEach((action, index) => {
     const id = `${action.type}-${index}`;
     const variant = DOING.has(action.type) ? 'secondary' : 'link';
+    if (action.type === NO_STATEMENT) {
+      const accountId = action.payload?.accountId ?? item.refs.accountId;
+      const periodEnd = action.payload?.date ?? item.date;
+      buttons.push({
+        id,
+        label: action.label,
+        variant,
+        skip: accountId && periodEnd ? { accountId, periodEnd } : undefined,
+        disabled: !accountId || !periodEnd,
+      });
+      return;
+    }
     if (isBillAction(action.type)) {
       buttons.push({
         id,

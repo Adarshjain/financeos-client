@@ -20,6 +20,9 @@ vi.mock('@/lib/query/hooks/useObligations', () => ({ useObligations: vi.fn() }))
 vi.mock('@/lib/query/hooks/useRecurringProposals', () => ({ useRecurringProposals: vi.fn() }));
 const actions = { track: vi.fn(), dismiss: vi.fn(), stop: vi.fn(), converted: vi.fn() };
 vi.mock('./useRecurringActions', () => ({ useRecurringActions: () => actions }));
+vi.mock('@/features/accounts/detail/statements/useStatementSkip', () => ({
+  useStatementSkip: () => ({ skip: vi.fn(), undo: vi.fn() }),
+}));
 vi.mock('./RegularPaymentsCard', () => ({
   RegularPaymentsCard: (p: { proposals: unknown[] }) => <div data-testid="found">{p.proposals.length}</div>,
 }));

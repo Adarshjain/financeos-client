@@ -147,3 +147,11 @@ export function foldedMonthLine(label: string, items: ObligationItem[]): string 
   const total = items.some((i) => i.amount != null) ? formatMoney(sumAmounts(items)) : null;
   return [label.split(' ')[0], String(items.length), total].filter(Boolean).join(' · ');
 }
+
+/**
+ * "No statement this period" is offered on a statement-expected row once that cycle has ended: its date is the
+ * period end and `today` the business date (YYYY-MM-DD), so strings compare in date order.
+ */
+export function canSkipStatementItem(item: ObligationItem, today: string): boolean {
+  return item.type === 'statement_expected' && Boolean(item.accountId) && Boolean(item.date) && item.date! < today;
+}

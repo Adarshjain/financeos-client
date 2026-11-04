@@ -6,6 +6,7 @@ import { pinClock } from '@/test/pinClock';
 
 import {
   billBadge,
+  buildListRows,
   buildStatementRow,
   buildStatementsView,
   fyBounds,
@@ -247,5 +248,56 @@ describe('signedRupees', () => {
   it('puts the minus before the rupee sign', () => {
     expect(signedRupees(-1200)).toBe('−₹1,200.00');
     expect(signedRupees(1200)).toBe('₹1,200.00');
+  });
+});
+
+describe('buildListRows', () => {
+  const rowOf = (s: StatementSummary) => buildStatementRow(s, null, true, null);
+  const skip = (id: string, periodStart: string, periodEnd: string) => ({
+    id,
+    periodStart,
+    periodEnd,
+    createdAt: '2026-10-05T00:00:00Z',
+  });
+  const kinds = (rows: ReturnType<typeof buildListRows>) =>
+    rows.map((r) => (r.kind === 'statement' ? r.row.id : `${r.kind}:${r.periodEnd}`));
+
+  it('is just the statements with no skip data', () => {
+    const inFy = [stmt('b', '2026-10-05'), stmt('a', '2026-09-05')];
+    expect(kinds(buildListRows(inFy, rowOf, null, '26-27'))).toEqual(['b', 'a']);
+  });
+
+  it('puts the missing cycle first and merges skipped periods by date, newest first', () => {
+    const inFy = [stmt('b', '2026-08-05'), stmt('a', '2026-05-05')];
+    const skips = {
+      missing: { periodStart: '2026-09-06', periodEnd: '2026-10-05', expectedBy: '2026-10-12' },
+      skipped: [skip('k2', '2026-06-06', '2026-07-05'), skip('k1', '2026-07-06', '2026-08-05')],
+    };
+    expect(kinds(buildListRows(inFy, rowOf, skips, '26-27'))).toEqual([
+      'missing:2026-10-05',
+      'b',
+      'skipped:2026-08-05',
+      'skipped:2026-07-05',
+      'a',
+    ].filter(Boolean));
+  });
+
+  it('shows only the shown year\'s skipped periods, but the missing cycle whichever year', () => {
+    const skips = {
+      missing: { periodStart: '2026-09-06', periodEnd: '2026-10-05', expectedBy: '2026-10-12' },
+      skipped: [skip('old', '2026-02-06', '2026-03-05')],
+    };
+    expect(kinds(buildListRows([], rowOf, skips, '26-27'))).toEqual(['missing:2026-10-05']);
+    expect(kinds(buildListRows([], rowOf, skips, '25-26'))).toEqual(['missing:2026-10-05', 'skipped:2026-03-05']);
+  });
+
+  it('words the rows', () => {
+    const skips = {
+      missing: { periodStart: '2026-09-06', periodEnd: '2026-10-05', expectedBy: '2026-10-12' },
+      skipped: [skip('k', '2026-08-06', '2026-09-05')],
+    };
+    const [missing, skipped] = buildListRows([], rowOf, skips, '26-27');
+    expect(missing).toMatchObject({ title: 'Statement missing', id: null, caption: '6 Sep 26 to 5 Oct 26' });
+    expect(skipped).toMatchObject({ title: 'No statement', id: 'k', caption: '6 Aug 26 to 5 Sep 26' });
   });
 });

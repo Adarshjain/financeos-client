@@ -116,3 +116,39 @@ describe('rowButtons, EPF suggestion', () => {
     expect(rowButtons(epf({ key: 'epf:3', actions: [SNOOZE, DISMISS] })).map((b) => b.epf)).toEqual(['dismiss']);
   });
 });
+
+describe('rowButtons: no_statement', () => {
+  const upload = action({ type: 'upload', label: 'Upload', href: '/transactions/import?account=A1' });
+  const skip = action({
+    type: 'no_statement',
+    label: 'No statement this period',
+    payload: { accountId: 'A1', date: '2026-10-03' },
+  });
+
+  it('is a plain button carrying the card and period end, beside Upload', () => {
+    const row = item({ key: 'a', kind: 'statement_expected', href: '/transactions/import?account=A1', actions: [upload, SNOOZE, skip] });
+    expect(rowButtons(row)).toEqual([
+      { id: 'upload-0', label: 'Upload', variant: 'secondary', href: '/transactions/import?account=A1' },
+      {
+        id: 'no_statement-1',
+        label: 'No statement this period',
+        variant: 'link',
+        skip: { accountId: 'A1', periodEnd: '2026-10-03' },
+        disabled: false,
+      },
+    ]);
+  });
+
+  it('never becomes a link to the row href', () => {
+    const row = item({ key: 'a', kind: 'statement_expected', href: '/x', actions: [skip] });
+    expect(rowButtons(row)[0].href).toBeUndefined();
+  });
+
+  it('falls back to the row refs and date, and is disabled when neither names them', () => {
+    const bare = action({ type: 'no_statement', label: 'No statement this period' });
+    const withRefs = item({ key: 'a', kind: 'statement_expected', date: '2026-10-03', refs: { accountId: 'A2' }, actions: [bare] });
+    expect(rowButtons(withRefs)[0]).toMatchObject({ skip: { accountId: 'A2', periodEnd: '2026-10-03' }, disabled: false });
+    const none = item({ key: 'b', kind: 'statement_expected', actions: [bare] });
+    expect(rowButtons(none)[0]).toMatchObject({ skip: undefined, disabled: true });
+  });
+});

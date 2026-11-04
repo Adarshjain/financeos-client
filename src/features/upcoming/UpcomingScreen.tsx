@@ -6,6 +6,7 @@ import React from 'react';
 import { Banner } from '@/components/ds/Banner/Banner';
 import { Card } from '@/components/ds/Card/Card';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { useStatementSkip } from '@/features/accounts/detail/statements/useStatementSkip';
 import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 import { InboxBillHost } from '@/features/inbox/InboxBillHost';
 import { SettleDialog } from '@/features/lendings/SettleDialog';
@@ -49,6 +50,7 @@ export function UpcomingScreen() {
   const today = todayInAppZone();
 
   const recurring = useRecurringActions();
+  const statementSkip = useStatementSkip();
   const { data: proposals } = useRecurringProposals();
   const { data, error, isFetched, isPending, refetch } = useObligations(months);
   const items = React.useMemo(
@@ -129,6 +131,9 @@ export function UpcomingScreen() {
             onMarkPaid={(item) => setPaying({ item, open: true })}
             onSettle={(item) => setSettling({ item, open: true })}
             onSetDetails={(item) => setDetailsFor(item.statementId ?? null)}
+            onSkipStatement={(item) =>
+              item.accountId && item.date ? void statementSkip.skip(item.accountId, item.date) : undefined
+            }
             onStopTracking={(item) =>
               item.seriesId ? void recurring.stop(item.seriesId, obligationTitle(item)) : undefined
             }

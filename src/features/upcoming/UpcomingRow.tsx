@@ -13,10 +13,14 @@ import { LoanClosedPrompt } from '@/features/loans/LoanClosedPrompt';
 import { appHref } from '@/features/shell/routes';
 
 import { daysText, obligationHref, type ObligationItem, obligationTitle } from './obligationsModel';
-import { rowAmount, rowDate, rowSubtitleParts } from './upcomingModel';
+import { canSkipStatementItem, rowAmount, rowDate, rowSubtitleParts } from './upcomingModel';
 
 export interface UpcomingRowProps {
   item: ObligationItem;
+  /** Business today (YYYY-MM-DD): "No statement this period" shows only for a cycle that has ended. */
+  today: string;
+  /** Mark a statement-expected row's cycle as having no statement; the button shows only when given. */
+  onSkipStatement?: (item: ObligationItem) => void;
   /** Mark paid is the primary button in the Next 7 days section, secondary elsewhere. */
   primaryAction?: boolean;
   highlighted?: boolean;
@@ -33,6 +37,8 @@ export interface UpcomingRowProps {
 /** One obligation in the Upcoming list: date tile, title and context, amount, then its action. */
 export function UpcomingRow({
   item,
+  today,
+  onSkipStatement,
   primaryAction = false,
   highlighted = false,
   askClosed = false,
@@ -55,6 +61,7 @@ export function UpcomingRow({
     item.type === 'statement_expected' && item.accountId
       ? `/transactions/import?account=${item.accountId}`
       : null;
+  const canSkipStatement = Boolean(onSkipStatement) && canSkipStatementItem(item, today);
   const canMarkPaid = item.type === 'card_bill' && Boolean(item.statementId);
   const canSetDetails =
     Boolean(onSetDetails) && item.type === 'card_bill' && !item.date && Boolean(item.statementId);
@@ -143,6 +150,15 @@ export function UpcomingRow({
               <Link href={appHref(uploadHref)} prefetch={false}>
                 Upload
               </Link>
+            </Button>
+          ) : null}
+          {canSkipStatement ? (
+            <Button
+              variant="link"
+              size="sm"
+              onClick={() => onSkipStatement?.(item)}
+            >
+              No statement this period
             </Button>
           ) : null}
           {canSettle ? (

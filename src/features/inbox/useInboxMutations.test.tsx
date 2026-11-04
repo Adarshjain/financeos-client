@@ -3,6 +3,8 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const refresh = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh }) }));
 vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } }));
 
 import { serverApi as api } from '@/lib/api/server';
@@ -86,6 +88,52 @@ describe('useInboxMutations refresh', () => {
     await waitFor(() => expect(notifier.dismissed).toHaveBeenCalledTimes(1));
     expect(inboxInvalidations()).toBe(0);
     await act(async () => resolvers[1]());
+    await waitFor(() => expect(inboxInvalidations()).toBe(1));
+  });
+});
+
+describe('useInboxMutations no statement this period', () => {
+  const statementNotifier: InboxNotifier = { ...notifier, statementSkipped: vi.fn(), statementSkipFailed: vi.fn() };
+  const setupSkip = () => {
+    const qc = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    invalidate.spy = vi.spyOn(qc, 'invalidateQueries') as unknown as ReturnType<typeof vi.fn>;
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+    );
+    return renderHook(() => useInboxMutations(statementNotifier), { wrapper });
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(api.POST).mockResolvedValue({ data: { id: 'K1' } } as never);
+    vi.mocked(api.DELETE).mockResolvedValue({ data: undefined } as never);
+  });
+
+  it('posts the skip, refetches the inbox and offers Undo, which deletes the skip', async () => {
+    const { result } = setupSkip();
+    act(() => result.current.noStatement('statement_expected:A1:2026-10-03', 'A1', '2026-10-03'));
+    await waitFor(() => expect(statementNotifier.statementSkipped).toHaveBeenCalled());
+    expect(api.POST).toHaveBeenCalledWith('/api/v1/accounts/{accountId}/statement-skips', {
+      params: { path: { accountId: 'A1' } },
+      body: { periodEnd: '2026-10-03' },
+    });
+    await waitFor(() => expect(inboxInvalidations()).toBe(1));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    const undo = vi.mocked(statementNotifier.statementSkipped!).mock.calls[0][0];
+    act(() => undo());
+    await waitFor(() => expect(notifier.restored).toHaveBeenCalled());
+    expect(api.DELETE).toHaveBeenCalledWith('/api/v1/accounts/{accountId}/statement-skips/{skipId}', {
+      params: { path: { accountId: 'A1', skipId: 'K1' } },
+    });
+    await waitFor(() => expect(inboxInvalidations()).toBe(2));
+    expect(refresh).toHaveBeenCalledTimes(2);
+  });
+
+  it('tells the user when the skip fails, and refetches to put the row back', async () => {
+    vi.mocked(api.POST).mockRejectedValue(new Error('boom'));
+    const { result } = setupSkip();
+    act(() => result.current.noStatement('statement_expected:A1:2026-10-03', 'A1', '2026-10-03'));
+    await waitFor(() => expect(statementNotifier.statementSkipFailed).toHaveBeenCalled());
     await waitFor(() => expect(inboxInvalidations()).toBe(1));
   });
 });

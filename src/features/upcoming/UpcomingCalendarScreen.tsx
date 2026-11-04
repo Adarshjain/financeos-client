@@ -10,6 +10,7 @@ import { Icon } from '@/components/ds/Icon/Icon';
 import { MonthCalendar } from '@/components/ds/MonthCalendar/MonthCalendar';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { formatMonth } from '@/components/ds/utils/index';
+import { useStatementSkip } from '@/features/accounts/detail/statements/useStatementSkip';
 import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 import { SettleDialog } from '@/features/lendings/SettleDialog';
 import { todayInAppZone } from '@/lib/date-range';
@@ -103,11 +104,15 @@ export function UpcomingCalendarScreen() {
   }, [billParam, isFetched, selected]);
 
   const recurring = useRecurringActions();
+  const statementSkip = useStatementSkip();
   const failed = Boolean(error) && !data;
   const retry = { label: 'Retry', onSelect: () => void refetch() };
 
   const rowProps = (item: ObligationItem) => ({
+    today,
     item,
+    onSkipStatement: (i: ObligationItem) =>
+      i.accountId && i.date ? void statementSkip.skip(i.accountId, i.date) : undefined,
     highlighted: Boolean(billParam) && item.statementId === billParam,
     onMarkPaid: (i: ObligationItem) => setPaying({ item: i, open: true }),
     onSettle: (i: ObligationItem) => setSettling({ item: i, open: true }),
