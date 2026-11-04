@@ -37,6 +37,10 @@ const nextConfig = {
       { source: '/storybook', destination: '/storybook/index.html', permanent: false },
       // The one-time onboarding screen used to live at /hello.
       { source: '/hello', destination: '/welcome', permanent: true },
+      // Settings v2 folded these sections into the main Settings page.
+      { source: '/settings/profile', destination: '/settings', permanent: true },
+      { source: '/settings/appearance', destination: '/settings', permanent: true },
+      { source: '/settings/app-lock', destination: '/settings', permanent: true },
     ];
   },
   // public/ files are not content-hashed (Next serves them max-age=0), so give them a day plus a week of

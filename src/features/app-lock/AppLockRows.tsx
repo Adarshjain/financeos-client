@@ -3,13 +3,11 @@
 import { useMutation } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
 
-import { Card } from '@/components/ds/Card/Card';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { Select } from '@/components/ds/Select/Select';
 import { Switch } from '@/components/ds/Switch/Switch';
 import { Text } from '@/components/ds/Text/Text';
 import { showToast } from '@/components/ds/Toast/Toast';
-import { useRouterRefresh } from '@/features/settings/useRouterRefresh';
 import type { AppLockStatus } from '@/lib/api/types';
 import { APP_LOCK_CHANGED_EVENT, notifyIfAppLocked } from '@/lib/appLock';
 
@@ -51,12 +49,10 @@ function announce() {
   window.dispatchEvent(new CustomEvent(APP_LOCK_CHANGED_EVENT));
 }
 
-/** Per-device app lock: a passkey (Face ID, fingerprint or device passcode) asked for after the chosen idle time. */
-export function AppLockCard({ status }: { status: AppLockStatus }) {
+/** Per-device app lock rows, for a Card: a passkey (Face ID, fingerprint or device passcode) asked for after the chosen idle time. */
+export function AppLockRows({ status }: { status: AppLockStatus }) {
   const [armed, setArmed] = useState(status.armed);
   const [lockAfter, setLockAfter] = useState(String(status.lockAfterSeconds ?? DEFAULT_LOCK_AFTER));
-  // The Settings list shows On/Off, which lives in the server layout.
-  const refreshLayout = useRouterRefresh();
   const [support, setSupport] = useState<Support>('checking');
 
   useEffect(() => {
@@ -86,7 +82,6 @@ export function AppLockCard({ status }: { status: AppLockStatus }) {
       if (!done.success) return showToast(done.error.message, { tone: 'danger' });
       setArmed(true);
       announce();
-      refreshLayout();
     } catch (e) {
       // Dismissing the prompt is not an error worth a toast.
       if (!isCancelled(e)) showToast("Couldn't turn on app lock. Try again.", { tone: 'danger' });
@@ -106,7 +101,6 @@ export function AppLockCard({ status }: { status: AppLockStatus }) {
       if (!done.success) return showToast(done.error.message, { tone: 'danger' });
       setArmed(false);
       announce();
-      refreshLayout();
     } catch (e) {
       if (!isCancelled(e)) showToast("Couldn't turn off app lock. Try again.", { tone: 'danger' });
     }
@@ -136,7 +130,7 @@ export function AppLockCard({ status }: { status: AppLockStatus }) {
   const canToggle = armed || support === 'ok';
 
   return (
-    <Card title="App lock" subtitle="Saved on this device">
+    <>
       <ListRow
         title={<Text variant="body">Unlock with Face ID or fingerprint</Text>}
         subtitle={SUBTITLE[armed ? 'ok' : support]}
@@ -163,6 +157,6 @@ export function AppLockCard({ status }: { status: AppLockStatus }) {
           }
         />
       )}
-    </Card>
+    </>
   );
 }

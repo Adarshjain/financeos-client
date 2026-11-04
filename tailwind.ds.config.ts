@@ -17,9 +17,8 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      // Dinero's two layout switches: `desk` (owner, 2026-10-19) - 640px and below is the phone layout - and `wide`
-      // (owner, 2026-11-04) - 1200px and up, where Settings shows its list and content side by side. Legacy keeps `lg`.
-      screens: { desk: '641px', wide: '1200px' },
+      // Dinero's one layout switch (owner, 2026-10-19): 640px and below is the phone layout. Legacy keeps `lg`.
+      screens: { desk: '641px' },
       colors: {
         // Design system utility colors (var(--ds-*))
         brand: 'var(--ds-brand)',

@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { UserResponse } from '@/lib/types';
 
-import { AppearanceCard } from './AppearanceCard';
+import { GeneralCard } from '../GeneralCard';
 import { DeleteAccountCard } from './DeleteAccountCard';
 import { ProfileCard } from './ProfileCard';
 
@@ -62,31 +62,15 @@ describe('ProfileCard', () => {
   });
 });
 
-describe('AppearanceCard', () => {
+describe('GeneralCard theme', () => {
   it('marks the saved theme and switches themes', () => {
-    render(<AppearanceCard />);
+    render(<GeneralCard />);
     const dark = screen.getByRole('radio', { name: 'Dark' });
     expect(dark).toHaveAttribute('aria-checked', 'true');
     fireEvent.click(screen.getByRole('radio', { name: 'Light' }));
     expect(setTheme).toHaveBeenCalledWith('light');
     fireEvent.click(screen.getByRole('radio', { name: 'System' }));
     expect(setTheme).toHaveBeenCalledWith('system');
-  });
-
-  it('links Storybook as a plain page load', () => {
-    render(<AppearanceCard />);
-    const assign = vi.fn();
-    const original = window.location;
-    Object.defineProperty(window, 'location', { value: { ...original, assign }, configurable: true });
-    fireEvent.click(screen.getAllByRole('button', { name: 'Open' })[0]);
-    Object.defineProperty(window, 'location', { value: original, configurable: true });
-    expect(assign).toHaveBeenCalledWith('/storybook');
-  });
-
-  it('has no Legacy row and no link rows', () => {
-    render(<AppearanceCard />);
-    expect(screen.queryByText('Open Legacy')).toBeNull();
-    expect(screen.queryAllByRole('link', { name: 'Open' })).toHaveLength(0);
   });
 });
 
@@ -211,7 +195,7 @@ describe('DeleteAccountCard', () => {
   });
 });
 
-describe('AppearanceCard theme reveal', () => {
+describe('GeneralCard theme reveal', () => {
   it('runs the switch inside a view transition growing from the clicked segment', async () => {
     const start = vi.fn((cb: () => void) => {
       cb();
@@ -222,7 +206,7 @@ describe('AppearanceCard theme reveal', () => {
     const animate = vi.fn();
     document.documentElement.animate = animate as unknown as typeof document.documentElement.animate;
     try {
-      render(<AppearanceCard />);
+      render(<GeneralCard />);
       const light = screen.getByRole('radio', { name: 'Light' });
       light.getBoundingClientRect = () => ({ left: 100, top: 50, width: 40, height: 20 }) as DOMRect;
       fireEvent.pointerDown(light);

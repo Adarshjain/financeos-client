@@ -19,7 +19,7 @@ test.describe('Account deletion UI (@ui)', () => {
     await createTransactions(api, account.id, 2);
     await loginContext(context, user.cookie);
 
-    await page.goto('/settings/profile');
+    await page.goto('/settings');
     await expect(page.getByText('Delete account', { exact: true }).first()).toBeVisible();
     await page.getByRole('button', { name: 'Delete account' }).click();
     await expect(page.getByRole('dialog', { name: 'Delete account?' })).toBeVisible();
@@ -51,7 +51,7 @@ test.describe('Account deletion UI (@ui)', () => {
       const { cookie, api } = await ssoLogin(identity);
       await loginContext(context, cookie);
 
-      await page.goto('/settings/profile');
+      await page.goto('/settings');
       await page.getByRole('button', { name: 'Delete account' }).click();
       await expect(page.getByRole('dialog', { name: 'Delete account?' })).toBeVisible();
       await expect(page.getByLabel('Current password')).toHaveCount(0);

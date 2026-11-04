@@ -262,9 +262,9 @@ function check(lines, all = false, classes = true) {
     if (file !== 'src/components/ds/phoneLayout.ts' && /\b(?:useMediaQuery|useIsPhone|useIsDesktop|matchMedia|innerWidth)\b/.test(text)) {
       errors.push({ file, line, rule: 'viewport-js', why: 'viewport detected in JavaScript — use desk: breakpoint classes; there are no exceptions (RULES §5c.3)', text: text.trim().slice(0, 160) });
     }
-    // Dinero's switches are `desk` (641px) and `wide` (1200px); the sm/md/lg/xl breakpoints never appear in checked code (RULES §5c.2).
+    // Dinero has one layout switch, `desk` (641px); the sm/md/lg/xl breakpoints never appear in checked code (RULES §5c.2).
     if (/(?:^|[\s"'`:])(?:max-)?(?:sm|md|lg|xl|2xl):[-a-z![]/.test(text)) {
-      errors.push({ file, line, rule: 'breakpoint', why: 'a breakpoint other than desk: (or wide:) — the switches are 641px and 1200px (RULES §5c.2)', text: text.trim().slice(0, 160) });
+      errors.push({ file, line, rule: 'breakpoint', why: 'a breakpoint other than desk: — Dinero has one switch at 641px (RULES §5c.2)', text: text.trim().slice(0, 160) });
     }
     // APIs removed by the 2026-10 audit (design-system/specs/audit/00-global.md). Re-adding any of them is a regression.
     for (const [re, why] of REMOVED_API) {
