@@ -448,16 +448,18 @@ test.describe('Lending <-> Transaction Links API (@api)', () => {
       transactionId: alreadyLinkedTxn.id,
     });
 
-    // A linked entry should not itself be listed as a suggestion
+    // A linked entry should not itself be listed as a suggestion. Its amount differs from unlinkedLent's: the
+    // background auto-linker links an exact amount, and would otherwise take this transaction for unlinkedLent
+    // before the entry below claims it.
     const linkedEntryTxn = await createTransaction(api, bank.id, {
-      amount: -1000,
+      amount: -1002,
       date: entryDate,
       description: 'Linked Entry Txn',
     });
     const linkedEntry = await addLending(api, {
       counterpartyId: cp.id,
       direction: 'lent',
-      amount: 1000,
+      amount: 1002,
       entryDate,
       transactionId: linkedEntryTxn.id,
     });

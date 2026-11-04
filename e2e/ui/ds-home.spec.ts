@@ -224,7 +224,7 @@ for (const viewport of VIEWPORTS) {
       await expect(switcherActions(page)).toHaveText(['Add widget', 'Edit dashboard', 'Add dashboard', 'View all dashboards']);
     });
 
-    test('Home: Bills due rows show the due date; Nothing pending is a caption-sized link', async ({ page }) => {
+    test('Home: Bills due rows show the due date; Nothing pending is a label-sized link', async ({ page }) => {
       const api = makeApi(currentUser.cookie);
       const bill = await seedCardBill(api, { name: 'Due Card', last4: '7403', dueInDays: 5 });
       const quiet = await createCreditCard(api, { name: 'Quiet Card', last4: '7404' });
@@ -237,7 +237,7 @@ for (const viewport of VIEWPORTS) {
 
       const toggle = bills.getByTestId('bills-nothing-pending').getByRole('button', { name: 'Nothing pending · 1 card' });
       const fontSize = (l: typeof toggle) => l.evaluate((el) => getComputedStyle(el).fontSize);
-      expect(await fontSize(toggle)).toBe(await fontSize(bills.getByTestId('bills-widget-totals')));
+      expect(await fontSize(toggle)).toBe(await fontSize(bills.getByTestId('bills-widget-totals').locator('span').first()));
       await toggle.click();
       await expect(bills.locator(`[data-account-id="${quiet.id}"]`)).not.toContainText('Due');
     });
@@ -300,18 +300,24 @@ for (const viewport of VIEWPORTS) {
 
     test('Home: switcher Edit dashboard opens that dashboard editing, and Add dashboard opens the create page', async ({ page }) => {
       const home = await board('Ds home', true);
+      // A click before the page hydrates is dropped, and the menu can close under a click, so open the switcher and
+      // pick the item together until the page has moved.
+      const pickFromSwitcher = async (link: string, url: RegExp) => {
+        await expect(async () => {
+          const item = page.getByRole('link', { name: link, exact: true });
+          if (!(await item.isVisible())) await page.getByTestId('home-switch').click();
+          await item.click({ timeout: 3_000 });
+          await expect(page).toHaveURL(url, { timeout: 5_000 });
+        }).toPass({ timeout: 45_000 });
+      };
       await page.goto('/dashboard');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
 
-      await page.getByTestId('home-switch').click();
-      await page.getByRole('link', { name: 'Edit dashboard', exact: true }).click();
-      await expect(page).toHaveURL(new RegExp(`/dashboards/${home.id}`));
+      await pickFromSwitcher('Edit dashboard', new RegExp(`/dashboards/${home.id}`));
       await expect(page.getByLabel('Dashboard name')).toHaveValue('Ds home', { timeout: 45_000 });
 
       await page.goto('/dashboard');
-      await page.getByTestId('home-switch').click();
-      await page.getByRole('link', { name: 'Add dashboard', exact: true }).click();
-      await expect(page).toHaveURL(/\/dashboards\/new/);
+      await pickFromSwitcher('Add dashboard', /\/dashboards\/new/);
     });
 
     test('Home: an Attention row is one link; tapping it opens that item in the Inbox', async ({ page }) => {

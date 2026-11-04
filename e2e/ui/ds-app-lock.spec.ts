@@ -53,12 +53,13 @@ test.describe('/ds app lock (@ui)', () => {
     await page.getByRole('option', { name: 'Immediately' }).click();
     await expect(page.getByRole('combobox', { name: 'Lock after' })).toContainText('Immediately');
     await page.waitForTimeout(3300);
-    const beacon = page.waitForRequest((r) => r.url().endsWith('/api/v1/app-lock/lock'));
+    // Wait for the server's answer, not just the request: the next page load must find the session locked.
+    const beacon = page.waitForResponse((r) => r.url().endsWith('/api/v1/app-lock/lock'));
     await page.evaluate(() => {
       Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
       document.dispatchEvent(new Event('visibilitychange'));
     });
-    await beacon;
+    expect((await beacon).status()).toBe(204);
 
     const visited = trackVisited(page);
     await page.goto(`${E2E_CLIENT_URL}/settings`);

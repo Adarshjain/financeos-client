@@ -1,10 +1,12 @@
-import { makeApi } from '../fixtures/api';
+import { expectStatus, makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
-import { resetLlm, setLlmMode } from '../fixtures/control';
-import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
-import { createBankAccount } from '../fixtures/seed/accounts';
+import { resetLlm, scriptLlm, setLlmMode } from '../fixtures/control';
+import { istToday } from '../fixtures/dates';
+import { BankSpec, genBankPdf, genCardPdf } from '../fixtures/gen/statements';
+import { createBankAccount, createCreditCard } from '../fixtures/seed/accounts';
+import { uploadAndIngest, uploadStatements } from '../fixtures/seed/statements';
 import { expect, test } from '../fixtures/test';
 
 const SPEC: BankSpec = {
@@ -105,43 +107,50 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Import tab: Recent imports pages through the address, with no stray Job header', async ({ page }) => {
-      const now = new Date().toISOString();
-      const job = (n: number) => ({
-        id: `0a1b2c3d-4e5f-6789-abcd-ef01234567${String(n).padStart(2, '0')}`, type: 'STATEMENT_INGEST', status: 'SUCCEEDED',
-        triggerSource: 'USER', cancelRequested: false, attempt: 1, createdAt: now, startedAt: now, finishedAt: now,
-        result: { filesProcessed: 1, totalCreated: 1, totalDuplicatesFound: 0, fileDetails: [{ filename: `stmt-${n}.pdf`, status: 'SUCCESS', linesParsed: 1, created: 1, duplicates: 0, errorMessage: null }] },
-      });
-      // Browser jobs requests: three pages of one import each, by the page asked for.
-      await page.route('**/api/v1/jobs?**', (route) => {
-        const asked = Number(new URL(route.request().url()).searchParams.get('page') ?? '0');
-        return route.fulfill({ json: { content: [job(asked + 1)], totalElements: 3, totalPages: 3, last: asked === 2 } });
-      });
+      // Six real imports (the page holds five), one file each; the newest leads page 1 and the oldest is alone on page 2.
+      const api = makeApi(currentUser.cookie);
+      const account = await createBankAccount(api, { name: 'DS Recent Bank', openingBalance: SPEC.opening });
+      const pdf = await genBankPdf(SPEC);
+      for (let n = 1; n <= 6; n++) {
+        const { job } = await uploadAndIngest(api, account.id, [{ filename: `stmt-${n}.pdf`, buffer: pdf }]);
+        expect(job.status).toBe('SUCCEEDED');
+      }
       await page.goto('/transactions/import');
-      await expect(page.getByText('stmt-1.pdf').locator('visible=true').first()).toBeVisible({ timeout: 30000 });
+      await expect(page.getByText('stmt-6.pdf').locator('visible=true').first()).toBeVisible({ timeout: 30000 });
       await expect(page.getByRole('columnheader', { name: 'Job' })).toHaveCount(0);
 
       await page.getByRole('button', { name: 'Page 2' }).first().click();
       await expect(page).toHaveURL(/\/transactions\/import\?page=2/);
-      await expect(page.getByText('stmt-2.pdf').locator('visible=true').first()).toBeVisible({ timeout: 30000 });
+      await expect(page.getByText('stmt-1.pdf').locator('visible=true').first()).toBeVisible({ timeout: 30000 });
     });
 
     test('Import tab: a running import found on load (reload, second tab) locks the form; a malformed import id is not found', async ({ page }) => {
-      const now = new Date().toISOString();
-      const running = {
-        id: '0a1b2c3d-4e5f-6789-abcd-ef0123456789', type: 'STATEMENT_INGEST', status: 'RUNNING', triggerSource: 'USER',
-        cancelRequested: false, attempt: 1, createdAt: now, startedAt: now, progressNote: 'Reading statement',
-      };
-      // The browser's own jobs requests (polling) say an import is running, as after a reload or in a second tab.
-      await page.route('**/api/v1/jobs?**', (route) =>
-        route.fulfill({ json: { content: [running], totalElements: 1, totalPages: 1, last: true } }),
-      );
+      // A card statement missing its due date makes ingestion call the statement-details LLM task; a scripted
+      // delayed answer holds the import RUNNING across both loads.
+      const api = makeApi(currentUser.cookie);
+      const account = await createCreditCard(api, { name: 'DS Running Card', last4: '9301' });
+      // Scripts are scoped to this test's user; the card's last 4 digits survive the prompt masking, so they key the entry.
+      await scriptLlm(api, 'statement-details', [{ json: {}, delayMs: 15000, promptContains: '9301' }]);
+      const pdf = await genCardPdf({
+        issuer: 'HDFC Bank',
+        cardLast4: '9301',
+        statementDate: istToday(-3),
+        periodStart: istToday(-32),
+        periodEnd: istToday(-3),
+        previousBalance: 0,
+        paymentsReceived: 0,
+        financeCharges: 0,
+        creditLimit: 100000,
+        omitDueDate: true,
+        rows: [{ date: istToday(-20), description: 'RUNNING HOLD TRADERS', debit: 4500 }],
+      });
+      const upload = await uploadStatements(api, account.id, [{ filename: 'running.pdf', buffer: pdf }]);
+      expectStatus(upload, 202);
       await page.goto('/transactions/import');
       await expect(page.getByRole('button', { name: 'Choose files' })).toBeDisabled({ timeout: 30000 });
-      await expect(page.getByText('Reading statement').locator('visible=true').first()).toBeVisible();
       await page.reload();
       await expect(page.getByRole('button', { name: 'Choose files' })).toBeDisabled({ timeout: 30000 });
 
-      await page.unroute('**/api/v1/jobs?**');
       await page.goto('/transactions/import/abc');
       await expect(page.getByText(/not found/i).first()).toBeVisible({ timeout: 30000 });
     });

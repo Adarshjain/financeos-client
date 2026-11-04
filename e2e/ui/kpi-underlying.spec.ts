@@ -305,7 +305,10 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await expect(vud.getByText('bank_account')).toHaveCount(0);
 
     // What the total leaves out.
-    await expect(vud).toContainText(/Excluded from this figure:\s*NW Hidden \(Excluded from net worth\),\s*NW Closed \(Closed on/);
+    // The server lists them in no set order, so each is checked on its own.
+    await expect(vud).toContainText(/Excluded from this figure:/);
+    await expect(vud).toContainText('NW Hidden (Excluded from net worth)');
+    await expect(vud).toContainText(/NW Closed \(Closed on/);
 
     // A bank row: its ledger, its transactions, then Back to the list.
     await assets.getByRole('button').filter({ hasText: 'NW Savings' }).click();

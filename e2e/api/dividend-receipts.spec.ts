@@ -402,6 +402,25 @@ test.describe('Dividend receipt reconciliation API (@api)', () => {
     const cN = await createTransaction(api, bank.id, { amount: 1800, date: todayString(-19), description: narr(hN.name) });
     const cF = await createTransaction(api, bank.id, { amount: 2400, date: todayString(-18), description: `${hF.name} DIV PAYOUT` });
     const cX = await createTransaction(api, bank.id, { amount: 3200, date: todayString(-18), description: 'UPI/PAYMENT RECEIVED 998877' });
+
+    // A unique EXACT / NET_OF_TDS pair is auto-linked in the background after the credit is ingested, which proves
+    // those two tiers match. Unlinking an automatic link makes the pair remembered, so it is never auto-linked again
+    // and stays in the queue as a candidate, which is what this test inspects.
+    for (const [d, c] of [
+      [dE, cE],
+      [dN, cN],
+    ] as const) {
+      await expect
+        .poll(async () => (await listDividends(api)).find((x) => x.id === d.id)?.transaction?.id ?? null, { timeout: 30_000 })
+        .toBe(c.id);
+      await unlinkDividendTransaction(api, d.id);
+    }
+    // The automatic link wrote the 200 TDS gap onto the net-of-TDS dividend; clear it so the credit is net-of-TDS again.
+    const cleared = await api.PUT('/api/v1/investments/dividends/{id}', {
+      params: { path: { id: dN.id } },
+      body: { type: 'dividend', amount: 2000, payDate: todayString(-20) }, // no tds: the update replaces it with none
+    });
+    expectStatus(cleared, 200);
     // Out of window credit for dI (pay -20 -> window -30..-10): dated -60.
     await createTransaction(api, bank.id, { amount: 5000, date: todayString(-60), description: narr(hI.name) });
 

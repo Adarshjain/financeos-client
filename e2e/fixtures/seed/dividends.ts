@@ -67,31 +67,32 @@ export async function seedDividends(api: ApiClient): Promise<SeededDividends> {
   // Bank data through 5 days ago, so the 40-day-old payout is overdue (its window closed with data covering it).
   await createTransaction(api, bank.id, { amount: 50, date: istToday(-5), description: 'Misc credit' });
 
+  // Every holding and every bank credit is created before any dividend: a credit's ingest starts a background auto-link
+  // run, and with no dividend yet it has nothing to link, so it cannot link (and write TDS to) a payout this seed means
+  // to leave unlinked, or to link by hand below.
   const received = await stock(api, broker, 'RCVD');
-  const receivedDividend = await createDividend(api, { brokerAccountId: broker.id, instrumentId: received.id, type: 'dividend', amount: 1000, perUnit: 10, payDate: istToday(-20) });
+  const overdue = await stock(api, broker, 'OVRD');
+  const awaiting = await stock(api, broker, 'WAIT');
+  const matchable = await stock(api, broker, 'MTCH');
+  const unrecorded = await stock(api, broker, 'UNRC');
+
   const receivedCredit = creditText(received.name);
   const credit = await createTransaction(api, bank.id, { amount: 900, date: istToday(-20), description: receivedCredit });
-  await linkDividendTransaction(api, receivedDividend.id, credit.id);
-
-  const overdue = await stock(api, broker, 'OVRD');
-  const overdueDividend = await createDividend(api, { brokerAccountId: broker.id, instrumentId: overdue.id, type: 'dividend', amount: 1000, perUnit: 10, payDate: istToday(-40) });
-
-  const awaiting = await stock(api, broker, 'WAIT');
-  const awaitingDividend = await createDividend(api, { brokerAccountId: broker.id, instrumentId: awaiting.id, type: 'dividend', amount: 110, perUnit: 1.1, payDate: istToday() });
-
-  const matchable = await stock(api, broker, 'MTCH');
-  const matchableDividend = await createDividend(api, { brokerAccountId: broker.id, instrumentId: matchable.id, type: 'dividend', amount: 1000, perUnit: 10, payDate: istToday(-10) });
   const matchableCredit = creditText(matchable.name);
   await createTransaction(api, bank.id, { amount: 900, date: istToday(-10), description: matchableCredit });
   // A second credit that also fits net of TDS keeps the match ambiguous, so auto-linking leaves it for Reconcile.
   await createTransaction(api, bank.id, { amount: 900, date: istToday(-12), description: `NACH CR ${uniqueSeedSuffix()}` });
-
-  const unrecorded = await stock(api, broker, 'UNRC');
   const unrecordedCredit = creditText(unrecorded.name);
   await createTransaction(api, bank.id, { amount: 500, date: istToday(-3), description: unrecordedCredit });
 
   const strayCreditDescription = `NACH CR STRAY DIV ${uniqueSeedSuffix()}`;
   await createTransaction(api, bank.id, { amount: 415, date: istToday(-4), description: strayCreditDescription });
+
+  const receivedDividend = await createDividend(api, { brokerAccountId: broker.id, instrumentId: received.id, type: 'dividend', amount: 1000, perUnit: 10, payDate: istToday(-20) });
+  await linkDividendTransaction(api, receivedDividend.id, credit.id);
+  const overdueDividend = await createDividend(api, { brokerAccountId: broker.id, instrumentId: overdue.id, type: 'dividend', amount: 1000, perUnit: 10, payDate: istToday(-40) });
+  const awaitingDividend = await createDividend(api, { brokerAccountId: broker.id, instrumentId: awaiting.id, type: 'dividend', amount: 110, perUnit: 1.1, payDate: istToday() });
+  const matchableDividend = await createDividend(api, { brokerAccountId: broker.id, instrumentId: matchable.id, type: 'dividend', amount: 1000, perUnit: 10, payDate: istToday(-10) });
 
   const relianceInstrument = await resolveInstrument(api, {
     type: 'stock',

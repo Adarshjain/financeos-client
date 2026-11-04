@@ -10,7 +10,7 @@ import { cleanupIdentity, type GoogleIdentity, registerIdentity } from '../fixtu
 import { createBankAccount, createCreditCard } from '../fixtures/seed/accounts';
 import { connectGmail } from '../fixtures/seed/gmail';
 import { expect, test } from '../fixtures/test';
-import { expectToast } from '../fixtures/ui';
+import { clickUntilRequest, expectToast } from '../fixtures/ui';
 
 /** A card HDFC mails mention often and recently: a Found row. */
 const card = (over: Partial<AccountDetectSeedEntity> = {}): AccountDetectSeedEntity => ({
@@ -276,10 +276,9 @@ test.describe('Account suggestions (@ui)', () => {
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(0);
 
-    await expect(async () => {
-      await notMine.click();
-      await expectToast(page, /Hidden .* ••4321/);
-    }).toPass({ timeout: 15_000 });
+    // A click before the page hydrates is dropped, so re-click until the server action goes out; then wait for its outcome once.
+    await clickUntilRequest(page, notMine, (request) => request.headers()['next-action'] !== undefined);
+    await expectToast(page, /Hidden .* ••4321/);
     await expect(foundBand(page, 1)).toHaveCount(0);
   });
 });

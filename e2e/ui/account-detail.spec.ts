@@ -49,6 +49,12 @@ test.describe('Account page /accounts/[id] (@ui)', () => {
     await expect(main.getByRole('button', { name: 'Edit', exact: true }).first()).toBeVisible();
     await main.getByRole('tab', { name: 'Statements' }).click();
     await page.waitForURL(`**/accounts/${bill.cardId}/statements`);
+
+    // The Rewards tab: what the card earned, with its rule.
+    await main.getByRole('tab', { name: 'Rewards' }).click();
+    await page.waitForURL(`**/accounts/${bill.cardId}/rewards`);
+    await expect(main.getByText('Earned', { exact: true }).first()).toBeVisible({ timeout: 45_000 });
+    await expect(main.getByText('Hub 2% Rule').first()).toBeVisible();
   });
 
   test('@mobile bank account: no Bills section, recent transactions, edit in place', async ({ page }) => {

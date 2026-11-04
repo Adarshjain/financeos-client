@@ -268,4 +268,22 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(rail.getByRole('button', { name: 'Collapse sidebar' })).toBeVisible();
     await expect(rail.getByText('Money')).toBeVisible();
   });
+
+  test('the Hero, Figures and ActionBar catalogue pages render their forms', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const pages = [
+      { path: '/ds/hero', title: 'Hero', sections: ['Value, change, two figures', 'Label, three figures', 'With a progress bar', 'Loading'] },
+      { path: '/ds/figures', title: 'Figures', sections: ['Three across', 'Four across', 'Tones', 'Loading'] },
+      { path: '/ds/action-bar', title: 'ActionBar', sections: ['Info, action, menu', 'Actions only', 'Info only', 'Long info truncates'] },
+    ];
+    for (const { path, title, sections } of pages) {
+      await page.goto(`${E2E_CLIENT_URL}${path}`);
+      // The proxy sends an old /ds/<rest> URL to /<rest>; these stay put.
+      await expect(page).toHaveURL(`${E2E_CLIENT_URL}${path}`);
+      await expect(page.getByText(title, { exact: true }).first()).toBeVisible();
+      for (const section of sections) {
+        await expect(page.getByText(section, { exact: true }).first()).toBeVisible();
+      }
+    }
+  });
 });
