@@ -283,6 +283,20 @@ describe('guards', () => {
     expect(remember).toHaveBeenLastCalledWith('c1', 'm1', { action: 'undone' });
   });
 
+  it('shows the saved state only once the chat has stored it, so a reload right after still sees it', async () => {
+    let stored!: (v: { success: true; data: undefined }) => void;
+    remember.mockReturnValue(new Promise((r) => (stored = r)));
+    setup();
+    await screen.findByText('preview result');
+    fireEvent.click(screen.getByRole('button', { name: 'Save as report' }));
+    await waitFor(() => expect(remember).toHaveBeenCalled());
+    expect(screen.queryByText(/^Report saved/)).toBeNull();
+    expect(toast).not.toHaveBeenCalledWith('Report saved', expect.anything());
+    stored({ success: true, data: undefined });
+    expect(await screen.findByText(/^Report saved/)).toBeInTheDocument();
+    expect(toast).toHaveBeenCalledWith('Report saved', expect.anything());
+  });
+
   it('says so when the outcome could not be saved in the chat', async () => {
     remember.mockResolvedValue({ success: false, error: { message: 'x' } });
     setup();
