@@ -7,6 +7,7 @@ Standard text input for forms, logins, and values.
 
 ## Props
 - `size?: 'md' | 'lg' | 'xl'`: `md` and `lg` are `control-md` (32px) and differ in padding only (default `'lg'` 12px side padding, `'md'` 10px). `xl` is `control-xl` high with the input text in the `figure` type style and `lg` padding.
+- `textStyle?: 'figure' | 'regular'`: the input text of an `xl` field, default `'figure'`. `regular` uses the `body-lg` type style (17/24, 500) for big text that is not a figure, such as the onboarding fields (owner, 2026-11-04). Other sizes ignore it.
 - `shape?: 'default' | 'pill'`: default `'default'`. `pill` matches a FilterChip of the same size, read from `size`: `md` is the sm chip (28px `space-28`, 10px side padding, like the md field), `lg`/`xl` the md chip (32px `control-md`, 12px side padding); both `ds-pill` radius, 6px gap, `label` text. FilterBar uses it for its search; use it for any search field placed beside filter chips.
 - `align?: 'left' | 'right'`: input text alignment, default `'left'`. `right` end-aligns the text; prefix stays at the start, suffix and clear at the end.
 - `variant?: 'default' | 'embedded'`: visual variant (`embedded` removes focus ring for use inside list overlays like Select).
@@ -38,6 +39,7 @@ When `type="search"`, browser search cancel buttons are hidden, and `clearable` 
 - Numeric inputs (`inputMode="decimal" | "numeric"` or `type="number"`) format with `tabular-nums`.
 - Search input (`type="search"`) with search prefix and clear button.
 - Size xl (`size="xl"`): taller field with `figure` text, for a primary figure. Usage: Add/Edit transaction amount: `size="xl" align="right"`.
+- Size xl, regular text (`size="xl" textStyle="regular"`): the same height with `body-lg` text. Usage: Welcome name and date of birth.
 - Right aligned (`align="right"`): works with every size and with the embedded variant.
 - Embedded variant (`variant="embedded"`) inside dropdowns.
 - Success tone (`tone="success"`): value text in `positive`, for an amount that is money in.

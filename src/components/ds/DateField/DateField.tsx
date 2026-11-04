@@ -9,7 +9,7 @@ import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import { MonthCalendar } from '../MonthCalendar/MonthCalendar';
 import { Popover } from '../Popover/Popover';
-import { TextField, type TextFieldSize } from '../TextField/TextField';
+import { TextField, type TextFieldSize, type TextFieldTextStyle } from '../TextField/TextField';
 import { useControllableState } from '../useControllableState';
 import { parseDateInput } from '../utils';
 import { formatDateInput, formatRangeInput } from './dateFormat';
@@ -57,6 +57,8 @@ export interface DateFieldProps
 
   /** Field size, the same steps as TextField: `md`, `lg` (default), `xl` (owner, 2026-11-04). */
   size?: TextFieldSize;
+  /** Input text of an `xl` field, as TextField: `figure` (default) or `regular` (`body-lg`) (owner, 2026-11-04). */
+  textStyle?: TextFieldTextStyle;
 }
 
 export { formatDateInput, formatRangeInput } from './dateFormat';
@@ -83,6 +85,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       minDate,
       maxDate,
       size = 'lg',
+      textStyle = 'figure',
       ...props
     },
     ref,
@@ -427,6 +430,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         disabled={disabled}
         className={className}
         size={size}
+        textStyle={textStyle}
         type="text"
         inputMode="numeric"
         placeholder={effectivePlaceholder}

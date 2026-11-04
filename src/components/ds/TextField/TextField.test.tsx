@@ -333,6 +333,16 @@ describe('TextField size xl and align', () => {
     expect(input).not.toHaveClass('text-body');
   });
 
+  it('xl with textStyle regular keeps control-xl height with body-lg text; other sizes ignore it', () => {
+    const { container } = render(<TextField label="Name" size="xl" textStyle="regular" />);
+    expect(container.querySelector('.h-control-xl')).toBeInTheDocument();
+    const input = screen.getByLabelText('Name');
+    expect(input).toHaveClass('text-body-lg');
+    expect(input).not.toHaveClass('text-figure');
+    render(<TextField label="Small" textStyle="regular" />);
+    expect(screen.getByLabelText('Small')).toHaveClass('text-body');
+  });
+
   it('md and lg stay control-md with body text', () => {
     for (const size of ['md', 'lg'] as const) {
       const { container, unmount } = render(<TextField label="Name" size={size} />);

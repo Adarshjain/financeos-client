@@ -28,6 +28,10 @@ const meta: Meta<typeof TextField> = {
       control: 'select',
       options: ['md', 'lg', 'xl'],
     },
+    textStyle: {
+      control: 'select',
+      options: ['figure', 'regular'],
+    },
     align: {
       control: 'select',
       options: ['left', 'right'],
@@ -134,6 +138,15 @@ export const LargeRightAligned: Story = {
     prefix: '₹',
     inputMode: 'decimal',
     placeholder: '0.00',
+  },
+};
+
+export const LargeRegular: Story = {
+  args: {
+    size: 'xl',
+    textStyle: 'regular',
+    label: 'Your name, as your bank prints it',
+    defaultValue: 'RIYA SHARMA',
   },
 };
 

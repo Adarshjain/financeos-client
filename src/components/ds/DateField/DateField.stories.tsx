@@ -44,6 +44,7 @@ const meta: Meta<typeof DateField> = {
     open: { control: 'boolean' },
     defaultOpen: { control: 'boolean' },
     size: { control: 'inline-radio', options: ['md', 'lg', 'xl'] },
+    textStyle: { control: 'inline-radio', options: ['figure', 'regular'] },
   },
   render: function Render(args) {
     const [{ value }, updateArgs] = useArgs();
@@ -73,6 +74,10 @@ export const Default: Story = {
 
 export const ExtraLarge: Story = {
   args: { label: 'Date of birth', size: 'xl', defaultValue: '1994-08-14' },
+};
+
+export const ExtraLargeRegular: Story = {
+  args: { label: 'Date of birth', size: 'xl', textStyle: 'regular', defaultValue: '1994-08-14' },
 };
 
 export const Range: Story = {

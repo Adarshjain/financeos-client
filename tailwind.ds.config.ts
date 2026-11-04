@@ -118,6 +118,7 @@ const config: Config = {
         ],
         heading: ['14px', { lineHeight: '20px', fontWeight: '800' }],
         body: ['13px', { lineHeight: '18px', fontWeight: '500' }],
+        'body-lg': ['17px', { lineHeight: '24px', fontWeight: '500' }],
         'body-strong': ['13px', { lineHeight: '18px', fontWeight: '700' }],
         label: ['12px', { lineHeight: '16px', fontWeight: '600' }],
         caption: ['11px', { lineHeight: '14px', fontWeight: '500' }],

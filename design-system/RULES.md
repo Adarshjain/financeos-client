@@ -58,7 +58,7 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 ## 4. Typography
 
 1. Fonts: **Figtree** for all interface text, **Bricolage Grotesque** for display only. Both are self-hosted woff2 loaded with `next/font/local`. Never use `next/font/google`, because Google-hosted fonts break the Turbopack build (see `src/app/layout.tsx`). No other typeface.
-2. Use only the type styles in `tokens.json`: `hero-figure`, `page-title`, `screen-title`, `figure`, `title`, `heading`, `body`, `body-strong`, `label`, `caption`, `overline`, `micro`. Use them through the Tailwind utilities from Phase 1. No other sizes, line heights or letter-spacing.
+2. Use only the type styles in `tokens.json`: `hero-figure`, `page-title`, `screen-title`, `figure`, `title`, `heading`, `body`, `body-lg`, `body-strong`, `label`, `caption`, `overline`, `micro`. Use them through the Tailwind utilities from Phase 1. No other sizes, line heights or letter-spacing.
 3. 11px is the smallest text; 9px is gone. Weights are 500, 600, 700 and 800 only.
 4. All numbers use tabular figures. Amounts use Indian grouping (₹11,98,842). Dates read "13 Oct" in lists and dd/mm/yyyy in inputs. Values are formatted only through `@/lib/format` (formatMoney, formatPercent, formatCount, formatQuantity, formatDate, formatTime, formatDateTime); never inline toFixed, toLocaleString or Intl in feature code.
 5. The display face is only for: the one hero figure on a screen, desktop page titles, and empty, offline and auth headlines.

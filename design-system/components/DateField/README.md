@@ -17,6 +17,7 @@ The only date input. Takes and emits ISO `yyyy-mm-dd` strings, displaying `dd/mm
 - `open`, `defaultOpen`, `onOpenChange`: controlled/uncontrolled Popover state.
 - `name`, `disabled`, `optional`, `label`, `helper`, `error`: form and field metadata.
 - `size`: `'md' | 'lg' | 'xl'` (default `'lg'`), passed to its TextField: the same heights and text as TextField's steps (owner, 2026-11-04).
+- `textStyle`: `'figure' | 'regular'` (default `'figure'`), passed to its TextField: an `xl` field's text in `figure` or `body-lg` (owner, 2026-11-04).
 
 The input box is a TextField (same height for each `size`, focus ring and error state) with the calendar button as its suffix.
 
@@ -25,6 +26,6 @@ FieldFrame, Popover, MonthCalendar, Icon, Button.
 
 ## Variants
 - Single date, date range, with min/max (days outside are disabled), error, disabled, open.
-- Size: `md`, `lg` (default), `xl` (story "Extra large").
+- Size: `md`, `lg` (default), `xl` (story "Extra large"); `xl` with `textStyle="regular"` (story "Extra large regular").
 
 - Phone (below `desk`): the calendar opens as a bottom sheet like the Dialog sheet (handle, the label as title); a range shows one month with Today, Clear and Done. Desktop keeps the dropdown.
