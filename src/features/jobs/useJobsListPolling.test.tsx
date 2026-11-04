@@ -10,6 +10,8 @@ import { emitJobStarted } from './jobsBus';
 import { useJobsListPolling } from './useJobsListPolling';
 
 vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn() } }));
+const router = vi.hoisted(() => ({ refresh: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router }));
 
 const runningJob = { id: 'job-1', type: 'STATEMENT_INGEST', status: 'RUNNING', createdAt: '2026-10-04T10:00:00Z' };
 
@@ -174,5 +176,58 @@ describe('useJobsListPolling auto-expand', () => {
     await advance(5_000);
     await advance(10);
     expect(result.current.expandedJobIds.has('job-2')).toBe(true);
+  });
+});
+
+describe('useJobsListPolling page refresh', () => {
+  const job = (id: string, status: string) => ({ id, type: 'STATEMENT_INGEST', status, createdAt: '2026-10-04T10:00:00Z' });
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('refreshes the page once when a running job finishes, not while it runs', async () => {
+    vi.mocked(api.GET).mockResolvedValue({ data: { content: [job('job-1', 'RUNNING')] } } as never);
+    renderPolling();
+    await advance(0);
+    await advance(5_000);
+    await advance(1_000);
+    expect(router.refresh).not.toHaveBeenCalled();
+
+    vi.mocked(api.GET).mockResolvedValue({ data: { content: [job('job-1', 'SUCCEEDED')] } } as never);
+    await advance(5_000);
+    await advance(1_000);
+    expect(router.refresh).toHaveBeenCalledTimes(1);
+    await advance(60_000);
+    expect(router.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('refreshes once when several jobs finish in the same poll', async () => {
+    vi.mocked(api.GET).mockResolvedValue({
+      data: { content: [job('job-1', 'RUNNING'), job('job-2', 'RUNNING'), job('job-3', 'RUNNING')] },
+    } as never);
+    renderPolling();
+    await advance(0);
+
+    vi.mocked(api.GET).mockResolvedValue({
+      data: { content: [job('job-1', 'SUCCEEDED'), job('job-2', 'FAILED'), job('job-3', 'SUCCEEDED')] },
+    } as never);
+    await advance(5_000);
+    await advance(1_000);
+    expect(router.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not refresh when a job is cancelled', async () => {
+    vi.mocked(api.GET).mockResolvedValue({ data: { content: [job('job-1', 'RUNNING')] } } as never);
+    renderPolling();
+    await advance(0);
+    vi.mocked(api.GET).mockResolvedValue({ data: { content: [job('job-1', 'CANCELLED')] } } as never);
+    await advance(6_000);
+    expect(router.refresh).not.toHaveBeenCalled();
   });
 });

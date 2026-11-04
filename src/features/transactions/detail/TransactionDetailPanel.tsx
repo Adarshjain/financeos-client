@@ -288,7 +288,16 @@ function DetailContent({
             </div>
           </div>
 
-          <ListField label="Account" value={accountName(t.accountId)} />
+          <ListField
+            label="Account"
+            value={
+              <Button variant="link" asChild>
+                <Link href={appHref(`/accounts/${t.accountId}`)} prefetch={false}>
+                  {accountName(t.accountId)}
+                </Link>
+              </Button>
+            }
+          />
           {card ? <ListField label="Card" value={card} /> : null}
           <ListField label="Date" value={longDate(t.date)} />
           <ListField

@@ -225,6 +225,11 @@ describe('TransactionDetailPanel', () => {
     });
   });
 
+  it('links the Account value to the account page', () => {
+    renderWithQuery(<TransactionDetailPanel {...props()} />);
+    expect(screen.getByRole('link', { name: 'HDFC Regalia Gold' })).toHaveAttribute('href', '/accounts/a1');
+  });
+
   it('leaves out the Card, MCC and Rewards fields when there is nothing to show', () => {
     renderWithQuery(<TransactionDetailPanel {...props()} />);
     for (const label of ['Card', 'MCC', 'Rewards', 'Links']) expect(screen.queryByText(label)).not.toBeInTheDocument();

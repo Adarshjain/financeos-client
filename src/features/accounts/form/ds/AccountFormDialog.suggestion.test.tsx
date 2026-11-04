@@ -297,9 +297,9 @@ describe('Import emails from, from a suggestion', () => {
     expect(screen.getByLabelText('Import emails from')).toHaveValue('');
   });
 
-  it('leaves the date empty on a manual add', () => {
+  it('starts 30 days back on a manual add', () => {
     renderDialog({ initialType: AccountType.BANK_ACCOUNT });
-    expect(screen.getByLabelText('Import emails from')).toHaveValue('');
+    expect(screen.getByLabelText('Import emails from')).toHaveValue('13/09/2026');
   });
 });
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { loadJobs } from '@/features/jobs/jobActions';
@@ -20,6 +21,8 @@ interface UseJobsListPollingOptions {
 
 export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOptions = {}) {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [expandedJobIds, setExpandedJobIds] = useState<Set<string>>(new Set());
   const prevActiveJobIdsRef = useRef<Set<string>>(new Set());
   // Jobs announced on the bus whose end the list has not shown yet. A fast job (a small
@@ -51,6 +54,7 @@ export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOption
   useEffect(() => {
     if (!jobs.length) return;
     const newlyTerminalIds: string[] = [];
+    let importedData = false;
     for (const job of jobs) {
       const watched =
         prevActiveJobIdsRef.current.has(job.id) || announcedJobIdsRef.current.has(job.id);
@@ -60,6 +64,8 @@ export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOption
         job.status === 'CANCELLED';
       if (watched && isTerminal) {
         newlyTerminalIds.push(job.id);
+        // A failed job may still have imported part of its data; a cancelled one has not.
+        if (job.status === 'SUCCEEDED' || job.status === 'FAILED') importedData = true;
         announcedJobIdsRef.current.delete(job.id);
       }
     }
@@ -72,6 +78,15 @@ export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOption
         .map((j) => j.id)
     );
 
+    // One refresh of the page the user is on, however many jobs ended in this poll.
+    if (importedData) {
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = setTimeout(() => {
+        refreshTimerRef.current = null;
+        router.refresh();
+      }, 300);
+    }
+
     if (newlyTerminalIds.length > 0) {
       const timer = setTimeout(() => {
         setExpandedJobIds((prev) => {
@@ -82,7 +97,14 @@ export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOption
       }, 0);
       return () => clearTimeout(timer);
     }
-  }, [jobs]);
+  }, [jobs, router]);
+
+  useEffect(
+    () => () => {
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    },
+    []
+  );
 
   // Subscribe to job started event on bus
   useEffect(() => {
