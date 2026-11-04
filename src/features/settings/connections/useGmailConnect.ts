@@ -16,6 +16,7 @@ import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { SyncSummary } from '@/lib/types';
 
+import type { AttentionReason } from './attentionItemModel';
 import { useGmailMutations } from './useGmailMutations';
 import { useGmailQueries } from './useGmailQueries';
 
@@ -27,22 +28,11 @@ import { useGmailQueries } from './useGmailQueries';
  */
 export function useGmailConnect() {
   const qc = useQueryClient();
-  const [attentionPage, setAttentionPage] = useState(0);
   const [archivedPage, setArchivedPage] = useState(0);
-  const { connections, senders, attentionData, archivedData, loading: readsLoading } = useGmailQueries({
-    attentionPage,
-    archivedPage,
-  });
+  const { connections, senders, attentionSummary, archivedData, loading: readsLoading } = useGmailQueries({ archivedPage });
 
-  // Archiving, unarchiving or retrying the last row of a later page leaves that page empty; step
-  // back to the new last page instead of showing an empty list.
-  const attentionPages = attentionData?.totalPages;
+  // Unarchiving the last row of a later page leaves that page empty; step back to the new last page.
   const archivedPages = archivedData?.totalPages;
-  React.useEffect(() => {
-    if (attentionPages != null && attentionPage > 0 && attentionPage >= attentionPages) {
-      setAttentionPage(Math.max(0, attentionPages - 1));
-    }
-  }, [attentionPage, attentionPages]);
   React.useEffect(() => {
     if (archivedPages != null && archivedPage > 0 && archivedPage >= archivedPages) {
       setArchivedPage(Math.max(0, archivedPages - 1));
@@ -55,6 +45,8 @@ export function useGmailConnect() {
     retryAttentionMutation,
     archiveAttentionMutation,
     unarchiveAttentionMutation,
+    retryAllMutation,
+    archiveAllMutation,
     createSenderMutation,
     updateSenderMutation,
     deleteSenderMutation,
@@ -151,6 +143,24 @@ export function useGmailConnect() {
     }
   };
 
+  const handleRetryAll = async (reason: AttentionReason) => {
+    try {
+      const res = await retryAllMutation.mutateAsync({ reason });
+      notify.success(`${res?.affected ?? 0} items queued for retry`);
+    } catch (err) {
+      toastError(err, "Couldn't retry the items. Try again.");
+    }
+  };
+
+  const handleArchiveAll = async (reason: AttentionReason) => {
+    try {
+      const res = await archiveAllMutation.mutateAsync({ reason });
+      notify.success(`${res?.affected ?? 0} items archived`);
+    } catch (err) {
+      toastError(err, "Couldn't archive the items. Try again.");
+    }
+  };
+
   const handleUnarchiveAttentionItem = async (ledgerId: string) => {
     try {
       await unarchiveAttentionMutation.mutateAsync(ledgerId);
@@ -227,9 +237,7 @@ export function useGmailConnect() {
     loading,
     connections,
     senders,
-    attentionData,
-    attentionPage,
-    setAttentionPage,
+    attentionSummary,
     archivedData,
     archivedPage,
     setArchivedPage,
@@ -252,6 +260,8 @@ export function useGmailConnect() {
     handleRetryAttentionItem,
     handleArchiveAttentionItem,
     handleUnarchiveAttentionItem,
+    handleRetryAll,
+    handleArchiveAll,
     openAddSenderDialog,
     openEditSenderDialog,
     handleSenderSubmit,

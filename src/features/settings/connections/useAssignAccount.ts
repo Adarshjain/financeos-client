@@ -35,10 +35,9 @@ export function useAssignAccount(
     setErrorMessage(null);
   };
 
-  const submit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
+  const assignTo = async (accountId: string) => {
     if (!item) return;
-    if (!effectiveAccountId) {
+    if (!accountId) {
       setErrorMessage('Select an account.');
       return;
     }
@@ -47,7 +46,7 @@ export function useAssignAccount(
     try {
       const res = await assignAttentionMutation.mutateAsync({
         ledgerId: item.id,
-        body: { accountId: effectiveAccountId },
+        body: { accountId },
       });
 
       if (res?.reactivatedCount && res.reactivatedCount > 0) {
@@ -62,6 +61,11 @@ export function useAssignAccount(
     }
   };
 
+  const submit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    return assignTo(effectiveAccountId);
+  };
+
   return {
     accounts: accounts ?? [],
     loadingAccounts,
@@ -70,5 +74,6 @@ export function useAssignAccount(
     errorMessage,
     isPending: assignAttentionMutation.isPending,
     submit,
+    assignTo,
   };
 }

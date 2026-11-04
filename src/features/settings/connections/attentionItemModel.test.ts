@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  attentionHintLink,
   type AttentionItem,
   describeAttentionItem,
   formatDateTime,
   gmailMessageUrl,
+  groupAttention,
 } from './attentionItemModel';
 
 function item(overrides: Partial<AttentionItem>): AttentionItem {
@@ -107,5 +109,39 @@ describe('gmailMessageUrl', () => {
     expect(gmailMessageUrl(item({ connectionEmail: 'me+bank@gmail.com', gmailMessageId: '18c2f0a1b2c3d4e5' }))).toBe(
       'https://mail.google.com/mail/?authuser=me%2Bbank%40gmail.com#all/18c2f0a1b2c3d4e5'
     );
+  });
+});
+
+describe('groupAttention', () => {
+  it('orders groups by reason, labels them and drops empty ones', () => {
+    const groups = groupAttention([
+      { reason: 'FAILED', count: 2 },
+      { reason: 'NO_AI_KEY', count: 0 },
+      { reason: 'IMPORT_OFF', count: 5 },
+      { reason: 'NO_ACCOUNT', count: 1 },
+    ]);
+    expect(groups).toEqual([
+      { reason: 'NO_ACCOUNT', label: 'No matching account', count: 1 },
+      { reason: 'IMPORT_OFF', label: 'Gmail import off', count: 5 },
+      { reason: 'FAILED', label: 'Failed', count: 2 },
+    ]);
+  });
+});
+
+describe('attentionHintLink', () => {
+  it('links import-off and locked statements to the account, the AI key to its settings', () => {
+    expect(attentionHintLink({ reason: 'IMPORT_OFF', accountId: 'a1' })).toEqual({ label: 'Set import date', href: '/accounts/a1' });
+    expect(attentionHintLink({ reason: 'LOCKED_STATEMENT', accountId: 'a1' })).toEqual({
+      label: 'Add the statement password',
+      href: '/accounts/a1',
+    });
+    expect(attentionHintLink({ reason: 'NO_AI_KEY', accountId: null })).toEqual({ label: 'Add an AI key', href: '/settings/ai' });
+  });
+
+  it('falls back to the accounts list without an account and has no link for other reasons', () => {
+    expect(attentionHintLink({ reason: 'IMPORT_OFF', accountId: null })?.href).toBe('/accounts');
+    expect(attentionHintLink({ reason: 'NO_ACCOUNT', accountId: null })).toBeNull();
+    expect(attentionHintLink({ reason: 'FAILED', accountId: null })).toBeNull();
+    expect(attentionHintLink({ reason: 'UNREADABLE_STATEMENT', accountId: null })).toBeNull();
   });
 });

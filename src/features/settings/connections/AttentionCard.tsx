@@ -4,12 +4,14 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
 import { Card } from '@/components/ds/Card/Card';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
 import { Pager } from '@/components/ds/Pager/Pager';
 import { Text } from '@/components/ds/Text/Text';
 import type { Schemas } from '@/lib/api/types';
 
 import { AssignDialog } from './AssignDialog';
-import type { AttentionItem } from './attentionItemModel';
+import { AttentionGroup } from './AttentionGroup';
+import { type AttentionItem, type AttentionReason, type AttentionReasonCount, groupAttention, REASON_LABELS } from './attentionItemModel';
 import { AttentionItemRow } from './AttentionItemRow';
 
 type PagedAttention = Schemas['PageGmailAttentionItemResponse'];
@@ -18,15 +20,16 @@ type PagedAttention = Schemas['PageGmailAttentionItemResponse'];
 export const ATTENTION_ANCHOR = 'attention';
 
 interface AttentionCardProps {
-  attentionData: PagedAttention;
-  attentionPage: number;
-  onPageChange: (page: number) => void;
+  /** Count per reason (zero-count reasons omitted); the active list is grouped by it. */
+  summary: AttentionReasonCount[];
   archivedData: PagedAttention | null;
   archivedPage: number;
   onArchivedPageChange: (page: number) => void;
   retryItem: (ledgerId: string) => void;
   onArchive: (ledgerId: string) => void;
   onUnarchive: (ledgerId: string) => void;
+  onRetryAll: (reason: AttentionReason) => void;
+  onArchiveAll: (reason: AttentionReason) => void;
   /** Opened from the "needs attention" push: scroll the card into view. */
   autoScroll?: boolean;
 }
@@ -58,22 +61,24 @@ function ListPager({
 
 /** Gmail emails that could not become transactions, with an Archived view in the same card. */
 export function AttentionCard({
-  attentionData,
-  attentionPage,
-  onPageChange,
+  summary,
   archivedData,
   archivedPage,
   onArchivedPageChange,
   retryItem,
   onArchive,
   onUnarchive,
+  onRetryAll,
+  onArchiveAll,
   autoScroll = false,
 }: AttentionCardProps) {
   const [assigning, setAssigning] = useState<AttentionItem | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
 
-  const activeCount = attentionData.totalElements;
+  const groups = groupAttention(summary);
+  const activeCount = groups.reduce((n, g) => n + g.count, 0);
+  const [confirmArchive, setConfirmArchive] = useState<AttentionReason | null>(null);
   const archivedCount = archivedData?.totalElements ?? 0;
   // An emptied archive resets the view, so a later archive does not open it unasked.
   if (showArchived && archivedCount === 0) setShowArchived(false);
@@ -84,9 +89,6 @@ export function AttentionCard({
     if (autoScroll) cardRef.current?.scrollIntoView({ block: 'start' });
   }, [autoScroll]);
 
-  const data = archivedView ? archivedData : attentionData;
-  const page = archivedView ? archivedPage : attentionPage;
-  const go = archivedView ? onArchivedPageChange : onPageChange;
   const rowHandlers = { retryItem, onAssign: setAssigning, onArchive, onUnarchive };
 
   return (
@@ -113,18 +115,41 @@ export function AttentionCard({
           ) : undefined
         }
       >
-        {data.content.length === 0 ? (
-          <Card.Empty>Nothing needs attention right now.</Card.Empty>
-        ) : (
+        {archivedView ? (
           <>
-            <ListPager data={data} page={page} onPageChange={go} position="top" />
-            {data.content.map((item) => (
+            <ListPager data={archivedData} page={archivedPage} onPageChange={onArchivedPageChange} position="top" />
+            {archivedData.content.map((item) => (
               <AttentionItemRow key={item.id} item={item} {...rowHandlers} />
             ))}
-            <ListPager data={data} page={page} onPageChange={go} position="bottom" />
+            <ListPager data={archivedData} page={archivedPage} onPageChange={onArchivedPageChange} position="bottom" />
           </>
+        ) : groups.length === 0 ? (
+          <Card.Empty>Nothing needs attention right now.</Card.Empty>
+        ) : (
+          groups.map((group) => (
+            <AttentionGroup
+              key={group.reason}
+              group={group}
+              {...rowHandlers}
+              onRetryAll={() => onRetryAll(group.reason)}
+              onArchiveAll={() => setConfirmArchive(group.reason)}
+            />
+          ))
         )}
       </Card>
+
+      <ConfirmDialog
+        open={confirmArchive !== null}
+        onOpenChange={(open) => (open ? undefined : setConfirmArchive(null))}
+        title={confirmArchive ? `Archive all "${REASON_LABELS[confirmArchive]}" items?` : 'Archive all?'}
+        description="They move to Archived and can be unarchived one by one."
+        confirmLabel="Archive all"
+        tone="danger"
+        onConfirm={() => {
+          if (confirmArchive) onArchiveAll(confirmArchive);
+          setConfirmArchive(null);
+        }}
+      />
 
       <AssignDialog item={assigning} onClose={() => setAssigning(null)} />
     </>

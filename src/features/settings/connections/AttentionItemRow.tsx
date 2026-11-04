@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useState } from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -9,7 +10,7 @@ import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
 import { formatDate, formatDateTime } from '@/lib/format';
 
-import { type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItemModel';
+import { attentionHintLink, type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItemModel';
 
 interface AttentionItemRowProps {
   item: AttentionItem;
@@ -57,6 +58,7 @@ function Details({ item, archived }: { item: AttentionItem; archived: boolean })
 export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarchive }: AttentionItemRowProps) {
   const [showDetails, setShowDetails] = useState(false);
   const { label, summary, hint } = describeAttentionItem(item);
+  const hintLink = attentionHintLink(item);
   const archived = Boolean(item.archivedAt);
   const emailDate = item.internalDate ?? item.discoveredAt;
 
@@ -79,9 +81,17 @@ export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarc
         <Text variant="body" tone="ink-2" as="p">
           {summary}
         </Text>
-        <Text variant="caption" tone="ink-3" as="p">
-          {hint}
-        </Text>
+        {hintLink ? (
+          <Text variant="label" as="span">
+            <Button asChild variant="link">
+              <Link href={hintLink.href}>{hintLink.label}</Link>
+            </Button>
+          </Text>
+        ) : (
+          <Text variant="caption" tone="ink-3" as="p">
+            {hint}
+          </Text>
+        )}
         <div>
           <Text variant="label" as="span">
             <Button variant="link" size="sm" aria-expanded={showDetails} onClick={() => setShowDetails((v) => !v)}>
