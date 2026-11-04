@@ -53,7 +53,7 @@ test.describe('Navigation and relocated pages (@ui)', () => {
 
   test('Settings links to Activity, and the Import page lists Recent imports', async ({ page }) => {
     await page.goto('/settings');
-    await page.getByRole('navigation', { name: 'Settings sections' }).getByRole('link', { name: 'Activity' }).click();
+    await page.getByRole('navigation', { name: 'Settings sections' }).getByRole('link', { name: 'Activity', exact: true }).click();
     await page.waitForURL('**/settings/activity');
     await expect(page.getByRole('button', { name: 'Status', exact: true })).toBeVisible({ timeout: 45000 });
 

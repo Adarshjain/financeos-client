@@ -53,7 +53,7 @@ test.describe('Debug & Diagnostics UI (@ui)', () => {
     // 1. Visit /debug with ref=E2EERR01
     await page.goto(`${E2E_CLIENT_URL}/settings/debug?ref=E2EERR01`);
     await expect(page.getByRole('banner')).toContainText('Debug');
-    await expect(page.getByRole('navigation', { name: 'Settings sections' }).getByRole('link', { name: 'Debug' })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Settings sections' }).getByRole('link', { name: 'Debug', exact: true })).toBeVisible();
 
     // Admins get the look-up form
     await expect(page.getByPlaceholder('HM6HK5G6')).toBeVisible();
@@ -115,7 +115,7 @@ test.describe('Debug & Diagnostics UI (@ui)', () => {
     // Visit /debug as non-admin
     await page.goto(`${E2E_CLIENT_URL}/settings/debug`);
     await expect(page.getByRole('banner')).toContainText('Debug');
-    await expect(page.getByRole('navigation', { name: 'Settings sections' }).getByRole('link', { name: 'Debug' })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Settings sections' }).getByRole('link', { name: 'Debug', exact: true })).toBeVisible();
 
     // Verify developer notice is shown
     await expect(page.getByText('Look-ups are for admins. Send the reference to the developer.')).toBeVisible();
