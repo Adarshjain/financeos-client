@@ -23,7 +23,7 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({ ...(await orig<typeof 
 import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 
-import { CardsSection } from './AccountsSections';
+import { FoundInEmailCard } from './FoundInEmailCard';
 import { type SectionSuggestions, type SuggestionItem, suggestionRow } from './suggestionsModel';
 
 const user = userEvent.setup({ pointerEventsCheck: 0 });
@@ -48,7 +48,6 @@ const sugg = (band: 'found' | 'older' | 'maybe', i: SuggestionItem, accounts: Ac
   parents: [],
   accounts,
 });
-const props = { rows: [], closedRows: [], closedLine: null, subtitle: '' };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -63,19 +62,19 @@ const showBand = async (band: string) => {
 
 describe('Part of another account', () => {
   it.each([['found'], ['older'], ['maybe']] as const)('shows in the %s band next to Not mine', async (band) => {
-    render(<CardsSection {...props} suggestions={sugg(band, item({ band: band.toUpperCase() as SuggestionItem['band'] }))} />);
+    render(<FoundInEmailCard suggestions={sugg(band, item({ band: band.toUpperCase() as SuggestionItem['band'] }))} />);
     await showBand(band);
     expect(screen.getAllByRole('button', { name: 'Part of another account' }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole('button', { name: 'Not mine' }).length).toBeGreaterThan(0);
   });
 
   it('is hidden when no account of that type sits at the bank', () => {
-    render(<CardsSection {...props} suggestions={sugg('found', item(), [{ ...regalia, bank: 'axis' } as Account])} />);
+    render(<FoundInEmailCard suggestions={sugg('found', item(), [{ ...regalia, bank: 'axis' } as Account])} />);
     expect(screen.queryByRole('button', { name: 'Part of another account' })).toBeNull();
   });
 
   it('opens the Where does it belong dialog', async () => {
-    render(<CardsSection {...props} suggestions={sugg('found', item())} />);
+    render(<FoundInEmailCard suggestions={sugg('found', item())} />);
     await user.click(screen.getAllByRole('button', { name: 'Part of another account' })[0]);
     expect(await screen.findByText('Where does ••4321 belong?')).toBeInTheDocument();
   });
@@ -85,14 +84,14 @@ describe('Older number question', () => {
   const older = () => item({ band: 'OLDER', parentAccount: { id: 'c1', name: 'HDFC Regalia', last4: '1111' } });
 
   it('asks "Older number on {account}?" with No and Yes instead of the buttons', async () => {
-    render(<CardsSection {...props} suggestions={sugg('older', older())} />);
+    render(<FoundInEmailCard suggestions={sugg('older', older())} />);
     await showBand('older');
     expect(screen.getAllByText('Older number on HDFC Regalia?').length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: 'Not mine' })).toBeNull();
   });
 
   it('Yes files it as an older number, refreshes and toasts', async () => {
-    render(<CardsSection {...props} suggestions={sugg('older', older())} />);
+    render(<FoundInEmailCard suggestions={sugg('older', older())} />);
     await showBand('older');
     await user.click(screen.getAllByRole('button', { name: 'Yes' })[0]);
     await waitFor(() => expect(actions.saveBelongs).toHaveBeenCalledWith('s1', { accountId: 'c1', as: 'OLDER_NUMBER' }));
@@ -101,7 +100,7 @@ describe('Older number question', () => {
   });
 
   it('No declines the link and refreshes without a toast', async () => {
-    render(<CardsSection {...props} suggestions={sugg('older', older())} />);
+    render(<FoundInEmailCard suggestions={sugg('older', older())} />);
     await showBand('older');
     await user.click(screen.getAllByRole('button', { name: 'No' })[0]);
     await waitFor(() => expect(actions.declineOlderNumber).toHaveBeenCalledWith('s1'));
@@ -110,7 +109,7 @@ describe('Older number question', () => {
   });
 
   it('a Found card with a parent keeps its normal row', () => {
-    render(<CardsSection {...props} suggestions={sugg('found', item({ parentAccount: { id: 'c1', name: 'HDFC Regalia' } } as Partial<SuggestionItem>))} />);
+    render(<FoundInEmailCard suggestions={sugg('found', item({ parentAccount: { id: 'c1', name: 'HDFC Regalia' } } as Partial<SuggestionItem>))} />);
     expect(screen.queryByText(/Older number on/)).toBeNull();
   });
 });

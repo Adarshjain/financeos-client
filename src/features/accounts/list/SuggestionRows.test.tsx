@@ -17,7 +17,8 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({ ...(await orig<typeof 
 
 import type { Account } from '@/lib/account.types';
 
-import { BankSection, CardsSection } from './AccountsSections';
+import { CardsSection } from './AccountsSections';
+import { FoundInEmailCard } from './FoundInEmailCard';
 import { addTarget } from './SuggestionRows';
 import type { SectionSuggestions, SuggestionRow } from './suggestionsModel';
 
@@ -42,7 +43,6 @@ const sugg = (over: Partial<SectionSuggestions['bands']> = {}, parents: Account[
   parents,
 });
 const cardProps = { rows: [], closedRows: [], closedLine: null, subtitle: '' };
-const bankProps = { rows: [], closedRows: [], closedLine: null };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -74,26 +74,22 @@ describe('addTarget', () => {
 });
 
 describe('suggestion rows in a section', () => {
-  it('draws Found rows under their band, with name, number and caption', () => {
-    render(<CardsSection {...cardProps} suggestions={sugg({ found: [row()] })} />);
+  it('draws Found rows in the card, with name, where they came from and number', () => {
+    render(<FoundInEmailCard suggestions={sugg({ found: [row()] })} />);
     expect(screen.getByText('Found in your email · 1')).toBeInTheDocument();
     expect(screen.getAllByText('HDFC Bank Regalia').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('••4321').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Seen in 6 emails').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('From your emails · ••4321').length).toBeGreaterThan(0);
   });
 
   it('draws no band that has no rows', () => {
-    render(<CardsSection {...cardProps} suggestions={sugg({ found: [row()] })} />);
+    render(<FoundInEmailCard suggestions={sugg({ found: [row()] })} />);
     expect(screen.queryByText(/Older cards/)).toBeNull();
     expect(screen.queryByText(/Maybe yours/)).toBeNull();
   });
 
   it('keeps Older and Maybe rows collapsed until Show', async () => {
     render(
-      <BankSection
-        {...bankProps}
-        suggestions={sugg({ older: [row({ id: 'o', kind: 'BANK_ACCOUNT', name: 'Old Bank account' })], maybe: [row({ id: 'm', kind: 'BANK_ACCOUNT', name: 'Maybe Bank account' })] })}
-      />,
+      <FoundInEmailCard suggestions={sugg({ older: [row({ id: 'o', kind: 'BANK_ACCOUNT', name: 'Old Bank account' })], maybe: [row({ id: 'm', kind: 'BANK_ACCOUNT', name: 'Maybe Bank account' })] })} />,
     );
     expect(screen.getByText('Older accounts · 1')).toBeInTheDocument();
     expect(screen.getByText('Maybe yours · 1')).toBeInTheDocument();
@@ -104,7 +100,7 @@ describe('suggestion rows in a section', () => {
   });
 
   it('Not mine hides the row, refreshes and offers Undo', async () => {
-    render(<CardsSection {...cardProps} suggestions={sugg({ found: [row()] })} />);
+    render(<FoundInEmailCard suggestions={sugg({ found: [row()] })} />);
     await user.click(screen.getAllByRole('button', { name: 'Not mine' })[0]);
     await waitFor(() => expect(actions.hideSuggestion).toHaveBeenCalledWith('s1'));
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
@@ -117,14 +113,14 @@ describe('suggestion rows in a section', () => {
 
   it('shows an error toast and does not refresh when hiding fails', async () => {
     actions.hideSuggestion.mockResolvedValue({ success: false, error: { message: "Couldn't hide this. Try again." } });
-    render(<CardsSection {...cardProps} suggestions={sugg({ found: [row()] })} />);
+    render(<FoundInEmailCard suggestions={sugg({ found: [row()] })} />);
     await user.click(screen.getAllByRole('button', { name: 'Not mine' })[0]);
     await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't hide this. Try again.", { tone: 'danger' }));
     expect(router.refresh).not.toHaveBeenCalled();
   });
 
   it('Add opens the Add account dialog for the section type', async () => {
-    render(<CardsSection {...cardProps} suggestions={sugg({ found: [row()] })} />);
+    render(<FoundInEmailCard suggestions={sugg({ found: [row()] })} />);
     await user.click(screen.getAllByRole('button', { name: 'Add' })[0]);
     expect(dialogs.open).toHaveBeenCalledWith('credit_card');
   });
@@ -132,10 +128,7 @@ describe('suggestion rows in a section', () => {
   it('Add on a debit card with a parent opens Edit for that account', async () => {
     const parent = { id: 'a1' } as Account;
     render(
-      <BankSection
-        {...bankProps}
-        suggestions={sugg({ found: [row({ kind: 'DEBIT_CARD', name: 'Debit card', parentAccountId: 'a1' })] }, [parent])}
-      />,
+      <FoundInEmailCard suggestions={sugg({ found: [row({ kind: 'DEBIT_CARD', name: 'Debit card', parentAccountId: 'a1' })] }, [parent])} />,
     );
     await user.click(screen.getAllByRole('button', { name: 'Add' })[0]);
     expect(await screen.findByRole('dialog')).toHaveTextContent('Edit a1');
@@ -144,10 +137,7 @@ describe('suggestion rows in a section', () => {
 
   it('asks "Is this your …?" with No and Yes, and sends the answer', async () => {
     render(
-      <CardsSection
-        {...cardProps}
-        suggestions={sugg({ found: [row({ sub: 'Is this your Axis Magnus?', isThis: { accountId: 'a2', accountName: 'Axis Magnus' } })] })}
-      />,
+      <FoundInEmailCard suggestions={sugg({ found: [row({ sub: 'Is this your Axis Magnus?', isThis: { accountId: 'a2', accountName: 'Axis Magnus' } })] })} />,
     );
     expect(screen.getAllByText('Is this your Axis Magnus?').length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: 'Add' })).toBeNull();
@@ -159,7 +149,7 @@ describe('suggestion rows in a section', () => {
   });
 
   it('a suggestion row opens no account page', async () => {
-    render(<CardsSection {...cardProps} suggestions={sugg({ found: [row()] })} />);
+    render(<FoundInEmailCard suggestions={sugg({ found: [row()] })} />);
     await user.click(screen.getAllByText('HDFC Bank Regalia')[0]);
     expect(router.push).not.toHaveBeenCalled();
   });

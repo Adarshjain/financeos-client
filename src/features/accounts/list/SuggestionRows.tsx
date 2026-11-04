@@ -194,7 +194,7 @@ export function SuggestionButtons({ row }: { row: SuggestionRow }) {
           Part of another account
         </Button>
       ) : null}
-      <Button variant="secondary" size="sm" disabled={busy} onPointerDown={actions.preload} onClick={() => actions.add(row)}>
+      <Button variant="primary" size="sm" disabled={busy} onPointerDown={actions.preload} onClick={() => actions.add(row)}>
         Add
       </Button>
     </div>

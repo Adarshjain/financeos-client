@@ -56,6 +56,11 @@ export function bankValueOf(item: Pick<SuggestionItem, 'bank'>): string {
   return BANKS.find((b) => b.id === item.bank.id)?.id ?? '';
 }
 
+/** The date part (yyyy-mm-dd) of the suggestion's first email, for "Import emails from"; '' when the server has none. */
+export function ingestFromOf(item: Pick<SuggestionItem, 'firstSeenOn'>): string {
+  return /^\d{4}-\d{2}-\d{2}/.exec(item.firstSeenOn?.trim() ?? '')?.[0] ?? '';
+}
+
 /** "A and B", or "A, B and C". */
 export function joinCandidates(candidates: readonly string[]): string {
   if (candidates.length <= 1) return candidates.join('');
@@ -72,7 +77,8 @@ function nameHintsOf(item: SuggestionItem): NameHint[] {
 /**
  * The Add account form's starting point for a suggestion. A credit card's exact limit is filled when the statements state one (a range only
  * becomes a hint). The statement password and earlier numbers are never prefilled. A card that belongs to an account we don't have yet (a debit, add-on or replacement card
- * without its parent) opens the type it belongs to with only its number and bank filled in.
+ * without its parent) opens the type it belongs to with only its number and bank filled in. "Import emails from" starts at the
+ * suggestion's first email, so the new account imports its transactions.
  */
 export function buildSuggestionPrefill(item: SuggestionItem): SuggestionPrefill {
   const bankKind = item.kind === 'BANK_ACCOUNT' || item.kind === 'DEBIT_CARD';
@@ -82,6 +88,7 @@ export function buildSuggestionPrefill(item: SuggestionItem): SuggestionPrefill 
   const values = emptyValues(type);
 
   values.bank = bankValueOf(item);
+  values.ingestFromDate = ingestFromOf(item);
   if (isAccount) values.name = suggestionTitle(item);
   const number = item.last4?.trim() ?? '';
 
