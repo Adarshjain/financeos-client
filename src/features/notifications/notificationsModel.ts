@@ -34,6 +34,8 @@ export function notificationHref(n: Pick<AppNotification, 'kind' | 'refs'>): str
       return accountId ? appHref(`/accounts/${accountId}`) : null;
     case 'emi_reminder':
       return loanId ? appHref(`/loans/${loanId}`) : null;
+    case 'upload_held':
+      return appHref('/transactions/import');
     case 'auto_linked':
       return appHref('/transactions');
     case 'accounts_found':

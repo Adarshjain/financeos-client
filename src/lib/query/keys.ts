@@ -224,6 +224,11 @@ export const keys = {
     detail: (id: string) => [...keys.statements.all, 'detail', id] as const,
   },
 
+  /** GET /held-uploads: statement files waiting for an account. */
+  heldUploads: {
+    all: ['held-uploads'] as const,
+  },
+
   obligations: {
     all: ['obligations'] as const,
     upcoming: (params: { months: number; kinds?: string[] }) =>

@@ -35,6 +35,7 @@ export function useIngestForm({
   failedHint = 'See results below.',
 }: UseIngestFormProps) {
   const qc = useQueryClient();
+  /** '' is "Detect automatically". */
   const [selectedAccountId, setSelectedAccountId] = useState<string>(() => {
     const match = initialAccountId ? accounts.find((a) => a.id === initialAccountId) : undefined;
     return match && supportsIngestion(match.type) && !isAccountClosed(match) ? match.id : '';
@@ -59,18 +60,26 @@ export function useIngestForm({
     }
     // The toast points at the jobs panel, so refresh it now rather than on its next poll tick.
     qc.invalidateQueries({ queryKey: keys.jobs.all });
+    // Files the server could not place wait in "Needs an account" and the Inbox.
+    qc.invalidateQueries({ queryKey: keys.heldUploads.all });
+    qc.invalidateQueries({ queryKey: keys.inbox.all });
     setActiveJobId(null);
   });
 
   const ingestMutation = useMutation({
+    // No account: the server finds each file's account from its bank and number.
     mutationFn: (input: { accountId: string; files: File[] }) =>
-      api
-        .POST('/api/v1/accounts/{accountId}/ingest', {
-          params: { path: { accountId: input.accountId } },
-          body: { files: input.files },
-          bodySerializer: multipartBodySerializer,
-        })
-        .then((r) => r.data!),
+      (input.accountId
+        ? api.POST('/api/v1/accounts/{accountId}/ingest', {
+            params: { path: { accountId: input.accountId } },
+            body: { files: input.files },
+            bodySerializer: multipartBodySerializer,
+          })
+        : api.POST('/api/v1/ingest', {
+            body: { files: input.files },
+            bodySerializer: multipartBodySerializer,
+          })
+      ).then((r) => r.data!),
   });
 
   // Two busy phases: the multipart POST itself (can take a while for large PDFs), then the
@@ -160,10 +169,6 @@ export function useIngestForm({
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (isUploading) return;
-    if (!selectedAccountId) {
-      notify.error('Select an account first.');
-      return;
-    }
     if (files.length === 0) {
       notify.error('Select at least one file to upload.');
       return;

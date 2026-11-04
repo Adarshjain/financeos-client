@@ -217,3 +217,6 @@ export type RawLogEntry = Schemas['RawLogEntry'];
 export type AppNotification = Schemas['AppNotificationResponse'];
 export type NotificationFeedPage = Schemas['PageAppNotificationResponse'];
 export type NotificationFeedSummary = Schemas['AppNotificationSummaryResponse'];
+
+// Statement files waiting for an account
+export type HeldUpload = Schemas['HeldUploadResponse'];

@@ -20,6 +20,7 @@ import { useJobsHistory } from '@/features/jobs/useJobsHistory';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { Account } from '@/lib/account.types';
+import type { HeldUpload } from '@/lib/api/types';
 import { formatCount } from '@/lib/format';
 import { useAccounts } from '@/lib/query';
 import { keys } from '@/lib/query/keys';
@@ -27,10 +28,14 @@ import { AccountType } from '@/lib/types';
 
 import { TransactionsTabs } from '../TransactionsTabs';
 import { formatFileSize, MAX_REQUEST_MB } from './fileLimits';
+import { HeldUploads } from './HeldUploads';
 import { IMPORT_ACTIVITY_HREF, IMPORT_JOB_TYPE, importJobHref, importUrl, RECENT_IMPORTS_SIZE } from './importModel';
 import { useIngestForm } from './useIngestForm';
 
 const IMPORT_ACCOUNT_TYPES: readonly AccountType[] = [AccountType.BANK_ACCOUNT, AccountType.CREDIT_CARD];
+/** The picker's first option: no account, the server finds each file's. */
+const AUTO_DETECT = 'auto';
+const AUTO_DETECT_OPTIONS = [{ value: AUTO_DETECT, label: 'Detect automatically' }];
 
 export interface ImportScreenProps {
   initialAccounts: Account[];
@@ -40,10 +45,14 @@ export interface ImportScreenProps {
   since: string;
   /** From `?page=`: the 0-based page of Recent imports. */
   page?: number;
+  /** Files waiting for an account, read by the server so the first paint needs no request. */
+  initialHeld?: HeldUpload[];
+  /** From `?held=`: the held file to scroll to and highlight. */
+  heldId?: string;
 }
 
 /** /transactions/import: upload statements to an account; Recent imports beside it, the running one on top. */
-export function ImportScreen({ initialAccounts, initialAccountId, since, page = 0 }: ImportScreenProps) {
+export function ImportScreen({ initialAccounts, initialAccountId, since, page = 0, initialHeld, heldId }: ImportScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: accounts = initialAccounts } = useAccounts(initialAccounts);
@@ -98,7 +107,8 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <TransactionsTabs />
         <div className={`grid grid-cols-1 items-start ${GRID_GAP} desk:grid-cols-12`}>
-          <Card className="desk:col-span-7">
+          <div className="flex flex-col gap-space-8 desk:gap-space-16 desk:col-span-7 min-w-0">
+          <Card>
             <form
               onSubmit={form.handleSubmit}
               className="flex flex-col gap-space-8 desk:gap-space-16 p-space-16 desk:p-space-20"
@@ -106,11 +116,12 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
             >
               <AccountPicker
                 label="Account"
-                placeholder="Choose an account…"
+                placeholder="Detect automatically"
                 accounts={form.uploadableAccounts}
                 types={IMPORT_ACCOUNT_TYPES}
-                value={form.selectedAccountId || null}
-                onValueChange={(v) => form.setSelectedAccountId(v ?? '')}
+                leadingOptions={AUTO_DETECT_OPTIONS}
+                value={form.selectedAccountId || AUTO_DETECT}
+                onValueChange={(v) => form.setSelectedAccountId(!v || v === AUTO_DETECT ? '' : v)}
                 disabled={locked}
               />
               <DropZone
@@ -132,11 +143,13 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
                   label,
                   type: 'submit',
                   loading: locked,
-                  disabled: !form.selectedAccountId || count === 0 || locked,
+                  disabled: count === 0 || locked,
                 }}
               />
             </form>
           </Card>
+          <HeldUploads accounts={form.uploadableAccounts} initialHeld={initialHeld} heldId={heldId} />
+          </div>
           <Card
             className="desk:col-span-5"
             title="Recent imports"

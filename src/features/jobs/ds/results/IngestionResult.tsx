@@ -55,7 +55,7 @@ const dupColumns = [
   }),
 ];
 
-const STATUS_TONE = { SUCCESS: 'success', SKIPPED: 'warning', FAILED: 'danger' } as const;
+const STATUS_TONE = { SUCCESS: 'success', SKIPPED: 'warning', HELD: 'warning', FAILED: 'danger' } as const;
 
 const fileCh = createDataTableColumnHelper<FileSummary>();
 const fileColumns = [
@@ -88,7 +88,7 @@ const fileColumns = [
     id: 'status',
     header: 'Status',
     meta: { size: 'sm', phone: 'status' },
-    cell: ({ row }) => <StatusWord tone={STATUS_TONE[row.original.status] ?? 'danger'}>{row.original.status}</StatusWord>,
+    cell: ({ row }) => <StatusWord tone={STATUS_TONE[row.original.status] ?? 'danger'}>{row.original.status === 'HELD' ? 'Needs an account' : row.original.status}</StatusWord>,
   }),
   fileCh.display({
     id: 'created',
