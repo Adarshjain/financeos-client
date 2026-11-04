@@ -15,6 +15,7 @@ vi.mock('@/lib/query', () => ({
       { id: 'a1', name: 'This one', type: 'bank_account' },
       { id: 'a2', name: 'HDFC Regalia', type: 'credit_card' },
       { id: 'a3', name: 'Zerodha', type: 'broker' },
+      { id: 'a4', name: 'SBI Savings', type: 'bank_account' },
     ],
     isLoading: false,
   }),
@@ -45,29 +46,29 @@ function renderIt() {
 beforeEach(() => vi.clearAllMocks());
 
 describe('MoveStatementDialog', () => {
-  it('lists only other statement accounts, says what happens to the transactions and moves', async () => {
+  it('lists only other accounts of the same type, says the transactions keep their changes, and moves', async () => {
     vi.mocked(moveStatement).mockResolvedValue({ success: true, data: {} } as never);
     renderIt();
-    expect(screen.getByText(/re-imported on the other account/)).toBeInTheDocument();
+    expect(screen.getByText(/move with it and keep your changes/)).toBeInTheDocument();
     const options = Array.from(screen.getByLabelText('Account').querySelectorAll('option')).map((o) => o.textContent);
-    expect(options).toEqual(['', 'HDFC Regalia']);
+    expect(options).toEqual(['', 'SBI Savings']);
     expect(screen.getByRole('button', { name: 'Move' })).toBeDisabled();
-    fireEvent.change(screen.getByLabelText('Account'), { target: { value: 'a2' } });
+    fireEvent.change(screen.getByLabelText('Account'), { target: { value: 'a4' } });
     fireEvent.click(screen.getByRole('button', { name: 'Move' }));
-    await waitFor(() => expect(moveStatement).toHaveBeenCalledWith('a1', 's1', 'a2'));
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Moved to HDFC Regalia'));
+    await waitFor(() => expect(moveStatement).toHaveBeenCalledWith('a1', 's1', 'a4'));
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Moved to SBI Savings'));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it('shows the server message as an error toast on 409', async () => {
     vi.mocked(moveStatement).mockResolvedValue({
-      success: false, status: 409, error: { code: 'FILE_EXPIRED', message: 'The file is no longer stored. Upload it again.' },
+      success: false, status: 409, error: { code: 'STATEMENT_EXISTS', message: 'That account already has this statement.' },
     } as never);
     renderIt();
-    fireEvent.change(screen.getByLabelText('Account'), { target: { value: 'a2' } });
+    fireEvent.change(screen.getByLabelText('Account'), { target: { value: 'a4' } });
     fireEvent.click(screen.getByRole('button', { name: 'Move' }));
     await waitFor(() =>
-      expect(showToast).toHaveBeenCalledWith('The file is no longer stored. Upload it again.', { tone: 'danger' }),
+      expect(showToast).toHaveBeenCalledWith('That account already has this statement.', { tone: 'danger' }),
     );
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });

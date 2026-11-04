@@ -32,7 +32,7 @@ export interface MoveStatementDialogProps {
   fy: string;
 }
 
-/** Moves a statement to another account: the file is imported there first, then removed here. */
+/** Moves a statement and its transactions to another account of the same type, keeping every edit. */
 export function MoveStatementDialog({ open, onOpenChange, accountId, statementId, periodEndLabel, fy }: MoveStatementDialogProps) {
   const router = useRouter();
   const qc = useQueryClient();
@@ -44,7 +44,11 @@ export function MoveStatementDialog({ open, onOpenChange, accountId, statementId
     if (open) setTargetId(null);
   }, [open]);
 
-  const targets = accounts.filter((a) => a.id !== accountId && supportsIngestion(a.type) && !isAccountClosed(a));
+  const sourceType = accounts.find((a) => a.id === accountId)?.type;
+  // Same type only: the server refuses a card statement on a bank account and the other way round.
+  const targets = accounts.filter(
+    (a) => a.id !== accountId && a.type === sourceType && supportsIngestion(a.type) && !isAccountClosed(a),
+  );
 
   const submit = async () => {
     if (!targetId || pending) return;
@@ -81,7 +85,7 @@ export function MoveStatementDialog({ open, onOpenChange, accountId, statementId
       >
         <Dialog.Body>
           <Text variant="body" tone="ink-2" as="p" className="mb-space-8">
-            Its transactions are re-imported on the other account; changes you made to them are not kept.
+            Its transactions move with it and keep your changes.
           </Text>
           <form
             id={FORM_ID}
