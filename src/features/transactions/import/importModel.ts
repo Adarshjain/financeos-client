@@ -50,6 +50,22 @@ export function ingestResult(job: JobResponse): FileIngestionResult | null {
   return job.status === 'SUCCEEDED' && r && typeof r === 'object' ? (r as FileIngestionResult) : null;
 }
 
+/** How many of an import's files failed, of how many; null when the job has no per-file results. */
+export function importFailures(job: JobResponse): { failed: number; total: number } | null {
+  const files = ingestResult(job)?.fileDetails ?? [];
+  if (files.length === 0) return null;
+  return { failed: files.filter((f) => f.status === 'FAILED').length, total: files.length };
+}
+
+/** "2 of 3 files failed.", "All 3 files failed." or "The file failed."; null when none failed. */
+export function importFailureSummary(job: JobResponse): { text: string; allFailed: boolean } | null {
+  const r = importFailures(job);
+  if (!r || r.failed === 0) return null;
+  const allFailed = r.failed === r.total;
+  if (r.total === 1) return { text: 'The file failed.', allFailed };
+  return { text: allFailed ? `All ${r.total} files failed.` : `${r.failed} of ${r.total} files failed.`, allFailed };
+}
+
 /** The job's name: the file, or "n files" for several. */
 export function importJobTitle(job: JobResponse): string {
   const files = ingestResult(job)?.fileDetails ?? [];

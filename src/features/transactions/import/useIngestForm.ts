@@ -16,6 +16,7 @@ import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
 import { formatFileSize, MAX_REQUEST_BYTES, MAX_REQUEST_MB } from './fileLimits';
+import { importFailureSummary } from './importModel';
 
 interface UseIngestFormProps {
   accounts: Account[];
@@ -23,12 +24,15 @@ interface UseIngestFormProps {
   initialAccountId?: string;
   /** The toast when the import succeeds; the page says where to see it. */
   completedMessage?: string;
+  /** Ends the toast when some files failed, pointing at where the per-file results are. */
+  failedHint?: string;
 }
 
 export function useIngestForm({
   accounts,
   initialAccountId,
   completedMessage = 'Statement ingestion completed — see results below.',
+  failedHint = 'See results below.',
 }: UseIngestFormProps) {
   const qc = useQueryClient();
   const [selectedAccountId, setSelectedAccountId] = useState<string>(() => {
@@ -41,7 +45,10 @@ export function useIngestForm({
 
   const { isPolling } = useJobStatusPolling(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED') {
-      notify.success(completedMessage);
+      const failure = importFailureSummary(job);
+      if (!failure) notify.success(completedMessage);
+      else if (failure.allFailed) notify.error(`${failure.text} ${failedHint}`);
+      else notify.warning(`${failure.text} ${failedHint}`);
       qc.invalidateQueries({ queryKey: keys.transactions.all });
       // Imported transactions move balances, the emergency fund and dashboard widgets too.
       void invalidateMoneyQueries(qc);
