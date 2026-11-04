@@ -1,7 +1,7 @@
 'use server';
 
 import { serverApi } from '@/lib/api/server';
-import type { AssignAttentionRequest, GmailSenderRequest } from '@/lib/api/types';
+import type { AssignAttentionRequest, AttentionBulkRequest, GmailSenderRequest } from '@/lib/api/types';
 import { createDomainAction } from '@/lib/domainApi';
 
 export interface GmailAttentionQuery {
@@ -9,6 +9,7 @@ export interface GmailAttentionQuery {
   size: number;
   includeRetryable: boolean;
   archived?: boolean;
+  reason?: AttentionBulkRequest['reason'];
 }
 
 export const loadGmailConnections = createDomainAction(
@@ -32,6 +33,24 @@ export const loadGmailAttention = createDomainAction(
     const { data } = await serverApi.GET('/api/v1/gmail/attention', { params: { query } });
     return data ?? null;
   },
+);
+
+export const loadGmailAttentionSummary = createDomainAction(
+  { fallbackError: "Couldn't load the emails that need attention. Try again." },
+  async (includeRetryable: boolean) =>
+    (await serverApi.GET('/api/v1/gmail/attention/summary', { params: { query: { includeRetryable } } })).data ?? [],
+);
+
+export const retryAllGmailAttention = createDomainAction(
+  { fallbackError: "Couldn't retry the items. Try again." },
+  async (body: AttentionBulkRequest) =>
+    (await serverApi.POST('/api/v1/gmail/attention/retry-all', { body })).data ?? null,
+);
+
+export const archiveAllGmailAttention = createDomainAction(
+  { fallbackError: "Couldn't archive the items. Try again." },
+  async (body: AttentionBulkRequest) =>
+    (await serverApi.POST('/api/v1/gmail/attention/archive-all', { body })).data ?? null,
 );
 
 export const startGmailOAuth = createDomainAction(

@@ -5,14 +5,17 @@ vi.mock('@/lib/api/server', () => ({ serverApi: { GET: m.get, POST: m.post, PUT:
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
 import {
+  archiveAllGmailAttention,
   archiveGmailAttention,
   assignGmailAttention,
   createGmailSender,
   deleteGmailSender,
   disconnectGmail,
   loadGmailAttention,
+  loadGmailAttentionSummary,
   loadGmailConnections,
   loadGmailSenders,
+  retryAllGmailAttention,
   retryGmailAttention,
   startGmailOAuth,
   syncGmail,
@@ -97,5 +100,20 @@ describe('gmail writes', () => {
     m.post.mockRejectedValue(new Error('down'));
     const res = await syncGmail();
     expect(res.success).toBe(false);
+  });
+});
+
+describe('attention bulk and summary', () => {
+  it('loads the summary with includeRetryable and defaults to an empty list', async () => {
+    expect(await loadGmailAttentionSummary(false)).toEqual({ success: true, data: [] });
+    expect(m.get).toHaveBeenCalledWith('/api/v1/gmail/attention/summary', { params: { query: { includeRetryable: false } } });
+  });
+
+  it('retries and archives a whole reason through their own endpoints', async () => {
+    m.post.mockResolvedValue({ data: { affected: 4 } });
+    expect(await retryAllGmailAttention({ reason: 'NO_AI_KEY' })).toEqual({ success: true, data: { affected: 4 } });
+    expect(m.post).toHaveBeenCalledWith('/api/v1/gmail/attention/retry-all', { body: { reason: 'NO_AI_KEY' } });
+    await archiveAllGmailAttention({ reason: 'FAILED' });
+    expect(m.post).toHaveBeenCalledWith('/api/v1/gmail/attention/archive-all', { body: { reason: 'FAILED' } });
   });
 });

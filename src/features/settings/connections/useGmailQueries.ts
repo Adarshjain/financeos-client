@@ -2,17 +2,16 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { loadGmailAttention, loadGmailConnections, loadGmailSenders } from '@/features/settings/connections/gmailActions';
+import { loadGmailAttention, loadGmailAttentionSummary, loadGmailConnections, loadGmailSenders } from '@/features/settings/connections/gmailActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 
 interface UseGmailQueriesOptions {
-  attentionPage: number;
   archivedPage?: number;
 }
 
-/** The reads GmailConnect needs: connections, sender allowlist, attention items (active + archived). */
-export function useGmailQueries({ attentionPage, archivedPage = 0 }: UseGmailQueriesOptions) {
+/** The reads GmailConnect needs: connections, sender allowlist, attention counts per reason, and the archived items. */
+export function useGmailQueries({ archivedPage = 0 }: UseGmailQueriesOptions) {
   const connectionsQuery = useQuery({
     queryKey: keys.settings.gmailConnection(),
     queryFn: () => unwrapAction(loadGmailConnections()),
@@ -23,10 +22,10 @@ export function useGmailQueries({ attentionPage, archivedPage = 0 }: UseGmailQue
     queryFn: () => unwrapAction(loadGmailSenders()),
   });
 
-  const attentionParams = { page: attentionPage, size: 10, includeRetryable: false };
+  // Active items load per reason group (see AttentionGroup); this is the count per reason.
   const attentionQuery = useQuery({
-    queryKey: keys.settings.gmailAttention(attentionParams),
-    queryFn: () => unwrapAction(loadGmailAttention(attentionParams)),
+    queryKey: keys.settings.gmailAttention({ summary: true, includeRetryable: false }),
+    queryFn: () => unwrapAction(loadGmailAttentionSummary(false)),
   });
 
   // Archived items only feed the collapsed "Archived" section, so they stay out of `loading`.
@@ -44,7 +43,7 @@ export function useGmailQueries({ attentionPage, archivedPage = 0 }: UseGmailQue
   return {
     connections: connectionsQuery.data ?? [],
     senders: sendersQuery.data ?? [],
-    attentionData: attentionQuery.data ?? null,
+    attentionSummary: attentionQuery.data ?? null,
     archivedData: archivedQuery.data ?? null,
     loading,
   };

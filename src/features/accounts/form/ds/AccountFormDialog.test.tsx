@@ -101,6 +101,20 @@ beforeEach(() => {
   idApi.isLoading = false;
 });
 
+describe('Add account prefill props', () => {
+  it('starts with the given bank and last 4', () => {
+    renderDialog({ initialType: AccountType.CREDIT_CARD, prefillBank: 'hdfc', prefillLast4: '4242' });
+    expect(field('Last 4 digits')).toHaveValue('4242');
+    expect(screen.getByText('HDFC Bank')).toBeInTheDocument();
+  });
+
+  it('ignores an unknown bank and leaves last 4 empty without the props', () => {
+    renderDialog({ initialType: AccountType.CREDIT_CARD, prefillBank: 'nope' });
+    expect(field('Last 4 digits')).toHaveValue('');
+    expect(screen.queryByText('HDFC Bank')).toBeNull();
+  });
+});
+
 describe('Add account', () => {
   it('shows only the type picker until a type is picked, with the create button disabled', () => {
     renderDialog({ initialType: null });

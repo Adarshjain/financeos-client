@@ -12,6 +12,7 @@ import { showToast } from '@/components/ds/Toast/Toast';
 import { useAccountFormMutations } from '@/features/accounts/form/useAccountFormMutations';
 import { useAccountIdentifiers } from '@/features/accounts/form/useAccountIdentifiers';
 import type { SuggestionItem } from '@/features/accounts/list/suggestionsModel';
+import { BANKS } from '@/features/banks/banks';
 import { appHref } from '@/features/shell/routes';
 import type { Account, AccountRequest } from '@/lib/account.types';
 import { resolveAmountExpression } from '@/lib/amountExpression';
@@ -65,10 +66,14 @@ export interface AccountFormDialogProps {
   onCreated?: (account: Account) => void;
   /** Add mode: the suggestion to fill the form from; creating it marks the suggestion added. */
   fromSuggestion?: SuggestionItem;
+  /** Add mode: the bank id to start with; ignored when it is not a known bank. */
+  prefillBank?: string;
+  /** Add mode: the last 4 digits to start with. */
+  prefillLast4?: string;
 }
 
 /** Add account and Edit account: one dialog, the fields follow the picked type. */
-export function AccountFormDialog({ account, initialType = null, onClose, onCreated, fromSuggestion }: AccountFormDialogProps) {
+export function AccountFormDialog({ account, initialType = null, onClose, onCreated, fromSuggestion, prefillBank, prefillLast4 }: AccountFormDialogProps) {
   const router = useRouter();
   const isEdit = Boolean(account);
   const today = todayInAppZone();
@@ -77,7 +82,12 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
 
   const [prefill] = React.useState(() => (!account && fromSuggestion ? buildSuggestionPrefill(fromSuggestion) : null));
   const [values, setValues] = React.useState<AccountFormValues>(() =>
-    account ? valuesFromAccount(account) : (prefill?.values ?? { ...emptyValues(initialType), ingestFromDate: defaultIngestFromDate(today) })
+    account ? valuesFromAccount(account) : (prefill?.values ?? {
+        ...emptyValues(initialType),
+        ingestFromDate: defaultIngestFromDate(today),
+        bank: BANKS.some((b) => b.id === prefillBank) ? (prefillBank ?? '') : '',
+        last4: prefillLast4 ?? '',
+      })
   );
   const [errors, setErrors] = React.useState<FormErrors>({});
   const [identifierError, setIdentifierError] = React.useState<string | null>(null);

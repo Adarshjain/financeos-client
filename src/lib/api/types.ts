@@ -33,6 +33,7 @@ export type AccountIdentifierResponse = Schemas['AccountIdentifierResponse'];
 export type CreateAccountIdentifierRequest = Schemas['CreateAccountIdentifierRequest'];
 export type AccountIdentifierKind = NonNullable<Schemas['AccountIdentifierResponse']['kind']>;
 export type AssignAttentionRequest = Schemas['AssignAttentionRequest'];
+export type AttentionBulkRequest = Schemas['AttentionBulkRequest'];
 export type AssignAttentionResponse = Schemas['AssignAttentionResponse'];
 
 // Transactions

@@ -1,3 +1,4 @@
+import { appHref } from '@/features/shell/routes';
 import type { Schemas } from '@/lib/api/types';
 import { formatDate } from '@/lib/utils';
 
@@ -94,4 +95,52 @@ export function formatDateTime(value: string | null | undefined): string {
 export function gmailMessageUrl(item: AttentionItem): string {
   const authuser = encodeURIComponent(item.connectionEmail);
   return `https://mail.google.com/mail/?authuser=${authuser}#all/${encodeURIComponent(item.gmailMessageId)}`;
+}
+
+export type AttentionReason = AttentionItem['reason'];
+export type AttentionReasonCount = Schemas['AttentionReasonCount'];
+
+/** The order groups appear in, and the heading of each. */
+const REASON_ORDER: AttentionReason[] = ['NO_ACCOUNT', 'IMPORT_OFF', 'NO_AI_KEY', 'LOCKED_STATEMENT', 'UNREADABLE_STATEMENT', 'FAILED'];
+
+export const REASON_LABELS: Record<AttentionReason, string> = {
+  NO_ACCOUNT: 'No matching account',
+  IMPORT_OFF: 'Gmail import off',
+  NO_AI_KEY: 'No AI key',
+  LOCKED_STATEMENT: 'Locked statement',
+  UNREADABLE_STATEMENT: 'Statement unreadable',
+  FAILED: 'Failed',
+};
+
+export interface AttentionGroupModel {
+  reason: AttentionReason;
+  label: string;
+  count: number;
+}
+
+/** The summary's non-empty reasons as groups, in the fixed order. */
+export function groupAttention(summary: readonly AttentionReasonCount[]): AttentionGroupModel[] {
+  return REASON_ORDER.map((reason) => ({ reason, label: REASON_LABELS[reason], count: summary.find((s) => s.reason === reason)?.count ?? 0 })).filter(
+    (g) => g.count > 0,
+  );
+}
+
+export interface AttentionHintLink {
+  label: string;
+  href: string;
+}
+
+/** Where the next step lives, for the reasons the user fixes on a settings or account page; null for the rest. */
+export function attentionHintLink(item: Pick<AttentionItem, 'reason' | 'accountId'>): AttentionHintLink | null {
+  const accountHref = appHref(item.accountId ? `/accounts/${item.accountId}` : '/accounts');
+  switch (item.reason) {
+    case 'IMPORT_OFF':
+      return { label: 'Set import date', href: accountHref };
+    case 'NO_AI_KEY':
+      return { label: 'Add an AI key', href: appHref('/settings/ai') };
+    case 'LOCKED_STATEMENT':
+      return { label: 'Add the statement password', href: accountHref };
+    default:
+      return null;
+  }
 }

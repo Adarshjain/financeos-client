@@ -3,11 +3,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import {
+  archiveAllGmailAttention,
   archiveGmailAttention,
   assignGmailAttention,
   createGmailSender,
   deleteGmailSender,
   disconnectGmail,
+  retryAllGmailAttention,
   retryGmailAttention,
   startGmailOAuth,
   syncGmail,
@@ -16,7 +18,7 @@ import {
 } from '@/features/settings/connections/gmailActions';
 import { useRouterRefresh } from '@/features/settings/useRouterRefresh';
 import { unwrapAction } from '@/lib/actionResult';
-import type { AssignAttentionRequest, GmailSenderRequest } from '@/lib/api/types';
+import type { AssignAttentionRequest, AttentionBulkRequest, GmailSenderRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 
 /** Every write GmailConnect needs, grouped so the orchestrator hook stays thin. */
@@ -89,6 +91,19 @@ export function useGmailMutations() {
     },
   });
 
+  const retryAllMutation = useMutation({
+    mutationFn: (body: AttentionBulkRequest) => unwrapAction(retryAllGmailAttention(body)),
+    onSuccess: async () => {
+      await invalidateAttention();
+      refreshLayout();
+    },
+  });
+
+  const archiveAllMutation = useMutation({
+    mutationFn: (body: AttentionBulkRequest) => unwrapAction(archiveAllGmailAttention(body)),
+    onSuccess: invalidateAttentionAndInbox,
+  });
+
   const createSenderMutation = useMutation({
     mutationFn: (body: GmailSenderRequest) => unwrapAction(createGmailSender(body)),
     onSuccess: invalidateSenders,
@@ -112,6 +127,8 @@ export function useGmailMutations() {
     archiveAttentionMutation,
     unarchiveAttentionMutation,
     assignAttentionMutation,
+    retryAllMutation,
+    archiveAllMutation,
     createSenderMutation,
     updateSenderMutation,
     deleteSenderMutation,
