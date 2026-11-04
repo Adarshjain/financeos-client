@@ -229,6 +229,11 @@ export const keys = {
     all: ['held-uploads'] as const,
   },
 
+  recurring: {
+    all: ['recurring'] as const,
+    proposals: () => [...keys.recurring.all, 'proposals'] as const,
+  },
+
   obligations: {
     all: ['obligations'] as const,
     upcoming: (params: { months: number; kinds?: string[] }) =>

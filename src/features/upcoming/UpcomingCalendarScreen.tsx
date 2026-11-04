@@ -32,9 +32,10 @@ import {
   parseCalendarMonth,
   shiftMonth,
 } from './calendarModel';
-import type { ObligationItem } from './obligationsModel';
+import { type ObligationItem, obligationTitle } from './obligationsModel';
 import { UpcomingRow } from './UpcomingRow';
 import { UpcomingRowsSkeleton } from './UpcomingSkeleton';
+import { useRecurringActions } from './useRecurringActions';
 import { useUrlState } from './useUrlState';
 
 const monthTitle = (month: string) => formatMonth(`${month}-01`);
@@ -63,7 +64,7 @@ export function UpcomingCalendarScreen() {
   const events = React.useMemo(
     () =>
       monthItems.map((item, idx) => ({
-        id: `${item.type}-${item.statementId ?? item.loanId ?? item.counterpartyId ?? item.accountId}-${item.installmentSeq ?? idx}-${idx}`,
+        id: `${item.type}-${item.statementId ?? item.loanId ?? item.counterpartyId ?? item.seriesId ?? item.accountId}-${item.installmentSeq ?? idx}-${idx}`,
         date: item.date as string,
         label: chipLabel(item),
         tone: chipTone(item),
@@ -101,6 +102,7 @@ export function UpcomingCalendarScreen() {
     el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }, [billParam, isFetched, selected]);
 
+  const recurring = useRecurringActions();
   const failed = Boolean(error) && !data;
   const retry = { label: 'Retry', onSelect: () => void refetch() };
 
@@ -109,9 +111,11 @@ export function UpcomingCalendarScreen() {
     highlighted: Boolean(billParam) && item.statementId === billParam,
     onMarkPaid: (i: ObligationItem) => setPaying({ item: i, open: true }),
     onSettle: (i: ObligationItem) => setSettling({ item: i, open: true }),
+    onStopTracking: (i: ObligationItem) =>
+      i.seriesId ? void recurring.stop(i.seriesId, obligationTitle(i)) : undefined,
   });
   const rowKey = (item: ObligationItem, idx: number) =>
-    `${item.type}-${item.statementId ?? item.loanId ?? item.counterpartyId ?? item.accountId}-${item.installmentSeq ?? idx}-${idx}`;
+    `${item.type}-${item.statementId ?? item.loanId ?? item.counterpartyId ?? item.seriesId ?? item.accountId}-${item.installmentSeq ?? idx}-${idx}`;
 
   let body: React.ReactNode;
   if (isPending && !failed) {

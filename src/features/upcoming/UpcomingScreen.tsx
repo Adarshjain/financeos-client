@@ -11,9 +11,11 @@ import { InboxBillHost } from '@/features/inbox/InboxBillHost';
 import { SettleDialog } from '@/features/lendings/SettleDialog';
 import { todayInAppZone } from '@/lib/date-range';
 import { useObligations } from '@/lib/query/hooks/useObligations';
+import { useRecurringProposals } from '@/lib/query/hooks/useRecurringProposals';
 import { replaceUrl } from '@/lib/urlState';
 
-import { DEFAULT_OBLIGATION_MONTHS, type ObligationItem, type ObligationKindFilter } from './obligationsModel';
+import { DEFAULT_OBLIGATION_MONTHS, type ObligationItem, type ObligationKindFilter, obligationTitle } from './obligationsModel';
+import { RegularPaymentsCard } from './RegularPaymentsCard';
 import { UpcomingFilters } from './UpcomingFilters';
 import { UpcomingList } from './UpcomingList';
 import {
@@ -25,6 +27,7 @@ import {
 } from './upcomingModel';
 import { UpcomingSkeleton } from './UpcomingSkeleton';
 import { UpcomingTotals } from './UpcomingTotals';
+import { useRecurringActions } from './useRecurringActions';
 import { useUrlState } from './useUrlState';
 
 /**
@@ -45,6 +48,8 @@ export function UpcomingScreen() {
   const [detailsFor, setDetailsFor] = React.useState<string | null>(null);
   const today = todayInAppZone();
 
+  const recurring = useRecurringActions();
+  const { data: proposals } = useRecurringProposals();
   const { data, error, isFetched, isPending, refetch } = useObligations(months);
   const items = React.useMemo(
     () => (data ?? []).filter((i) => kind === 'all' || i.type === kind),
@@ -86,6 +91,7 @@ export function UpcomingScreen() {
   } else {
     body = (
       <>
+        {proposals && proposals.length > 0 ? <RegularPaymentsCard proposals={proposals} /> : null}
         <UpcomingTotals tiles={tiles} />
         <UpcomingFilters
           kind={kind}
@@ -123,6 +129,9 @@ export function UpcomingScreen() {
             onMarkPaid={(item) => setPaying({ item, open: true })}
             onSettle={(item) => setSettling({ item, open: true })}
             onSetDetails={(item) => setDetailsFor(item.statementId ?? null)}
+            onStopTracking={(item) =>
+              item.seriesId ? void recurring.stop(item.seriesId, obligationTitle(item)) : undefined
+            }
           />
         )}
       </>

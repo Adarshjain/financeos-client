@@ -110,6 +110,7 @@ export type CreateCounterpartyRequest = Schemas['CreateCounterpartyRequest'];
 export type UpdateCounterpartyRequest = Schemas['UpdateCounterpartyRequest'];
 export type ObligationsResponse = Schemas['ObligationsResponse'];
 export type ObligationItemDto = Schemas['ObligationItemDto'];
+export type RecurringSeriesDto = Schemas['RecurringSeriesDto'];
 
 // Loans
 export type LoanResponse = Schemas['LoanResponse'];

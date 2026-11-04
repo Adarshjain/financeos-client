@@ -33,6 +33,7 @@ export interface UpcomingListProps {
   onMarkPaid: (item: ObligationItem) => void;
   onSettle: (item: ObligationItem) => void;
   onSetDetails?: (item: ObligationItem) => void;
+  onStopTracking?: (item: ObligationItem) => void;
 }
 
 function sections(items: ObligationItem[], today: string): Section[] {
@@ -59,7 +60,7 @@ function sections(items: ObligationItem[], today: string): Section[] {
 export function upcomingRowKeys(items: readonly ObligationItem[]): string[] {
   const seen = new Map<string, number>();
   return items.map((item) => {
-    const base = `${item.type}-${item.statementId ?? item.loanId ?? item.counterpartyId ?? item.accountId}-${item.installmentSeq ?? ''}`;
+    const base = `${item.type}-${item.statementId ?? item.loanId ?? item.counterpartyId ?? item.seriesId ?? item.accountId}-${item.installmentSeq ?? ''}`;
     const n = seen.get(base) ?? 0;
     seen.set(base, n + 1);
     return n === 0 ? base : `${base}-${n}`;
@@ -74,6 +75,7 @@ export function UpcomingList({
   onMarkPaid,
   onSettle,
   onSetDetails,
+  onStopTracking,
 }: UpcomingListProps) {
   const [shown, setShown] = React.useState<Set<string>>(() => new Set());
   // A paid or settled row leaves after a refetch (outside a transition); deferring the rows lets it fold away.
@@ -149,6 +151,7 @@ export function UpcomingList({
                     onMarkPaid={onMarkPaid}
                     onSettle={onSettle}
                     onSetDetails={onSetDetails}
+                    onStopTracking={onStopTracking}
                   />
                 </RowTransition>
               ))}

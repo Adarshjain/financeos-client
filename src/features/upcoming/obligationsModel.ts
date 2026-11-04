@@ -4,7 +4,7 @@ import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
 export type ObligationItem = ObligationItemDto;
 
-export type ObligationType = 'emi' | 'lending_due' | 'card_bill' | 'statement_expected';
+export type ObligationType = 'emi' | 'lending_due' | 'card_bill' | 'statement_expected' | 'recurring';
 
 export type ObligationKindFilter = 'all' | ObligationType;
 
@@ -15,6 +15,7 @@ export const OBLIGATION_KINDS: { value: ObligationKindFilter; label: string }[] 
   { value: 'emi', label: 'EMIs' },
   { value: 'lending_due', label: 'Lending' },
   { value: 'statement_expected', label: 'Statements' },
+  { value: 'recurring', label: 'Regular payments' },
 ];
 
 /** How far ahead the Upcoming list looks, in months. */
@@ -103,6 +104,7 @@ export function obligationWindows(items: ObligationItem[], today: string): Oblig
 
 export function obligationTitle(item: ObligationItem): string {
   if (item.title) return item.title;
+  if (item.type === 'recurring') return 'Regular payment';
   if (item.type === 'emi') return `${item.loanName} · EMI #${item.installmentSeq}`;
   return `${item.counterpartyName} (${item.direction === 'lent' ? 'Receivable' : 'Payable'})`;
 }
