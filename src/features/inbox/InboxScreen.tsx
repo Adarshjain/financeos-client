@@ -35,7 +35,7 @@ export interface InboxScreenProps {
 /** The Inbox tab: Act now and Needs a look in one card, plus the dialogs rows open. */
 export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
   const { data, isLoading, error, refetch } = useInbox();
-  const { snooze, dismiss, epfLink, epfDismiss } = useInboxMutations(dsInboxNotifier);
+  const { snooze, dismiss, epfLink, epfDismiss, noStatement } = useInboxMutations(dsInboxNotifier);
   const [pendingBill, setPendingBill] = React.useState<PendingBillAction | null>(null);
   const closeBill = React.useCallback(() => setPendingBill(null), []);
 
@@ -47,6 +47,7 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
   const onBillButton = (item: InboxItemResponse, button: RowButton) => {
     if (button.epf === 'link') return epfLink(item);
     if (button.epf === 'dismiss') return epfDismiss(item);
+    if (button.skip) return noStatement(item.key, button.skip.accountId, button.skip.periodEnd);
     const pending = pendingFor(item, button);
     if (pending) setPendingBill(pending);
   };

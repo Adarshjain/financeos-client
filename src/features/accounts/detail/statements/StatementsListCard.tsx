@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -10,25 +11,29 @@ import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { Select } from '@/components/ds/Select/Select';
 import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
 import { showToast } from '@/components/ds/Toast/Toast';
+import { appHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
 
 import { accountHref } from '../accountTabsModel';
-import { fyLabel, type StatementRowModel } from './listModel';
+import { fyLabel, type StatementsListRow } from './listModel';
+import { useStatementSkip } from './useStatementSkip';
 
 export interface StatementsListCardProps {
   accountId: string;
   isCard: boolean;
   fy: string;
   fyOptions: string[];
-  rows: StatementRowModel[];
+  rows: StatementsListRow[];
 }
 
 /** The left pane: the year's statements, each one a bill. */
 export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: StatementsListCardProps) {
   const router = useRouter();
   const { unmarkPaid } = useBillMutations();
+  const statementSkip = useStatementSkip();
   const base = `${accountHref(accountId)}/statements`;
 
   const undo = async (statementId: string) => {
@@ -65,7 +70,52 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
           }}
         />
       ) : (
-        rows.map((row) => (
+        rows.map((entry) => {
+          if (entry.kind !== 'statement') {
+            const missing = entry.kind === 'missing';
+            return (
+              <ListRow
+                key={missing ? `missing-${entry.periodEnd}` : `skip-${entry.id}`}
+                data-testid={missing ? 'statement-missing-row' : 'statement-skipped-row'}
+                title={
+                  <Text tone={missing ? 'danger' : 'ink-3'} as="span">
+                    {entry.title}
+                  </Text>
+                }
+                subtitle={entry.caption}
+                trailing={
+                  missing ? (
+                    <>
+                      <Button variant="secondary" size="sm" asChild>
+                        <Link href={appHref(`/transactions/import?account=${accountId}`)} prefetch={false}>
+                          Upload
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => void statementSkip.skip(accountId, entry.periodEnd)}
+                      >
+                        No statement this period
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => entry.id && void statementSkip.undo(accountId, entry.id)}
+                      >
+                        Undo
+                      </Button>
+                    </>
+                  )
+                }
+              />
+            );
+          }
+          const row = entry.row;
+          return (
           <ListRow
             key={row.id}
             highlighted={row.selected}
@@ -99,7 +149,8 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
             }
             onClick={() => router.push(`${base}?statement=${row.id}&fy=${fy}`)}
           />
-        ))
+          );
+        })
       )}
     </Card>
   );

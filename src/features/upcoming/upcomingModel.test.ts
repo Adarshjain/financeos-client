@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { ObligationItem } from './obligationsModel';
 import {
   buildTiles,
+  canSkipStatementItem,
   foldedMonthLine,
   parseKind,
   parseMonths,
@@ -113,5 +114,21 @@ describe('row model', () => {
   it('folded month line with and without a total', () => {
     expect(foldedMonthLine('December 2026', [nextMonth, nextMonth])).toBe('December · 2 · ₹1,000');
     expect(foldedMonthLine('December 2026', [overdueStmt])).toBe('December · 1');
+  });
+});
+
+describe('canSkipStatementItem', () => {
+  const stmt = it_({ type: 'statement_expected', accountId: 'A1', date: '2026-10-03', amount: null });
+  it('shows once the cycle has ended', () => {
+    expect(canSkipStatementItem(stmt, TODAY)).toBe(true);
+  });
+  it('hides on the period end day and before it', () => {
+    expect(canSkipStatementItem(stmt, '2026-10-03')).toBe(false);
+    expect(canSkipStatementItem({ ...stmt, date: '2026-10-20' }, TODAY)).toBe(false);
+  });
+  it('hides for other kinds, an undated row or a row without a card', () => {
+    expect(canSkipStatementItem({ ...stmt, type: 'card_bill' }, TODAY)).toBe(false);
+    expect(canSkipStatementItem({ ...stmt, date: null }, TODAY)).toBe(false);
+    expect(canSkipStatementItem({ ...stmt, accountId: null }, TODAY)).toBe(false);
   });
 });

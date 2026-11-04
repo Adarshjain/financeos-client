@@ -1,8 +1,10 @@
 'use client';
 
 import { type QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
+import { skipStatementPeriod, undoStatementSkip } from '@/features/accounts/detail/statements/statementSkipActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { InboxItemResponse, InboxResponse, InboxSummaryResponse } from '@/lib/api/types';
@@ -24,6 +26,9 @@ export interface InboxNotifier {
   epfLinked?: () => void;
   epfDismissed?: () => void;
   epfFailed?: (error: unknown) => void;
+  /** A card's cycle was marked "No statement this period"; undo takes the mark back. */
+  statementSkipped?: (undo: () => void) => void;
+  statementSkipFailed?: (error: unknown) => void;
 }
 
 export const sonnerInboxNotifier: InboxNotifier = {
@@ -37,6 +42,9 @@ export const sonnerInboxNotifier: InboxNotifier = {
   epfLinked: () => toast.success('Linked to the EPF withdrawal'),
   epfDismissed: () => toast.success('Dismissed'),
   epfFailed: (e) => toast.error(getErrorMessage(e, "Couldn't update this suggestion. Try again.")),
+  statementSkipped: (undo) =>
+    toast.success('No statement this period', { action: { label: 'Undo', onClick: undo } }),
+  statementSkipFailed: (e) => toast.error(getErrorMessage(e, "Couldn't mark this period. Try again.")),
 };
 
 const INBOX_ACTION_KEY = ['inbox', 'action'] as const;
@@ -72,6 +80,7 @@ function restore(qc: QueryClient, snapshot: Snapshot | undefined) {
  */
 export function useInboxMutations(notifier: InboxNotifier = sonnerInboxNotifier) {
   const qc = useQueryClient();
+  const router = useRouter();
   // The list and the badge counts are query-backed (server-prefetched into the same keys), so a refetch is the refresh.
   // Only after the last overlapping action settles (the settling one still counts as mutating): an earlier refetch
   // could land while another action is in flight and bring back the row it has optimistically hidden.
@@ -110,6 +119,37 @@ export function useInboxMutations(notifier: InboxNotifier = sonnerInboxNotifier)
     onError: (e, _key, snapshot) => {
       restore(qc, snapshot);
       notifier.dismissFailed(e);
+    },
+    onSettled: settle,
+  });
+
+  // "No statement this period": the server stops expecting that cycle; Undo deletes the skip and brings the row back.
+  const undoSkip = useMutation({
+    mutationKey: INBOX_ACTION_KEY,
+    mutationFn: ({ accountId, skipId }: { accountId: string; skipId: string }) =>
+      unwrapAction(undoStatementSkip(accountId, skipId)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.obligations.all });
+      router.refresh(); // other pages (the card's Statements tab, Accounts, Bills) read the warning server-side
+      notifier.restored();
+    },
+    onError: (e) => notifier.undoFailed(e),
+    onSettled: settle,
+  });
+
+  const noStatement = useMutation({
+    mutationKey: INBOX_ACTION_KEY,
+    mutationFn: ({ accountId, periodEnd }: { key: string; accountId: string; periodEnd: string }) =>
+      unwrapAction(skipStatementPeriod(accountId, periodEnd)),
+    onMutate: ({ key }) => hideRow(qc, key),
+    onSuccess: ({ id }, { accountId }) => {
+      void qc.invalidateQueries({ queryKey: keys.obligations.all });
+      router.refresh(); // other pages (the card's Statements tab, Accounts, Bills) read the warning server-side
+      notifier.statementSkipped?.(() => undoSkip.mutate({ accountId, skipId: id }));
+    },
+    onError: (e, _vars, snapshot) => {
+      restore(qc, snapshot);
+      notifier.statementSkipFailed?.(e);
     },
     onSettled: settle,
   });
@@ -156,5 +196,6 @@ export function useInboxMutations(notifier: InboxNotifier = sonnerInboxNotifier)
     epfDismiss: (item: InboxItemResponse) => epfDismiss.mutate(item),
     snooze: (key: string, until: string) => snooze.mutate({ key, until }),
     dismiss: (key: string) => dismiss.mutate(key),
+    noStatement: (key: string, accountId: string, periodEnd: string) => noStatement.mutate({ key, accountId, periodEnd }),
   };
 }

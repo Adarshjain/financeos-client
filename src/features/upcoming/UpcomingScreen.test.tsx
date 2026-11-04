@@ -24,6 +24,10 @@ vi.mock('@/lib/date-range', async (importOriginal) => ({
 vi.mock('@/lib/query/hooks/useObligations', () => ({ useObligations: vi.fn() }));
 vi.mock('@/lib/query/hooks/useRecurringProposals', () => ({ useRecurringProposals: () => ({ data: [] }) }));
 vi.mock('./useRecurringActions', () => ({ useRecurringActions: () => ({ stop: vi.fn() }) }));
+const skipStatement = vi.hoisted(() => vi.fn());
+vi.mock('@/features/accounts/detail/statements/useStatementSkip', () => ({
+  useStatementSkip: () => ({ skip: skipStatement, undo: vi.fn() }),
+}));
 vi.mock('@/features/bills/MarkPaidDialog', () => ({
   MarkPaidDialog: (p: { open: boolean; statementId: string; cardName: string; remaining: number | null }) =>
     p.open ? (
@@ -235,6 +239,19 @@ describe('UpcomingScreen row trailing', () => {
   it('Upload links to the live import page for the account', () => {
     render(<UpcomingScreen />);
     expect(screen.getByRole('link', { name: 'Upload' })).toHaveAttribute('href', '/transactions/import?account=A1');
+  });
+
+  it('an ended statement-expected cycle offers No statement this period, which marks that card and period end', () => {
+    render(<UpcomingScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'No statement this period' }));
+    expect(skipStatement).toHaveBeenCalledWith('A1', '2026-10-03');
+  });
+
+  it('a statement-expected cycle that has not ended has no such button', () => {
+    mockQuery({ data: [row({ type: 'statement_expected', status: 'upcoming', date: '2026-10-20', amount: null, accountId: 'A1', title: 'x' })] });
+    render(<UpcomingScreen />);
+    expect(screen.queryByRole('button', { name: 'No statement this period' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Upload' })).toBeInTheDocument();
   });
 
   it('lending rows get Settle; tapping the row opens the person; Settle opens the sheet with direction and balance', () => {

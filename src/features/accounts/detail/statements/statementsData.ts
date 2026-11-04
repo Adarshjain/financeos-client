@@ -1,6 +1,6 @@
 import type { Account } from '@/lib/account.types';
 import { serverApi } from '@/lib/api/server';
-import type { CardBillResponse } from '@/lib/api/types';
+import type { CardBillResponse, StatementSkipsResponse } from '@/lib/api/types';
 import { billsApi } from '@/lib/apiClient';
 import type { StatementSummary } from '@/lib/statement.types';
 import { AccountType } from '@/lib/types';
@@ -23,6 +23,8 @@ export interface StatementsData {
   markPaid: MarkPaidTarget | null;
   /** Month-by-month coverage for the strip; null when its request failed (the strip is then left out). */
   coverage?: CoverageData | null;
+  /** A card's skipped periods and the cycle still missing a statement; null for other accounts or when the request failed. */
+  skips?: StatementSkipsResponse | null;
 }
 
 /** The account's statements; null when the request failed (the helper in apiClient turns errors into an empty list). */
@@ -41,6 +43,17 @@ async function loadCoverage(accountId: string): Promise<CoverageData | null> {
   try {
     const { data } = await serverApi.GET('/api/v1/accounts/{id}/coverage', { params: { path: { id: accountId } } });
     return data && Array.isArray(data.months) ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+async function loadSkips(accountId: string): Promise<StatementSkipsResponse | null> {
+  try {
+    const { data } = await serverApi.GET('/api/v1/accounts/{accountId}/statement-skips', {
+      params: { path: { accountId } },
+    });
+    return data && Array.isArray(data.skipped) ? data : null;
   } catch {
     return null;
   }
@@ -72,9 +85,13 @@ export async function loadStatementsData(
   today: string
 ): Promise<StatementsData> {
   const isCard = account.type === AccountType.CREDIT_CARD;
-  const [statements, coverage] = await Promise.all([loadStatements(account.id), loadCoverage(account.id)]);
+  const [statements, coverage, skips] = await Promise.all([
+    loadStatements(account.id),
+    loadCoverage(account.id),
+    isCard ? loadSkips(account.id) : Promise.resolve(null),
+  ]);
   if (!statements) {
-    return { statements: null, view: null, detail: null, detailFailed: false, bills: {}, markPaid: null, coverage };
+    return { statements: null, view: null, detail: null, detailFailed: false, bills: {}, markPaid: null, coverage, skips };
   }
   const view = buildStatementsView(statements, params.fy, params.statement, today);
 
@@ -100,5 +117,6 @@ export async function loadStatementsData(
     bills,
     markPaid: isCard ? buildHeaderModel(account, currentBill, today).markPaid : null,
     coverage,
+    skips,
   };
 }

@@ -7,7 +7,7 @@ import { AccountType } from '@/lib/types';
 
 import { CoverageStrip } from './CoverageStrip';
 import { buildDetailModel } from './detailModel';
-import { buildStatementRow } from './listModel';
+import { buildListRows, buildStatementRow } from './listModel';
 import { MarkPaidAction } from './MarkPaidAction';
 import { StatementDetailCard } from './StatementDetailCard';
 import { loadStatementsData } from './statementsData';
@@ -41,8 +41,11 @@ export async function AccountStatements({
   }
 
   const { view } = data;
-  const rows = view.inFy.map((s) =>
-    buildStatementRow(s, data.bills[s.id] ?? null, isCard, view.selectedId)
+  const rows = buildListRows(
+    view.inFy,
+    (s) => buildStatementRow(s, data.bills[s.id] ?? null, isCard, view.selectedId),
+    isCard ? data.skips : null,
+    view.fy
   );
   const selected = view.selectedId;
 

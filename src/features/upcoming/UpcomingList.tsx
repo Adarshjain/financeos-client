@@ -34,6 +34,7 @@ export interface UpcomingListProps {
   onSettle: (item: ObligationItem) => void;
   onSetDetails?: (item: ObligationItem) => void;
   onStopTracking?: (item: ObligationItem) => void;
+  onSkipStatement?: (item: ObligationItem) => void;
 }
 
 function sections(items: ObligationItem[], today: string): Section[] {
@@ -76,6 +77,7 @@ export function UpcomingList({
   onSettle,
   onSetDetails,
   onStopTracking,
+  onSkipStatement,
 }: UpcomingListProps) {
   const [shown, setShown] = React.useState<Set<string>>(() => new Set());
   // A paid or settled row leaves after a refetch (outside a transition); deferring the rows lets it fold away.
@@ -143,6 +145,8 @@ export function UpcomingList({
                 <RowTransition key={keys[idx]}>
                   <UpcomingRow
                     item={item}
+                    today={today}
+                    onSkipStatement={onSkipStatement}
                     primaryAction={s.primaryAction}
                     highlighted={
                       Boolean(highlightStatementId) && item.statementId === highlightStatementId

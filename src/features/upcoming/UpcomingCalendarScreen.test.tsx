@@ -23,6 +23,9 @@ vi.mock('@/lib/date-range', async (importOriginal) => ({
 vi.mock('@/lib/query/hooks/useObligations', () => ({ useObligations: vi.fn() }));
 vi.mock('@/lib/query/hooks/useRecurringProposals', () => ({ useRecurringProposals: () => ({ data: [] }) }));
 vi.mock('./useRecurringActions', () => ({ useRecurringActions: () => ({ stop: vi.fn() }) }));
+vi.mock('@/features/accounts/detail/statements/useStatementSkip', () => ({
+  useStatementSkip: () => ({ skip: vi.fn(), undo: vi.fn() }),
+}));
 vi.mock('@/features/bills/MarkPaidDialog', () => ({
   MarkPaidDialog: (p: { open: boolean; statementId: string }) =>
     p.open ? <div data-testid="mark-paid">{p.statementId}</div> : null,

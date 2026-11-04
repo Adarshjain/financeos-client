@@ -16,4 +16,7 @@ export const dsInboxNotifier: InboxNotifier = {
   epfLinked: () => showToast('Linked to the EPF withdrawal'),
   epfDismissed: () => showToast('Item dismissed'),
   epfFailed: (e) => showToast(getErrorMessage(e, "Couldn't update. The row is back."), { tone: 'danger' }),
+  statementSkipped: (undo) => showToast('No statement this period', { action: { label: 'Undo', onSelect: undo } }),
+  statementSkipFailed: (e) =>
+    showToast(getErrorMessage(e, "Couldn't mark this period. The row is back."), { tone: 'danger' }),
 };
