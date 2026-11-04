@@ -139,7 +139,7 @@ export function HelloScreen({
     footer: React.ReactNode
   ) => (
     <div className="min-h-dvh flex flex-col desk:items-center desk:justify-center desk:p-space-40">
-      <div className="w-full flex-1 desk:flex-none desk:max-w-container-md flex flex-col px-space-16 pt-space-32">
+      <div className="w-full flex-1 desk:flex-none desk:max-w-container-md flex flex-col px-space-16 pt-space-24">
         {top ? (
           <div className="flex items-center gap-space-10 pb-space-8">
             {top.back ? (
@@ -153,7 +153,7 @@ export function HelloScreen({
             </Text>
           </div>
         ) : null}
-        <div className="flex flex-col gap-space-32 pt-space-24 pb-space-32">
+        <div className="flex flex-col gap-space-20 pt-space-20 pb-space-24">
           {body}
         </div>
         {footer}
@@ -236,7 +236,7 @@ export function HelloScreen({
       <form
         id="hello-form"
         noValidate
-        className="flex flex-col gap-space-32"
+        className="flex flex-col gap-space-20"
         onSubmit={(e) => {
           e.preventDefault();
           void submit();
