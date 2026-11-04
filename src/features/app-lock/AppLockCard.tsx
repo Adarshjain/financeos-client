@@ -9,6 +9,7 @@ import { Select } from '@/components/ds/Select/Select';
 import { Switch } from '@/components/ds/Switch/Switch';
 import { Text } from '@/components/ds/Text/Text';
 import { showToast } from '@/components/ds/Toast/Toast';
+import { useRouterRefresh } from '@/features/settings/useRouterRefresh';
 import type { AppLockStatus } from '@/lib/api/types';
 import { APP_LOCK_CHANGED_EVENT, notifyIfAppLocked } from '@/lib/appLock';
 
@@ -54,6 +55,8 @@ function announce() {
 export function AppLockCard({ status }: { status: AppLockStatus }) {
   const [armed, setArmed] = useState(status.armed);
   const [lockAfter, setLockAfter] = useState(String(status.lockAfterSeconds ?? DEFAULT_LOCK_AFTER));
+  // The Settings list shows On/Off, which lives in the server layout.
+  const refreshLayout = useRouterRefresh();
   const [support, setSupport] = useState<Support>('checking');
 
   useEffect(() => {
@@ -83,6 +86,7 @@ export function AppLockCard({ status }: { status: AppLockStatus }) {
       if (!done.success) return showToast(done.error.message, { tone: 'danger' });
       setArmed(true);
       announce();
+      refreshLayout();
     } catch (e) {
       // Dismissing the prompt is not an error worth a toast.
       if (!isCancelled(e)) showToast("Couldn't turn on app lock. Try again.", { tone: 'danger' });
@@ -102,6 +106,7 @@ export function AppLockCard({ status }: { status: AppLockStatus }) {
       if (!done.success) return showToast(done.error.message, { tone: 'danger' });
       setArmed(false);
       announce();
+      refreshLayout();
     } catch (e) {
       if (!isCancelled(e)) showToast("Couldn't turn off app lock. Try again.", { tone: 'danger' });
     }
