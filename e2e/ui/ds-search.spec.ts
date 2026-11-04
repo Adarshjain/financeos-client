@@ -53,7 +53,7 @@ for (const viewport of VIEWPORTS) {
       await expect(palette(page).getByRole('option')).toHaveCount(0);
     });
 
-    test('shows pages and actions from one character and sends no search under 3 characters', async ({ page }) => {
+    test('shows pages and actions from one character and sends no search under 2 characters', async ({ page }) => {
       test.slow();
       const searches: string[] = [];
       page.on('request', (r) => {
@@ -61,7 +61,7 @@ for (const viewport of VIEWPORTS) {
       });
       await openSearch(page);
 
-      await page.getByRole('searchbox').fill('tr');
+      await page.getByRole('searchbox').fill('t');
       await expect(page.getByRole('option').filter({ hasText: exactly('Transactions') })).toBeVisible();
       await expect(page.getByRole('option').filter({ hasText: exactly('Trade') })).toBeVisible();
       await page.waitForTimeout(700);
@@ -167,13 +167,13 @@ for (const viewport of VIEWPORTS) {
       await expect(palette(page).getByRole('option').filter({ hasText: `Mark ${WORD} Card bill paid` })).toHaveCount(0);
     });
 
-    test('1 or 2 characters show the nudge, 3 remove it', async ({ page }) => {
+    test('1 character shows the nudge, 2 remove it', async ({ page }) => {
       test.slow();
       await openSearch(page);
+      await page.getByRole('searchbox').fill('z');
+      await expect(palette(page).getByText('Type 2 or more characters to search accounts, transactions and more')).toBeVisible();
       await page.getByRole('searchbox').fill('ze');
-      await expect(palette(page).getByText('Type 3 or more characters to search accounts, transactions and more')).toBeVisible();
-      await page.getByRole('searchbox').fill('zep');
-      await expect(palette(page).getByText(/Type 3 or more characters/)).toHaveCount(0);
+      await expect(palette(page).getByText(/Type 2 or more characters/)).toHaveCount(0);
     });
 
     test('the clear button empties the text and shows nothing; there is no Cancel', async ({ page }) => {

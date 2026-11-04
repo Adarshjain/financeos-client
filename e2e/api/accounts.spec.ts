@@ -34,6 +34,8 @@ const COMMON_ACCOUNT_KEYS = [
   'warnings',
   'createdAt',
   'updatedAt',
+  'suggestClose',
+  'gmailFetch',
 ];
 
 // ingestFromDate (Gmail watermark) and lastStatementDate exist only for the two account types

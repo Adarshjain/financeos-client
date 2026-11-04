@@ -150,10 +150,9 @@ test.describe('Gmail connect, senders and empty sync', () => {
     const blank = await api.POST('/api/v1/gmail/senders', { body: { senderAddress: '   ' } });
     expectStatus(blank, 400);
 
-    // FINDING: the address is only checked for blankness — a malformed sender is accepted as-is.
-    const malformed = await api.POST('/api/v1/gmail/senders', { body: { senderAddress: 'not-an-email' } });
-    expectStatus(malformed, 200);
-    await api.DELETE('/api/v1/gmail/senders/{id}', { params: { path: { id: malformed.data!.id } } });
+    // A sender is an email address or a domain; anything else is rejected.
+    const malformed = await api.POST('/api/v1/gmail/senders', { body: { senderAddress: 'not an email' } });
+    expectStatus(malformed, 400);
 
     const updated = await api.PUT('/api/v1/gmail/senders/{id}', {
       params: { path: { id: created.id } },
@@ -448,11 +447,12 @@ test.describe('Gmail sync journey', () => {
     expect((done.error as { message?: string })?.message).toContain('not in a retryable attention status');
   });
 
-  test('rescan lowers the backfill floor and lists a bounded window; too-old dates are rejected', async () => {
+  test('rescan lowers the backfill floor and lists a bounded window; future dates are rejected', async () => {
     test.slow();
-    const tooOld = await api.POST('/api/v1/gmail/rescan', { body: { fromDate: isoDaysAgo(400) } });
-    expectStatus(tooOld, 400);
-    expect((tooOld.error as { message?: string })?.message).toContain('Rescan date cannot be earlier than');
+    // The 365-day cap is gone: only a future date is rejected.
+    const future = await api.POST('/api/v1/gmail/rescan', { body: { fromDate: isoDaysAgo(-3) } });
+    expectStatus(future, 400);
+    expect((future.error as { message?: string })?.message).toContain('Rescan date cannot be in the future');
 
     // The account's ingestFromDate (60 days ago) already ratcheted the backfill floor there and the
     // first sync covered that window, so a rescan must reach further back to produce a new listing.

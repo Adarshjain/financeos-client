@@ -103,7 +103,7 @@ test.describe('Gmail settings UI (@ui)', () => {
     const dialog = page.getByRole('dialog', { name: 'Add allowed sender' });
     await expect(dialog).toBeVisible();
     await dialog.getByLabel(/^Sender name/).fill('E2E Bank Alerts');
-    await dialog.getByLabel('Sender email address').fill(BANK_SENDER);
+    await dialog.getByLabel('Email address or domain').fill(BANK_SENDER);
     // The dialog's only switch is "Enable ingestion for this sender".
     await expect(dialog.getByRole('switch')).toBeChecked();
     await dialog.getByRole('button', { name: 'Add sender', exact: true }).click();
@@ -162,7 +162,7 @@ test.describe('Gmail settings UI (@ui)', () => {
     const uberAnswer = extractionFor(parkedMail, { json: extractedTxn({ amount: 640, date: isoDaysAgo(3), last4: '9999', merchant: 'UBER' }) });
     await scriptExtractions(api, [uberAnswer, uberAnswer]);
 
-    await page.getByRole('button', { name: 'Retry' }).click();
+    await page.getByRole('button', { name: 'Retry', exact: true }).click();
     await expectToast(page, 'Item queued for retry');
     await waitForGmailJobsIdle(api);
     await page.reload();
@@ -206,7 +206,7 @@ test.describe('Gmail settings UI (@ui)', () => {
     await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
     const dialog = page.getByRole('dialog', { name: 'Edit allowed sender' });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByLabel('Sender email address')).toHaveValue(BANK_SENDER);
+    await expect(dialog.getByLabel('Email address or domain')).toHaveValue(BANK_SENDER);
     const ingestion = dialog.getByRole('switch');
     await expect(ingestion).toBeChecked();
     await ingestion.click();

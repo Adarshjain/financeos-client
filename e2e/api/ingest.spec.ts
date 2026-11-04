@@ -287,7 +287,7 @@ test.describe('Statements Ingestion API', () => {
     }
   });
 
-  test('A manual entry is a duplicate of a statement row only when it names the same counterparty', async ({
+  test('A manual entry is merged into a statement row when it names the same counterparty, and only flagged when less certain', async ({
     api,
   }) => {
     const account = await createBankAccount(api, {
@@ -314,9 +314,9 @@ test.describe('Statements Ingestion API', () => {
       periodEnd: '2026-04-30',
       opening: 50000.0,
       rows: [
-        // Names Swiggy at a word start ("Limited" is ignored) -> duplicate of the manual entry.
+        // Names Swiggy at a word start ("Limited" is ignored) -> certain: merged into the statement row.
         { date: '2026-04-10', description: 'UPI/DR/412345/SWIGGY/YESB', debit: 450.0 },
-        // Same text as the manual entry except the reference number -> a different payment.
+        // Same text as the manual entry except the reference number -> uncertain: both rows stay flagged.
         { date: '2026-04-12', description: 'UPI/DR/900002/ZOMATO/HDFC', debit: 300.0 },
       ],
     };
@@ -327,18 +327,21 @@ test.describe('Statements Ingestion API', () => {
 
     expect(result.totalCreated).toBe(2);
     expect(result.totalDuplicatesFound).toBe(1);
-    expect(result.duplicateDetails?.map((d) => d.description)).toEqual(['UPI/DR/412345/SWIGGY/YESB']);
+    expect(result.duplicateDetails?.map((d) => d.description)).toEqual(['UPI/DR/900002/ZOMATO/HDFC']);
 
-    expect((await findById(api, swiggy.id))?.reviewReasons).toContain('DUPLICATE_SUSPECT');
-    expect((await findById(api, zomato.id))?.reviewReasons ?? []).not.toContain('DUPLICATE_SUSPECT');
+    // The certain pair is merged: the manual entry is gone, the statement row stays unflagged.
+    expect(await findById(api, swiggy.id)).toBeNull();
+    // The uncertain pair stays, both rows flagged.
+    expect((await findById(api, zomato.id))?.reviewReasons).toContain('DUPLICATE_SUSPECT');
 
     const txns = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
     ]);
     const swiggyRow = txns.find((t) => t.sourcedDescription === 'UPI/DR/412345/SWIGGY/YESB');
     const zomatoRow = txns.find((t) => t.sourcedDescription === 'UPI/DR/900002/ZOMATO/HDFC');
-    expect(swiggyRow?.reviewReasons).toContain('DUPLICATE_SUSPECT');
-    expect(zomatoRow?.reviewReasons ?? []).not.toContain('DUPLICATE_SUSPECT');
+    expect(swiggyRow).toBeDefined();
+    expect(swiggyRow?.reviewReasons ?? []).not.toContain('DUPLICATE_SUSPECT');
+    expect(zomatoRow?.reviewReasons).toContain('DUPLICATE_SUSPECT');
   });
 
   test('Variants: XLSX string, XLSX numeric, XLSX grouped integers, dd-MMM-yyyy, newest-first, ref-column, no-balance', async ({
@@ -496,8 +499,10 @@ test.describe('Statements Ingestion API', () => {
       statementPassword: 'wrongPassword999',
     });
 
+    // Passwords already saved on the user's other accounts are tried too, so the file is locked with one no account holds.
+    const unknownPdf = await genBankPdf({ ...standardBankSpec, password: 'unknownPassword456' });
     const { result: r2 } = await uploadAndIngest(api, wrongAcc.id, [
-      { filename: 'encrypted-fail.pdf', buffer: encryptedPdf },
+      { filename: 'encrypted-fail.pdf', buffer: unknownPdf },
     ]);
     expect(r2.fileDetails[0].status).toBe('FAILED');
     expect(r2.fileDetails[0].errorMessage).toContain(
