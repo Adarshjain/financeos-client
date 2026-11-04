@@ -26,6 +26,8 @@ export interface UpcomingRowProps {
   onSettle: (item: ObligationItem) => void;
   /** Set details on an undated card bill; the link shows only when given. */
   onSetDetails?: (item: ObligationItem) => void;
+  /** Stop tracking a regular payment; its row menu shows only when given. */
+  onStopTracking?: (item: ObligationItem) => void;
 }
 
 /** One obligation in the Upcoming list: date tile, title and context, amount, then its action. */
@@ -37,12 +39,15 @@ export function UpcomingRow({
   onMarkPaid,
   onSettle,
   onSetDetails,
+  onStopTracking,
 }: UpcomingRowProps) {
   const router = useRouter();
   const date = rowDate(item);
   const amount = rowAmount(item);
   const overdue = item.status === 'overdue';
-  const dueSoon = item.type === 'card_bill' && item.status === 'due_soon';
+  const regular = item.type === 'recurring';
+  const paid = regular && item.paid === true;
+  const dueSoon = (item.type === 'card_bill' || regular) && item.status === 'due_soon' && !paid;
   const parts = rowSubtitleParts(item, daysText);
   const pageHref =
     item.type === 'emi' || item.type === 'lending_due' ? obligationHref(item) : null;
@@ -92,10 +97,16 @@ export function UpcomingRow({
           </Text>
         )
       }
+      actions={
+        regular && item.seriesId && onStopTracking
+          ? [{ id: 'stop', label: 'Stop tracking', onSelect: () => onStopTracking(item) }]
+          : undefined
+      }
       title={obligationTitle(item)}
       subtitle={subtitle}
       trailing={
         <>
+          {paid ? <StatusWord tone="success">Paid</StatusWord> : null}
           {overdue && item.amount == null ? (
             <StatusWord tone="warning" className="max-desk:hidden">
               Overdue

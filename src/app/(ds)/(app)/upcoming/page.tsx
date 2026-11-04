@@ -5,7 +5,9 @@ import { signInIfPrefetchFailed } from '@/features/shell/loadHelpers';
 import type { SearchParams } from '@/features/shell/searchParams';
 import { UpcomingScreen } from '@/features/upcoming/UpcomingScreen';
 import { parseUpcomingUrl } from '@/features/upcoming/upcomingUrl';
+import { unwrapAction } from '@/lib/actionResult';
 import { obligationsApi } from '@/lib/apiClient';
+import { loadRecurringProposals } from '@/lib/query/actions/recurringActions';
 import { getQueryClient } from '@/lib/query/client';
 import { keys } from '@/lib/query/keys';
 
@@ -24,6 +26,11 @@ export default async function DsUpcomingPage({
   await qc.prefetchQuery({
     queryKey: keys.obligations.upcoming({ months }),
     queryFn: async () => (await obligationsApi.getUpcoming(months)).items,
+  });
+  // Proposals are optional: a failed prefetch leaves the card out and the client retries.
+  await qc.prefetchQuery({
+    queryKey: keys.recurring.proposals(),
+    queryFn: () => unwrapAction(loadRecurringProposals()),
   });
   await signInIfPrefetchFailed(qc, keys.obligations.upcoming({ months }));
   return (

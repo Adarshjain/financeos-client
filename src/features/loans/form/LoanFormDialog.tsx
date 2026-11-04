@@ -9,6 +9,7 @@ import { useDiscardGuard } from '@/features/shell/useDiscardGuard';
 import { resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
+import type { LoanResponse } from '@/lib/loan.types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 
 import {
@@ -23,14 +24,24 @@ import { type LoanFormErrors,LoanFormFields } from './LoanFormFields';
 const FORM_ID = 'loan-form';
 
 /** Add loan: the form's fields and checks in a dialog. Saving refreshes the page behind it. */
-export function LoanFormDialog({ onClose }: { onClose: () => void }) {
+export function LoanFormDialog({
+  onClose,
+  prefill,
+  onCreated,
+}: {
+  onClose: () => void;
+  /** Fields to start with instead of the empty form. */
+  prefill?: Partial<LoanFormValues>;
+  /** Runs after the loan is created, before the dialog closes. */
+  onCreated?: (loan: LoanResponse) => void | Promise<unknown>;
+}) {
   const router = useRouter();
   const today = todayInAppZone();
   const createLoan = useCreateLoan({
     onError: (e) => showToast(getErrorMessage(e, "Couldn't create loan. Try again."), { tone: 'danger' }),
   });
   const { data: accounts } = useAccounts();
-  const [values, setValues] = React.useState<LoanFormValues>(() => emptyLoanValues(today));
+  const [values, setValues] = React.useState<LoanFormValues>(() => ({ ...emptyLoanValues(today), ...prefill }));
   const [initial] = React.useState(values);
   const guard = useDiscardGuard({ dirty: JSON.stringify(values) !== JSON.stringify(initial), busy: createLoan.isPending, onClose, what: 'loan' });
   const [errors, setErrors] = React.useState<LoanFormErrors>({});
@@ -55,8 +66,9 @@ export function LoanFormDialog({ onClose }: { onClose: () => void }) {
     setErrors(Object.fromEntries(problems.map((p) => [p.field, p.message])));
     if (problems.length > 0) return;
     try {
-      await createLoan.mutateAsync(buildCreateLoanRequest(resolved));
+      const loan = await createLoan.mutateAsync(buildCreateLoanRequest(resolved));
       showToast('Loan created');
+      await onCreated?.(loan);
       onClose();
       router.refresh();
     } catch {
