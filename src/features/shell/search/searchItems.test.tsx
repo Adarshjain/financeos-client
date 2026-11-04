@@ -40,6 +40,8 @@ const result: GlobalSearchResult = {
   ],
   reports: [{ id: 'r1', name: 'PhonePe 10%', type: 'KPI' }],
   dashboards: [{ id: 'd1', name: 'Home', isDefault: true }],
+  categories: [],
+  rules: [],
 };
 
 const addOn = vi.fn();
@@ -55,7 +57,7 @@ describe('buildSearchGroups', () => {
   it('orders the groups Accounts, Actions, Transactions, Holdings, Lending, Loans, Reports, Dashboards, Pages, Ask', () => {
     const { groups } = build('Transaction');
     expect(groups.map((g) => g.id)).toEqual([
-      'accounts', 'actions', 'transactions', 'holdings', 'lending', 'loans', 'reports', 'dashboards', 'pages', 'ask',
+      'accounts', 'actions', 'transactions', 'holdings', 'lending', 'loans', 'reports', 'dashboards', 'categories', 'rules', 'pages', 'ask',
     ]);
     expect(ids(groups)).toEqual([
       'accounts', 'actions', 'transactions', 'holdings', 'lending', 'loans', 'reports', 'dashboards', 'ask',
@@ -73,14 +75,13 @@ describe('buildSearchGroups', () => {
     expect(group(groups, 'actions').items.map((i) => i.title)).toEqual([]);
     expect(group(build('i', null).groups, 'actions').items.map((i) => i.title)).toEqual(['Transaction', 'Import']);
     expect(group(build('p', null).groups, 'actions').items.map((i) => i.title)).toEqual(['Import']);
-    const two = build('im').groups;
+    const two = build('im', null).groups;
     expect(group(two, 'actions').items.map((i) => i.title)).toEqual(['Import']);
   });
 
-  it('shows server groups only from 3 characters', () => {
-    expect(ids(build('cr').groups)).not.toContain('accounts');
-    expect(ids(build('cr').groups)).not.toContain('transactions');
-    expect(ids(build('cro').groups)).toContain('accounts');
+  it('shows server groups only from 2 characters', () => {
+    expect(ids(build('c').groups)).not.toContain('accounts');
+    expect(ids(build('cr').groups)).toContain('accounts');
   });
 
   it('shows no server group before an answer arrives, but keeps Pages, Actions and Ask', () => {
@@ -102,6 +103,36 @@ describe('buildSearchGroups', () => {
     expect(group(groups, 'reports').items.map((i) => i.title)).toEqual(['PhonePe 10%']);
     expect(group(groups, 'dashboards').items.map((i) => i.title)).toEqual(['Home']);
     expect(group(groups, 'ask').items.map((i) => i.title)).toEqual(['Ask the data: Home']);
+  });
+
+  describe('categories and rules', () => {
+    const extra: GlobalSearchResult = {
+      ...result,
+      categories: [
+        { key: 'food', name: 'Food', parentName: null },
+        { key: 'food.groceries', name: 'Groceries', parentName: 'Food' },
+      ],
+      rules: [{ id: 'ru1', matchText: 'BIGBASKET', categoryName: 'Groceries' }],
+    };
+
+    it('lists them after Dashboards with parent and target as secondary text', () => {
+      const { groups } = build('Gro', extra);
+      expect(groups.map((g) => g.id).slice(-5)).toEqual(['dashboards', 'categories', 'rules', 'pages', 'ask']);
+      expect(group(groups, 'categories').items.map((i) => i.title)).toEqual(['Food', 'Groceries · Food']);
+      expect(group(groups, 'rules').items.map((i) => i.title)).toEqual(['BIGBASKET → Groceries']);
+    });
+
+    it('opens Transactions on the category or sub-category filter, and the Rules page', () => {
+      const { groups, go } = build('Gro', extra);
+      group(groups, 'categories').items[0].onSelect();
+      group(groups, 'categories').items[1].onSelect();
+      group(groups, 'rules').items[0].onSelect();
+      expect(go.mock.calls.map((c) => c[0])).toEqual([
+        '/transactions?category=food',
+        '/transactions?subcategory=food.groceries',
+        '/transactions/rules',
+      ]);
+    });
   });
 
   it('opens each result on its own page', () => {
@@ -224,18 +255,17 @@ describe('buildSearchGroups', () => {
       expect(titles(build('Sav', bank).groups)).toContain('Upload a Savings statement');
     });
 
-    it('has none without a matched account or under 3 characters', () => {
+    it('has none without a matched account or under 2 characters', () => {
       expect(titles(build('Tran', { ...result, accounts: [] }).groups)).toEqual(['Transaction']);
-      expect(titles(build('Tr').groups)).toEqual(['Transaction']);
+      expect(titles(build('T').groups)).toEqual(['Transaction', 'Import']);
     });
   });
 
   describe('hint', () => {
-    it('nudges for 1 or 2 characters only', () => {
+    it('nudges for 1 character only', () => {
       expect(searchHint('')).toBeUndefined();
-      expect(searchHint(' a ')).toBe('Type 3 or more characters to search accounts, transactions and more');
-      expect(searchHint('ab')).toBeDefined();
-      expect(searchHint('abc')).toBeUndefined();
+      expect(searchHint(' a ')).toBe('Type 2 or more characters to search accounts, transactions and more');
+      expect(searchHint('ab')).toBeUndefined();
     });
   });
 

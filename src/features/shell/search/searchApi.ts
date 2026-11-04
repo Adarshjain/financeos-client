@@ -7,7 +7,7 @@
 import { notifyIfAppLocked } from '@/lib/appLock';
 import { currentSessionGeneration, notifyIfSessionExpired } from '@/lib/authExpiry';
 
-export const SEARCH_MIN_CHARS = 3;
+export const SEARCH_MIN_CHARS = 2;
 export const SEARCH_MAX_CHARS = 100;
 
 /** A credit card's unpaid bill. */
@@ -69,6 +69,19 @@ export interface SearchDashboard {
   isDefault: boolean;
 }
 
+export interface SearchCategory {
+  /** The Transactions filter value: `category` when parentName is null, else `subcategory`. */
+  key: string;
+  name: string;
+  parentName: string | null;
+}
+
+export interface SearchRule {
+  id: string;
+  matchText: string;
+  categoryName: string;
+}
+
 export interface GlobalSearchResult {
   accounts: SearchAccount[];
   transactions: SearchTransaction[];
@@ -77,6 +90,8 @@ export interface GlobalSearchResult {
   loans: SearchLoan[];
   reports: SearchReport[];
   dashboards: SearchDashboard[];
+  categories: SearchCategory[];
+  rules: SearchRule[];
 }
 
 export const EMPTY_SEARCH_RESULT: GlobalSearchResult = {
@@ -87,10 +102,12 @@ export const EMPTY_SEARCH_RESULT: GlobalSearchResult = {
   loans: [],
   reports: [],
   dashboards: [],
+  categories: [],
+  rules: [],
 };
 
 // Browser fetch on purpose (documented exception): server actions run one at a time per tab and would queue search.
-/** Searches every group for `q` (already trimmed, 3 to 100 characters). Rejects on any non-2xx answer. */
+/** Searches every group for `q` (already trimmed, 2 to 100 characters). Rejects on any non-2xx answer. */
 export async function fetchGlobalSearch(q: string, signal?: AbortSignal): Promise<GlobalSearchResult> {
   const startedIn = currentSessionGeneration();
   const res = await fetch(`/api/v1/search?q=${encodeURIComponent(q)}`, {

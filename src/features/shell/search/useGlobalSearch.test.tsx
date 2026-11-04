@@ -25,8 +25,8 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe('useGlobalSearch', () => {
-  it('sends no request under 3 trimmed characters', async () => {
-    const { result } = renderHook(({ q }) => useGlobalSearch(q), { initialProps: { q: '  ab ' } });
+  it('sends no request under 2 trimmed characters', async () => {
+    const { result } = renderHook(({ q }) => useGlobalSearch(q), { initialProps: { q: '  a ' } });
     await flush();
     expect(fetchMock).not.toHaveBeenCalled();
     expect(result.current).toMatchObject({ result: null, loading: false });
@@ -112,10 +112,10 @@ describe('useGlobalSearch', () => {
     expect(result.current).toMatchObject({ result: null, loading: false });
   });
 
-  it('clears the results when the text drops under 3 characters', async () => {
+  it('clears the results when the text drops under 2 characters', async () => {
     const { result, rerender } = renderHook(({ q }) => useGlobalSearch(q), { initialProps: { q: 'abc' } });
     await flush();
-    rerender({ q: 'ab' });
+    rerender({ q: 'a' });
     expect(result.current).toMatchObject({ result: null, loading: false });
   });
 

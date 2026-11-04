@@ -6228,11 +6228,13 @@ export interface components {
         };
         GlobalSearchResponse: {
             accounts: components["schemas"]["SearchAccountHit"][];
+            categories: components["schemas"]["SearchCategoryHit"][];
             dashboards: components["schemas"]["SearchDashboardHit"][];
             holdings: components["schemas"]["SearchHoldingHit"][];
             loans: components["schemas"]["SearchLoanHit"][];
             people: components["schemas"]["SearchPersonHit"][];
             reports: components["schemas"]["SearchReportHit"][];
+            rules: components["schemas"]["SearchRuleHit"][];
             transactions: components["schemas"]["SearchTransactionHit"][];
         };
         GmailAttentionItemResponse: {
@@ -8557,6 +8559,11 @@ export interface components {
             /** @enum {string} */
             type: "bank_account" | "credit_card" | "broker" | "generic";
         };
+        SearchCategoryHit: {
+            key: string;
+            name: string;
+            parentName?: string | null;
+        };
         SearchDashboardHit: {
             /** Format: uuid */
             id: string;
@@ -8593,6 +8600,12 @@ export interface components {
             name: string;
             /** @enum {string} */
             type: "KPI" | "CHART" | "TABLE";
+        };
+        SearchRuleHit: {
+            categoryName: string;
+            /** Format: uuid */
+            id: string;
+            matchText: string;
         };
         SearchTransactionHit: {
             /** Format: uuid */

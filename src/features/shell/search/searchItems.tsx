@@ -48,13 +48,25 @@ export function transactionHref(id: string): string {
   return transactionsUrl({ ...DEFAULT_QUERY, txn: id });
 }
 
-/** The nudge while the text is 1 or 2 characters long: server groups wait for 3. */
-export const SEARCH_HINT = 'Type 3 or more characters to search accounts, transactions and more';
+/** The nudge while the text is 1 character long: server groups wait for 2. */
+export const SEARCH_HINT = 'Type 2 or more characters to search accounts, transactions and more';
 
 export function searchHint(query: string): string | undefined {
   const length = query.trim().length;
   return length > 0 && length < SEARCH_MIN_CHARS ? SEARCH_HINT : undefined;
 }
+
+/** The Transactions page filtered to a category (parentName null) or a sub-category, over all time. */
+export function categoryHref(c: { key: string; parentName: string | null }): string {
+  return transactionsUrl({
+    ...DEFAULT_QUERY,
+    period: ALL_TIME,
+    ...(c.parentName === null ? { categories: [c.key] } : { subcategories: [c.key] }),
+  });
+}
+
+/** The Rules page (it has no per-rule link). */
+export const RULES_HREF = '/transactions/rules';
 
 /** The Transactions page for `q` over all time. */
 export function transactionsSearchHref(q: string): string {
@@ -76,7 +88,7 @@ const matches = (label: string, needle: string) => needle.length > 0 && label.to
 
 /**
  * The palette's groups, in order: Accounts, Actions, Transactions, Holdings, Lending, Loans, Reports,
- * Dashboards, Pages, Ask. Pages and Actions filter on the text from its first character; the server
+ * Dashboards, Categories, Rules, Pages, Ask. Pages and Actions filter on the text from its first character; the server
  * groups show only once the text has SEARCH_MIN_CHARS characters and an answer has arrived.
  */
 export function buildSearchGroups({ query, result, pages, actions, go, onAddTransaction, onMarkBillPaid }: SearchItemsInput): SearchPaletteGroup[] {
@@ -200,6 +212,20 @@ export function buildSearchGroups({ query, result, pages, actions, go, onAddTran
       id: 'dashboards',
       label: 'Dashboards',
       items: (server?.dashboards ?? []).map((d) => link(`dashboards:${d.id}`, d.name, `/dashboards/${d.id}`)),
+    },
+    {
+      id: 'categories',
+      label: 'Categories',
+      items: (server?.categories ?? []).map((c) => ({
+        id: `categories:${c.key}`,
+        title: joinTitle([c.name, c.parentName]),
+        onSelect: () => go(categoryHref(c)),
+      })),
+    },
+    {
+      id: 'rules',
+      label: 'Rules',
+      items: (server?.rules ?? []).map((r) => link(`rules:${r.id}`, `${r.matchText} → ${r.categoryName}`, RULES_HREF)),
     },
     {
       id: 'pages',
