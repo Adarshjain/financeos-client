@@ -21,6 +21,21 @@ export const OBLIGATION_KINDS: { value: ObligationKindFilter; label: string }[] 
 export const OBLIGATION_MONTH_OPTIONS = [1, 3, 6, 12] as const;
 export const DEFAULT_OBLIGATION_MONTHS = 3;
 
+/** The one EMI row per loan that asks "Is this loan closed?": the loan's oldest (earliest due) row marked askClosed. */
+export function askClosedRows(items: readonly ObligationItem[]): Set<ObligationItem> {
+  const oldest = new Map<string, ObligationItem>();
+  for (const item of items) {
+    if (item.type !== 'emi' || !item.askClosed || !item.loanId) continue;
+    const best = oldest.get(item.loanId);
+    const before =
+      !best ||
+      (item.installmentSeq ?? Infinity) < (best.installmentSeq ?? Infinity) ||
+      ((item.installmentSeq ?? Infinity) === (best.installmentSeq ?? Infinity) && (item.date ?? '') < (best.date ?? ''));
+    if (before) oldest.set(item.loanId, item);
+  }
+  return new Set(oldest.values());
+}
+
 export function sumAmounts(items: ObligationItem[]): number {
   return items.reduce((s, i) => s + (i.amount ?? 0), 0);
 }

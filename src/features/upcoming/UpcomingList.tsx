@@ -10,7 +10,7 @@ import { Text } from '@/components/ds/Text/Text';
 import { formatMoney } from '@/lib/format';
 import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
 
-import { bucketObligations, type ObligationItem, sumAmounts } from './obligationsModel';
+import { askClosedRows, bucketObligations, type ObligationItem, sumAmounts } from './obligationsModel';
 import { foldedMonthLine } from './upcomingModel';
 import { UpcomingRow } from './UpcomingRow';
 
@@ -78,6 +78,7 @@ export function UpcomingList({
   const [shown, setShown] = React.useState<Set<string>>(() => new Set());
   // A paid or settled row leaves after a refetch (outside a transition); deferring the rows lets it fold away.
   const shownItems = useDeferredRows(items);
+  const askClosed = React.useMemo(() => askClosedRows(shownItems), [shownItems]);
 
   return (
     <ListTransition>
@@ -144,6 +145,7 @@ export function UpcomingList({
                     highlighted={
                       Boolean(highlightStatementId) && item.statementId === highlightStatementId
                     }
+                    askClosed={askClosed.has(item)}
                     onMarkPaid={onMarkPaid}
                     onSettle={onSettle}
                     onSetDetails={onSetDetails}

@@ -25,6 +25,13 @@ describe('notificationHref', () => {
     expect(notificationHref(n({ kind: 'statement_imported' }))).toBeNull();
   });
 
+  it('bill_reminder opens the card account, emi_reminder opens the loan', () => {
+    expect(notificationHref(n({ kind: 'bill_reminder', refs: { accountId: 'a1' } as never }))).toBe('/accounts/a1');
+    expect(notificationHref(n({ kind: 'bill_reminder' }))).toBeNull();
+    expect(notificationHref(n({ kind: 'emi_reminder', refs: { loanId: 'l1' } as never }))).toBe('/loans/l1');
+    expect(notificationHref(n({ kind: 'emi_reminder' }))).toBeNull();
+  });
+
   it('gmail_disconnected opens Connections', () => {
     expect(notificationHref(n({ kind: 'gmail_disconnected' }))).toBe('/settings/connections');
   });

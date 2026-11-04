@@ -47,6 +47,14 @@ export const closeLoan = createDomainAction(
   },
 );
 
+/** POST /loans/{id}/closed-prompt/dismiss: "Not yet" on the "Is this loan closed?" question. */
+export const dismissLoanClosedPrompt = createDomainAction(
+  { fallbackError: "Couldn't save that. Try again." },
+  async (id: string): Promise<void> => {
+    await serverApi.POST('/api/v1/loans/{id}/closed-prompt/dismiss', { params: { path: { id } } });
+  },
+);
+
 /** POST /loans/{id}/reopen. */
 export const reopenLoan = createDomainAction(
   { fallbackError: "Couldn't reopen loan. Try again." },

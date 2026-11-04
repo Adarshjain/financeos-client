@@ -340,6 +340,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{accountId}/statements/{statementId}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["moveStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/{id}": {
         parameters: {
             query?: never;
@@ -1834,6 +1850,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/held-uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listHeld"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/held-uploads/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["discardHeld"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/held-uploads/{id}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["assignHeld"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/inbox": {
         parameters: {
             query?: never;
@@ -1909,6 +1973,22 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["clearState"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ingestAuto"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2676,6 +2756,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["retryJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/{jobId}/files/{fileIndex}/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["retryWithPassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4603,6 +4699,11 @@ export interface components {
             /** Format: int32 */
             reactivatedCount: number;
         };
+        AssignHeldUploadRequest: {
+            /** Format: uuid */
+            accountId: string;
+            password?: string | null;
+        };
         AttentionBulkRequest: {
             /** @enum {string} */
             reason: "NO_ACCOUNT" | "IMPORT_OFF" | "NO_AI_KEY" | "LOCKED_STATEMENT" | "UNREADABLE_STATEMENT" | "FAILED";
@@ -5929,6 +6030,16 @@ export interface components {
         DraftResultRequest: {
             draftResult?: unknown;
         };
+        DuplicateDetail: {
+            amount: number;
+            date: string;
+            description: string;
+            filename: string;
+            /** Format: uuid */
+            matchedTransactionId: string;
+            /** Format: uuid */
+            transactionId: string;
+        };
         EarlierCardRequest: {
             /** Format: date */
             closedOn?: string | null;
@@ -6261,6 +6372,35 @@ export interface components {
             kind: "no_aggregation" | "needs" | "avoid" | "no_filter";
             reason: string;
         };
+        FileIngestionResult: {
+            duplicateDetails: components["schemas"]["DuplicateDetail"][];
+            /** Format: int32 */
+            duplicatesTruncated: number;
+            fileDetails: components["schemas"]["FileSummary"][];
+            /** Format: int32 */
+            filesProcessed: number;
+            /** Format: int32 */
+            totalCreated: number;
+            /** Format: int32 */
+            totalDuplicatesFound: number;
+        };
+        FileSummary: {
+            /** Format: int32 */
+            created: number;
+            /** Format: int32 */
+            duplicates: number;
+            /** @enum {string|null} */
+            errorCode?: "PASSWORD_REQUIRED" | "WRONG_PASSWORD" | "UNREADABLE" | "OTHER" | null;
+            errorMessage?: string | null;
+            filename: string;
+            filledDetails?: (string | null)[] | null;
+            /** Format: uuid */
+            heldUploadId?: string | null;
+            /** Format: int32 */
+            linesParsed: number;
+            status: string;
+            warning?: string | null;
+        };
         FilterClause: {
             field?: string;
             operator?: string;
@@ -6572,6 +6712,20 @@ export interface components {
             unrealisedPct?: number | null;
             /** Format: double */
             xirr?: number | null;
+        };
+        HeldUploadResponse: {
+            candidateAccountIds: string[];
+            /** Format: date-time */
+            createdAt: string;
+            detectedBankId?: string | null;
+            detectedLast4?: string | null;
+            fileName: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            jobId: string;
+            /** @enum {string} */
+            reason: "NO_MATCH" | "AMBIGUOUS" | "LOCKED";
         };
         HelloRequest: {
             birthDate?: string | null;
@@ -7408,6 +7562,10 @@ export interface components {
             month: string;
             pnl: number;
         };
+        MoveStatementRequest: {
+            /** Format: uuid */
+            targetAccountId: string;
+        };
         Mover: {
             dayChange: number;
             /** Format: uuid */
@@ -7907,6 +8065,10 @@ export interface components {
             tradeDate?: string;
             /** @enum {string} */
             type?: "buy" | "sell";
+        };
+        PasswordRetryRequest: {
+            password: string;
+            saveToAccount?: boolean;
         };
         PaymentInfo: {
             amount: number;
@@ -10450,6 +10612,42 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["StatementDeletionPreviewResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    moveStatement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveStatementRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FileIngestionResult"];
                 };
             };
             /** @description Error response */
@@ -14070,6 +14268,99 @@ export interface operations {
             };
         };
     };
+    listHeld: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["HeldUploadResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    discardHeld: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    assignHeld: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignHeldUploadRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FileIngestionResult"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_1: {
         parameters: {
             query?: never;
@@ -14212,6 +14503,43 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["InboxResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ingestAuto: {
+        parameters: {
+            query?: {
+                password?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    files: Blob[];
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EnqueueResponse"];
                 };
             };
             /** @description Error response */
@@ -16258,6 +16586,42 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["JobResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    retryWithPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobId: string;
+                fileIndex: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordRetryRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
