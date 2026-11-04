@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React from 'react';
+import React, { Suspense, use } from 'react';
 
 import { Avatar } from '@/components/ds/Avatar/Avatar';
 import { Badge } from '@/components/ds/Badge/Badge';
@@ -27,14 +27,17 @@ export interface SettingsShellUser {
   email: string;
 }
 
-/** The values shown on the list rows. Each is absent when its request failed, and the row then shows none. */
+/**
+ * The values shown on the list rows, each a promise so the list renders at once and a value streams in
+ * when its request settles. A promise resolves to undefined when its request failed: the row shows none.
+ */
 export interface SettingsRowValues {
   /** Whether the app lock is on. */
-  appLockArmed?: boolean;
+  appLockArmed: Promise<boolean | undefined>;
   /** How many Gmail items need attention. */
-  attentionCount?: number;
+  attentionCount: Promise<number | undefined>;
   /** How many AI keys are saved. */
-  aiKeyCount?: number;
+  aiKeyCount: Promise<number | undefined>;
 }
 
 const THEME_LABEL = { system: 'System', light: 'Light', dark: 'Dark' } as const;
@@ -43,26 +46,41 @@ function plural(count: number, one: string, many: string): string {
   return `${count} ${count === 1 ? one : many}`;
 }
 
-/** The value at the end of a row, or nothing. */
-function useRowValue(section: SettingsSection, values: SettingsRowValues): React.ReactNode {
+function AppLockValue({ promise }: { promise: Promise<boolean | undefined> }) {
+  const armed = use(promise);
+  return armed === undefined ? null : (
+    <Text variant="label" tone="ink-3">{armed ? 'On' : 'Off'}</Text>
+  );
+}
+
+function AttentionValue({ promise }: { promise: Promise<number | undefined> }) {
+  const count = use(promise);
+  return count ? <Badge tone="warning" size="sm">{count} needs attention</Badge> : null;
+}
+
+function AiValue({ promise }: { promise: Promise<number | undefined> }) {
+  const count = use(promise);
+  return count === undefined ? null : (
+    <Text variant="label" tone="ink-3">{count === 0 ? 'None' : plural(count, 'key', 'keys')}</Text>
+  );
+}
+
+function ThemeValue() {
   const { theme } = useThemeChoice();
+  return theme ? <Text variant="label" tone="ink-3">{THEME_LABEL[theme]}</Text> : null;
+}
+
+/** The value at the end of a row, each in its own Suspense so the row never waits for it. */
+function rowValue(section: SettingsSection, values: SettingsRowValues): React.ReactNode {
   switch (section.id) {
     case 'appearance':
-      return theme ? <Text variant="label" tone="ink-3">{THEME_LABEL[theme]}</Text> : undefined;
+      return <ThemeValue />;
     case 'app-lock':
-      return values.appLockArmed === undefined ? undefined : (
-        <Text variant="label" tone="ink-3">{values.appLockArmed ? 'On' : 'Off'}</Text>
-      );
+      return <Suspense fallback={null}><AppLockValue promise={values.appLockArmed} /></Suspense>;
     case 'connections':
-      return values.attentionCount ? (
-        <Badge tone="warning" size="sm">{values.attentionCount} needs attention</Badge>
-      ) : undefined;
+      return <Suspense fallback={null}><AttentionValue promise={values.attentionCount} /></Suspense>;
     case 'ai':
-      return values.aiKeyCount === undefined ? undefined : (
-        <Text variant="label" tone="ink-3">
-          {values.aiKeyCount === 0 ? 'None' : plural(values.aiKeyCount, 'key', 'keys')}
-        </Text>
-      );
+      return <Suspense fallback={null}><AiValue promise={values.aiKeyCount} /></Suspense>;
     default:
       return undefined;
   }
@@ -79,7 +97,7 @@ function SectionRow({
   user: SettingsShellUser;
   values: SettingsRowValues;
 }) {
-  const value = useRowValue(section, values);
+  const value = rowValue(section, values);
   const isProfile = section.id === 'profile';
   const name = user.displayName?.trim() || user.email;
   return (
@@ -104,10 +122,43 @@ function SectionRow({
   );
 }
 
+/** The grouped list of sections. `highlight` marks the open section's row. */
+function SettingsList({
+  className,
+  highlight,
+  activeId,
+  user,
+  values,
+}: {
+  className: string;
+  highlight: boolean;
+  activeId: string;
+  user: SettingsShellUser;
+  values: SettingsRowValues;
+}) {
+  return (
+    <nav aria-label="Settings sections" className={`flex flex-col gap-space-8 desk:gap-space-16 ${className}`}>
+      {settingsGroups.map((group, i) => (
+        <Card key={group.label ?? i} title={group.label}>
+          {group.sections.map((section) => (
+            <SectionRow
+              key={section.id}
+              section={section}
+              current={highlight && section.id === activeId}
+              user={user}
+              values={values}
+            />
+          ))}
+        </Card>
+      ))}
+    </nav>
+  );
+}
+
 /**
  * The Settings frame, applied once by the settings route layout: a grouped list of sections and the
  * open section beside it. From `desk` both show (a fixed column and the content); on phone `/settings`
- * shows only the list, and a section shows only its content under a top bar with a back arrow.
+ * shows only the list (nothing highlighted), and a section shows only its content under a top bar with a back arrow.
  */
 export function SettingsShell({
   user,
@@ -129,26 +180,16 @@ export function SettingsShell({
       phoneBackHref={index ? undefined : SETTINGS_HREF}
     >
       <div className="flex items-start gap-space-24">
-        <nav
-          aria-label="Settings sections"
-          className={`flex flex-col gap-space-8 desk:gap-space-16 w-full desk:w-container-xs desk:shrink-0 ${
-            index ? '' : 'hidden desk:flex'
-          }`}
-        >
-          {settingsGroups.map((group, i) => (
-            <Card key={group.label ?? i} title={group.label}>
-              {group.sections.map((section) => (
-                <SectionRow
-                  key={section.id}
-                  section={section}
-                  current={section.id === active.id}
-                  user={user}
-                  values={values}
-                />
-              ))}
-            </Card>
-          ))}
-        </nav>
+        {index && (
+          <SettingsList className="w-full desk:hidden" highlight={false} activeId={active.id} user={user} values={values} />
+        )}
+        <SettingsList
+          className="hidden desk:flex desk:w-container-xs desk:shrink-0"
+          highlight
+          activeId={active.id}
+          user={user}
+          values={values}
+        />
         <div className={`min-w-0 flex-1 ${index ? 'hidden desk:block' : ''}`}>{children}</div>
       </div>
     </ShellPage>

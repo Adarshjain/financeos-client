@@ -23,6 +23,12 @@ vi.mock('./webauthn', () => ({
   isCancelled: (e: unknown) => e instanceof DOMException && e.name === 'NotAllowedError',
 }));
 
+const routerRefresh = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => ({ refresh: routerRefresh }),
+}));
+
 const showToast = vi.hoisted(() => vi.fn());
 vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/components/ds/Toast/Toast')>()),
@@ -189,5 +195,30 @@ describe('AppLockCard', () => {
     fireEvent.click(screen.getByRole('combobox', { name: 'Lock after' }));
     fireEvent.click(screen.getByText('5 minutes'));
     await waitFor(() => expect(actions.updateLockAfter).toHaveBeenCalledWith(300));
+  });
+});
+
+describe('AppLockCard router refresh (the Settings list shows On/Off)', () => {
+  it('refreshes after turning on and after turning off', async () => {
+    const view = render(<AppLockCard status={off} />);
+    await waitFor(() => expect((toggle() as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(toggle());
+    await waitFor(() => expect(toggle().getAttribute('aria-checked')).toBe('true'));
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+    view.unmount();
+    routerRefresh.mockClear();
+    render(<AppLockCard status={on} />);
+    fireEvent.click(toggle());
+    await waitFor(() => expect(toggle().getAttribute('aria-checked')).toBe('false'));
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not refresh when the prompt is dismissed', async () => {
+    create.mockRejectedValue(new DOMException('no', 'NotAllowedError'));
+    render(<AppLockCard status={off} />);
+    await waitFor(() => expect((toggle() as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(toggle());
+    await waitFor(() => expect(create).toHaveBeenCalled());
+    expect(routerRefresh).not.toHaveBeenCalled();
   });
 });

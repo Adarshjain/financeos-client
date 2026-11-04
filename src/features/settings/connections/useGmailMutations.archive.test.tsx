@@ -49,7 +49,7 @@ describe('useGmailMutations archive / unarchive', () => {
   it.each([
     ['archiveAttentionMutation', '/api/v1/gmail/attention/{ledgerId}/archive'],
     ['unarchiveAttentionMutation', '/api/v1/gmail/attention/{ledgerId}/unarchive'],
-  ] as const)('%s posts to its endpoint and refetches both attention lists and the Inbox, without a router refresh', async (name, path) => {
+  ] as const)('%s posts to its endpoint and refetches both attention lists and the Inbox, and refresh the router for the Settings list count', async (name, path) => {
     const { result, invalidate } = setup();
 
     await act(() => result.current[name].mutateAsync('ledger-1'));
@@ -57,6 +57,12 @@ describe('useGmailMutations archive / unarchive', () => {
     expect(api.POST).toHaveBeenCalledWith(path, { params: { path: { ledgerId: 'ledger-1' } } });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: [...keys.settings.all, 'gmailAttention'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: keys.inbox.all });
-    expect(routerRefresh).not.toHaveBeenCalled();
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('assigning an attention item refreshes the router too', async () => {
+    const { result } = setup();
+    await act(() => result.current.assignAttentionMutation.mutateAsync({ ledgerId: 'l1', body: { accountId: 'a1' } }));
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 });

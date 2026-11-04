@@ -23,7 +23,7 @@ function setup() {
   return renderHook(() => useLlmKeyMutations(), { wrapper });
 }
 
-describe('useLlmKeyMutations router (the keys are a query, so nothing refreshes it)', () => {
+describe('useLlmKeyMutations router (the Settings list shows the key count)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(api.POST).mockResolvedValue({ data: {} } as never);
@@ -31,18 +31,24 @@ describe('useLlmKeyMutations router (the keys are a query, so nothing refreshes 
     vi.mocked(api.PATCH).mockResolvedValue({ data: [] } as never);
   });
 
-  it('does not refresh the router for create, delete and reorder', async () => {
+  it('refreshes the router after a key is added and after one is deleted', async () => {
     const { result } = setup();
     await act(() => result.current.createMutation.mutateAsync({} as never));
-    expect(routerRefresh).not.toHaveBeenCalled();
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
     await act(() => result.current.deleteMutation.mutateAsync('k1'));
-    expect(routerRefresh).not.toHaveBeenCalled();
-    await act(() => result.current.updatePositionMutation.mutateAsync({ id: 'k1', position: 0 }));
+    expect(routerRefresh).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not refresh when a write fails', async () => {
+    vi.mocked(api.POST).mockRejectedValue(new Error('boom'));
+    const { result } = setup();
+    await act(() => result.current.createMutation.mutateAsync({} as never).catch(() => undefined));
     expect(routerRefresh).not.toHaveBeenCalled();
   });
 
-  it('does not refresh for a key test', async () => {
+  it('does not refresh for reorder or a key test', async () => {
     const { result } = setup();
+    await act(() => result.current.updatePositionMutation.mutateAsync({ id: 'k1', position: 0 }));
     await act(() => result.current.testMutation.mutateAsync({ id: 'k1' }));
     expect(routerRefresh).not.toHaveBeenCalled();
   });

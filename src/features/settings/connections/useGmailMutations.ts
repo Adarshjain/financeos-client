@@ -14,6 +14,7 @@ import {
   unarchiveGmailAttention,
   updateGmailSender,
 } from '@/features/settings/connections/gmailActions';
+import { useRouterRefresh } from '@/features/settings/useRouterRefresh';
 import { unwrapAction } from '@/lib/actionResult';
 import type { AssignAttentionRequest, GmailSenderRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
@@ -21,6 +22,8 @@ import { keys } from '@/lib/query/keys';
 /** Every write GmailConnect needs, grouped so the orchestrator hook stays thin. */
 export function useGmailMutations() {
   const qc = useQueryClient();
+  // The Settings list shows the attention count, which lives in the server layout.
+  const refreshLayout = useRouterRefresh();
   const invalidateConnections = () => {
     return qc.invalidateQueries({ queryKey: keys.settings.gmailConnection() });
   };
@@ -55,8 +58,10 @@ export function useGmailMutations() {
   });
 
   // Archiving also changes the Inbox's Gmail attention count.
-  const invalidateAttentionAndInbox = () =>
-    Promise.all([invalidateAttention(), qc.invalidateQueries({ queryKey: keys.inbox.all })]);
+  const invalidateAttentionAndInbox = async () => {
+    await Promise.all([invalidateAttention(), qc.invalidateQueries({ queryKey: keys.inbox.all })]);
+    refreshLayout();
+  };
 
   const archiveAttentionMutation = useMutation({
     mutationFn: (ledgerId: string) => unwrapAction(archiveGmailAttention(ledgerId)),
@@ -71,7 +76,10 @@ export function useGmailMutations() {
   const assignAttentionMutation = useMutation({
     mutationFn: ({ ledgerId, body }: { ledgerId: string; body: AssignAttentionRequest }) =>
       unwrapAction(assignGmailAttention(ledgerId, body)),
-    onSuccess: invalidateAttention,
+    onSuccess: async () => {
+      await invalidateAttention();
+      refreshLayout();
+    },
   });
 
   const createSenderMutation = useMutation({

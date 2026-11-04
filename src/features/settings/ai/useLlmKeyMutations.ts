@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { createLlmKey, deleteLlmKey, testLlmKey, updateLlmKeyPosition } from '@/features/settings/ai/llmActions';
+import { useRouterRefresh } from '@/features/settings/useRouterRefresh';
 import { unwrapAction } from '@/lib/actionResult';
 import type { CreateLlmKeyRequest, LlmKeyDto } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
@@ -15,8 +16,11 @@ import { keys } from '@/lib/query/keys';
  */
 export function useLlmKeyMutations() {
   const qc = useQueryClient();
-  const invalidateAll = () => {
-    return qc.invalidateQueries({ queryKey: keys.settings.all });
+  // The Settings list shows the key count, which lives in the server layout.
+  const refreshLayout = useRouterRefresh();
+  const invalidateAll = async () => {
+    await qc.invalidateQueries({ queryKey: keys.settings.all });
+    refreshLayout();
   };
 
   const createMutation = useMutation({

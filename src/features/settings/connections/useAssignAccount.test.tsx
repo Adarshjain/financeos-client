@@ -50,4 +50,15 @@ describe('useAssignAccount', () => {
     rerender({ item: null });
     expect(result.current.effectiveAccountId).toBe('acc-1');
   });
+
+  it('refreshes the router after a successful assign (the Settings list shows the attention count), not after a failure', async () => {
+    vi.mocked(api.POST).mockRejectedValueOnce(new Error('boom'));
+    const { result } = setup({ id: 'a' });
+    await waitFor(() => expect(result.current.effectiveAccountId).toBe('acc-1'));
+    await act(() => result.current.submit());
+    expect(routerRefresh).not.toHaveBeenCalled();
+    vi.mocked(api.POST).mockResolvedValue({ data: { reactivatedCount: 0 } } as never);
+    await act(() => result.current.submit());
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
 });
