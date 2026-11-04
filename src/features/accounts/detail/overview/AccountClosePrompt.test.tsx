@@ -23,7 +23,7 @@ import { renderWithQuery } from '@/test/renderWithQuery';
 import { AccountClosePrompt } from './AccountClosePrompt';
 import { AccountOverview } from './AccountOverview';
 
-const user = userEvent.setup();
+const user = userEvent.setup({ pointerEventsCheck: 0 });
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -47,10 +47,29 @@ describe('account page: Close this account?', () => {
     expect(screen.queryByText('Close this account?')).toBeNull();
   });
 
-  it('Close runs the account close and refreshes', async () => {
+  it('Close opens a confirmation and does not close yet', async () => {
     renderWithQuery(<AccountClosePrompt accountId="a1" />);
     await user.click(screen.getByRole('button', { name: 'Close' }));
-    await waitFor(() => expect(actions.closeAccount).toHaveBeenCalledWith('a1', { closedOn: expect.any(String) }));
+    expect(await screen.findByRole('button', { name: 'Close account' })).toBeInTheDocument();
+    expect(screen.getByText('It will be closed as of today. You can reopen it later.')).toBeInTheDocument();
+    expect(actions.closeAccount).not.toHaveBeenCalled();
+  });
+
+  it('Cancel in the confirmation does not close the account', async () => {
+    renderWithQuery(<AccountClosePrompt accountId="a1" />);
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    await user.click(await screen.findByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Close account' })).toBeNull());
+    expect(actions.closeAccount).not.toHaveBeenCalled();
+    expect(screen.getByText('Close this account?')).toBeInTheDocument();
+  });
+
+  it('confirming closes the account once as of today and refreshes', async () => {
+    renderWithQuery(<AccountClosePrompt accountId="a1" />);
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    await user.click(await screen.findByRole('button', { name: 'Close account' }));
+    await waitFor(() => expect(actions.closeAccount).toHaveBeenCalledTimes(1));
+    expect(actions.closeAccount).toHaveBeenCalledWith('a1', { closedOn: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) });
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
     expect(actions.dismissAccountClosePrompt).not.toHaveBeenCalled();
   });

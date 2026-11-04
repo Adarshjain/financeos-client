@@ -17,7 +17,7 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 /** Where a notification opens, or null when its refs do not say (the row is not clickable). */
 export function notificationHref(n: Pick<AppNotification, 'kind' | 'refs'>): string | null {
-  const { jobId, accountId, loanId } = n.refs ?? {};
+  const { jobId, accountId, loanId, statementId } = n.refs ?? {};
   switch (n.kind) {
     case 'job_failed':
     case 'job_finished':
@@ -31,7 +31,8 @@ export function notificationHref(n: Pick<AppNotification, 'kind' | 'refs'>): str
     case 'reward_cap':
       return accountId ? appHref(`/accounts/${accountId}/rewards`) : null;
     case 'bill_reminder':
-      return accountId ? appHref(`/accounts/${accountId}`) : null;
+      if (!accountId) return null;
+      return appHref(statementId ? `/accounts/${accountId}/statements?statement=${statementId}` : `/accounts/${accountId}`);
     case 'emi_reminder':
       return loanId ? appHref(`/loans/${loanId}`) : null;
     case 'upload_held':
