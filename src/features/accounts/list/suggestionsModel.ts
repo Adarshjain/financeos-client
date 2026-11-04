@@ -204,8 +204,49 @@ export function suggestionCount(bands: SuggestionBands): number {
   return bands.found.length + bands.older.length + bands.maybe.length;
 }
 
+/** The title of the Found in your email card, with the count of its Found rows (none shown when only Older or Maybe rows are left). */
 export function foundBandLabel(count: number): string {
-  return `Found in your email · ${count}`;
+  return count > 0 ? `Found in your email · ${count}` : 'Found in your email';
+}
+
+/** The Found card's subtitle: suggestions come from emails, so they can be wrong or incomplete. */
+export const FOUND_NOTE_COPY =
+  'We can miss an account or get a detail wrong. Check each one before you add it, and add any we missed yourself.';
+
+/** "From your HDFC Bank emails": where a suggestion came from, so it never reads as an account the user added. */
+export function fromEmailsLine(row: Pick<SuggestionRow, 'item'>): string {
+  return row.item ? `From your ${row.item.bank.name} emails` : 'From your emails';
+}
+
+/**
+ * A row's second line in the Found card: the server's question while it asks one ("Is this your …?", "Older number on …?"),
+ * else where it came from, the account it sits on and its number.
+ */
+export function foundRowSub(row: Pick<SuggestionRow, 'item' | 'sub' | 'last4' | 'isThis' | 'olderOn'>): string {
+  if (row.isThis || row.olderOn) return row.sub;
+  const parent = row.item?.parentAccount;
+  return [fromEmailsLine(row), parent ? `On ${parent.name}` : '', row.last4 ? `••${row.last4}` : '']
+    .filter(Boolean)
+    .join(' · ');
+}
+
+/** Bank and card suggestions together, for the one Found card: bank rows first in each band, every account a row can be filed under. */
+export function mergeSuggestions(found: Record<SuggestionSection, SectionSuggestions>): SectionSuggestions {
+  const { bank, card } = found;
+  return {
+    bands: {
+      found: [...bank.bands.found, ...card.bands.found],
+      older: [...bank.bands.older, ...card.bands.older],
+      maybe: [...bank.bands.maybe, ...card.bands.maybe],
+    },
+    parents: [...bank.parents, ...card.parents.filter((p) => !bank.parents.includes(p))],
+    accounts: [...(bank.accounts ?? []), ...(card.accounts ?? [])],
+  };
+}
+
+/** Which word the Older band uses: "Older accounts" when a bank account is among them, else "Older cards". */
+export function olderBandSection(older: readonly Pick<SuggestionRow, 'kind'>[]): SuggestionSection {
+  return older.some((r) => r.kind === 'BANK_ACCOUNT') ? 'bank' : 'card';
 }
 
 export function olderBandLabel(section: SuggestionSection, count: number): string {
@@ -254,8 +295,8 @@ export function accountsBodyMode(input: {
 }
 
 const EMPTY_COPY_WHILE_SCANNING: Record<'bank' | 'card' | 'broker', string> = {
-  bank: 'Accounts we find in your email show up here.',
-  card: 'Cards we find in your email show up here.',
+  bank: 'Accounts we find in your email show up at the top of this page.',
+  card: 'Cards we find in your email show up at the top of this page.',
   broker: "Add a broker with +. We don't look for these.",
 };
 

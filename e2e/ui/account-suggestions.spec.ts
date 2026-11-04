@@ -25,7 +25,9 @@ const card = (over: Partial<AccountDetectSeedEntity> = {}): AccountDetectSeedEnt
   ...over,
 });
 
-const foundBand = (page: Page, n: number) => page.getByText(`Found in your email · ${n}`);
+/** The Found in your email card below the hero: every suggestion row sits in it, none in the Bank or Card sections. */
+const foundCard = (page: Page) => page.getByTestId('found-in-email');
+const foundBand = (page: Page, n: number) => foundCard(page).getByText(`Found in your email · ${n}`);
 
 test.describe('Account suggestions (@ui)', () => {
   let currentUser: CreatedUser;
@@ -40,22 +42,25 @@ test.describe('Account suggestions (@ui)', () => {
     await clearAccountDetect(makeApi(currentUser.cookie));
   });
 
-  test('a Found card shows under Credit cards with its band', async ({ page }) => {
+  test('a Found card shows in the Found in your email card with the note line', async ({ page }) => {
     const api = makeApi(currentUser.cookie);
     await createBankAccount(api, { name: 'Suggest anchor', last4: '1111' });
     await seedAccountDetect(api, { entities: [card()] });
 
     await page.goto('/accounts');
     await expect(foundBand(page, 1)).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('••4321').first()).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Not mine' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Add', exact: true }).first()).toBeVisible();
-    await expect(page.getByTestId('suggestions-note')).toContainText('we can miss an account or get a detail wrong');
-    await page.getByTestId('suggestions-note').getByRole('button', { name: 'Close' }).click();
-    await expect(page.getByTestId('suggestions-note')).toHaveCount(0);
-    await page.reload();
-    await expect(foundBand(page, 1)).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId('suggestions-note')).toHaveCount(0);
+    const found = foundCard(page);
+    await expect(found).toContainText('We can miss an account or get a detail wrong');
+    await expect(found.getByText('From your HDFC Bank emails · ••4321').first()).toBeVisible();
+    await expect(found.getByRole('button', { name: 'Not mine' })).toBeVisible();
+    await expect(found.getByRole('button', { name: 'Add', exact: true }).first()).toBeVisible();
+    // The Bank accounts and Credit cards sections hold only the user's own accounts: no found row, no row buttons.
+    await expect(page.getByText('Suggest anchor').first()).toBeVisible();
+    await expect(page.getByText('••4321')).toHaveCount(await found.getByText('••4321').count());
+    await expect(page.getByRole('button', { name: 'Not mine' })).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Add', exact: true })).toHaveCount(
+      await found.getByRole('button', { name: 'Add', exact: true }).count(),
+    );
   });
 
   test('an entity that matches an existing account stays hidden', async ({ page }) => {
@@ -96,7 +101,7 @@ test.describe('Account suggestions (@ui)', () => {
     await page.reload();
     await expect(page.getByText('Bank accounts')).toBeVisible();
     await expect(page.getByText('••4321')).toHaveCount(0);
-    await expect(page.getByTestId('suggestions-note')).toHaveCount(0);
+    await expect(foundCard(page)).toHaveCount(0);
   });
 
   test('a low-confidence entity waits in a collapsed Maybe yours band until Show', async ({ page }) => {
@@ -247,8 +252,8 @@ test.describe('Account suggestions (@ui)', () => {
       await page.goto('/accounts');
       await expect(page.getByText('Finding your accounts')).toBeVisible({ timeout: 15_000 });
       await expect(page.getByText('Read 4,020 of 10,600 emails', { exact: false })).toBeVisible();
-      await expect(page.getByText('Accounts we find in your email show up here.')).toBeVisible();
-      await expect(page.getByText('Cards we find in your email show up here.')).toBeVisible();
+      await expect(page.getByText('Accounts we find in your email show up at the top of this page.')).toBeVisible();
+      await expect(page.getByText('Cards we find in your email show up at the top of this page.')).toBeVisible();
 
       await page.goto('/dashboard');
       await expect(page.getByText('Finding your accounts')).toBeVisible({ timeout: 15_000 });

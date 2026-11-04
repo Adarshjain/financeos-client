@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { SuggestionChild, SuggestionItem } from '@/features/accounts/list/suggestionsModel';
 import { AccountType } from '@/lib/types';
 
-import { buildSuggestionPrefill, joinCandidates, limitHintOf } from './suggestionPrefill';
+import { buildSuggestionPrefill, ingestFromOf, joinCandidates, limitHintOf } from './suggestionPrefill';
 
 const item = (over: Partial<SuggestionItem> = {}): SuggestionItem => ({
   id: 's1',
@@ -152,5 +152,31 @@ describe('joinCandidates', () => {
   it('joins two with and, three with a comma and and', () => {
     expect(joinCandidates(['A', 'B'])).toBe('A and B');
     expect(joinCandidates(['A', 'B', 'C'])).toBe('A, B and C');
+  });
+});
+
+describe('Import emails from', () => {
+  it("starts at the suggestion's first email, date part only", () => {
+    expect(buildSuggestionPrefill(item({ firstSeenOn: '2024-03-05' })).values.ingestFromDate).toBe('2024-03-05');
+    expect(buildSuggestionPrefill(item({ firstSeenOn: '2024-03-05T10:15:00Z' })).values.ingestFromDate).toBe('2024-03-05');
+  });
+
+  it('stays empty when the suggestion has no first email', () => {
+    expect(buildSuggestionPrefill(item()).values.ingestFromDate).toBe('');
+    expect(buildSuggestionPrefill(item({ firstSeenOn: null })).values.ingestFromDate).toBe('');
+    expect(buildSuggestionPrefill(item({ firstSeenOn: '' })).values.ingestFromDate).toBe('');
+    expect(ingestFromOf({ firstSeenOn: 'not a date' })).toBe('');
+  });
+
+  it("uses the bank account's own first email, not its debit card's", () => {
+    const { values } = buildSuggestionPrefill(
+      item({ kind: 'BANK_ACCOUNT', variant: null, firstSeenOn: '2023-01-10', children: [child({ kind: 'DEBIT_CARD', last4: '9911', firstSeenOn: '2022-06-01' })] }),
+    );
+    expect(values.ingestFromDate).toBe('2023-01-10');
+  });
+
+  it("uses a debit card's first email when it opens Add bank account without its account", () => {
+    const { values } = buildSuggestionPrefill(item({ kind: 'DEBIT_CARD', last4: '5555', firstSeenOn: '2024-07-21' }));
+    expect(values).toMatchObject({ type: AccountType.BANK_ACCOUNT, ingestFromDate: '2024-07-21' });
   });
 });

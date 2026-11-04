@@ -26,7 +26,7 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({ ...(await orig<typeof 
 import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 
-import { BankSection, CardsSection } from './AccountsSections';
+import { FoundInEmailCard } from './FoundInEmailCard';
 import { type SuggestionItem, suggestionRow } from './suggestionsModel';
 
 const user = userEvent.setup({ pointerEventsCheck: 0 });
@@ -60,13 +60,11 @@ beforeEach(() => {
 });
 
 const pressAdd = () => user.click(screen.getAllByRole('button', { name: 'Add' })[0]);
-const bankProps = { rows: [], closedRows: [], closedLine: null };
-const cardProps = { rows: [], closedRows: [], closedLine: null, subtitle: '' };
 
 describe('Add on a card of an account we have', () => {
   it('opens the add-on dialog for that account with the number filled and the relationship unpicked', async () => {
     const i = item({ kind: 'ADDON_CARD', last4: '0082', parentAccount: parentRef(cardParent, '4321') });
-    render(<CardsSection {...cardProps} suggestions={found(i, [cardParent])} />);
+    render(<FoundInEmailCard suggestions={found(i, [cardParent])} />);
     await pressAdd();
     expect(await screen.findByText('Add add-on cardholder')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /^Last 4 digits/ })).toHaveValue('0082');
@@ -78,7 +76,7 @@ describe('Add on a card of an account we have', () => {
 
   it('adds the debit card to the primary holder with fromSuggestionId', async () => {
     const i = item({ kind: 'DEBIT_CARD', last4: '9911', parentAccount: parentRef(bankParent, '2222') });
-    render(<BankSection {...bankProps} suggestions={found(i, [bankParent])} />);
+    render(<FoundInEmailCard suggestions={found(i, [bankParent])} />);
     await pressAdd();
     expect(await screen.findByText('Add a card')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /^Last 4 digits/ })).toHaveValue('9911');
@@ -90,7 +88,7 @@ describe('Add on a card of an account we have', () => {
   it('adds the debit card as the primary card when the account has no holder yet', async () => {
     api.loadCardholders.mockResolvedValue({ success: true, data: [] });
     const i = item({ kind: 'DEBIT_CARD', last4: '9911', parentAccount: parentRef(bankParent, '2222') });
-    render(<BankSection {...bankProps} suggestions={found(i, [bankParent])} />);
+    render(<FoundInEmailCard suggestions={found(i, [bankParent])} />);
     await pressAdd();
     await user.click(await screen.findByRole('button', { name: 'Add debit card' }));
     await waitFor(() => expect(mutations.addPrimaryCard).toHaveBeenCalledWith(expect.objectContaining({ last4: '9911', fromSuggestionId: 's1' })));
@@ -99,7 +97,7 @@ describe('Add on a card of an account we have', () => {
   it('replaces the active primary card with the new number and fromSuggestionId', async () => {
     api.loadCardholders.mockResolvedValue({ success: true, data: [{ ...holder, accountId: 'c1' }] });
     const i = item({ kind: 'REPLACEMENT_CARD', last4: '5678', parentAccount: parentRef(cardParent, '1111') });
-    render(<CardsSection {...cardProps} suggestions={found(i, [cardParent])} />);
+    render(<FoundInEmailCard suggestions={found(i, [cardParent])} />);
     await pressAdd();
     expect(await screen.findByText('Replace card ••1111')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /^New last 4 digits/ })).toHaveValue('5678');
@@ -117,7 +115,7 @@ describe('Add on a card of an account we have', () => {
   it('falls back to Edit on the account when there is no active card to replace', async () => {
     api.loadCardholders.mockResolvedValue({ success: true, data: [{ ...holder, cards: [{ id: 'k1', last4: '1111', closedOn: '2026-01-01' }] }] });
     const i = item({ kind: 'REPLACEMENT_CARD', last4: '5678', parentAccount: parentRef(cardParent, '1111') });
-    render(<CardsSection {...cardProps} suggestions={found(i, [cardParent])} />);
+    render(<FoundInEmailCard suggestions={found(i, [cardParent])} />);
     await pressAdd();
     expect(await screen.findByRole('dialog')).toHaveTextContent('Edit c1');
   });
@@ -125,7 +123,7 @@ describe('Add on a card of an account we have', () => {
   it('shows the error and opens nothing when the cards can not be loaded', async () => {
     api.loadCardholders.mockResolvedValue({ success: false, error: { message: "Couldn't load the cardholders. Try again." } });
     const i = item({ kind: 'DEBIT_CARD', last4: '9911', parentAccount: parentRef(bankParent, '2222') });
-    render(<BankSection {...bankProps} suggestions={found(i, [bankParent])} />);
+    render(<FoundInEmailCard suggestions={found(i, [bankParent])} />);
     await pressAdd();
     await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't load the cardholders. Try again.", { tone: 'danger' }));
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -135,7 +133,7 @@ describe('Add on a card of an account we have', () => {
 describe('Add on an account or a card without its account', () => {
   it('passes the whole suggestion to the Add account dialog', async () => {
     const i = item({ kind: 'CREDIT_CARD' });
-    render(<CardsSection {...cardProps} suggestions={found(i, [])} />);
+    render(<FoundInEmailCard suggestions={found(i, [])} />);
     await pressAdd();
     expect(dialogs.open).toHaveBeenCalledWith('credit_card', { fromSuggestion: i, onCreated: expect.any(Function) });
     // Once created the page refreshes in place, so the row goes.
@@ -145,13 +143,13 @@ describe('Add on an account or a card without its account', () => {
 
   it('opens Add DEBIT_CARD with the suggestion when it has no parent', async () => {
     const i = item({ kind: 'DEBIT_CARD' });
-    render(<BankSection {...cardProps} suggestions={found(i, [])} />);
+    render(<FoundInEmailCard suggestions={found(i, [])} />);
     await pressAdd();
     expect(dialogs.open).toHaveBeenCalledWith('bank_account', { fromSuggestion: i, onCreated: expect.any(Function) });
   });
 
   it.each(['ADDON_CARD', 'REPLACEMENT_CARD'] as const)('opens the plain Add dialog, claiming nothing, for a %s without its account', async (kind) => {
-    render(<CardsSection {...cardProps} suggestions={found(item({ kind }), [])} />);
+    render(<FoundInEmailCard suggestions={found(item({ kind }), [])} />);
     await pressAdd();
     expect(dialogs.open).toHaveBeenCalledWith('credit_card');
   });
@@ -159,7 +157,7 @@ describe('Add on an account or a card without its account', () => {
   it('shows the error toast when loading the cardholders throws', async () => {
     api.loadCardholders.mockRejectedValue(new Error('boom'));
     const i = item({ kind: 'DEBIT_CARD', last4: '9911', parentAccount: parentRef(bankParent, '2222') });
-    render(<BankSection {...bankProps} suggestions={found(i, [bankParent])} />);
+    render(<FoundInEmailCard suggestions={found(i, [bankParent])} />);
     await pressAdd();
     await waitFor(() => expect(toast).toHaveBeenCalledWith("Couldn't load the cardholders. Try again.", { tone: 'danger' }));
     expect(screen.queryByRole('dialog')).toBeNull();

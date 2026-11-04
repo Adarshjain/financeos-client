@@ -31,15 +31,16 @@ import {
   NetWorthValue,
   streamedCardRow,
 } from './AccountsStreamed';
+import { FoundInEmailCard } from './FoundInEmailCard';
 import { ScanProgressCard } from './ScanProgressCard';
 import {
   accountsBodyMode,
   isScanProgressShown,
+  mergeSuggestions,
   scanningEmptyCopy,
   splitSuggestions,
   suggestionCount,
 } from './suggestionsModel';
-import { SuggestionsNote } from './SuggestionsNote';
 
 /** The Accounts list body: the KPI tiles and the four sections. The accounts are loaded; the other pieces stream in. */
 export function AccountsScreen({
@@ -101,13 +102,12 @@ export function AccountsScreen({
           ]}
         />
         ) : null}
-        {foundCount > 0 ? <SuggestionsNote /> : null}
+        {foundCount > 0 ? <FoundInEmailCard suggestions={mergeSuggestions(found)} /> : null}
 
         <BankSection
           rows={sections.banks.open.map((a) => bankRow(a, today))}
           closedRows={sections.banks.closed.map((a) => bankRow(a, today))}
           closedLine={closedLineFor(sections.banks.closed)}
-          suggestions={found.bank}
           emptyText={scanningEmptyCopy('bank', progressShown)}
         />
 
@@ -116,7 +116,6 @@ export function AccountsScreen({
           rows={cardRows(sections.cards.open)}
           closedRows={cardRows(sections.cards.closed)}
           closedLine={closedLineFor(sections.cards.closed)}
-          suggestions={found.card}
           emptyText={scanningEmptyCopy('card', progressShown)}
         />
 

@@ -230,6 +230,7 @@ When every page is migrated:
 
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
+- 11-04: found accounts in a separate card (option A); Import emails from prefilled from first seen
 
 - 2026-11-04: **Type style `body-lg` + field `textStyle`** (owner): new generic type style `body-lg` (17/24, 500) for large regular text; TextField and DateField take `textStyle: 'figure' | 'regular'` (default `figure`) for `xl` fields; Welcome fields are `xl` + `regular`, amount fields keep `figure`.
 - 2026-11-04: **DateField `size`** (owner, enlarge Welcome): DateField takes `size` `md|lg|xl` (default `lg`), passed to its TextField with the same heights and text.
@@ -493,6 +494,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 - 2026-10-24 · Rewards · Tier spend window placement: owner says Active from/until is only for rule precedence by txn date; discuss later (parked).
 - 2026-10-26 · Ask the data · Open: (1) pane — owner 2026-10-27: keep Card + ListRow. (2) Composer fade — owner 2026-10-27: dropped. (3) The table card has no share-bar column: the server table block has no percent/share type (formats are only inr, number, text), so no bar cells. Resolved by the coordinator 2026-10-26: phone conversation crumb = Ask the data; Ask the data shortcut hidden on chat pages; + labelled New chat on desktop; stopped answer reads Stopped · Show steps with Ask again; follow-ups come from blocks.followUps; a failed first question's Retry re-sends it as a new chat. Report preview labels — owner 2026-10-27: use the catalog (built). Undo of an update only in the same visit — owner OK 2026-10-27.
 ## Log
+- 2026-11-04 · Accounts: FoundInEmailCard below the hero (all suggestions, note as subtitle, Add primary; Bank/Cards list only own accounts); SuggestionsNote removed; Add from a suggestion prefills Import emails from with firstSeenOn.
 - 2026-11-04 · Onboarding (Welcome v6): type style `body-lg` (tokens.json, tokens.css, Tailwind, cn, Text variant + story, RULES §4.2, Phase 1 contract); TextField/DateField `textStyle` (README, stories, tests); Welcome fields `xl` + `regular`.
 - 2026-11-04 · Onboarding (Welcome v3): DateField `size` (md|lg|xl; story, test, README); Welcome fields `xl`, sub line back to `body`, no Back slot on step 1 (bar flush left).
 - 2026-11-04 · Onboarding (Welcome v2, owner round): no step bar when Welcome is the only screen; headline `hero-figure`, sub `heading`, gaps space-32, column `container-md`; PageFooter `variant="plain"` (story, test) on Welcome. Open questions: DateField size, body-only text.

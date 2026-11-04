@@ -2,12 +2,18 @@ import { describe, expect, it } from 'vitest';
 
 import type { ScanState, SuggestionItem } from '@/features/accounts/list/suggestionsModel';
 import type { Account } from '@/lib/account.types';
+import { AccountType } from '@/lib/types';
 
 import {
   accountsBodyMode,
+  foundBandLabel,
+  foundRowSub,
+  fromEmailsLine,
   isScanProgressShown,
   maybeBandLabel,
+  mergeSuggestions,
   olderBandLabel,
+  olderBandSection,
   scanEtaText,
   scanningEmptyCopy,
   scanProgressLine,
@@ -134,6 +140,56 @@ describe('band labels', () => {
   });
 });
 
+describe('Found in your email card', () => {
+  it('titles the card with the Found count', () => {
+    expect(foundBandLabel(2)).toBe('Found in your email · 2');
+    expect(foundBandLabel(0)).toBe('Found in your email');
+  });
+
+  it('says which bank emails a suggestion came from', () => {
+    expect(fromEmailsLine(suggestionRow(item()))).toBe('From your HDFC Bank emails');
+    expect(fromEmailsLine({ item: undefined })).toBe('From your emails');
+  });
+
+  it('gives a row where it came from and its number', () => {
+    expect(foundRowSub(suggestionRow(item()))).toBe('From your HDFC Bank emails · ••4321');
+    expect(foundRowSub(suggestionRow(item({ last4: '' })))).toBe('From your HDFC Bank emails');
+  });
+
+  it('names the account a card sits on', () => {
+    const debit = item({ kind: 'DEBIT_CARD', last4: '9911', parentAccount: { id: 'b1', name: 'HDFC Savings', last4: '1123' } });
+    expect(foundRowSub(suggestionRow(debit))).toBe('From your HDFC Bank emails · On HDFC Savings · ••9911');
+  });
+
+  it("keeps the server's question while it asks one", () => {
+    const isThis = item({ candidateAccount: { id: 'c2', name: 'Axis Magnus' } as SuggestionItem['candidateAccount'] });
+    expect(foundRowSub(suggestionRow(isThis))).toBe('Is this your Axis Magnus?');
+    const older = item({ band: 'OLDER', parentAccount: { id: 'c1', name: 'HDFC Regalia', last4: '1111' } });
+    expect(foundRowSub(suggestionRow(older))).toBe('Older number on HDFC Regalia?');
+  });
+
+  it('merges bank and card suggestions band by band, bank rows first, with every account to file under', () => {
+    const bankAcc = { id: 'b1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT } as Account;
+    const cardAcc = { id: 'c1', name: 'HDFC Regalia', type: AccountType.CREDIT_CARD } as Account;
+    const b = suggestionRow(item({ id: 'b', kind: 'BANK_ACCOUNT' }));
+    const c = suggestionRow(item({ id: 'c' }));
+    const o = suggestionRow(item({ id: 'o', band: 'OLDER' }));
+    const merged = mergeSuggestions({
+      bank: { bands: { found: [b], older: [], maybe: [] }, parents: [bankAcc], accounts: [bankAcc] },
+      card: { bands: { found: [c], older: [o], maybe: [] }, parents: [bankAcc], accounts: [cardAcc] },
+    });
+    expect(merged.bands.found.map((r) => r.id)).toEqual(['b', 'c']);
+    expect(merged.bands.older.map((r) => r.id)).toEqual(['o']);
+    expect(merged.parents).toEqual([bankAcc]);
+    expect(merged.accounts).toEqual([bankAcc, cardAcc]);
+  });
+
+  it('words the Older band for accounts when a bank account is among them, else for cards', () => {
+    expect(olderBandSection([{ kind: 'CREDIT_CARD' }, { kind: 'BANK_ACCOUNT' }])).toBe('bank');
+    expect(olderBandSection([{ kind: 'CREDIT_CARD' }, { kind: 'DEBIT_CARD' }])).toBe('card');
+  });
+});
+
 describe('scan progress', () => {
   it('shows only while a connected Gmail first scan is running or idle', () => {
     expect(isScanProgressShown(scan())).toBe(true);
@@ -178,8 +234,8 @@ describe('page body', () => {
   });
 
   it('changes the empty copy only while the progress card shows', () => {
-    expect(scanningEmptyCopy('bank', true)).toBe('Accounts we find in your email show up here.');
-    expect(scanningEmptyCopy('card', true)).toBe('Cards we find in your email show up here.');
+    expect(scanningEmptyCopy('bank', true)).toBe('Accounts we find in your email show up at the top of this page.');
+    expect(scanningEmptyCopy('card', true)).toBe('Cards we find in your email show up at the top of this page.');
     expect(scanningEmptyCopy('broker', true)).toBe("Add a broker with +. We don't look for these.");
     expect(scanningEmptyCopy('bank', false)).toBeUndefined();
   });
