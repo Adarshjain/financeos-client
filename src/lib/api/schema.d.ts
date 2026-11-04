@@ -1939,7 +1939,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["dismiss"];
+        post: operations["dismiss_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2852,7 +2852,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete: operations["dismiss_1"];
+        delete: operations["dismiss_2"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3604,6 +3604,102 @@ export interface paths {
         get: operations["getUpcomingObligations"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recurring/proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["proposals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recurring/tracked": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["tracked"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recurring/{id}/converted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["converted"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recurring/{id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["dismiss"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recurring/{id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["stop"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recurring/{id}/track": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["track"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7372,6 +7468,16 @@ export interface components {
             /** Format: uuid */
             transactionId?: string | null;
         };
+        LoanPrefillDto: {
+            /** Format: uuid */
+            accountId?: string | null;
+            emiAmount: number;
+            /** Format: int32 */
+            emiDayOfMonth: number;
+            /** Format: date */
+            firstPaymentGuess?: string | null;
+            name: string;
+        };
         LoanResponse: {
             annualRatePct: number;
             /** Format: date-time */
@@ -7646,6 +7752,9 @@ export interface components {
             /** Format: uuid */
             loanId?: string | null;
             loanName?: string | null;
+            paid?: boolean | null;
+            /** Format: uuid */
+            seriesId?: string | null;
             /** Format: uuid */
             statementId?: string | null;
             status: string;
@@ -8283,6 +8392,30 @@ export interface components {
             tradeDate: string;
             /** @enum {string} */
             type: "buy" | "sell";
+        };
+        RecurringConvertedRequest: {
+            /** Format: uuid */
+            loanId: string;
+        };
+        RecurringSeriesDto: {
+            accountName?: string | null;
+            amount: number;
+            displayName: string;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "SUBSCRIPTION" | "EMI" | "OTHER";
+            /** Format: date */
+            lastPaidOn: string;
+            loanPrefill?: components["schemas"]["LoanPrefillDto"];
+            /** Format: date */
+            nextDueOn: string;
+            /** Format: int32 */
+            paymentCount: number;
+            /** @enum {string} */
+            period: "WEEKLY" | "MONTHLY" | "QUARTERLY" | "YEARLY";
+            /** @enum {string} */
+            status: "PROPOSED" | "TRACKED" | "DISMISSED" | "ENDED" | "LOAN";
         };
         Refs: {
             /** Format: uuid */
@@ -14420,7 +14553,7 @@ export interface operations {
             };
         };
     };
-    dismiss: {
+    dismiss_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -16902,7 +17035,7 @@ export interface operations {
             };
         };
     };
-    dismiss_1: {
+    dismiss_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -18560,6 +18693,192 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ObligationsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    proposals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RecurringSeriesDto"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    tracked: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RecurringSeriesDto"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    converted: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecurringConvertedRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RecurringSeriesDto"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismiss: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RecurringSeriesDto"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    stop: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RecurringSeriesDto"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    track: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RecurringSeriesDto"];
                 };
             };
             /** @description Error response */
