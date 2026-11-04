@@ -128,7 +128,7 @@ describe('/investments/tradebook: rows', () => {
       expect(screen.getAllByText(h).length).toBeGreaterThan(0);
     }
     expect(first('1 Oct')).toBeTruthy();
-    expect(first('35,500')).toBeTruthy();
+    expect(first('35,500.00')).toBeTruthy();
     expect(first('≈42.10')).toBeTruthy();
     expect(first('Parag Parikh Flexi Cap')).toBeTruthy();
     expect(first('CNC')).toBeTruthy();

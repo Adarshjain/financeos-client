@@ -137,16 +137,16 @@ describe('SearchProvider', () => {
     expect(palette()).toBeNull();
   });
 
-  it('sends no request for 2 characters, searches at 3 and opens a result', async () => {
+  it('sends no request for 1 character, searches at 2 and opens a result', async () => {
     renderShell();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
-    fireEvent.change(field(), { target: { value: 'hd' } });
+    fireEvent.change(field(), { target: { value: 'h' } });
     await new Promise((r) => setTimeout(r, 300));
     expect(fetchMock).not.toHaveBeenCalled();
 
-    fireEvent.change(field(), { target: { value: 'hdf' } });
+    fireEvent.change(field(), { target: { value: 'hd' } });
     const row = await screen.findByRole('option', { name: 'HDFC Regalia Gold · ••7741' });
-    expect(fetchMock.mock.calls[0][0]).toBe('hdf');
+    expect(fetchMock.mock.calls[0][0]).toBe('hd');
     fireEvent.click(row);
     expect(router.push).toHaveBeenCalledWith('/accounts/a1');
     expect(palette()).toBeNull();

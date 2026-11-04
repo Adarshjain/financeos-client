@@ -43,7 +43,7 @@ describe('AccountTileBody balance drill and trend', () => {
   it('the balance opens the account\'s net worth breakdown', async () => {
     serve(account({ id: 'a1', name: 'HDFC Savings', balance: 125000 }));
     renderWithQuery(<AccountTileBody {...bodyProps('account_tile', { accountId: 'a1' })} />);
-    await userEvent.click(await screen.findByRole('button', { name: '₹1,25,000' }));
+    await userEvent.click(await screen.findByRole('button', { name: '₹1,25,000.00' }));
     const dialog = screen.getByTestId('breakdown');
     expect(dialog).toHaveAttribute('data-datasource', 'net_worth');
     expect(dialog).toHaveAttribute('data-row-id', 'a1');

@@ -156,10 +156,10 @@ describe('/loans/lendings', () => {
   it('lists each person with direction, balance, expected and last entry', async () => {
     await renderPage();
     for (const text of [
-      'Rahul Sharma', 'Owes you', '+15,000', '28 Oct · in 15 d', '10 Oct · repaid ₹10,000',
+      'Rahul Sharma', 'Owes you', '+15,000', '28 Oct · in 15 d', '10 Oct · repaid ₹10,000.00',
       'Priya Nair', 'You owe', '12,000', '23 Oct · in 10 d', '23 Sep · borrowed',
-      'Dad', '1,00,000', '15 Jul · repaid ₹50,000',
-      'Goa trip pool', 'Settled', '24 Aug · settled ₹4,200',
+      'Dad', '1,00,000', '15 Jul · repaid ₹50,000.00',
+      'Goa trip pool', 'Settled', '24 Aug · settled ₹4,200.00',
     ]) {
       expect(screen.getAllByText(text).length, text).toBeGreaterThan(0);
     }
@@ -260,7 +260,7 @@ describe('/loans/lendings', () => {
       await renderPage();
       expect(screen.getByText('Unlinked bank transfers')).toBeInTheDocument();
       expect(screen.getByText('Look like lending entries')).toBeInTheDocument();
-      expect(screen.getByText('IMPS from Priya Nair · ₹2,300')).toBeInTheDocument();
+      expect(screen.getByText('IMPS from Priya Nair · ₹2,300.00')).toBeInTheDocument();
       expect(screen.getByText('13 Sep · HDFC Savings · "split"')).toBeInTheDocument();
       expect(screen.queryByText('Record as settlement')).toBeNull();
     });
@@ -282,7 +282,7 @@ describe('/loans/lendings', () => {
       }));
       expect(await screen.findByText('Linked')).toBeInTheDocument();
       expect(screen.getByText('13 Sep · already linked to the 12 Sep entry')).toBeInTheDocument();
-      expect(screen.getByText('IMPS from Priya Nair · ₹2,300')).toBeInTheDocument();
+      expect(screen.getByText('IMPS from Priya Nair · ₹2,300.00')).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Link' })).toBeNull();
       expect(router.refresh).not.toHaveBeenCalled();
       const [message, options] = toast.mock.calls[0];
@@ -343,9 +343,9 @@ describe('/loans/lendings', () => {
       server.fetchUnrecordedTransfers.mockResolvedValue(unrecorded);
       await renderPage();
       expect(screen.getByText('Unlinked bank transfers')).toBeInTheDocument();
-      expect(screen.getByText('Received from Rahul Sharma · ₹2,000')).toBeInTheDocument();
+      expect(screen.getByText('Received from Rahul Sharma · ₹2,000.00')).toBeInTheDocument();
       expect(screen.getByText('13 Oct · HDFC Savings')).toBeInTheDocument();
-      expect(screen.getByText('Paid to Priya Nair · ₹1,500')).toBeInTheDocument();
+      expect(screen.getByText('Paid to Priya Nair · ₹1,500.00')).toBeInTheDocument();
       expect(screen.getAllByRole('button', { name: 'Record as settlement' })).toHaveLength(2);
     });
 
@@ -359,8 +359,8 @@ describe('/loans/lendings', () => {
           body: { transactionId: 't9' },
         }),
       );
-      await waitFor(() => expect(screen.queryByText('Received from Rahul Sharma · ₹2,000')).toBeNull());
-      expect(screen.getByText('Paid to Priya Nair · ₹1,500')).toBeInTheDocument();
+      await waitFor(() => expect(screen.queryByText('Received from Rahul Sharma · ₹2,000.00')).toBeNull());
+      expect(screen.getByText('Paid to Priya Nair · ₹1,500.00')).toBeInTheDocument();
       expect(router.refresh).toHaveBeenCalled();
       const [message, options] = toast.mock.calls[0];
       expect(message).toBe('Recorded as settlement with Rahul Sharma');
@@ -368,7 +368,7 @@ describe('/loans/lendings', () => {
 
       await act(async () => options.action.onSelect());
       await waitFor(() => expect(api.DELETE).toHaveBeenCalledWith('/api/v1/lendings/{id}', { params: { path: { id: 'new1' } } }));
-      expect(await screen.findByText('Received from Rahul Sharma · ₹2,000')).toBeInTheDocument();
+      expect(await screen.findByText('Received from Rahul Sharma · ₹2,000.00')).toBeInTheDocument();
     });
 
     it('shows the server message and keeps the row when recording fails', async () => {
@@ -379,7 +379,7 @@ describe('/loans/lendings', () => {
       await waitFor(() => expect(toast).toHaveBeenCalled());
       expect(toast.mock.calls[0][0]).toBe('Already recorded');
       expect(toast.mock.calls[0][1]).toEqual({ tone: 'danger' });
-      expect(screen.getByText('Received from Rahul Sharma · ₹2,000')).toBeInTheDocument();
+      expect(screen.getByText('Received from Rahul Sharma · ₹2,000.00')).toBeInTheDocument();
     });
   });
 });

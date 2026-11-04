@@ -125,7 +125,7 @@ describe('/investments/fno: page', () => {
     expect(some('+₹10,456')).toBeInTheDocument();
     expect(some('50%')).toBeInTheDocument();
     expect(some('2 of 4')).toBeInTheDocument();
-    expect(some('₹669')).toBeInTheDocument();
+    expect(some('₹669.10')).toBeInTheDocument();
     for (const name of ['RELIANCE 3000 CE', 'NIFTY 25200 CE', 'NIFTY OCT FUT', 'BANKNIFTY 56000 PE']) {
       expect(screen.getAllByText(name).length).toBeGreaterThan(0);
     }
