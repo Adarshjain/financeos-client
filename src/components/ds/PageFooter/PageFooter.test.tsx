@@ -17,6 +17,17 @@ describe('PageFooter', () => {
     expect(save).toHaveBeenCalledTimes(1);
   });
 
+  it('draws a tertiary action first, before the secondary and primary', () => {
+    render(
+      <PageFooter
+        tertiary={{ label: 'Back' }}
+        secondary={{ label: 'Skip' }}
+        primary={{ label: 'Connect' }}
+      />,
+    );
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Back', 'Skip', 'Connect']);
+  });
+
   it('is the Dialog footer: right-aligned from desk up, equal columns on a phone', () => {
     const { container } = render(<PageFooter primary={{ label: 'Save' }} />);
     expect(container.querySelector('.desk\\:justify-end')).toBeInTheDocument();

@@ -36,7 +36,7 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 - Chips (multiple) show as many as fit on one line of the field, measured from the field's width; the rest collapse into a `+n` badge that always fits inside the field. No `maxDisplayChips`.
 - Disabled: no hover, press, focus or open styling; same look as a disabled TextField (`bg-sunken`, faint text, chevron and chips, `opacity-60`).
 - The label is plain text (not a `<label>`): tapping it does nothing. The field points at it with `aria-labelledby`.
-- `name`, `disabled`, `loading`, `loadingText`, `placeholder`, `label`, `helper`, `error`, `icon`, `trigger`, `showRadio`, `open`, `defaultOpen`, `onOpenChange`.
+- `name`, `disabled`, `loading`, `loadingText`, `placeholder`, `label`, `helper`, `error`, `warning` (as TextField: `warning` trigger border and message, not invalid, `error` wins), `icon`, `trigger`, `showRadio`, `open`, `defaultOpen`, `onOpenChange`.
 
 ## Built from
 Popover, SectionHeader (group names), TextField, Checkbox (multi), Radio (`showRadio`), Badge (chips in the field), Icon, Button (Cancel, Clear, Done), FieldFrame.
@@ -44,6 +44,6 @@ Popover, SectionHeader (group names), TextField, Checkbox (multi), Radio (`showR
 ## Variants
 - **Single select**; **single with search and icons**; **multi select** (checkboxes, Cancel, Clear and Done; chips on one line with +n); **multi with search and create**; **sectioned list**; **with action rows**; **search · create from typing**; **no results**; **with descriptions**; **disabled option**; **custom trigger** (FilterChip); **nested options** (multiple, optionally searchable).
 - **Small** (`size="sm"`, inline in a list row).
-- Closed field states: value, placeholder, icon, open, chips, overflow, error, disabled, loading.
+- Closed field states: value, placeholder, icon, open, chips, overflow, error, warning, disabled, loading.
 
 - Phone (below `desk`): the list opens as a bottom sheet like the Dialog sheet (handle, the label as title, 44px rows, drag down to close); the search is not focused on open there. Desktop keeps the dropdown.

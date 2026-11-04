@@ -566,6 +566,8 @@ export interface SelectProps
   label?: React.ReactNode;
   helper?: React.ReactNode;
   error?: React.ReactNode;
+  /** Amber border, ring and message (not invalid). `error` wins when both are set. */
+  warning?: React.ReactNode;
   placeholder?: string;
   value?: string | string[];
   defaultValue?: string | string[];
@@ -613,6 +615,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       label,
       helper,
       error,
+      warning,
       placeholder,
       value: controlledValue,
       defaultValue,
@@ -725,6 +728,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
     };
 
     const hasError = Boolean(error);
+    const hasWarning = !hasError && Boolean(warning);
     const isLockedOrDisabled = Boolean(disabled || loading);
 
     // Multiple: as many chips as fit on one line, the rest as "+n". Widths are measured once per chip (all chips render for that pass, before paint), then fitted to the row.
@@ -888,7 +892,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
         aria-controls={isOpen ? listboxId : undefined}
         aria-labelledby={label ? labelId : undefined}
         aria-invalid={hasError ? 'true' : undefined}
-        aria-describedby={hasError || helper ? helperId : undefined}
+        aria-describedby={hasError || hasWarning || helper ? helperId : undefined}
         onClick={() => {
           if (!isLockedOrDisabled) setOpen(!isOpen);
         }}
@@ -916,7 +920,9 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             ? 'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60'
             : hasError
               ? 'border-danger focus-visible:ring-danger'
-              : isOpen
+              : hasWarning
+                ? 'border-warning focus-visible:ring-warning'
+                : isOpen
                 ? 'border-line-strong ring-2 ring-focus-ring ring-offset-2'
                 : 'border-line-strong hover:border-line-strong focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
           triggerClassName,
@@ -940,6 +946,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
         label={label}
         helper={helper}
         error={error}
+        warning={warning}
         className={cn(trigger ? 'inline-block w-auto' : 'w-full', className)}
       >
         {name ? (

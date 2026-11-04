@@ -394,7 +394,7 @@ describe('/investments/dividends: suggestions', () => {
     fireEvent.click(within(row.parentElement!.parentElement as HTMLElement).getAllByRole('button', { name: 'Record' })[0]);
     expect(await screen.findByText('Record dividend', { selector: 'h2, [role="heading"], div' })).toBeInTheDocument();
     expect(actions.acceptDividendSuggestions).not.toHaveBeenCalled();
-    expect(await screen.findByLabelText(/^Pay date/)).toHaveValue('05/08/26');
+    expect(await screen.findByLabelText(/^Pay date/)).toHaveValue('05/08/2026');
     expect(screen.getByLabelText(/^Amount/)).toHaveValue('100');
     expect(screen.getByLabelText(/^Per unit/)).toHaveValue('10');
     expect(screen.getByLabelText(/^Notes/)).toHaveValue('Auto-detected dividend (10 units @ ₹10.00)');

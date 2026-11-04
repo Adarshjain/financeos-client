@@ -399,7 +399,7 @@ describe('/investments/[id]: record and edit dialogs', () => {
     await renderPage();
     fireEvent.click(within(await openMenu()).getByRole('menuitem', { name: 'Record price' }));
     const dialog = await screen.findByRole('dialog', { name: /Record price/ });
-    expect(within(dialog).getByDisplayValue('13/10/26')).toBeInTheDocument();
+    expect(within(dialog).getByDisplayValue('13/10/2026')).toBeInTheDocument();
   });
 
   it('starts Record trade on the broker when only one holds the instrument', async () => {
@@ -567,7 +567,7 @@ describe('/investments/[id]: Price history dialog', () => {
     const history = await openHistory();
     fireEvent.click(await within(history).findByRole('button', { name: 'Edit' }));
     const dialog = await screen.findByRole('dialog', { name: /Edit manual price/ });
-    expect(within(dialog).getByDisplayValue('10/10/26')).toBeEnabled();
+    expect(within(dialog).getByDisplayValue('10/10/2026')).toBeEnabled();
     const amount = within(dialog).getByLabelText('Price');
     expect(amount).toHaveValue('1470');
     fireEvent.change(amount, { target: { value: '1475.5' } });
@@ -642,7 +642,7 @@ describe('/investments/[id]: manual price from the LTP override', () => {
     await renderPage();
     fireEvent.click(screen.getAllByRole('button', { name: 'override' })[0]);
     const dialog = await screen.findByRole('dialog', { name: /Record price/ });
-    const date = within(dialog).getByDisplayValue('13/10/26');
+    const date = within(dialog).getByDisplayValue('13/10/2026');
     expect(date).not.toBeDisabled();
     fireEvent.change(within(dialog).getByLabelText('Price'), { target: { value: '1600' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Record price' }));

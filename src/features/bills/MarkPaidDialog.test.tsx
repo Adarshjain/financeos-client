@@ -53,7 +53,7 @@ describe('MarkPaidDialog', () => {
     expect(screen.getByText('HDFC Regalia Gold · ₹44,319.00 outstanding')).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Paid in full' })).toBeChecked();
     expect(screen.queryByLabelText('Amount paid')).toBeNull();
-    expect(screen.getByLabelText('Paid on')).toHaveValue('13/10/26');
+    expect(screen.getByLabelText('Paid on')).toHaveValue('13/10/2026');
   });
 
   it('marks the bill paid in full with the paid date, closes, and offers Undo', async () => {

@@ -379,3 +379,28 @@ describe('TextField size xl and align', () => {
     expect(screen.getByLabelText('Amount')).not.toHaveClass('text-ink');
   });
 });
+
+describe('TextField warning', () => {
+  it('shows the warning message in the warning tone with an amber border, not invalid', () => {
+    const { container } = render(<TextField label="Card" warning="Already linked" />);
+    expect(screen.getByText('Already linked')).toHaveClass('text-warning');
+    expect(container.querySelector('.border-warning')).toBeInTheDocument();
+    expect(container.querySelector('.border-danger')).not.toBeInTheDocument();
+    const input = screen.getByLabelText('Card');
+    expect(input).not.toHaveAttribute('aria-invalid');
+    expect(input).toHaveAttribute('aria-describedby', screen.getByText('Already linked').id);
+  });
+
+  it('error wins over warning', () => {
+    const { container } = render(<TextField label="Card" error="Required" warning="Already linked" />);
+    expect(screen.getByText('Required')).toHaveClass('text-danger');
+    expect(screen.queryByText('Already linked')).not.toBeInTheDocument();
+    expect(container.querySelector('.border-warning')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Card')).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('warning replaces the helper', () => {
+    render(<TextField label="Card" helper="Last 4 digits" warning="Already linked" />);
+    expect(screen.queryByText('Last 4 digits')).not.toBeInTheDocument();
+  });
+});

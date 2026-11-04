@@ -35,6 +35,7 @@ const meta: Meta<typeof DateField> = {
     defaultValue: { control: 'text' },
     helper: { control: 'text' },
     error: { control: 'text' },
+    warning: { control: 'text' },
     optional: { control: 'boolean' },
     disabled: { control: 'boolean' },
     range: { control: 'boolean' },
@@ -114,7 +115,16 @@ export const ErrorState: Story = {
     today: '2026-10-13',
     label: 'Statement date',
     defaultValue: '2026-10-15',
-    error: 'Enter a valid date in dd/mm/yy format.',
+    error: 'Enter a valid date in dd/mm/yyyy format.',
+  },
+};
+
+export const WarningState: Story = {
+  args: {
+    today: '2026-10-13',
+    label: 'Statement date',
+    defaultValue: '2026-10-15',
+    warning: 'This date is in the future.',
   },
 };
 

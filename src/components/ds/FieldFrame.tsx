@@ -13,6 +13,8 @@ export interface FieldFrameProps
   optional?: boolean;
   helper?: React.ReactNode;
   error?: React.ReactNode;
+  /** Amber message in the error's place; not invalid. `error` wins when both are set. */
+  warning?: React.ReactNode;
   className?: string;
   children: React.ReactNode;
 }
@@ -27,6 +29,7 @@ export const FieldFrame = React.forwardRef<HTMLDivElement, FieldFrameProps>(
       optional = false,
       helper,
       error,
+      warning,
       className,
       children,
       ...props
@@ -67,6 +70,13 @@ export const FieldFrame = React.forwardRef<HTMLDivElement, FieldFrameProps>(
             className="mt-space-6 font-text font-medium text-caption text-danger"
           >
             {error}
+          </div>
+        ) : warning ? (
+          <div
+            id={helperId}
+            className="mt-space-6 font-text font-medium text-caption text-warning"
+          >
+            {warning}
           </div>
         ) : helper ? (
           <div

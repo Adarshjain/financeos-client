@@ -314,7 +314,7 @@ describe('/accounts/[id]/cards', () => {
       pickMenu(1, 'Edit details');
       expect(await screen.findByText('Edit cardholder')).toBeInTheDocument();
       expect(screen.getByText('Meera Mehta · add-on on HDFC Regalia')).toBeInTheDocument();
-      expect(screen.getByLabelText('Opened on')).toHaveValue('01/06/24');
+      expect(screen.getByLabelText('Opened on')).toHaveValue('01/06/2024');
 
       fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Meera M' } });
       fireEvent.change(screen.getByLabelText(/Spend limit/), { target: { value: '90000' } });

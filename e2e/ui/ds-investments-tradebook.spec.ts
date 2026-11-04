@@ -137,7 +137,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByText(`${seeded.fund.name} · ${seeded.groww.name} · prices in ₹`)).toBeVisible();
       await expect(dialog.getByLabel('Qty')).toHaveValue('50');
       await expect(dialog.getByLabel('Price')).toHaveValue('100.00');
-      await expect(dialog.getByLabel('Date')).toHaveValue('05/10/26');
+      await expect(dialog.getByLabel('Date')).toHaveValue('05/10/2026');
       await expect(dialog.getByText('Value ₹5,000 · charges ₹0')).toBeVisible();
 
       // Nothing is sent for a quantity of zero.

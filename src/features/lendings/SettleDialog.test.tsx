@@ -99,7 +99,7 @@ describe('SettleDialog', () => {
     expect(screen.getByText('Settle up with Priya')).toBeInTheDocument();
     expect(screen.getByText("Balance ₹12,000 in Priya's favour")).toBeInTheDocument();
     expect(amount()).toHaveValue('12000');
-    expect(screen.getByLabelText('Date')).toHaveValue('13/10/26');
+    expect(screen.getByLabelText('Date')).toHaveValue('13/10/2026');
     expect(entryType()).toHaveTextContent('Paid');
   });
 

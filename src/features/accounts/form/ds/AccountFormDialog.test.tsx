@@ -401,8 +401,8 @@ describe('Edit account', () => {
     expect(screen.queryByRole('radiogroup')).toBeNull();
     expect(screen.getByDisplayValue('HDFC Regalia')).toBeInTheDocument();
     expect(screen.getByDisplayValue('7741')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('15/03/24')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('01/04/26')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('15/03/2024')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('01/04/2026')).toBeInTheDocument();
     expect(screen.getByDisplayValue('HDFC cards')).toBeInTheDocument();
     expect(screen.getByText('Leave the date empty to pause Gmail import for this card.')).toBeInTheDocument();
     expect(screen.getByText('Close account', { selector: 'h3' })).toBeInTheDocument();
@@ -453,7 +453,7 @@ describe('Edit account', () => {
     mutations.executeGmailCleanupMutation.mutateAsync.mockResolvedValue({});
     mutations.updateAccountMutation.mutateAsync.mockResolvedValue(card);
     renderDialog({ account: card });
-    const date = screen.getByDisplayValue('01/04/26');
+    const date = screen.getByDisplayValue('01/04/2026');
     await user.clear(date);
     await user.type(date, '01082026');
     submit('Save account');
@@ -479,7 +479,7 @@ describe('Edit account', () => {
     mutations.previewGmailCleanupMutation.mutateAsync.mockResolvedValue({ count: 0 });
     mutations.updateAccountMutation.mutateAsync.mockResolvedValue(card);
     renderDialog({ account: card });
-    const date = screen.getByDisplayValue('01/04/26');
+    const date = screen.getByDisplayValue('01/04/2026');
     await user.clear(date);
     await user.type(date, '01082026');
     submit('Save account');

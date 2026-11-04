@@ -31,6 +31,8 @@ export interface TextFieldProps
   label?: React.ReactNode;
   helper?: React.ReactNode;
   error?: React.ReactNode;
+  /** Amber border, ring and message (not invalid). `error` wins when both are set. */
+  warning?: React.ReactNode;
   optional?: boolean;
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
@@ -56,6 +58,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       label,
       helper,
       error,
+      warning,
       optional = false,
       disabled = false,
       prefix,
@@ -103,6 +106,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
     const computedType = isPassword && showPassword ? 'text' : type;
 
     const hasError = Boolean(error);
+    const hasWarning = !hasError && Boolean(warning);
     const isNumeric =
       inputMode === 'decimal' || inputMode === 'numeric' || type === 'number';
 
@@ -132,6 +136,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
         optional={optional}
         helper={helper}
         error={error}
+        warning={warning}
         className={cn('w-full', className)}
       >
         <div
@@ -148,8 +153,10 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
                     : 'focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
                   hasError
                     ? 'border-danger focus-within:ring-danger'
-                    : 'border-line-strong',
-                  isEmbedded && !hasError && 'focus-within:border-brand',
+                    : hasWarning
+                      ? 'border-warning focus-within:ring-warning'
+                      : 'border-line-strong',
+                  isEmbedded && !hasError && !hasWarning && 'focus-within:border-brand',
                 ],
           )}
         >
@@ -170,7 +177,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             onChange={handleChange}
             aria-labelledby={label ? labelId : undefined}
             aria-invalid={hasError ? 'true' : undefined}
-            aria-describedby={hasError || helper ? helperId : undefined}
+            aria-describedby={hasError || hasWarning || helper ? helperId : undefined}
             className={cn(
               'w-full h-full bg-transparent border-0 p-0 text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0',
               isXl ? (textStyle === 'regular' ? 'text-body-lg' : 'text-figure') : isPill ? 'text-label' : 'text-body',

@@ -58,7 +58,7 @@ describe('EpfEntryDialog: adding', () => {
     expect(screen.getByRole('combobox', { name: /^Type/ })).toHaveTextContent('Contribution');
     expect(screen.getByRole('combobox', { name: /^Employer/ })).toHaveTextContent('Northwind Labs');
     expect(screen.getByRole('combobox', { name: /^Wage month/ })).toHaveTextContent('October 2026');
-    expect(field('Credited on')).toHaveValue('15/11/26');
+    expect(field('Credited on')).toHaveValue('15/11/2026');
     expect(field('Your share')).toHaveValue('7200');
     expect(field('Employer share')).toHaveValue('5950');
     expect(field('Pension')).toHaveValue('1250');
@@ -69,7 +69,7 @@ describe('EpfEntryDialog: adding', () => {
   it('starts empty when there is no contribution to fill from', () => {
     renderWithQuery(<EpfEntryDialog employers={employers} onClose={vi.fn()} />);
     expect(field('Your share')).toHaveValue('');
-    expect(field('Credited on')).toHaveValue('27/10/26');
+    expect(field('Credited on')).toHaveValue('27/10/2026');
     expect(screen.queryByText(/Filled from your last contribution/)).toBeNull();
   });
 

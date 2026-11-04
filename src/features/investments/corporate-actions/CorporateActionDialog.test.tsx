@@ -54,7 +54,7 @@ describe('CorporateActionDialog: recording', () => {
     expect(screen.getByText('Record corporate action')).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /^Instrument/ })).toHaveTextContent('ITC');
     expect(screen.getByRole('combobox', { name: /^Action/ })).toHaveTextContent('Stock split');
-    expect(screen.getByLabelText('Ex-date')).toHaveValue('13/10/26');
+    expect(screen.getByLabelText('Ex-date')).toHaveValue('13/10/2026');
     expect(field('Before')).toHaveValue('1');
     expect(field('After')).toHaveValue('2');
     expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
@@ -233,7 +233,7 @@ describe('CorporateActionDialog: editing and deleting', () => {
     expect(screen.getByRole('combobox', { name: /^Instrument/ })).toBeDisabled();
     expect(screen.getByRole('combobox', { name: /^Instrument/ })).toHaveTextContent('ITC');
     expect(screen.getByRole('combobox', { name: /^Child instrument/ })).toHaveTextContent('ITC Hotels');
-    expect(screen.getByLabelText('Ex-date')).toHaveValue('06/01/25');
+    expect(screen.getByLabelText('Ex-date')).toHaveValue('06/01/2025');
     expect(field('Held')).toHaveValue('10');
     expect(field('Received')).toHaveValue('1');
     expect(field('Cost allocation %')).toHaveValue('1.5');

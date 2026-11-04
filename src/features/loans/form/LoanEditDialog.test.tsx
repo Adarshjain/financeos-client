@@ -62,7 +62,7 @@ describe('LoanEditDialog', () => {
     expect(field('Lender')).toHaveValue('State Bank of India');
     expect(field('Principal')).toHaveValue('4500000');
     expect(field('Tenure')).toHaveValue('240');
-    expect(screen.getByLabelText('Disbursal date')).toHaveValue('01/08/25');
+    expect(screen.getByLabelText('Disbursal date')).toHaveValue('01/08/2025');
     expect(screen.getByRole('combobox', { name: /^Rate type/ })).toHaveTextContent('Floating rate');
     expect(screen.getByRole('combobox', { name: /^Payment bank account/ })).toHaveTextContent('HDFC Savings');
   });

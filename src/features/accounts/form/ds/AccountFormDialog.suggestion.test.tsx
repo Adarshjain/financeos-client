@@ -282,7 +282,7 @@ describe('Import emails from, from a suggestion', () => {
   it("fills the date with the suggestion's first email and sends it with the create", async () => {
     mutations.createAccountMutation.mutateAsync.mockResolvedValue({ account: { ...card, id: 'new1' }, failedIdentifiers: [] });
     renderDialog({ fromSuggestion: suggestion({ kind: 'BANK_ACCOUNT', variant: null, firstSeenOn: '2024-03-05T00:00:00Z' }) });
-    expect(screen.getByLabelText('Import emails from')).toHaveValue('05/03/24');
+    expect(screen.getByLabelText('Import emails from')).toHaveValue('05/03/2024');
     submit('Add account');
     await waitFor(() => expect(mutations.createAccountMutation.mutateAsync).toHaveBeenCalled(), { timeout: 4000 });
     expect(mutations.createAccountMutation.mutateAsync.mock.calls[0][0].body).toMatchObject({

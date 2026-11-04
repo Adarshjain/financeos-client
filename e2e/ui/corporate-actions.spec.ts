@@ -63,7 +63,7 @@ test.describe('Corporate Actions UI (@ui)', () => {
 
     await dialog.getByRole('textbox', { name: /^Before/ }).fill('1');
     await dialog.getByRole('textbox', { name: /^After/ }).fill('2');
-    await dialog.getByLabel('Ex-date').fill('01/06/26');
+    await dialog.getByLabel('Ex-date').fill('01/06/2026');
     await expect(dialog.getByText('After saving')).toBeVisible();
 
     await dialog.getByRole('button', { name: 'Record split' }).click();
