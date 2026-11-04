@@ -4,6 +4,8 @@ import type { CardBillResponse } from '@/lib/api/types';
 import { formatDate, formatMoney } from '@/lib/format';
 import { AccountType } from '@/lib/types';
 
+import { gmailFetchLine } from '../../gmailFetchLine';
+
 export interface MarkPaidTarget {
   statementId: string;
   /** What is left to pay; null when the statement carries no amount. */
@@ -66,6 +68,18 @@ function cardHeader(
 
 /** What the header block shows for any account type. `bill` is the card's current bill (cards only). */
 export function buildHeaderModel(
+  account: Account,
+  bill: CardBillResponse | null | undefined,
+  today: string,
+  /** Newest entry date, for a wallet's "last entry". */
+  lastEntry?: string | null
+): HeaderModel {
+  const model = buildBaseHeaderModel(account, bill, today, lastEntry);
+  const fetching = gmailFetchLine(account.gmailFetch);
+  return fetching ? { ...model, info: model.info ? `${model.info} · ${fetching}` : fetching } : model;
+}
+
+function buildBaseHeaderModel(
   account: Account,
   bill: CardBillResponse | null | undefined,
   today: string,

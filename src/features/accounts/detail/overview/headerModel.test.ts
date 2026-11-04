@@ -178,3 +178,13 @@ describe('reconciliationBanner', () => {
     expect(reconciliationBanner(undefined)).toBeNull();
   });
 });
+
+describe('buildHeaderModel Gmail fetch line', () => {
+  it('adds the fetching line while older emails are fetched', () => {
+    const m = buildHeaderModel({ ...card, gmailFetch: { monthsDone: 8, monthsTotal: 12 } }, undefined, TODAY);
+    expect(m.info).toBe('Fetching older emails · 8 of 12 months');
+  });
+  it('has no such line otherwise', () => {
+    expect(buildHeaderModel({ ...card, gmailFetch: null }, undefined, TODAY).info).toBeUndefined();
+  });
+});

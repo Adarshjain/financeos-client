@@ -115,6 +115,8 @@ export interface AccountBase {
   anchorDate?: string | null;
   /** Newest transaction date (yyyy-mm-dd); null when none or for brokers. Set by the account list and detail endpoints only. */
   lastTransactionDate?: string | null;
+  /** Older Gmail mail still being fetched; null once done. */
+  gmailFetch?: { monthsDone: number; monthsTotal: number } | null;
 }
 
 export type AccountStatus = 'ACTIVE' | 'CLOSING' | 'CLOSED';

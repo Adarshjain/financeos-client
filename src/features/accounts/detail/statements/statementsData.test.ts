@@ -65,4 +65,18 @@ describe('loadStatementsData', () => {
     await loadStatementsData(bank, { fy: '26-27' }, '2026-10-13');
     expect(get.mock.calls.some(([p]) => p === '/api/v1/bills/history')).toBe(false);
   });
+
+  it('loads the coverage with the statements and leaves it null when its request fails', async () => {
+    get.mockImplementation(async (path: string) =>
+      path === '/api/v1/accounts/{id}/coverage'
+        ? { data: { months: [{ month: '2026-01', state: 'DATA' }] } }
+        : { data: [] }
+    );
+    expect((await loadStatementsData(bank, {}, '2026-10-13')).coverage?.months).toHaveLength(1);
+    get.mockImplementation(async (path: string) => {
+      if (path === '/api/v1/accounts/{id}/coverage') throw new Error('boom');
+      return { data: [] };
+    });
+    expect((await loadStatementsData(bank, {}, '2026-10-13')).coverage).toBeNull();
+  });
 });

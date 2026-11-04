@@ -8,6 +8,7 @@ import { pinClock } from '@/test/pinClock';
 import {
   bankRow,
   brokerRow,
+  cardBaseRow,
   cardRow,
   cardsKpi,
   cardsSubtitle,
@@ -350,5 +351,17 @@ describe('closed line', () => {
   });
   it('gives only the count for several', () => {
     expect(closedLine([{ name: 'A' }, { name: 'B' }])).toBe('Closed · 2');
+  });
+});
+
+describe('Gmail fetch line on rows', () => {
+  const progress = { monthsDone: 8, monthsTotal: 12 };
+  it('shows on bank and card rows while fetching', () => {
+    expect(bankRow(bank({ gmailFetch: progress }), TODAY).fetchLine).toBe('Fetching older emails · 8 of 12 months');
+    expect(cardBaseRow(card({ gmailFetch: progress }), TODAY).fetchLine).toBe('Fetching older emails · 8 of 12 months');
+  });
+  it('is absent otherwise', () => {
+    expect(bankRow(bank(), TODAY).fetchLine).toBeNull();
+    expect(cardBaseRow(card({ gmailFetch: null }), TODAY).fetchLine).toBeNull();
   });
 });
