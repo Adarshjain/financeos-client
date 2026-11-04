@@ -11,7 +11,7 @@ export interface Bank {
   short_name: string;
   /** Short names people type, such as "SBI" or "HDFC", so search finds the bank by them. */
   aliases: string[];
-  /** Cell of the bank's logo in the one sprite, public/banks/sprite.png. */
+  /** Cell of the bank's logo in the one bank sprite (`SPRITE_URL`). */
   spriteIndex: number;
 }
 
@@ -38,12 +38,9 @@ const BANK_DATA: ReadonlyArray<Omit<Bank, 'spriteIndex'>> = [
   { id: 'yes',  short_name: 'Yes Bank', name: 'Yes Bank', aliases: [] },
 ];
 
-// Kotak reuses another bank's logo until the new logo source lands.
-const LOGO_STAND_IN: Readonly<Record<string, string>> = { kotak: 'idfc_first' };
-
 export const BANKS: readonly Bank[] = BANK_DATA.map((b) => ({
   ...b,
-  spriteIndex: (SPRITE_IDS as readonly string[]).indexOf(LOGO_STAND_IN[b.id] ?? b.id),
+  spriteIndex: (SPRITE_IDS as readonly string[]).indexOf(b.id),
 }));
 
 export function bankById(id: string | null | undefined): Bank | undefined {

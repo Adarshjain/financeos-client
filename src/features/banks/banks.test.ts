@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { bankById,BANKS } from './banks';
-import { SPRITE_IDS } from './bankSprite.generated';
+import { SPRITE_IDS, SPRITE_URL } from './bankSprite.generated';
 
 describe('banks', () => {
   it('lists the 20 banks, ids unique, in alphabetical order of id', () => {
@@ -14,11 +14,11 @@ describe('banks', () => {
   });
 
   it('has a sprite cell for every bank, one per bank, and the sprite file exists', () => {
-    expect(SPRITE_IDS).toHaveLength(BANKS.length - 1);
-    for (const b of BANKS.filter((x) => x.id !== 'kotak')) {
+    expect(SPRITE_IDS).toHaveLength(BANKS.length);
+    for (const b of BANKS) {
       expect(SPRITE_IDS[b.spriteIndex], b.id).toBe(b.id);
     }
-    expect(existsSync(join(process.cwd(), 'public', 'banks', 'sprite.png'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'public', SPRITE_URL))).toBe(true);
   });
 
   it('finds a bank by id', () => {
@@ -28,10 +28,9 @@ describe('banks', () => {
     expect(bankById(null)).toBeUndefined();
   });
 
-  it('Kotak has its aliases and, until its own logo lands, shows the IDFC First logo', () => {
+  it('Kotak has its aliases and its own logo', () => {
     const kotak = bankById('kotak')!;
     expect(kotak.aliases).toEqual(['Kotak', 'Kotak Bank', 'Kotak Mahindra']);
-    expect(kotak.spriteIndex).toBeGreaterThanOrEqual(0);
-    expect(kotak.spriteIndex).toBe(bankById('idfc_first')!.spriteIndex);
+    expect(SPRITE_IDS[kotak.spriteIndex]).toBe('kotak');
   });
 });

@@ -2,14 +2,16 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 
+import { SPRITE_URL } from '@/features/banks/bankSprite.generated';
+
 import { BankLogo } from './BankLogo';
 
 describe('BankLogo', () => {
   it('cuts the bank cell from the sprite', () => {
     render(<BankLogo bankId="hdfc" name="Salary" />);
     const logo = screen.getByRole('img', { name: 'HDFC Bank' });
-    expect(logo).toHaveStyle({ backgroundImage: 'url(/banks/sprite.png)', backgroundSize: '1900% 100%' });
-    expect(logo.style.backgroundPosition).toBe(`${(8 / 18) * 100}% 0%`);
+    expect(logo).toHaveStyle({ backgroundImage: `url(${SPRITE_URL})`, backgroundSize: '2000% 100%' });
+    expect(logo.style.backgroundPosition).toBe(`${(8 / 19) * 100}% 0%`);
     expect(logo).toHaveClass('h-space-24', 'w-space-24');
     expect(logo.className).not.toMatch(/rounded/);
   });
