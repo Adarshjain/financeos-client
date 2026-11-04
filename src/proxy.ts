@@ -22,13 +22,16 @@ const publicPaths = [
   '/handbook',
 ];
 
+// The component pages the /ds review index links to: real pages under /ds, never redirected.
+const dsComponentPages = ['/ds/hero', '/ds/figures', '/ds/action-bar'];
+
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   // Temporary redirects, before the auth check. Old URLs (bookmarks, push links): /ds/<rest> is /<rest>
-  // (/ds itself stays the review index); paths that moved go to the page that replaced them. /legacy/* is
+  // (/ds itself stays the review index, with its component pages); paths that moved go to the page that replaced them. /legacy/* is
   // not handled here: it is no page, so it 404s.
-  const redirectTo = pathname.startsWith('/ds/') ? `/${pathname.slice(4).replace(/^\/+/, '')}${search}` : rootRedirectFor(pathname, search);
+  const redirectTo = pathname.startsWith('/ds/') && !dsComponentPages.includes(pathname.replace(/\/+$/, '')) ? `/${pathname.slice(4).replace(/^\/+/, '')}${search}` : rootRedirectFor(pathname, search);
   if (redirectTo) {
     return NextResponse.redirect(new URL(redirectTo, request.url));
   }

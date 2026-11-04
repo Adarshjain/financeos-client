@@ -81,7 +81,12 @@ export async function requireAuth(): Promise<UserResponse> {
  * Sends the visitor to sign in. They come back to this page afterwards (the proxy sets x-pathname).
  */
 export async function redirectToSignIn(): Promise<never> {
-  const pathname = (await headers()).get('x-pathname');
+  let pathname: string | null = null;
+  try {
+    pathname = (await headers()).get('x-pathname');
+  } catch {
+    // A page render can outlive its request (the layout already redirected); headers() then throws.
+  }
   redirect(loginHrefFor(pathname));
 }
 

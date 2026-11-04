@@ -82,6 +82,14 @@ describe('proxy', () => {
       expect(to('/ds/transactions/import/j1')).toBe('https://financeos.local/transactions/import/j1');
     });
 
+    it('keeps the /ds component pages the review index links to', () => {
+      for (const page of ['/ds/hero', '/ds/figures', '/ds/action-bar']) {
+        expect(proxy(requestWithoutSession(page)).headers.get('location')).toBe(
+          `https://financeos.local/login?from=${encodeURIComponent(page)}`,
+        );
+      }
+    });
+
     it('does not turn /ds//host into a protocol-relative redirect', () => {
       expect(to('/ds//evil.com')).toBe('https://financeos.local/evil.com');
     });
