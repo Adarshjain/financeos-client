@@ -129,7 +129,7 @@ describe('/loans', () => {
 
   it('shows the hero from the summary: total outstanding, what is overdue, EMIs a month and the next EMI', async () => {
     await renderPage();
-    for (const text of ['Total outstanding', '₹50,50,000', '₹63,954 overdue · 3 EMIs', 'EMIs a month', 'Next EMI', '5 Nov']) {
+    for (const text of ['Total outstanding', '₹50,50,000', '₹63,954.00 overdue · 3 EMIs', 'EMIs a month', 'Next EMI', '5 Nov']) {
       expect(screen.getAllByText(text).length, text).toBeGreaterThan(0);
     }
     expect(screen.getAllByText('₹63,954').length).toBeGreaterThan(0);
@@ -146,8 +146,8 @@ describe('/loans', () => {
   it('lists each loan with rate, EMI, outstanding, progress and next', async () => {
     await renderPage();
     for (const text of [
-      'Home Loan · SBI MaxGain', '8.25% floating', '36,603', '41,92,327', '13 of 240 · ends January 2045', '#14 overdue',
-      'Car Loan · HDFC Bank', '9.25% fixed', '17,748', '7,52,118', '7 of 60 · ends February 2031', '7 Nov',
+      'Home Loan · SBI MaxGain', '8.25% floating', '36,603.00', '41,92,327.00', '13 of 240 · ends January 2045', '#14 overdue',
+      'Car Loan · HDFC Bank', '9.25% fixed', '17,748.00', '7,52,118.00', '7 of 60 · ends February 2031', '7 Nov',
     ]) {
       expect(screen.getAllByText(text).length, text).toBeGreaterThan(0);
     }
@@ -165,7 +165,7 @@ describe('/loans', () => {
 
   it('gives the phone row its second line', async () => {
     await renderPage();
-    expect(screen.getByText('8.25% · EMI ₹36,603 · 13 of 240 paid')).toBeInTheDocument();
+    expect(screen.getByText('8.25% · EMI ₹36,603.00 · 13 of 240 paid')).toBeInTheDocument();
   });
 
   it('opens the loan page when the row is pressed', async () => {

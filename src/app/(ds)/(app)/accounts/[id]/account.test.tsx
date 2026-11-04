@@ -365,7 +365,7 @@ describe('/accounts/[id] bank Overview', () => {
     await renderOverview('b1');
 
     expect(screen.getAllByText('Balance').length).toBeGreaterThan(0);
-    expect(screen.getByText('₹2,95,031')).toBeInTheDocument();
+    expect(screen.getByText('₹2,95,030.50')).toBeInTheDocument();
     // The newest transaction (yesterday) is later than the statement (30 Sep): the balance is current to it.
     expect(screen.getByText('as of yesterday')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
@@ -389,7 +389,7 @@ describe('/accounts/[id] bank Overview', () => {
     expect(screen.getByRole('link', { name: 'assign' })).toHaveAttribute('href', '/inbox');
     expect(screen.getByText('XX4521')).toBeInTheDocument();
     expect(screen.getByText('How Gmail alerts and statements find this account')).toBeInTheDocument();
-    expect(screen.getByText('₹36,603 on the 5th')).toBeInTheDocument();
+    expect(screen.getByText('₹36,603.00 on the 5th')).toBeInTheDocument();
     expect(screen.getByText('Regalia')).toBeInTheDocument();
     expect(screen.queryByText('Limit & cycle')).toBeNull();
   });
@@ -409,7 +409,7 @@ describe('/accounts/[id] bank Overview', () => {
     );
     await renderOverview('b1');
 
-    expect(screen.getByText('₹2,95,031')).toBeInTheDocument();
+    expect(screen.getByText('₹2,95,030.50')).toBeInTheDocument();
     expect(screen.queryByText('In · 90 days')).toBeNull();
     expect(screen.queryByText('Statements')).toBeNull();
     expect(screen.queryByText('Identifiers')).toBeNull();
@@ -468,7 +468,7 @@ describe('/accounts/[id] wallet Overview', () => {
     loadWallet.mockResolvedValue({ recent: { items: recentItems, total: 18 } });
     await renderOverview('w1');
 
-    expect(screen.getByText('₹2,844')).toBeInTheDocument();
+    expect(screen.getByText('₹2,844.00')).toBeInTheDocument();
     expect(screen.getByText('last entry 12 Oct')).toBeInTheDocument();
     expect(screen.getByText('Recent entries')).toBeInTheDocument();
     expect(screen.getByText('Latest 2 of 18')).toBeInTheDocument();
@@ -509,8 +509,8 @@ describe('/accounts/[id] broker Overview', () => {
     await renderOverview('k1');
 
     expect(screen.getByText('Portfolio value')).toBeInTheDocument();
-    expect(screen.getByText('₹4,28,439')).toBeInTheDocument();
-    expect(screen.getByText('₹12,500')).toBeInTheDocument();
+    expect(screen.getByText('₹4,28,439.00')).toBeInTheDocument();
+    expect(screen.getByText('₹12,500.00')).toBeInTheDocument();
     expect(screen.getByText('Available')).toBeInTheDocument();
     expect(screen.getByText('₹18,500 · 9 Oct · NEFT CR Freelance')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Investments/ })).toHaveAttribute('href', '/investments');
