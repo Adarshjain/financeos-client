@@ -179,7 +179,8 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
           aria-disabled={disabled ? true : undefined}
           onClick={disabled ? undefined : onClick}
           onKeyDown={handleKeyDown}
-          className={classes}
+          // A button child shrinks to its content unless told to fill the row.
+          className={cn('w-full text-left', classes)}
           {...props}
         >
           {React.cloneElement(child, {}, innerContent)}
