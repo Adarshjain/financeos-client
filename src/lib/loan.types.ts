@@ -119,6 +119,8 @@ export interface LoanDetailResponse {
   events: LoanEventResponse[];
   charges: LoanChargeResponse[];
   installments?: InstallmentDto[];
+  /** The loan's last EMI is past: ask whether it is closed. */
+  askClosed?: boolean;
 }
 
 export interface PaymentInfo {

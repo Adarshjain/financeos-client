@@ -105,6 +105,14 @@ export const reopenAccount = createDomainAction(
   },
 );
 
+/** POST /accounts/{id}/close-prompt/dismiss: "Not yet" on the "Close this account?" notice. */
+export const dismissAccountClosePrompt = createDomainAction(
+  { fallbackError: "Couldn't save that. Try again." },
+  async (id: string): Promise<void> => {
+    await serverApi.POST('/api/v1/accounts/{id}/close-prompt/dismiss', { params: { path: { id } } });
+  },
+);
+
 export const deleteAccount = createDomainAction(
   { fallbackError: "Couldn't delete the account. Try again." },
   async (id: string): Promise<void> => {

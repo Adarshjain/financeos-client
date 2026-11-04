@@ -108,6 +108,8 @@ export interface AccountBase {
   financialPosition?: FinancialPosition;
   description?: string;
   closedOn?: string | null;
+  /** No activity for 90 days and a zero balance: the account page offers to close it. */
+  suggestClose?: boolean;
   warnings?: string[];
   balance?: number | null;
   balanceAnchored?: boolean | null;

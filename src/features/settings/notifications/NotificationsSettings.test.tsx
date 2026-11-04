@@ -258,6 +258,24 @@ describe('Notifications tab: bills and EMIs', () => {
     fireEvent.click(await screen.findByRole('option', { name: '6:00 pm' }));
     await waitFor(() => expect(api.PUT).toHaveBeenCalledWith('/api/v1/notifications/settings', { body: { sendHour: 18 } }));
   });
+
+  it('shows the saved reminder style with its helper text', async () => {
+    render(settings({ reminderStyle: 'STANDARD' }));
+    expect(await screen.findByRole('radio', { name: 'Standard' })).toBeChecked();
+    expect(
+      screen.getByText('3 days before, the day before, on the day, and weekly while overdue'),
+    ).toBeInTheDocument();
+  });
+
+  it('saves Quiet as the reminder style and shows its helper text', async () => {
+    echoPut();
+    render(settings({ reminderStyle: 'STANDARD' }));
+    fireEvent.click(await screen.findByRole('radio', { name: 'Quiet' }));
+    await waitFor(() =>
+      expect(api.PUT).toHaveBeenCalledWith('/api/v1/notifications/settings', { body: { reminderStyle: 'QUIET' } }),
+    );
+    expect(await screen.findByText('One reminder the day before. No repeats.')).toBeInTheDocument();
+  });
 });
 
 describe('Notifications tab: kinds and grouping', () => {

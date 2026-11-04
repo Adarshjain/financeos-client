@@ -9,6 +9,7 @@ import { DateTile } from '@/components/ds/DateTile/DateTile';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
+import { LoanClosedPrompt } from '@/features/loans/LoanClosedPrompt';
 import { appHref } from '@/features/shell/routes';
 
 import { daysText, obligationHref, type ObligationItem, obligationTitle } from './obligationsModel';
@@ -19,6 +20,8 @@ export interface UpcomingRowProps {
   /** Mark paid is the primary button in the Next 7 days section, secondary elsewhere. */
   primaryAction?: boolean;
   highlighted?: boolean;
+  /** Ask "Is this loan closed?" under this row (the loan's oldest EMI row only). */
+  askClosed?: boolean;
   onMarkPaid: (item: ObligationItem) => void;
   onSettle: (item: ObligationItem) => void;
   /** Set details on an undated card bill; the link shows only when given. */
@@ -30,6 +33,7 @@ export function UpcomingRow({
   item,
   primaryAction = false,
   highlighted = false,
+  askClosed = false,
   onMarkPaid,
   onSettle,
   onSetDetails,
@@ -137,6 +141,8 @@ export function UpcomingRow({
           ) : null}
         </>
       }
-    />
+    >
+      {askClosed && item.loanId ? <LoanClosedPrompt loanId={item.loanId} className="mt-space-8" /> : null}
+    </ListRow>
   );
 }

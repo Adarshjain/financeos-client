@@ -121,6 +121,22 @@ export const KIND_GROUPS: KindGroup[] = [
 /** Flat list of every switch (the order the groups render in). */
 export const KIND_OPTIONS: KindOption[] = KIND_GROUPS.flatMap((g) => g.kinds);
 
+export type ReminderStyle = 'STANDARD' | 'QUIET';
+
+export const REMINDER_STYLES: { value: ReminderStyle; label: string; description: string }[] = [
+  {
+    value: 'STANDARD',
+    label: 'Standard',
+    description: '3 days before, the day before, on the day, and weekly while overdue',
+  },
+  { value: 'QUIET', label: 'Quiet', description: 'One reminder the day before. No repeats.' },
+];
+
+/** The saved style; anything the server sends that is not Quiet reads as Standard. */
+export function reminderStyleOf(settings: Pick<NotificationSettingsResponse, 'reminderStyle'>): ReminderStyle {
+  return settings.reminderStyle === 'QUIET' ? 'QUIET' : 'STANDARD';
+}
+
 /** Offsets offered as toggles; any stored value outside this list is still shown. */
 export const OFFSET_CHOICES = [14, 7, 5, 3, 2, 1, 0];
 

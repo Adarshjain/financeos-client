@@ -7,6 +7,7 @@ import { Button } from '@/components/ds/Button/Button';
 import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
 import { GRID_GAP } from '@/components/ds/gridGap';
 import { Menu } from '@/components/ds/Menu/Menu';
+import { LoanClosedPrompt } from '@/features/loans/LoanClosedPrompt';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { subCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
@@ -102,6 +103,7 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
         onAdd={() => void runEvent(() => setEventType('rate_change'))}
       >
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
+          {detail.askClosed && !closed ? <LoanClosedPrompt loanId={loan.id} /> : null}
           <LoanHero model={hero} />
           <ActionBar
             info={header.info}

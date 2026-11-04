@@ -6,6 +6,7 @@ import { Button } from '@/components/ds/Button/Button';
 import { Card } from '@/components/ds/Card/Card';
 import { Icon } from '@/components/ds/Icon/Icon';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
 import { Select } from '@/components/ds/Select/Select';
 import { Text } from '@/components/ds/Text/Text';
 import type { NotificationSettingsResponse } from '@/lib/api/types';
@@ -13,13 +14,23 @@ import { notify } from '@/lib/notify';
 
 import { KindSwitches, useSaveSettings } from './KindsCard';
 import { BILLS_KINDS } from './notificationKinds';
-import { hourLabel, OFFSET_CHOICES, offsetLabel, offsetsSummary, toggleOffset } from './notificationSettingsModel';
+import {
+  hourLabel,
+  OFFSET_CHOICES,
+  offsetLabel,
+  offsetsSummary,
+  REMINDER_STYLES,
+  type ReminderStyle,
+  reminderStyleOf,
+  toggleOffset,
+} from './notificationSettingsModel';
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, h) => ({ value: String(h), label: hourLabel(h) }));
 
 /** Bills & EMIs: days before due, the send hour, and the switches for their kinds. Every change saves at once. */
 export function BillsCard({ settings }: { settings: NotificationSettingsResponse }) {
   const { save, pending } = useSaveSettings();
+  const style = reminderStyleOf(settings);
   const offsets = settings.reminderOffsets ?? [];
   const choices = [...new Set([...OFFSET_CHOICES, ...offsets])].sort((a, b) => b - a);
   const options = choices.map((o) => ({ value: String(o), label: offsetLabel(o) }));
@@ -38,6 +49,21 @@ export function BillsCard({ settings }: { settings: NotificationSettingsResponse
 
   return (
     <Card title="Bills & EMIs">
+      <ListRow
+        wrap
+        title={<Text variant="body">Reminders</Text>}
+        subtitle={REMINDER_STYLES.find((r) => r.value === style)?.description}
+        trailing={
+          <SegmentedControl<ReminderStyle>
+            aria-label="Reminders"
+            size="sm"
+            options={REMINDER_STYLES.map((r) => ({ value: r.value, label: r.label }))}
+            value={style}
+            disabled={pending}
+            onValueChange={(next) => void save({ reminderStyle: next })}
+          />
+        }
+      />
       <ListRow
         title={<Text variant="body">Days before due</Text>}
         trailing={
