@@ -13,7 +13,7 @@ export const NAME_WARNING =
   "Without it we can't open statements your bank locks with your name. We'll still find your accounts from emails.";
 export const BIRTH_WARNING =
   "Without it we can't open statements your bank locks with it. We'll still find your accounts from emails, but card names and limits may stay empty.";
-export const CONSENT_ERROR = 'Tick this to continue.';
+export const CONSENT_ERROR = 'Agree to the Terms and Privacy policy to continue.';
 
 export function missingFields(input: Pick<HelloInput, 'name' | 'birthDate'>) {
   return { name: input.name.trim() === '', birthDate: input.birthDate === '' };

@@ -83,7 +83,7 @@ describe('HelloScreen', () => {
   it('consent is always required', () => {
     render(<HelloScreen {...props} birthDate="1990-04-05" />);
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-    expect(screen.getByText('Tick this to continue.')).toBeInTheDocument();
+    expect(screen.getByText('Agree to the Terms and Privacy policy to continue.')).toBeInTheDocument();
     expect(submitHello).not.toHaveBeenCalled();
   });
 

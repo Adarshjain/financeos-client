@@ -37,7 +37,7 @@ test.describe('Hello and profile (@ui)', () => {
     // Consent is always required.
     await page.getByRole('checkbox').click();
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
-    await expect(page.getByText('Tick this to continue.')).toBeVisible();
+    await expect(page.getByText('Agree to the Terms and Privacy policy to continue.')).toBeVisible();
     await page.getByRole('checkbox').click();
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
 
