@@ -48,6 +48,7 @@ import {
   sourceWords,
   statusItems,
 } from './transactionDetailModel';
+import { TransactionSuggestionSection } from './TransactionSuggestionSection';
 import { useDetailTransaction } from './useDetailTransaction';
 import { useTransactionUnlink } from './useTransactionUnlink';
 
@@ -347,6 +348,8 @@ function DetailContent({
           <ListField label="Source" value={sourceWords(t.source)} />
           <ListField label="Review" value={<StatusWords items={reviewFieldItems(t)} />} />
           {rewards ? <ListField label="Rewards" value={rewards} /> : null}
+
+          <TransactionSuggestionSection transaction={t} />
 
           {rows.length > 0 || linksFailed ? (
             <div>

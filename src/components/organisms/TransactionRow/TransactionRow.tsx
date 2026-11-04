@@ -52,6 +52,8 @@ export interface TransactionRowProps
   link?: string | TransactionLink;
   /** Grey provenance word, e.g. "Statement", "Gmail", "Manual", "Excluded" */
   provenance?: React.ReactNode;
+  /** The server's "Looks like …" line, last on the grey meta line */
+  suggestion?: React.ReactNode;
   /** Custom context line override */
   contextLine?: React.ReactNode;
 
@@ -127,6 +129,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       note,
       link,
       provenance,
+      suggestion,
       contextLine,
       categories,
       subCategory,
@@ -270,6 +273,12 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         contextElements.push(el);
         desktopContextElements.push(el);
       }
+    }
+
+    if (suggestion) {
+      const el = <span key="suggestion">{mark(suggestion)}</span>;
+      contextElements.push(el);
+      desktopContextElements.push(el);
     }
 
     // One pill at every width: icon, "Category · Sub", neutral tone. Unset is a dashed neutral badge.

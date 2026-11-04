@@ -42,6 +42,8 @@ export interface TransactionListRow extends TransactionRowData {
   link?: TransactionLink;
   /** Grey words: Excluded, and where it came from. */
   provenance?: string;
+  /** The server's "Looks like …" line, when it proposes a link. */
+  suggestion?: string;
   watching: boolean;
   excluded: boolean;
 }
@@ -151,6 +153,7 @@ export function transactionRow(t: Transaction, ctx: RowContext): TransactionList
     reviewStatus: reviewWords(t),
     link: linkWords(t),
     provenance: provenance || undefined,
+    suggestion: t.suggestion?.label || undefined,
     watching: Boolean(t.isTransactionUnderMonitoring),
     excluded,
   };

@@ -164,6 +164,7 @@ export function TransactionsList({
                 reviewStatus={r.reviewStatus}
                 link={r.link}
                 provenance={r.provenance}
+                suggestion={r.suggestion}
                 categories={r.categories}
                 subCategory={r.subCategory}
                 categoryIcon={r.categoryIcon}

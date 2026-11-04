@@ -56,3 +56,9 @@ export function sourceLine(
       return '';
   }
 }
+
+/** The text a "Do the same next time" rule would match for this transaction: its description as shown, upper-cased like the Sort them rules; null when it has none. */
+export function ruleOfferKey(t: Pick<Transaction, 'description' | 'sourcedDescription'>): string | null {
+  const text = (t.description || t.sourcedDescription || '').trim();
+  return text ? text.toUpperCase() : null;
+}
