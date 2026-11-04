@@ -24,7 +24,7 @@ import { ShellPage } from '@/features/shell/ShellPage';
 import { formatCount, pluralize } from '@/lib/format';
 import type { FileSummary, JobResponse } from '@/lib/types';
 
-import { IMPORT_HREF, importJobHref, importJobTitle, importTotals, ingestResult } from './importModel';
+import { IMPORT_HREF, importFailureSummary, importJobHref, importJobTitle, importTotals, ingestResult } from './importModel';
 
 const FILE_STATUS = {
   SUCCESS: { label: 'Done', tone: 'success' },
@@ -70,6 +70,7 @@ export function ImportJobScreen({ jobId }: { jobId: string }) {
 function Body({ job }: { job: JobResponse }) {
   const router = useRouter();
   const result = ingestResult(job);
+  const failure = importFailureSummary(job);
   const totals = result ? importTotals(result) : null;
   const took = tookLabel(job.startedAt, job.finishedAt);
   const badge = JOB_STATUS_BADGE[job.status];
@@ -120,6 +121,7 @@ function Body({ job }: { job: JobResponse }) {
               context={totals.duplicates > 0 ? 'marked for review' : undefined}
             />
           </div>
+          {failure ? <Banner tone={failure.allFailed ? 'danger' : 'warning'}>{failure.text}</Banner> : null}
           {totals.duplicates > 0 ? (
             <Banner
               tone="warning"

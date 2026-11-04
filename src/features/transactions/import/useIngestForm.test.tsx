@@ -11,6 +11,7 @@ vi.mock('sonner', () => ({
     success: vi.fn(),
     error: vi.fn(),
     info: vi.fn(),
+    warning: vi.fn(),
     loading: vi.fn(() => 'upload-toast'),
     dismiss: vi.fn(),
   },
@@ -190,5 +191,47 @@ describe('useIngestForm upload feedback', () => {
     });
     act(() => onSettled?.(settledJob('SUCCEEDED')));
     expect(toast.success).toHaveBeenCalledWith('Import finished. See it in Recent imports.');
+  });
+
+  describe('file failures in a finished job', () => {
+    const resultJob = (statuses: string[]) =>
+      ({
+        id: 'job-1',
+        status: 'SUCCEEDED',
+        errorMessage: null,
+        result: { filesProcessed: statuses.length, fileDetails: statuses.map((status, i) => ({ filename: `f${i}.pdf`, status })) },
+      }) as unknown as JobResponse;
+
+    async function settle(job: JobResponse) {
+      vi.mocked(api.POST).mockResolvedValue({ data: { jobId: 'job-1' } } as never);
+      const { result } = setup('Import finished. See it in Recent imports.');
+      await act(async () => {
+        await result.current.handleSubmit();
+      });
+      vi.mocked(toast.success).mockClear();
+      act(() => onSettled?.(job));
+    }
+
+    it('keeps the success toast when every file is fine', async () => {
+      await settle(resultJob(['SUCCESS', 'SUCCESS', 'SKIPPED']));
+      expect(toast.success).toHaveBeenCalledWith('Import finished. See it in Recent imports.');
+      expect(toast.warning).not.toHaveBeenCalled();
+    });
+
+    it('warns with the count when only some files failed', async () => {
+      await settle(resultJob(['SUCCESS', 'FAILED', 'FAILED']));
+      expect(toast.warning).toHaveBeenCalledWith('2 of 3 files failed. See results below.');
+      expect(toast.success).not.toHaveBeenCalled();
+    });
+
+    it('errors when all files failed', async () => {
+      await settle(resultJob(['FAILED', 'FAILED', 'FAILED']));
+      expect(toast.error).toHaveBeenCalledWith('All 3 files failed. See results below.');
+    });
+
+    it('errors when the only file failed', async () => {
+      await settle(resultJob(['FAILED']));
+      expect(toast.error).toHaveBeenCalledWith('The file failed. See results below.');
+    });
   });
 });

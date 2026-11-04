@@ -30,6 +30,7 @@ const BANK_DATA: ReadonlyArray<Omit<Bank, 'spriteIndex'>> = [
   { id: 'idfc_first',  short_name: 'IDFC First', name: 'IDFC First Bank', aliases: ['IDFC FIRST', 'IDFC'] },
   { id: 'indian_bank',  short_name: 'Indian Bank', name: 'Indian Bank', aliases: [] },
   { id: 'indusind',  short_name: 'IndusInd', name: 'IndusInd Bank', aliases: ['IndusInd'] },
+  { id: 'kotak',  short_name: 'Kotak', name: 'Kotak Mahindra Bank', aliases: ['Kotak', 'Kotak Bank', 'Kotak Mahindra'] },
   { id: 'sbi',  short_name: 'SBI', name: 'State Bank of India', aliases: ['SBI Card', 'SBI'] },
   { id: 'sbm',  short_name: 'SBM', name: 'SBM Bank India', aliases: ['SBM Bank'] },
   { id: 'slice',  short_name: 'Slice', name: 'Slice Small Finance Bank', aliases: ['North East Small Finance Bank', 'slice'] },
@@ -37,9 +38,12 @@ const BANK_DATA: ReadonlyArray<Omit<Bank, 'spriteIndex'>> = [
   { id: 'yes',  short_name: 'Yes Bank', name: 'Yes Bank', aliases: [] },
 ];
 
+// Kotak reuses another bank's logo until the new logo source lands.
+const LOGO_STAND_IN: Readonly<Record<string, string>> = { kotak: 'idfc_first' };
+
 export const BANKS: readonly Bank[] = BANK_DATA.map((b) => ({
   ...b,
-  spriteIndex: (SPRITE_IDS as readonly string[]).indexOf(b.id),
+  spriteIndex: (SPRITE_IDS as readonly string[]).indexOf(LOGO_STAND_IN[b.id] ?? b.id),
 }));
 
 export function bankById(id: string | null | undefined): Bank | undefined {

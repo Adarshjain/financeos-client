@@ -47,7 +47,7 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: accounts = initialAccounts } = useAccounts(initialAccounts);
-  const form = useIngestForm({ accounts, initialAccountId, completedMessage: 'Import finished. See it in Recent imports.' });
+  const form = useIngestForm({ accounts, initialAccountId, completedMessage: 'Import finished. See it in Recent imports.', failedHint: 'See Recent imports.' });
   const history = useJobsHistory({ page, size: RECENT_IMPORTS_SIZE, statusFilter: '', typeFilter: IMPORT_JOB_TYPE, since });
   // The newest page is where a running import sits; on page 1 it is the same query as `history`.
   const newest = useJobsHistory({ page: 0, size: RECENT_IMPORTS_SIZE, statusFilter: '', typeFilter: IMPORT_JOB_TYPE, since });

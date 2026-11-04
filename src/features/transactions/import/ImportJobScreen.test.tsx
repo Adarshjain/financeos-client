@@ -49,6 +49,26 @@ describe('ImportJobScreen', () => {
     expect(screen.getByText('2 files')).toBeInTheDocument();
   });
 
+  it.each([
+    [['SUCCESS', 'FAILED', 'SUCCESS'], '1 of 3 files failed.'],
+    [['FAILED', 'FAILED'], 'All 2 files failed.'],
+    [['FAILED'], 'The file failed.'],
+  ])('summarises failed files (%j) as a banner', (statuses, text) => {
+    current = job({
+      result: { filesProcessed: statuses.length, totalCreated: 0, totalDuplicatesFound: 0, fileDetails: statuses.map((status, i) => ({ filename: `f${i}.pdf`, status, linesParsed: 0 })) },
+    });
+    render(<ImportJobScreen jobId="j1" />);
+    expect(screen.getByText(text)).toBeInTheDocument();
+  });
+
+  it('shows no failure banner when every file is fine', () => {
+    current = job({
+      result: { filesProcessed: 1, totalCreated: 2, totalDuplicatesFound: 0, fileDetails: [{ filename: 'a.pdf', status: 'SUCCESS', linesParsed: 2, created: 2, duplicates: 0, errorMessage: null }] },
+    });
+    render(<ImportJobScreen jobId="j1" />);
+    expect(screen.queryByText(/failed\./)).not.toBeInTheDocument();
+  });
+
   it('shows no duplicates banner when there are none', () => {
     current = job({
       result: { filesProcessed: 1, totalCreated: 2, totalDuplicatesFound: 0, fileDetails: [{ filename: 'a.pdf', status: 'SUCCESS', linesParsed: 2, created: 2, duplicates: 0, errorMessage: null }] },
