@@ -42,7 +42,8 @@ test.describe('Notification settings UI (@ui)', () => {
 
   test('switch groups, a kind toggle, an offset, and card/loan mutes persist across a reload', async ({ page }) => {
     await page.goto('/settings/notifications');
-    await expect(page.getByRole('tab', { name: 'Notifications', selected: true })).toBeVisible();
+    await expect(page.getByRole('banner')).toContainText('Notifications');
+    await expect(page.getByRole('navigation', { name: 'Settings sections' }).getByRole('link', { name: 'Notifications' })).toBeVisible();
 
     // Every module has its own card of switches.
     for (const group of ['Push', 'Bills & EMIs', 'Statements', 'Gmail & jobs', 'Rewards', 'Muted']) {
@@ -78,7 +79,8 @@ test.describe('Notification settings UI (@ui)', () => {
 
     // Everything was saved on the server, not just in the page.
     await page.reload();
-    await expect(page.getByRole('tab', { name: 'Notifications', selected: true })).toBeVisible();
+    await expect(page.getByRole('banner')).toContainText('Notifications');
+    await expect(page.getByRole('navigation', { name: 'Settings sections' }).getByRole('link', { name: 'Notifications' })).toBeVisible();
     await expect(kindSwitch(page, 'EMI overdue')).not.toBeChecked();
     await page.getByRole('button', { name: 'Days before due' }).click();
     await expect(page.getByRole('option', { name: '14 days before' })).toHaveAttribute('aria-selected', 'true');

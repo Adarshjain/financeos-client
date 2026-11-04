@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
-import { GRID_GAP } from '@/components/ds/gridGap';
 
 import { AttentionCard } from './AttentionCard';
 import { OAUTH_ERROR_FALLBACK, type OauthReturn, shortError } from './connectionsModel';
@@ -44,8 +43,7 @@ export function ConnectionsScreen({
         </Banner>
       ) : null}
 
-      <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
-        <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
           <MailboxesCard
             connections={g.connections}
             loading={g.loading}
@@ -73,10 +71,7 @@ export function ConnectionsScreen({
             onOpenAddSender={g.openAddSenderDialog}
             onOpenEditSender={g.openEditSenderDialog}
           />
-        </div>
-        <div className="desk:col-span-5">
-          <RecentSyncJobsCard />
-        </div>
+        <RecentSyncJobsCard />
       </div>
 
       <SenderDialog

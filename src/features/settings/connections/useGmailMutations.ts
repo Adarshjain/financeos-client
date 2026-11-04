@@ -47,14 +47,21 @@ export function useGmailMutations() {
 
   const disconnectMutation = useMutation({
     mutationFn: (id: string) => unwrapAction(disconnectGmail(id)),
-    onSuccess: invalidateConnections,
+    // Disconnecting can drop the mailbox's attention items, so the Settings list count refreshes too.
+    onSuccess: async () => {
+      await invalidateConnections();
+      refreshLayout();
+    },
   });
 
   // Enqueues a retry job for one ledger item; settling is handled the same
   // way as syncMutation.
   const retryAttentionMutation = useMutation({
     mutationFn: (ledgerId: string) => unwrapAction(retryGmailAttention(ledgerId)),
-    onSuccess: invalidateAttention,
+    onSuccess: async () => {
+      await invalidateAttention();
+      refreshLayout();
+    },
   });
 
   // Archiving also changes the Inbox's Gmail attention count.

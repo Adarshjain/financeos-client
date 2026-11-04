@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { Card } from '@/components/ds/Card/Card';
-import { GRID_GAP } from '@/components/ds/gridGap';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { LoadError } from '@/features/shell/LoadError';
 
@@ -52,8 +51,7 @@ export function DebugScreen({ initialRef = '', initialType = 'auto', admin }: De
       ) : null}
 
       {admin && data && !isLoading ? (
-        <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
-          <div className="desk:col-span-5 flex flex-col gap-space-8 desk:gap-space-16">
+        <div className="flex flex-col gap-space-8 desk:gap-space-16">
             {data.request ? (
               <RequestCard
                 request={data.request}
@@ -63,9 +61,8 @@ export function DebugScreen({ initialRef = '', initialType = 'auto', admin }: De
               />
             ) : null}
             <RootCauseCard rootCause={data.rootCause} />
-          </div>
           {data.timeline.length > 0 ? (
-            <div className="desk:col-span-7">
+            <div>
               <TimelineCard
                 timeline={data.timeline}
                 truncated={data.truncated}
