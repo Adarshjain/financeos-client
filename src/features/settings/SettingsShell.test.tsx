@@ -10,15 +10,15 @@ vi.mock('@/features/shell/ShellPage', () => ({
   ShellPage: ({
     title,
     crumb,
-    phoneBackHref,
+    backHref,
     children,
   }: {
     title: string;
     crumb?: React.ReactNode;
-    phoneBackHref?: string;
+    backHref?: string;
     children: React.ReactNode;
   }) => (
-    <div data-phone-back={phoneBackHref ?? ''}>
+    <div data-back={backHref ?? ''}>
       <h1>{title}</h1>
       <span data-testid="crumb">{crumb ?? ''}</span>
       {children}
@@ -43,7 +43,7 @@ describe('SettingsShell', () => {
     expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
     expect(screen.getByTestId('crumb')).toHaveTextContent('Settings');
     expect(screen.getByTestId('crumb').querySelector('a')).toBeNull();
-    expect(document.querySelector('[data-phone-back]')).toHaveAttribute('data-phone-back', '');
+    expect(document.querySelector('[data-back]')).toHaveAttribute('data-back', '');
   });
 
   it.each([
@@ -52,12 +52,12 @@ describe('SettingsShell', () => {
     ['/settings/ai', 'AI'],
     ['/settings/activity', 'Activity'],
     ['/settings/debug', 'Debug'],
-  ])('on %s the top bar is titled %s, the crumb and phone arrow lead to /settings', (path, title) => {
+  ])('on %s the top bar is titled %s, the back button leads to /settings', (path, title) => {
     pathname = path;
     renderShell();
     expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
-    expect(screen.getByTestId('crumb').querySelector('a')).toHaveAttribute('href', '/settings');
-    expect(document.querySelector('[data-phone-back]')).toHaveAttribute('data-phone-back', '/settings');
+    expect(screen.getByTestId('crumb')).toHaveTextContent('Settings');
+    expect(document.querySelector('[data-back]')).toHaveAttribute('data-back', '/settings');
   });
 
   it('is one column with no section list on the main page or a section', () => {

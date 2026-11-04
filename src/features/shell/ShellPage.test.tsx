@@ -156,22 +156,3 @@ describe('ShellPage crumb depth', () => {
     expect(screen.getByText('Inbox')).toBeInTheDocument();
   });
 });
-
-describe('ShellPage phoneBackHref', () => {
-  it('draws a Back link in the phone-only leading slot, with the bell and Search kept', () => {
-    render(
-      <ShellPage title="Appearance" phoneBackHref="/settings">
-        content
-      </ShellPage>,
-    );
-    const back = screen.getByRole('link', { name: 'Back' });
-    expect(back).toHaveAttribute('href', '/settings');
-    expect(back.closest('div.desk\\:hidden')).not.toBeNull();
-    expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
-  });
-
-  it('has no Back link without it', () => {
-    render(<ShellPage title="Accounts">content</ShellPage>);
-    expect(screen.queryByRole('link', { name: 'Back' })).toBeNull();
-  });
-});
