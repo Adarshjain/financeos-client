@@ -23,7 +23,7 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
       crumb={active ? <Link href={SETTINGS_HREF} prefetch={false}>{areaCrumb('settings')}</Link> : areaCrumb('settings')}
       phoneBackHref={active ? SETTINGS_HREF : undefined}
     >
-      <div className="max-w-container-lg">{children}</div>
+      <div className="w-full max-w-container-lg mx-auto">{children}</div>
     </ShellPage>
   );
 }
