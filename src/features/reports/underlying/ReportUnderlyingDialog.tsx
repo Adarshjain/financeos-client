@@ -56,9 +56,10 @@ function excludedLine(items: UnderlyingExcludedItem[]): string | null {
   return `Excluded from this figure: ${items.map((i) => `${i.name} (${i.reasonLabel})`).join(', ')}`;
 }
 
-/** The report hides excluded transactions with an "is excluded is false" filter like any other. */
+/** The report hides excluded transactions with an "is excluded (from outflow) is false" filter like any other. */
+const EXCLUSION_FIELDS = ['isExcluded', 'isExcludedFromOutflow'];
 function hidesExcluded(request: RunReportRequest): boolean {
-  return request.definition.filters.some((f) => f.field === 'isExcluded' && f.operator === 'is' && f.value === false);
+  return request.definition.filters.some((f) => EXCLUSION_FIELDS.includes(f.field) && f.operator === 'is' && f.value === false);
 }
 
 const ALL_ENTRIES = 'all';

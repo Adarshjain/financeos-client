@@ -195,6 +195,15 @@ describe('ReportUnderlyingDialog', () => {
     expect(call(0)[1].body).toEqual(request);
   });
 
+  it('says excluded rows are hidden for the outflow filter too (emergency fund drill)', async () => {
+    const outflow: RunReportRequest = {
+      ...request,
+      definition: { ...request.definition, filters: [{ field: 'isExcludedFromOutflow', operator: 'is', value: false }] },
+    };
+    renderWithQuery(<ReportUnderlyingDialog request={outflow} onClose={vi.fn()} />);
+    expect(await screen.findByText('60 transactions make up this figure · Oct · excluded rows hidden')).toBeInTheDocument();
+  });
+
   it('switches to the previous period and back to its first page', async () => {
     renderWithQuery(<ReportUnderlyingDialog request={request} onClose={vi.fn()} />);
     await screen.findByText('Underlying data · ₹97,044');

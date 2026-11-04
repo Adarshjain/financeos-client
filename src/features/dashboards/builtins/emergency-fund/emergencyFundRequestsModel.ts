@@ -25,7 +25,7 @@ export function monthOutflowRequest(month: string, accountIds: string[]): RunRep
   return adhocKpi('transactions', 'spend', [
     buildFilter('account', 'in', accountIds),
     buildFilter('type', 'is', 'DEBIT'),
-    buildFilter('isExcluded', 'is', false),
+    buildFilter('isExcludedFromOutflow', 'is', false),
     buildFilter('linkType', 'not_in', EXCLUDED_LINK_TYPES),
     buildFilter('date', 'between', dateBetween(from, to)),
   ]);
