@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
+import { Button } from '@/components/ds/Button/Button';
+import { Icon } from '@/components/ds/Icon/Icon';
 import { TopBar, type TopBarAction, type TopBarMenuItem } from '@/components/ds/TopBar/TopBar';
 import { Logo } from '@/components/organisms/Logo/Logo';
 import { useNotificationsAction } from '@/features/notifications/useNotificationMutations';
@@ -26,6 +28,8 @@ export interface ShellPageProps {
   addLabel?: string;
   /** Where the back button goes. Optional: a crumb two or more deep gives it by itself (the parent list); this overrides that. Without either the bar shows the logo. */
   backHref?: string;
+  /** A back arrow on phone only (the page is a sibling of a list that stays on screen from `desk`). Desktop keeps the logo-free bar with bell and Search; ignored when backHref is set. */
+  phoneBackHref?: string;
   /** The content starts with a tab strip: no space between the top bar and it, and no back arrow derived from the crumb (tabs are siblings; an explicit backHref still wins). */
   flushTop?: boolean;
   children: React.ReactNode;
@@ -79,6 +83,7 @@ export function ShellPage({
   addMenu,
   addLabel,
   backHref: backHrefProp,
+  phoneBackHref,
   flushTop,
   children,
 }: ShellPageProps) {
@@ -134,7 +139,16 @@ export function ShellPage({
     className: 'sticky top-0 z-sticky',
     title,
     crumb,
-    leading: backHref ? undefined : <Logo variant="mark" />,
+    // The leading slot is phone-only in the top bar, so a back arrow there is the phone-only back.
+    leading: backHref ? undefined : phoneBackHref ? (
+      <Button asChild variant="ghost" size="md" iconOnly aria-label="Back">
+        <Link href={phoneBackHref} prefetch={false}>
+          <Icon name="chevron-left" size="md" />
+        </Link>
+      </Button>
+    ) : (
+      <Logo variant="mark" />
+    ),
     backHref,
     onBack,
   };

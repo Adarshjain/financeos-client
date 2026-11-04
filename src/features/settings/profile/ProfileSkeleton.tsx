@@ -1,19 +1,13 @@
 import React from 'react';
 
-import { GRID_GAP } from '@/components/ds/gridGap';
 import { SkeletonCard } from '@/features/settings/SkeletonCard';
 
-/** Shown inside the Settings shell while a tab loads; shaped like Profile & appearance. */
+/** Shown inside the Settings shell while Profile loads; one column like the screen. */
 export function ProfileSkeleton() {
   return (
-    <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
-      <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16">
-        <SkeletonCard rows={1} />
-        <SkeletonCard rows={2} />
-      </div>
-      <div className="desk:col-span-5 flex flex-col gap-space-8 desk:gap-space-16">
-        <SkeletonCard rows={2} />
-      </div>
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <SkeletonCard rows={2} />
+      <SkeletonCard rows={2} />
     </div>
   );
 }
