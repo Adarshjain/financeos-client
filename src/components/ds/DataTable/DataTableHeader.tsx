@@ -39,7 +39,7 @@ function DataTableHeaderInner<Row extends RowData>(
           ref={index === 0 ? ref : undefined}
           role="row"
           className={cn(
-            'hidden desk:grid desk:grid-cols-template h-control-md items-center bg-sunken border-l-4 border-l-transparent',
+            'hidden desk:grid desk:grid-cols-subgrid h-control-md items-center bg-sunken border-l-4 border-l-transparent',
             // With no top border on the first row, the header carries the line under it.
             closed && 'border-b border-line-soft',
             stickyHeader && 'desk:sticky desk:top-sticky-offset desk:z-sticky',

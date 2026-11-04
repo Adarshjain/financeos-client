@@ -144,20 +144,20 @@ describe('DataTable', () => {
       );
       const tableRoot = container.firstChild as HTMLElement;
       expect(tableRoot.style.getPropertyValue('--grid-template')).toBe(
-        'var(--ds-control-md) var(--ds-control-md) minmax(0, 2fr) var(--ds-space-96)',
+        'var(--ds-control-md) var(--ds-control-md) minmax(0, 2fr) auto',
       );
     });
   });
 
   describe('Date column', () => {
-    it("size 'date' is wider than 'sm' so a two-digit-year date fits", () => {
-      const dateColumns = helper.columns([
-        helper.accessor('date', { id: 'date', header: 'Date', meta: { size: 'date' }, cell: ({ getValue }) => getValue() }),
-      ]);
-      const { container } = render(<DataTable columns={dateColumns} data={testData} getRowId={(r) => r.id} />);
-      expect((container.firstChild as HTMLElement).style.getPropertyValue('--grid-template')).toBe(
-        'calc(var(--ds-space-96) * 1.25)',
+    it("sizes 'sm', 'md', 'lg' and 'date' are as wide as their widest cell, like a table column", () => {
+      const dateColumns = helper.columns(
+        (['sm', 'md', 'lg', 'date'] as const).map((size) =>
+          helper.accessor('date', { id: size, header: 'Date', meta: { size }, cell: ({ getValue }) => getValue() }),
+        ),
       );
+      const { container } = render(<DataTable columns={dateColumns} data={testData} getRowId={(r) => r.id} />);
+      expect((container.firstChild as HTMLElement).style.getPropertyValue('--grid-template')).toBe('auto auto auto auto');
     });
   });
 

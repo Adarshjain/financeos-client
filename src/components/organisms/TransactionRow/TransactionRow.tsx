@@ -366,12 +366,13 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       <div
         ref={ref}
         role={isInteractive ? 'row' : undefined}
+        data-ds-row=""
         aria-selected={isSelectable ? selected : undefined}
         aria-disabled={disabled || undefined}
         tabIndex={isInteractive && !disabled ? 0 : undefined}
         className={cn(
           'relative px-space-12 py-space-8 text-body transition-colors select-none touch-callout-none font-text',
-          desk('desk:grid desk:grid-cols-template desk:items-center desk:p-0 desk:border-l-4 desk:border-l-transparent'),
+          desk('desk:grid desk:grid-cols-subgrid desk:col-span-full desk:items-center desk:p-0 desk:border-l-4 desk:border-l-transparent'),
           borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
           selected && 'bg-brand-tint',
           isWarning && 'bg-attention-tint',

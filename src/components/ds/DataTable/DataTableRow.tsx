@@ -123,6 +123,7 @@ function DataTableRowInner<Row extends RowData>(
     <div
       ref={setRefs}
       role={onRowSelect ? 'button' : 'row'}
+      data-ds-row=""
       aria-selected={selectable ? isSelected : undefined}
       tabIndex={isClickable ? 0 : undefined}
       className={cn(
@@ -138,7 +139,7 @@ function DataTableRowInner<Row extends RowData>(
             : 'grid-cols-fill-auto',
         'grid gap-x-space-10 px-space-14',
         size === 'sm' ? 'py-space-8' : 'py-space-10 desk:min-h-space-40',
-        'desk:grid desk:grid-cols-template desk:gap-x-0 desk:px-0 desk:py-0 desk:items-center',
+        'desk:grid desk:grid-cols-subgrid desk:col-span-full desk:gap-x-0 desk:px-0 desk:py-0 desk:items-center',
         // Highlighted and selected rows are the brand-tint ground only; only the warning tone keeps a stripe (owner, 2026-10-26).
         isHighlighted || isSelected
           ? 'border-l-transparent bg-brand-tint'

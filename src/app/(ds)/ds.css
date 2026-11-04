@@ -288,3 +288,19 @@ body:has([data-selection-bar]) {
     opacity: 0;
   }
 }
+
+/* DataTable (2026-11-04): from `desk` the table root is one grid and every row a subgrid of it, so a column is as wide as
+   its widest cell, header included, like an HTML table column. Everything the table holds spans all its columns; the
+   wrappers a page puts round a row (wrapRow: SwipeActions, ContextMenu) pass the columns down to it.
+   Keep 641px in step with `desk` (tailwind.ds.config.ts). */
+@media (min-width: 641px) {
+  [data-ds-table] > * {
+    grid-column: 1 / -1;
+  }
+  [data-ds-row-slot],
+  [data-ds-row-slot] :has([data-ds-row]) {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+  }
+}
