@@ -162,7 +162,7 @@ export function lastEntryText(person: CounterpartyListItem): string | null {
   if (!person.lastEntryDate || !person.lastEntryType) return null;
   const date = formatDate(person.lastEntryDate, 'list');
   if (person.lastEntryKind !== 'settlement') return `${date} · ${person.lastEntryType}`;
-  const amount = person.lastEntryAmount != null ? ` ${formatMoney(person.lastEntryAmount)}` : '';
+  const amount = person.lastEntryAmount != null ? ` ${formatMoney(person.lastEntryAmount, { decimals: 'exact' })}` : '';
   const word = person.netPosition === 0 ? 'settled' : 'repaid';
   return `${date} · ${word}${amount}`;
 }
@@ -183,9 +183,9 @@ export function lendingRow(person: CounterpartyListItem, today: string): Lending
   const badge = SIDE_BADGE[side];
   const balance =
     side === 'owed'
-      ? formatMoney(person.netPosition, { sign: 'always', symbol: false })
+      ? formatMoney(person.netPosition, { sign: 'always', symbol: false, decimals: 'exact' })
       : side === 'owe'
-        ? formatMoney(-person.netPosition, { symbol: false })
+        ? formatMoney(-person.netPosition, { symbol: false, decimals: 'exact' })
         : '0';
   return {
     id: person.id,
@@ -239,7 +239,7 @@ export function transferRows(
           transactionId: tx.id,
           personName: person.counterpartyName,
           entryLabel: formatDate(entry.entryDate, 'list'),
-          title: `${description} · ${formatMoney(Math.abs(tx.amount))}`,
+          title: `${description} · ${formatMoney(Math.abs(tx.amount), { decimals: 'exact' })}`,
           subtitle: [formatDate(tx.date, 'list'), account, notes ? `"${notes}"` : null].filter(Boolean).join(' · '),
         });
       }
@@ -273,7 +273,7 @@ export function unrecordedRows(
       counterpartyId: t.counterpartyId,
       transactionId: tx.id,
       personName: t.counterpartyName,
-      title: `${word} ${t.counterpartyName} · ${formatMoney(Math.abs(tx.amount))}`,
+      title: `${word} ${t.counterpartyName} · ${formatMoney(Math.abs(tx.amount), { decimals: 'exact' })}`,
       subtitle: [formatDate(tx.date, 'list'), accountNames.get(tx.accountId)].filter(Boolean).join(' · '),
     };
   });

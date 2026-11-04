@@ -123,16 +123,16 @@ describe('expectedText and dueIn', () => {
 
 describe('lastEntryText', () => {
   it('words a repayment while a balance remains as "repaid"', () => {
-    expect(lastEntryText(person())).toBe('10 Oct · repaid ₹10,000');
+    expect(lastEntryText(person())).toBe('10 Oct · repaid ₹10,000.00');
     expect(
       lastEntryText(person({ netPosition: -50000, lastEntryDate: '2026-07-15', lastEntryType: 'lent', lastEntryAmount: 50000 })),
-    ).toBe('15 Jul · repaid ₹50,000');
+    ).toBe('15 Jul · repaid ₹50,000.00');
   });
 
   it('words a repayment that cleared the balance as "settled"', () => {
     expect(
       lastEntryText(person({ netPosition: 0, lastEntryDate: '2026-08-24', lastEntryAmount: 4200 })),
-    ).toBe('24 Aug · settled ₹4,200');
+    ).toBe('24 Aug · settled ₹4,200.00');
   });
 
   it('words principal entries as lent or borrowed, with no amount', () => {
@@ -161,11 +161,11 @@ describe('lendingRow', () => {
       side: 'owed',
       directionLabel: 'Owes you',
       directionTone: 'success',
-      balance: '+15,000',
+      balance: '+15,000.00',
       balanceTone: 'positive',
       expected: '28 Oct · in 15 d',
       hasExpected: true,
-      lastEntry: '10 Oct · repaid ₹10,000',
+      lastEntry: '10 Oct · repaid ₹10,000.00',
       phoneSub: 'expected 28 Oct · last entry 10 Oct',
       href: '/loans/lendings/p1',
     });
@@ -180,7 +180,7 @@ describe('lendingRow', () => {
       side: 'owe',
       directionLabel: 'You owe',
       directionTone: 'danger',
-      balance: '12,000',
+      balance: '12,000.00',
       balanceTone: 'danger',
       expected: '23 Oct · in 10 d',
       lastEntry: '23 Sep · borrowed',
@@ -193,9 +193,9 @@ describe('lendingRow', () => {
     expect(row).toMatchObject({ side: 'settled', directionLabel: 'Settled', directionTone: 'neutral', balance: '0', expected: 'no date', hasExpected: false });
   });
 
-  it('rounds to whole rupees and groups lakhs', () => {
-    expect(lendingRow(person({ netPosition: 100000 }), TODAY).balance).toBe('+1,00,000');
-    expect(lendingRow(person({ netPosition: -1250.5 }), TODAY).balance).toBe('1,251');
+  it('shows paise and groups lakhs', () => {
+    expect(lendingRow(person({ netPosition: 100000 }), TODAY).balance).toBe('+1,00,000.00');
+    expect(lendingRow(person({ netPosition: -1250.5 }), TODAY).balance).toBe('1,250.50');
   });
 
   it('falls back to the notes on phone when there is nothing else to say', () => {
@@ -253,14 +253,14 @@ describe('transferRows', () => {
       lendingId: 'l1',
       transactionId: 't1',
       personName: 'Priya Nair',
-      title: 'IMPS from Priya Nair · ₹2,300',
+      title: 'IMPS from Priya Nair · ₹2,300.00',
       subtitle: '13 Sep · HDFC Savings · "split"',
     });
   });
 
   it('uses the bank narration when there is no description, and the absolute amount', () => {
     const rows = transferRows(people, new Map([['a1', 'HDFC Savings']]));
-    expect(rows[1].title).toBe('UPI/42 · ₹2,300');
+    expect(rows[1].title).toBe('UPI/42 · ₹2,300.00');
     expect(rows[1].subtitle).toBe('14 Sep · HDFC Savings · "split"');
   });
 

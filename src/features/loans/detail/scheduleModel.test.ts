@@ -88,7 +88,7 @@ describe('financial-year selection', () => {
 
   it('sums the year: EMIs, principal and interest', () => {
     expect(fySummary(schedule, '2026')).toEqual({ emis: 6, principal: 6 * 7728, interest: 6 * 28875 });
-    expect(fySummaryLine(schedule, '2026')).toBe('6 EMIs · principal ₹46,368');
+    expect(fySummaryLine(schedule, '2026')).toBe('6 EMIs · principal ₹46,368.00');
     expect(fySummaryLine([installment(1, '2026-05-05')], '2026')).toContain('1 EMI ·');
   });
 });

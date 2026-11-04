@@ -78,7 +78,7 @@ export function fySummaryLine(schedule: InstallmentDto[], fy: string): string {
   const s = fySummary(schedule, fy);
   return [
     formatCount(s.emis, ['EMI', 'EMIs']),
-    `principal ${formatMoney(s.principal)}`,
+    `principal ${formatMoney(s.principal, { decimals: 'exact' })}`,
   ].join(' · ');
 }
 

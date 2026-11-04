@@ -79,12 +79,12 @@ describe('buildLimitCycle', () => {
     expect(m.subtitle).toBe('Statement of 5 Oct · next statement 5 Nov');
     expect(m.anchored).toBe(true);
     expect(m.used).toMatchObject({
-      value: '₹44,319',
+      value: '₹44,319.00',
       tone: 'brand',
       caption: 'of ₹3L limit',
     });
-    expect(m.cycle).toEqual({ value: '₹0', caption: 'Unbilled since 5 Oct' });
-    expect(m.bill).toEqual({ value: '₹44,319', caption: 'Due 25 Oct · 12 days left' });
+    expect(m.cycle).toEqual({ value: '₹0.00', caption: 'Unbilled since 5 Oct' });
+    expect(m.bill).toEqual({ value: '₹44,319.00', caption: 'Due 25 Oct · 12 days left' });
     expect(m.ownLimit).toBe('₹3,00,000');
     expect(m.pool).toBeNull();
   });
@@ -93,7 +93,7 @@ describe('buildLimitCycle', () => {
     const m = buildLimitCycle(card, summary, bill(), TODAY);
     expect(cardHeroFigures(m)).toEqual([
       { label: 'Limit left', value: '₹2,55,681', caption: 'of ₹3L' },
-      { label: 'Bill due', value: '₹44,319' },
+      { label: 'Bill due', value: '₹44,319.00' },
       { label: 'Due date', value: '25 Oct', caption: '12 days left' },
     ]);
   });
@@ -113,8 +113,8 @@ describe('buildLimitCycle', () => {
       bill({ status: 'PAID', unbilledAmount: 6224, paidMarkedOn: '2026-09-18', paymentDueDate: '2026-09-25' }),
       TODAY
     );
-    expect(m.cycle.value).toBe('₹6,224');
-    expect(m.bill).toEqual({ value: '₹0', caption: 'Paid 18 Sep · on time' });
+    expect(m.cycle.value).toBe('₹6,224.00');
+    expect(m.bill).toEqual({ value: '₹0.00', caption: 'Paid 18 Sep · on time' });
   });
 
   it('calls a payment after the due date late and omits timing when a date is missing', () => {

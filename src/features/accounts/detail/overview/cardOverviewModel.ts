@@ -109,10 +109,10 @@ export function buildLimitCycle(
   const unbilled = state?.unbilled != null ? Math.max(0, state.unbilled) : 0;
   const lastStatement = summary?.periodEnd ?? bill?.periodEnd ?? null;
 
-  let billValue = formatMoney(0);
+  let billValue = formatMoney(0, { decimals: 'exact' });
   let billCaption = 'No bill due';
   if (bill && state && state.phase !== 'awaiting') {
-    billValue = state.toPay != null ? formatMoney(state.toPay) : '—';
+    billValue = state.toPay != null ? formatMoney(state.toPay, { decimals: 'exact' }) : '—';
     billCaption = dueCaption(bill) || 'Due date missing';
   } else if (bill?.status === 'PAID' && bill.paidMarkedOn) {
     const timing = paidTiming(bill.paidMarkedOn, bill.paymentDueDate);
@@ -123,7 +123,7 @@ export function buildLimitCycle(
     subtitle: subtitleParts.length > 0 ? subtitleParts.join(' · ') : null,
     anchored: Boolean(account.balanceAnchored),
     used: {
-      value: formatMoney(owedAmount),
+      value: formatMoney(owedAmount, { decimals: 'exact' }),
       pct,
       tone: meterTone(pct),
       caption:
@@ -132,7 +132,7 @@ export function buildLimitCycle(
           : null,
     },
     cycle: {
-      value: formatMoney(unbilled),
+      value: formatMoney(unbilled, { decimals: 'exact' }),
       caption: lastStatement ? `Unbilled since ${formatDate(lastStatement, 'list')}` : 'Unbilled',
     },
     bill: { value: billValue, caption: billCaption },
@@ -189,7 +189,7 @@ export function buildRewards(
         : pts(totalPts)
     );
   }
-  if (summary.cashbackInr > 0) earnedParts.push(`${formatMoney(summary.cashbackInr)} cashback`);
+  if (summary.cashbackInr > 0) earnedParts.push(`${formatMoney(summary.cashbackInr, { decimals: 'auto' })} cashback`);
 
   return {
     subtitle: window.calendarYear

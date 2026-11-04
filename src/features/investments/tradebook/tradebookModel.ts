@@ -135,8 +135,8 @@ export function tradebookRow(t: InvestmentTransactionResponse): TradebookRow {
     settlement,
     quantity: formatQuantity(qty),
     pricePlain: formatMoney(price, { decimals: 'exact', symbol: false }),
-    valuePlain: formatMoney(qty * price, { symbol: false }),
-    value: formatMoney(qty * price),
+    valuePlain: formatMoney(qty * price, { symbol: false, decimals: 'exact' }),
+    value: formatMoney(qty * price, { decimals: 'exact' }),
     chargesPlain: charges > 0 ? formatMoney(charges, { decimals: 'exact', symbol: false }) : '0',
     sub: {
       date: formatDate(t.tradeDate, 'list'),

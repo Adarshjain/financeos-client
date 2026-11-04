@@ -107,8 +107,8 @@ describe('tradebookRow', () => {
       settlement: 'CNC',
       quantity: '50',
       pricePlain: '710.00',
-      valuePlain: '35,500',
-      value: '₹35,500',
+      valuePlain: '35,500.00',
+      value: '₹35,500.00',
       chargesPlain: '42.10',
     });
     expect(subLineText(row)).toBe('1 Oct · 50 @ ₹710.00 · CNC');
@@ -117,7 +117,7 @@ describe('tradebookRow', () => {
 
   it('draws a fund buy in units with no settlement and zero charges', () => {
     const row = tradebookRow(fundBuy);
-    expect(row).toMatchObject({ title: 'Parag Parikh Flexi Cap', side: 'Buy', settlement: null, chargesPlain: '0', valuePlain: '5,000' });
+    expect(row).toMatchObject({ title: 'Parag Parikh Flexi Cap', side: 'Buy', settlement: null, chargesPlain: '0', valuePlain: '5,000.13' });
     expect(subLineText(row)).toBe('5 Oct · 55.98 units @ ₹89.32');
   });
 

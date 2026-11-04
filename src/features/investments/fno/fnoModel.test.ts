@@ -79,7 +79,7 @@ describe('F&O figures', () => {
       realised: { text: '+₹10,456', tone: 'positive' },
       winRate: '50%',
       winSub: '2 of 4',
-      charges: '₹669',
+      charges: '₹669.10',
     });
   });
 
@@ -135,8 +135,8 @@ describe('F&O rows', () => {
       bought: '14,500',
       sold: '13,250',
       charges: '88.90',
-      pnlPlain: '−1,339',
-      pnl: '−₹1,339',
+      pnlPlain: '−1,338.90',
+      pnl: '−₹1,338.90',
       pnlTone: 'danger',
       source: 'Statement',
     });
@@ -149,7 +149,7 @@ describe('F&O rows', () => {
       strike: null,
       bought: '18,91,500',
       sold: '19,02,750',
-      pnlPlain: '+10,837',
+      pnlPlain: '+10,837.40',
       pnlTone: 'positive',
       source: 'Manual',
     });
