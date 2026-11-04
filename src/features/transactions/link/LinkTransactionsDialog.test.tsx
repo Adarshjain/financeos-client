@@ -258,7 +258,7 @@ describe('LinkTransactionsDialog, records', () => {
     expect(screen.getByRole('combobox', { name: /^Direction/ })).toHaveTextContent('You lent');
     expect(screen.getByRole('combobox', { name: /^Direction/ })).toBeDisabled();
     expect(screen.getByRole('textbox', { name: /^Amount/ })).toHaveValue('15000');
-    expect(screen.getByLabelText('Date')).toHaveValue('12/10/26');
+    expect(screen.getByLabelText('Date')).toHaveValue('12/10/2026');
     await user.click(screen.getByRole('combobox', { name: /^Person/ }));
     await user.click(screen.getByRole('option', { name: /Rahul Sharma/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Record and link' }));
@@ -305,7 +305,7 @@ describe('LinkTransactionsDialog, records', () => {
     expect(first).toHaveTextContent('due 5 Oct · 8 days overdue');
     await waitFor(() => expect(first).toHaveAttribute('aria-checked', 'true'));
     expect(screen.getByText('₹2,449 more than EMI')).toBeInTheDocument();
-    expect(screen.getByLabelText('Paid on')).toHaveValue('05/10/26');
+    expect(screen.getByLabelText('Paid on')).toHaveValue('05/10/2026');
     fireEvent.click(screen.getByRole('button', { name: 'Settle EMI #14' }));
     await waitFor(() => expect(api.POST).toHaveBeenCalled());
     expect(api.POST).toHaveBeenCalledWith('/api/v1/loans/{id}/payments', {

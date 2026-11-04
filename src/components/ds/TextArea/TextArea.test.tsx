@@ -90,3 +90,20 @@ describe('TextArea component', () => {
     expect(screen.getByLabelText('Code')).toHaveClass('font-mono', 'text-xs');
   });
 });
+
+describe('TextArea warning', () => {
+  it('shows the warning message with an amber border, not invalid, linked by aria-describedby', () => {
+    const { container } = render(<TextArea label="Note" warning="Near the limit" />);
+    expect(screen.getByText('Near the limit')).toHaveClass('text-warning');
+    const textarea = container.querySelector('textarea')!;
+    expect(textarea).toHaveClass('border-warning');
+    expect(textarea).not.toHaveAttribute('aria-invalid');
+    expect(textarea).toHaveAttribute('aria-describedby', screen.getByText('Near the limit').id);
+  });
+
+  it('error wins over warning', () => {
+    const { container } = render(<TextArea label="Note" error="Too long" warning="Near the limit" />);
+    expect(screen.queryByText('Near the limit')).not.toBeInTheDocument();
+    expect(container.querySelector('textarea')).toHaveClass('border-danger');
+  });
+});

@@ -58,6 +58,7 @@ const meta: Meta<typeof TextField> = {
     value: { control: 'text' },
     helper: { control: 'text' },
     error: { control: 'text' },
+    warning: { control: 'text' },
     optional: { control: 'boolean' },
     disabled: { control: 'boolean' },
     clearable: { control: 'boolean' },
@@ -171,6 +172,14 @@ export const ErrorState: Story = {
     label: 'Last 4 digits',
     defaultValue: '77',
     error: 'Enter the last 4 digits of the card.',
+  },
+};
+
+export const WarningState: Story = {
+  args: {
+    label: 'Last 4 digits',
+    defaultValue: '7741',
+    warning: 'This card is already linked to another account.',
   },
 };
 

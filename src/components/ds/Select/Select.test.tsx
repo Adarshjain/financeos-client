@@ -624,3 +624,20 @@ describe('Select nested options', () => {
     expect(screen.queryByText('Unsorted')).toBeNull();
   });
 });
+
+describe('Select warning', () => {
+  it('shows the warning message with an amber trigger border, not invalid', () => {
+    render(<Select label="Account" options={sampleOptions} warning="Closed last month" />);
+    expect(screen.getByText('Closed last month')).toHaveClass('text-warning');
+    const trigger = screen.getByRole('combobox');
+    expect(trigger).toHaveClass('border-warning');
+    expect(trigger).not.toHaveAttribute('aria-invalid');
+    expect(trigger).toHaveAttribute('aria-describedby', screen.getByText('Closed last month').id);
+  });
+
+  it('error wins over warning', () => {
+    render(<Select label="Account" options={sampleOptions} error="Required" warning="Closed last month" />);
+    expect(screen.queryByText('Closed last month')).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toHaveClass('border-danger');
+  });
+});

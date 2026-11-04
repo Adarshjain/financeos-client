@@ -11,6 +11,7 @@ A labelled multi-line field for notes and descriptions.
 - `label?: React.ReactNode`: field label above the input.
 - `helper?: React.ReactNode`: helpful hint text below the input.
 - `error?: React.ReactNode`: error message below the input.
+- `warning?: React.ReactNode`: as TextField: `warning` border, focus ring and message; not invalid; `error` wins.
 - `optional?: boolean`: shows "(Optional)" next to the label.
 - `minRows?: number`: minimum visible rows (default `1`).
 - `maxRows?: number`: optional maximum visible rows before scrolling (omitted: grows indefinitely).
@@ -20,7 +21,7 @@ A labelled multi-line field for notes and descriptions.
 - Standard `<textarea>` HTML attributes (`rows`, `placeholder`, `disabled`, `value`, `defaultValue`, etc.).
 
 ## Variants
-- Default, filled, optional, with helper, max rows cap, error, disabled.
+- Default, filled, optional, with helper, max rows cap, error, warning, disabled.
 
 ## Built from
 The shared field frame (`FieldFrame`) that TextField uses.

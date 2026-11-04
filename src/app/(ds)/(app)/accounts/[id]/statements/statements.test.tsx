@@ -370,7 +370,7 @@ describe('/accounts/[id]/statements', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Edit details' }));
     const dialog = await screen.findByRole('dialog');
     const field = within(dialog).getByLabelText('Due date');
-    expect(field).toHaveValue('25/10/26');
+    expect(field).toHaveValue('25/10/2026');
 
     await user.clear(field);
     await user.type(field, '30/10/2026');
@@ -411,9 +411,9 @@ describe('/accounts/[id]/statements', () => {
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Edit details')).toBeInTheDocument();
     expect(within(dialog).getByText('Statement · 5 Oct 26')).toBeInTheDocument();
-    expect(within(dialog).getByLabelText('Period start')).toHaveValue('06/09/26');
-    expect(within(dialog).getByLabelText('Period end')).toHaveValue('05/10/26');
-    expect(within(dialog).getByLabelText('Due date')).toHaveValue('25/10/26');
+    expect(within(dialog).getByLabelText('Period start')).toHaveValue('06/09/2026');
+    expect(within(dialog).getByLabelText('Period end')).toHaveValue('05/10/2026');
+    expect(within(dialog).getByLabelText('Due date')).toHaveValue('25/10/2026');
     expect(within(dialog).getByLabelText('Total due')).toHaveValue('44319');
     expect(within(dialog).getByLabelText('Minimum due')).toHaveValue('2500');
 

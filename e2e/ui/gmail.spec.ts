@@ -26,10 +26,10 @@ import { expectToast } from '../fixtures/ui';
  * the server callback, sender allowlist dialog, manual sync, the Needs attention card with Retry,
  * disconnect, and the account form's Gmail cleanup confirmation. One serial journey per user.
  */
-/** dd/mm/yy, what the Dinero date fields take, for an ISO date. */
+/** dd/mm/yyyy, what the Dinero date fields take, for an ISO date. */
 function typedDate(iso: string): string {
   const [y, m, d] = iso.split('-');
-  return `${d}/${m}/${y.slice(2)}`;
+  return `${d}/${m}/${y}`;
 }
 
 test.describe('Gmail settings UI (@ui)', () => {

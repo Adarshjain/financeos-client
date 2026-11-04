@@ -2,8 +2,6 @@
 
 import React, { forwardRef, useId, useMemo, useRef, useState } from 'react';
 
-import { formatDate } from '@/lib/format';
-
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
@@ -12,7 +10,7 @@ import { Popover } from '../Popover/Popover';
 import { TextField, type TextFieldSize, type TextFieldTextStyle } from '../TextField/TextField';
 import { useControllableState } from '../useControllableState';
 import { parseDateInput } from '../utils';
-import { formatDateInput, formatRangeInput } from './dateFormat';
+import { expandRangeTwoDigitYears, expandTwoDigitYear, formatDateInput, formatRangeInput } from './dateFormat';
 
 export interface DateRangeValue {
   start?: string;
@@ -30,6 +28,8 @@ export interface DateFieldProps
   label?: React.ReactNode;
   helper?: React.ReactNode;
   error?: React.ReactNode;
+  /** Amber border, ring and message (not invalid). `error` wins when both are set. */
+  warning?: React.ReactNode;
   optional?: boolean;
   disabled?: boolean;
   className?: string;
@@ -48,7 +48,7 @@ export interface DateFieldProps
   defaultValue?: DateFieldValue;
   onValueChange?: (val: DateFieldValue) => void;
 
-  /** Range mode: one combined field "dd/mm/yy – dd/mm/yy" */
+  /** Range mode: one combined field "dd/mm/yyyy – dd/mm/yyyy" */
   range?: boolean;
 
   /** Min/Max selectable dates (ISO yyyy-mm-dd) */
@@ -70,6 +70,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       label,
       helper,
       error,
+      warning,
       optional = false,
       disabled = false,
       className,
@@ -107,8 +108,8 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       placeholder !== undefined
         ? placeholder
         : range
-          ? 'dd/mm/yy – dd/mm/yy'
-          : 'dd/mm/yy';
+          ? 'dd/mm/yyyy – dd/mm/yyyy'
+          : 'dd/mm/yyyy';
 
     // Single mode: internal text for typed input
     const initialSingleText = (() => {
@@ -193,11 +194,48 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         onValueChange?.('');
         return;
       }
-      const iso = parseDateInput(formatted);
+      // A four-digit year commits as you type; a two-digit year waits for blur, where it is expanded.
+      const iso = /^\d{2}\/\d{2}\/\d{4}$/.test(formatted) ? parseDateInput(formatted) : null;
       setSingleIso(iso ?? '');
       if (iso) {
         onValueChange?.(iso);
       }
+    };
+
+    // Expands a typed two-digit year and commits it; shared by blur and Enter (Enter submits a form without blurring).
+    const commitTypedDate = () => {
+      if (!range) {
+        const expanded = expandTwoDigitYear(singleText, maxDate);
+        if (expanded === singleText) return;
+        const iso = parseDateInput(expanded);
+        if (!iso) return;
+        setSingleText(expanded);
+        setSingleIso(iso);
+        onValueChange?.(iso);
+        return;
+      }
+      const expanded = expandRangeTwoDigitYears(rangeText, maxDate);
+      if (expanded === rangeText) return;
+      setRangeText(expanded);
+      prevRangeInputRef.current = expanded;
+      const [sText, eText = ''] = expanded.split(' – ');
+      const sIso = parseDateInput(sText);
+      const eIso = parseDateInput(eText);
+      if (sIso) setStartIso(sIso);
+      if (sIso && eIso && eIso >= sIso) {
+        setEndIso(eIso);
+        onValueChange?.({ start: sIso, end: eIso });
+      }
+    };
+
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+      commitTypedDate();
+      props.onBlur?.(e);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') commitTypedDate();
+      props.onKeyDown?.(e);
     };
 
     const handleRangeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -223,7 +261,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
 
       const sIso = parseDateInput(formatted.startDate);
       const eIso = parseDateInput(formatted.endDate);
-      // An end before the start is a transient (typing a four-digit end year): neither kept nor emitted.
+      // An end before the start (the end has all eight digits) is final: neither kept nor emitted.
       const endOk = !!eIso && (!sIso || eIso >= sIso);
       if (sIso) setStartIso(sIso);
       if (eIso && endOk) setEndIso(eIso);
@@ -235,7 +273,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
 
     const handleSelectDateFromCalendar = (isoDate: string) => {
       if (!range) {
-        setSingleText(formatDate(isoDate, 'input'));
+        setSingleText(formatDateInput(isoDate));
         setSingleIso(isoDate);
         onValueChange?.(isoDate);
         setOpen(false);
@@ -244,7 +282,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
           // First click: sets start date
           setStartIso(isoDate);
           setEndIso('');
-          const disp = `${formatDate(isoDate, 'input')} – `;
+          const disp = `${formatDateInput(isoDate)} – `;
           setRangeText(disp);
           prevRangeInputRef.current = disp;
           setRangeStep(1);
@@ -258,7 +296,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
           }
           setStartIso(finalStart);
           setEndIso(finalEnd);
-          const disp = `${formatDate(finalStart, 'input')} – ${formatDate(finalEnd, 'input')}`;
+          const disp = `${formatDateInput(finalStart)} – ${formatDateInput(finalEnd)}`;
           setRangeText(disp);
           prevRangeInputRef.current = disp;
           setRangeStep(0);
@@ -277,14 +315,14 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
 
     const handleToday = () => {
       if (!range) {
-        setSingleText(formatDate(today, 'input'));
+        setSingleText(formatDateInput(today));
         setSingleIso(today);
         onValueChange?.(today);
         setOpen(false);
       } else {
         setStartIso(today);
         setEndIso('');
-        const disp = `${formatDate(today, 'input')} – `;
+        const disp = `${formatDateInput(today)} – `;
         setRangeText(disp);
         prevRangeInputRef.current = disp;
         setRangeStep(1);
@@ -426,6 +464,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         label={label}
         helper={helper}
         error={error}
+        warning={warning}
         optional={optional}
         disabled={disabled}
         className={className}
@@ -453,6 +492,8 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
           </Popover>
         }
         {...props}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
       />
     );
   },

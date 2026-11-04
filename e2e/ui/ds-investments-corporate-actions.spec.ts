@@ -108,7 +108,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByRole('textbox', { name: /^Held/ })).toHaveValue('10');
       await expect(dialog.getByRole('textbox', { name: /^Received/ })).toHaveValue('1');
       await expect(dialog.getByRole('textbox', { name: /^Cost allocation %/ })).toHaveValue('1.5');
-      await expect(dialog.getByLabel('Ex-date')).toHaveValue('01/04/25');
+      await expect(dialog.getByLabel('Ex-date')).toHaveValue('01/04/2025');
     });
 
     test('Delete asks first, keeps the action on Cancel and removes it on confirm', async ({ page }) => {

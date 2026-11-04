@@ -10,6 +10,8 @@ export interface TextAreaProps
   label?: React.ReactNode;
   helper?: React.ReactNode;
   error?: React.ReactNode;
+  /** Amber border, ring and message (not invalid). `error` wins when both are set. */
+  warning?: React.ReactNode;
   optional?: boolean;
   minRows?: number;
   maxRows?: number;
@@ -24,6 +26,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       label,
       helper,
       error,
+      warning,
       optional = false,
       disabled = false,
       rows = 1,
@@ -46,6 +49,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     const helperId = `${id}-helper`;
     const labelId = `${id}-label`;
     const hasError = Boolean(error);
+    const hasWarning = !hasError && Boolean(warning);
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       onChange?.(e);
@@ -72,6 +76,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         optional={optional}
         helper={helper}
         error={error}
+        warning={warning}
         className={className}
       >
         <textarea
@@ -85,7 +90,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           onChange={handleChange}
           aria-labelledby={label ? labelId : undefined}
           aria-invalid={hasError ? 'true' : undefined}
-          aria-describedby={hasError || helper ? helperId : undefined}
+          aria-describedby={hasError || hasWarning || helper ? helperId : undefined}
           style={inlineStyles}
           className={cn(
             'w-full min-h-control-md px-space-12 py-space-8 rounded-ds-md border bg-surface font-text font-medium text-body text-ink placeholder:text-ink-4 resize-y [field-sizing:content]',
@@ -94,7 +99,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
               ? 'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60'
               : [
                   'focus:ring-2 focus:ring-focus-ring focus:ring-offset-2',
-                  hasError ? 'border-danger focus:ring-danger' : 'border-line-strong',
+                  hasError ? 'border-danger focus:ring-danger' : hasWarning ? 'border-warning focus:ring-warning' : 'border-line-strong',
                 ],
             controlClassName,
           )}

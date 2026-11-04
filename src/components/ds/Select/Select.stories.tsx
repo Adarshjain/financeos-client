@@ -122,6 +122,7 @@ const meta: Meta<typeof Select> = {
     placeholder: { control: 'text' },
     label: { control: 'text' },
     error: { control: 'text' },
+    warning: { control: 'text' },
     helper: { control: 'text' },
     disabled: { control: 'boolean' },
     multiple: { control: 'boolean' },
@@ -334,6 +335,14 @@ export const ErrorState: Story = {
   args: {
     label: 'Required selection',
     error: 'Please make a selection to proceed',
+    options: standardOptions,
+  },
+};
+
+export const WarningState: Story = {
+  args: {
+    label: 'Account',
+    warning: 'This account was closed last month.',
     options: standardOptions,
   },
 };

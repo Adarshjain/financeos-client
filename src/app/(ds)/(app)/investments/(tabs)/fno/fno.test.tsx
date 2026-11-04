@@ -236,9 +236,9 @@ describe('/investments/fno: edit and delete', () => {
     expect(within(dialog).getByLabelText('Trading symbol')).toHaveValue('NIFTY26OCT25200CE');
     expect(within(dialog).getByLabelText('Underlying')).toHaveValue('NIFTY');
     expect(within(dialog).getByLabelText('Strike')).toHaveValue('25200');
-    expect(within(dialog).getByDisplayValue('22/10/26')).toBeInTheDocument();
-    expect(within(dialog).getByDisplayValue('01/10/26')).toBeInTheDocument();
-    expect(within(dialog).getByDisplayValue('04/10/26')).toBeInTheDocument();
+    expect(within(dialog).getByDisplayValue('22/10/2026')).toBeInTheDocument();
+    expect(within(dialog).getByDisplayValue('01/10/2026')).toBeInTheDocument();
+    expect(within(dialog).getByDisplayValue('04/10/2026')).toBeInTheDocument();
     expect(within(dialog).getByText('Gross +₹5,625 · charges ₹96.40')).toBeInTheDocument();
     expect(within(dialog).getByText('Net +₹5,528.60')).toBeInTheDocument();
   });
@@ -374,7 +374,7 @@ describe('F&O add form (the top bar +)', () => {
   it('starts the entry date on today and refuses an exit before it, as a field error', async () => {
     renderWithQuery(<FnoAddDialog onClose={onClose} />);
     const dialog = await screen.findByRole('dialog', { name: 'Record F&O trade' });
-    expect(within(dialog).getByLabelText('Entry date')).toHaveValue('13/10/26');
+    expect(within(dialog).getByLabelText('Entry date')).toHaveValue('13/10/2026');
     fireEvent.change(within(dialog).getByLabelText('Exit date'), { target: { value: '12/10/2026' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Record trade' }));
     expect(await within(dialog).findByText('The exit date cannot be before the entry date.')).toBeInTheDocument();

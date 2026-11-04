@@ -507,15 +507,15 @@ describe('Filters', () => {
     expect(screen.getByRole('button', { name: 'Date · last 90 days' })).toBeInTheDocument();
   });
 
-  it('takes a date range in dd/mm/yy', async () => {
+  it('takes a date range in dd/mm/yyyy', async () => {
     setup();
     await user.click(screen.getByRole('button', { name: 'Add filter' }));
     await pick('Field', 'Date');
     await pick('Operator', 'Between');
     const range = screen.getByLabelText('Between');
-    await user.type(range, '010126');
-    await user.type(range, '310326');
-    expect(range).toHaveValue('01/01/26 – 31/03/26');
+    await user.type(range, '01012026');
+    await user.type(range, '31032026');
+    expect(range).toHaveValue('01/01/2026 – 31/03/2026');
     await user.click(screen.getByRole('button', { name: 'Apply filter' }));
     expect(screen.getByRole('button', { name: 'Date · between 2026-01-01 – 2026-03-31' })).toBeInTheDocument();
   });

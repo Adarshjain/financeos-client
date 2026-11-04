@@ -30,6 +30,7 @@ const meta: Meta<typeof TextArea> = {
     value: { control: 'text' },
     helper: { control: 'text' },
     error: { control: 'text' },
+    warning: { control: 'text' },
     optional: { control: 'boolean' },
     disabled: { control: 'boolean' },
     rows: { control: 'number' },
@@ -104,6 +105,14 @@ export const ErrorState: Story = {
     label: 'Note',
     defaultValue: 'Split with Priya, she owes half',
     error: 'Note cannot exceed 500 characters.',
+  },
+};
+
+export const WarningState: Story = {
+  args: {
+    label: 'Note',
+    defaultValue: 'Split with Priya, she owes half',
+    warning: 'Close to the 500 character limit.',
   },
 };
 

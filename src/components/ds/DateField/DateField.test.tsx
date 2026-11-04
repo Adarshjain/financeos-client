@@ -11,8 +11,8 @@ describe('formatDateInput helper', () => {
     expect(formatDateInput('13102026')).toBe('13/10/2026');
   });
 
-  it('converts ISO yyyy-mm-dd to dd/mm/yy', () => {
-    expect(formatDateInput('2026-10-13')).toBe('13/10/26');
+  it('converts ISO yyyy-mm-dd to dd/mm/yyyy', () => {
+    expect(formatDateInput('2026-10-13')).toBe('13/10/2026');
   });
 });
 
@@ -21,13 +21,32 @@ describe('two-digit years', () => {
     expect(formatDateInput('131026')).toBe('13/10/26');
   });
 
-  it('typing dd/mm/yy emits the 20yy ISO date', () => {
+  it('typing dd/mm/yy waits for blur, then shows dd/mm/yyyy and emits the 20yy ISO date', () => {
     const handleChange = vi.fn();
     render(<DateField today="2026-10-13" label="Date" onValueChange={handleChange} />);
     const input = screen.getByLabelText('Date');
-    expect(input).toHaveAttribute('placeholder', 'dd/mm/yy');
+    expect(input).toHaveAttribute('placeholder', 'dd/mm/yyyy');
     fireEvent.change(input, { target: { value: '13/10/26' } });
+    expect(handleChange).not.toHaveBeenCalled();
+    expect(input).toHaveValue('13/10/26');
+    fireEvent.blur(input);
+    expect(input).toHaveValue('13/10/2026');
     expect(handleChange).toHaveBeenCalledWith('2026-10-13');
+  });
+
+  it('range placeholder is dd/mm/yyyy – dd/mm/yyyy', () => {
+    render(<DateField today="2026-10-13" range label="Period" />);
+    expect(screen.getByLabelText('Period')).toHaveAttribute('placeholder', 'dd/mm/yyyy – dd/mm/yyyy');
+  });
+
+  it('blur leaves an invalid two-digit-year date as typed', () => {
+    const handleChange = vi.fn();
+    render(<DateField today="2026-10-13" label="Date" onValueChange={handleChange} />);
+    const input = screen.getByLabelText('Date');
+    fireEvent.change(input, { target: { value: '31/02/26' } });
+    fireEvent.blur(input);
+    expect(input).toHaveValue('31/02/26');
+    expect(handleChange).not.toHaveBeenCalled();
   });
 
   it('range typing takes two-digit years ended by a dash', () => {
@@ -38,7 +57,88 @@ describe('two-digit years', () => {
     expect(input).toHaveValue('01/10/26 – ');
     fireEvent.change(input, { target: { value: '01/10/26 – 15/10/26' } });
     expect(input).toHaveValue('01/10/26 – 15/10/26');
+    expect(handleChange).not.toHaveBeenCalled();
+    fireEvent.blur(input);
+    expect(input).toHaveValue('01/10/2026 – 15/10/2026');
     expect(handleChange).toHaveBeenCalledWith({ start: '2026-10-01', end: '2026-10-15' });
+  });
+});
+
+describe('two-digit years: Enter, blur order and pivot', () => {
+  it('Enter commits an expanded date before the wrapping form submits', () => {
+    const calls: string[] = [];
+    render(
+      <form onSubmit={(e) => { e.preventDefault(); calls.push('submit'); }}>
+        <DateField today="2026-10-13" label="Date" onValueChange={() => calls.push('change')} />
+      </form>,
+    );
+    const input = screen.getByLabelText('Date');
+    fireEvent.change(input, { target: { value: '05/04/24' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    fireEvent.submit(input.closest('form')!);
+    expect(input).toHaveValue('05/04/2024');
+    expect(calls).toEqual(['change', 'submit']);
+  });
+
+  it('Enter calls the consumer onKeyDown', () => {
+    const onKeyDown = vi.fn();
+    render(<DateField today="2026-10-13" label="Date" onKeyDown={onKeyDown} />);
+    fireEvent.keyDown(screen.getByLabelText('Date'), { key: 'Enter' });
+    expect(onKeyDown).toHaveBeenCalledTimes(1);
+  });
+
+  it('the consumer onBlur runs after the commit', () => {
+    const calls: string[] = [];
+    render(
+      <DateField
+        today="2026-10-13"
+        label="Date"
+        onValueChange={(v) => calls.push(`change:${String(v)}`)}
+        onBlur={() => calls.push('blur')}
+      />,
+    );
+    const input = screen.getByLabelText('Date');
+    fireEvent.change(input, { target: { value: '05/04/24' } });
+    fireEvent.blur(input);
+    expect(calls).toEqual(['change:2024-04-05', 'blur']);
+  });
+
+  it('with maxDate a two-digit year after it reads as 19yy', () => {
+    const handleChange = vi.fn();
+    render(<DateField today="2026-10-13" maxDate="2026-10-13" label="Date" onValueChange={handleChange} />);
+    const input = screen.getByLabelText('Date');
+    fireEvent.change(input, { target: { value: '05/04/90' } });
+    fireEvent.blur(input);
+    expect(input).toHaveValue('05/04/1990');
+    expect(handleChange).toHaveBeenCalledWith('1990-04-05');
+  });
+
+  it('without maxDate a two-digit year reads as 20yy', () => {
+    const handleChange = vi.fn();
+    render(<DateField today="2026-10-13" label="Date" onValueChange={handleChange} />);
+    const input = screen.getByLabelText('Date');
+    fireEvent.change(input, { target: { value: '05/04/90' } });
+    fireEvent.blur(input);
+    expect(handleChange).toHaveBeenCalledWith('2090-04-05');
+  });
+
+  it('range: Enter expands and commits two-digit years', () => {
+    const handleChange = vi.fn();
+    render(<DateField today="2026-10-13" range label="Period" onValueChange={handleChange} />);
+    const input = screen.getByLabelText('Period');
+    fireEvent.change(input, { target: { value: '01/10/26 – 15/10/26' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(input).toHaveValue('01/10/2026 – 15/10/2026');
+    expect(handleChange).toHaveBeenCalledWith({ start: '2026-10-01', end: '2026-10-15' });
+  });
+
+  it('range: maxDate pivots two-digit years to 19yy', () => {
+    const handleChange = vi.fn();
+    render(<DateField today="2026-10-13" maxDate="2026-10-13" range label="Period" onValueChange={handleChange} />);
+    const input = screen.getByLabelText('Period');
+    fireEvent.change(input, { target: { value: '01/10/90 – 15/10/90' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(handleChange).toHaveBeenCalledWith({ start: '1990-10-01', end: '1990-10-15' });
   });
 });
 
@@ -49,10 +149,10 @@ describe('DateField typed ranges', () => {
     return { onValueChange, input: screen.getByLabelText('Period') };
   };
 
-  it('digits only: six start digits, then " – " is inserted', () => {
+  it('digits only: eight start digits, then " – " is inserted', () => {
     const { input, onValueChange } = setup();
-    fireEvent.change(input, { target: { value: '131026151026' } });
-    expect(input).toHaveValue('13/10/26 – 15/10/26');
+    fireEvent.change(input, { target: { value: '1310202615102026' } });
+    expect(input).toHaveValue('13/10/2026 – 15/10/2026');
     expect(onValueChange).toHaveBeenLastCalledWith({ start: '2026-10-13', end: '2026-10-15' });
   });
 
@@ -71,18 +171,20 @@ describe('DateField typed ranges', () => {
 
   it('never emits an end before the start (transient while typing a four-digit end year)', () => {
     const { input, onValueChange } = setup();
-    fireEvent.change(input, { target: { value: '13/10/26 – 15/10/20' } });
+    fireEvent.change(input, { target: { value: '13/10/2026 – 15/10/2020' } });
     expect(onValueChange).not.toHaveBeenCalled();
-    fireEvent.change(input, { target: { value: '13/10/26 – 15/10/2026' } });
+    fireEvent.change(input, { target: { value: '13/10/2026 – 15/10/2026' } });
     expect(onValueChange).toHaveBeenCalledTimes(1);
     expect(onValueChange).toHaveBeenCalledWith({ start: '2026-10-13', end: '2026-10-15' });
   });
 
-  it('single fields accept dd/mm/yy and dd/mm/yyyy', () => {
+  it('single fields accept dd/mm/yy (on blur) and dd/mm/yyyy', () => {
     const onValueChange = vi.fn();
     render(<DateField today="2026-10-13" label="Date" onValueChange={onValueChange} />);
     const input = screen.getByLabelText('Date');
     fireEvent.change(input, { target: { value: '131026' } });
+    fireEvent.blur(input);
+    expect(input).toHaveValue('13/10/2026');
     expect(onValueChange).toHaveBeenLastCalledWith('2026-10-13');
     fireEvent.change(input, { target: { value: '13102027' } });
     expect(input).toHaveValue('13/10/2027');
@@ -114,14 +216,14 @@ describe('DateField component', () => {
   it('renders single date field with formatted initial value', () => {
     render(<DateField today={TODAY} label="Due date" defaultValue="2026-10-25" />);
     const input = screen.getByLabelText('Due date');
-    expect(input).toHaveValue('25/10/26');
+    expect(input).toHaveValue('25/10/2026');
   });
 
   it('auto-formats input as user types digits in uncontrolled mode with onValueChange emitting ISO', () => {
     const handleChange = vi.fn();
     render(<DateField today={TODAY} label="Date" defaultValue="2026-01-01" onValueChange={handleChange} />);
     const input = screen.getByLabelText('Date');
-    expect(input).toHaveValue('01/01/26');
+    expect(input).toHaveValue('01/01/2026');
 
     // Partial input does not fire onValueChange
     fireEvent.change(input, { target: { value: '01' } });
@@ -139,13 +241,13 @@ describe('DateField component', () => {
       <DateField today={TODAY} label="Due date" value="2026-10-10" onValueChange={handleValueChange} />,
     );
     const input = screen.getByLabelText('Due date');
-    expect(input).toHaveValue('10/10/26');
+    expect(input).toHaveValue('10/10/2026');
 
     fireEvent.change(input, { target: { value: '15102026' } });
     expect(handleValueChange).toHaveBeenCalledWith('2026-10-15');
 
     rerender(<DateField today={TODAY} label="Due date" value="2026-10-15" onValueChange={handleValueChange} />);
-    expect(input).toHaveValue('15/10/26');
+    expect(input).toHaveValue('15/10/2026');
   });
 
   it('reports the empty value when the text is deleted (uncontrolled)', () => {
@@ -235,15 +337,15 @@ describe('DateField component', () => {
     );
 
     const input = screen.getByLabelText('Period');
-    expect(input).toHaveValue('01/10/26 – 15/10/26');
+    expect(input).toHaveValue('01/10/2026 – 15/10/2026');
 
     // Type new start and end digits
-    fireEvent.change(input, { target: { value: '051026' } });
-    expect(input).toHaveValue('05/10/26 – ');
+    fireEvent.change(input, { target: { value: '05102026' } });
+    expect(input).toHaveValue('05/10/2026 – ');
 
-    fireEvent.change(input, { target: { value: '05102620' } });
-    fireEvent.change(input, { target: { value: '051026201026' } });
-    expect(input).toHaveValue('05/10/26 – 20/10/26');
+    fireEvent.change(input, { target: { value: '0510202620' } });
+    fireEvent.change(input, { target: { value: '0510202620102026' } });
+    expect(input).toHaveValue('05/10/2026 – 20/10/2026');
     expect(handleValueChange).toHaveBeenCalledWith({
       start: '2026-10-05',
       end: '2026-10-20',
@@ -285,7 +387,7 @@ describe('DateField component', () => {
     fireEvent.click(screen.getAllByRole('button', { name: '5' })[0]);
 
     expect(handleValueChange).toHaveBeenCalledWith({ start: '2026-10-05', end: '2026-10-20' });
-    expect(screen.getByLabelText('Period')).toHaveValue('05/10/26 – 20/10/26');
+    expect(screen.getByLabelText('Period')).toHaveValue('05/10/2026 – 20/10/2026');
   });
 
   it('starts a new range on the first tap when a start date is already set', () => {
@@ -304,7 +406,7 @@ describe('DateField component', () => {
     fireEvent.click(screen.getAllByRole('button', { name: '5' })[0]);
 
     expect(handleValueChange).not.toHaveBeenCalled();
-    expect(screen.getByLabelText('Period')).toHaveValue('05/10/26 – ');
+    expect(screen.getByLabelText('Period')).toHaveValue('05/10/2026 – ');
   });
 
   it('opens calendar and allows selecting date in single mode emitting ISO', () => {
@@ -385,5 +487,22 @@ describe('size', () => {
     const input = screen.getByLabelText('Birth');
     expect(input.closest('.h-control-xl')).not.toBeNull();
     expect(input).toHaveClass('text-body-lg');
+  });
+});
+
+describe('DateField warning', () => {
+  it('shows the warning message with an amber border, not invalid', () => {
+    const { container } = render(<DateField today="2026-10-13" label="Date" warning="In the future" />);
+    expect(screen.getByText('In the future')).toHaveClass('text-warning');
+    expect(container.querySelector('.border-warning')).toBeInTheDocument();
+    const input = screen.getByLabelText('Date');
+    expect(input).not.toHaveAttribute('aria-invalid');
+    expect(input).toHaveAttribute('aria-describedby', screen.getByText('In the future').id);
+  });
+
+  it('error wins over warning', () => {
+    render(<DateField today="2026-10-13" label="Date" error="Invalid" warning="In the future" />);
+    expect(screen.queryByText('In the future')).not.toBeInTheDocument();
+    expect(screen.getByText('Invalid')).toHaveClass('text-danger');
   });
 });

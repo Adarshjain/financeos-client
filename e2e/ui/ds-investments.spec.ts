@@ -17,9 +17,9 @@ const VIEWPORTS = [
 const shown = (locator: Locator) => locator.locator('visible=true').first();
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-/** "2026-10-03" as the date field types it ("03/10/2026") and shows it ("03/10/26"), the server message ("3 Oct 2026") and a history row ("3 Oct", plus the two-digit year when it is not the current one). */
+/** "2026-10-03" as the date field types it ("03/10/2026") and shows it ("03/10/2026"), the server message ("3 Oct 2026") and a history row ("3 Oct", plus the two-digit year when it is not the current one). */
 const asField = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
-const asShown = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(2, 4)}`;
+const asShown = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
 const asLong = (iso: string) => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`;
 const asShort = (iso: string) => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]}${iso.slice(0, 4) === istToday().slice(0, 4) ? '' : ` ${iso.slice(2, 4)}`}`;
 

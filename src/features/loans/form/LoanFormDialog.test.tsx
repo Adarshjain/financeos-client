@@ -66,8 +66,8 @@ describe('LoanFormDialog', () => {
     }
     expect(screen.getByRole('combobox', { name: /^Loan type/ })).toHaveTextContent('Home loan');
     expect(screen.getByRole('combobox', { name: /^Rate type/ })).toHaveTextContent('Fixed rate');
-    expect(screen.getByLabelText('Disbursal date')).toHaveValue('13/10/26');
-    expect(screen.getByLabelText('First EMI due')).toHaveValue('13/10/26');
+    expect(screen.getByLabelText('Disbursal date')).toHaveValue('13/10/2026');
+    expect(screen.getByLabelText('First EMI due')).toHaveValue('13/10/2026');
     expect(field('EMI amount')).toHaveAttribute('placeholder', 'Auto if blank');
   });
 

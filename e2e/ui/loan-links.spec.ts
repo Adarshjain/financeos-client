@@ -19,10 +19,10 @@ import { expect, test } from '../fixtures/test';
 
 /** dd/mm/yyyy (the typed form) from an ISO date. */
 const typed = (iso: string) => iso.split('-').reverse().join('/');
-/** dd/mm/yy (how the date field shows a value) from an ISO date. */
+/** dd/mm/yyyy (how the date field shows a value) from an ISO date. */
 const shown = (iso: string) => {
   const [y, m, d] = iso.split('-');
-  return `${d}/${m}/${y.slice(2)}`;
+  return `${d}/${m}/${y}`;
 };
 
 /** Searches the (already-open) transaction picker for `description` and picks its row. */

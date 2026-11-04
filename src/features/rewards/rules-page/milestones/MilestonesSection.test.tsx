@@ -176,8 +176,8 @@ describe('MilestonesSection', () => {
     save();
     expect(toast).toHaveBeenLastCalledWith('A one-time milestone needs both a start date and a deadline.', { tone: 'danger' });
     choose('Cardholder scope', 'Arjun (•••• 4521)');
-    expect(screen.getByLabelText('Offer start')).toHaveValue('10/01/26');
-    expect(screen.getByLabelText('Offer deadline')).toHaveValue('10/04/26');
+    expect(screen.getByLabelText('Offer start')).toHaveValue('10/01/2026');
+    expect(screen.getByLabelText('Offer deadline')).toHaveValue('10/04/2026');
     save();
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({ windowType: 'ONE_TIME', cardholderId: 'h1', activeFrom: '2026-01-10', activeTo: '2026-04-10' }),

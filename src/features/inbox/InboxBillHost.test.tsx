@@ -68,7 +68,7 @@ describe('InboxBillHost', () => {
     expect(screen.getByText('Amex Platinum Travel ••1008 · statement of 3 Oct')).toBeInTheDocument();
     expect(screen.getByLabelText('Total due (₹)')).toHaveValue('33900');
     expect(screen.getByLabelText(/Minimum due/)).toHaveValue('1700');
-    expect(screen.getByLabelText('Due date')).toHaveValue('15/10/26');
+    expect(screen.getByLabelText('Due date')).toHaveValue('15/10/2026');
     fireEvent.change(screen.getByLabelText('Total due (₹)'), { target: { value: '34000' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save details' }));
     await waitFor(() =>

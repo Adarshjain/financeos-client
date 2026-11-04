@@ -15,6 +15,7 @@ Standard text input for forms, logins, and values.
 - `label?: React.ReactNode`: field label above the input. Plain text, not a `<label>`: tapping it does not focus the input; the input points at it with `aria-labelledby` (TextArea, DateField and Select the same). Disabled replaces hover, focus and error styling.
 - `helper?: React.ReactNode`: helpful hint text below the input.
 - `error?: React.ReactNode`: error message below the input.
+- `warning?: React.ReactNode`: warning message below the input, in `warning`, with a `warning` border and focus ring; the field is not invalid (no `aria-invalid`), and the message is linked by `aria-describedby` like the error. `error` wins when both are set. DateField, TextArea and Select take it the same way.
 - `optional?: boolean`: shows "(Optional)" next to the label.
 - `clearable?: boolean`: shows a ghost `sm` **Clear** text button at the end when text is present (owner, 2026-10-26; was a × icon). Buttons in the field (Clear, a suffix button such as DateField's calendar) pull out by their own padding, so their label or glyph sits on the field padding.
 - `clearLabel?: string`: the clear button's text (default `'Clear'`).
@@ -34,7 +35,7 @@ The search form:
 When `type="search"`, browser search cancel buttons are hidden, and `clearable` renders a Dinero clear button that resets value and restores focus.
 
 ## Variants
-- States: default, filled, placeholder (`ink-4`), focus (2px `focus-ring` only: the border keeps its 1px width and colour; the same on TextArea, DateField and the Select trigger), error (`danger` border and message), disabled.
+- States: default, filled, placeholder (`ink-4`), focus (2px `focus-ring` only: the border keeps its 1px width and colour; the same on TextArea, DateField and the Select trigger), error (`danger` border and message), warning (`warning` border and message), disabled.
 - Password input (`type="password"`) includes an integrated Show/Hide toggle button.
 - Numeric inputs (`inputMode="decimal" | "numeric"` or `type="number"`) format with `tabular-nums`.
 - Search input (`type="search"`) with search prefix and clear button.

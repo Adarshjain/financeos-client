@@ -57,7 +57,7 @@ describe('DividendAddDialog', () => {
   it('shows the form once the accounts and holdings arrive, with today as the pay date', async () => {
     renderWithQuery(<DividendAddDialog onClose={vi.fn()} />);
     expect(await screen.findByRole('button', { name: 'Record dividend' })).toBeInTheDocument();
-    expect(field('Pay date')).toHaveValue('13/10/26');
+    expect(field('Pay date')).toHaveValue('13/10/2026');
     expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
   });
 
@@ -96,7 +96,7 @@ describe('DividendAddDialog', () => {
     );
     await screen.findByRole('button', { name: 'Record dividend' });
     expect(field('Amount')).toHaveValue('500');
-    expect(field('Pay date')).toHaveValue('24/09/26');
+    expect(field('Pay date')).toHaveValue('24/09/2026');
     fireEvent.click(screen.getByRole('button', { name: 'Record dividend' }));
     await waitFor(() =>
       expect(http.PUT).toHaveBeenCalledWith('/api/v1/investments/dividends/{id}/transaction', {
@@ -133,7 +133,7 @@ describe('DividendEditDialog', () => {
     expect(field('Account')).toBeDisabled();
     expect(field('Amount')).toHaveValue('880');
     expect(field('TDS')).toHaveValue('88');
-    expect(field('Ex-date')).toHaveValue('10/07/26');
+    expect(field('Ex-date')).toHaveValue('10/07/2026');
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
   });
 

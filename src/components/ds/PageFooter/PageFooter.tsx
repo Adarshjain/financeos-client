@@ -6,6 +6,8 @@ import { Dialog, type DialogAction } from '../Dialog/Dialog';
 export interface PageFooterProps extends React.HTMLAttributes<HTMLDivElement> {
   /** The confirming action, far right ("Save", "Create dashboard"). */
   primary?: DialogAction;
+  /** Optional third action (ghost), first on the row, far left ("Back"). */
+  tertiary?: DialogAction;
   /** Cancel (ghost), before the primary. */
   secondary?: DialogAction;
   /** Docks the bar to the bottom of the viewport while the page scrolls (on a phone full-bleed, over the page's side padding). Default: it sits at the end of the page. */
@@ -24,11 +26,12 @@ export interface PageFooterProps extends React.HTMLAttributes<HTMLDivElement> {
  * Variants: `band` (default) and `plain` (no band from desk up, for a page whose column ends in its actions).
  */
 export const PageFooter = forwardRef<HTMLDivElement, PageFooterProps>(
-  ({ primary, secondary, sticky = false, variant = 'band', className, children, ...props }, ref) => (
+  ({ primary, secondary, tertiary, sticky = false, variant = 'band', className, children, ...props }, ref) => (
     <Dialog.Footer
       ref={ref}
       primary={primary}
       secondary={secondary}
+      tertiary={tertiary}
       className={cn(
         sticky && 'sticky bottom-0 z-sticky max-desk:-mx-space-16 max-desk:mt-auto max-desk:bg-surface',
         variant === 'plain' && 'desk:static desk:bg-transparent desk:border-t-0 desk:p-0',

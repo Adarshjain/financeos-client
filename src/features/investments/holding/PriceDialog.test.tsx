@@ -37,7 +37,7 @@ describe('PriceDialog editing a manual price', () => {
     open();
     const date = screen.getByLabelText('As of') as HTMLInputElement;
     expect(date.disabled).toBe(false);
-    expect(date.value).toBe('10/10/26');
+    expect(date.value).toBe('10/10/2026');
   });
 
   it('sends no asOf when only the amount changed', async () => {

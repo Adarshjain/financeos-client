@@ -3,9 +3,9 @@
 The only date input. Takes and emits ISO `yyyy-mm-dd` strings, displaying `dd/mm/yyyy` with a calendar in a Popover for picking.
 
 ## Use
-- Typing: digits only, slashes added as you type (`13102026` → `13/10/2026`). Dispatches `onValueChange` once a complete valid date is entered, and with the empty value (`''`, or `{ start: '', end: '' }` in range mode, the same as the calendar's Clear) when the text is deleted to empty. Partial text dispatches nothing.
+- Typing: digits only, slashes added as you type (`13102026` → `13/10/2026`). Dispatches `onValueChange` once a complete valid date is entered (a four-digit year; a typed two-digit year, `13/10/26`, waits for blur, where it expands to `13/10/2026` and is dispatched), and with the empty value (`''`, or `{ start: '', end: '' }` in range mode, the same as the calendar's Clear) when the text is deleted to empty. Partial text dispatches nothing.
 - Calendar: the calendar icon at the right opens a Popover with MonthCalendar; Today and Clear in its footer. Operates as a Popover at every size.
-- Range mode: **one field** holding both dates, "01/10/2026 – 13/10/2026". Typing fills start then end; the calendar picks start on the first tap and end on the second, with the range as a `brand-tint` band. Shows two months side by side on desktop (`hidden desk:block`) and one on phone.
+- Range mode: **one field** holding both dates, "01/10/2026 – 13/10/2026". Typing fills start then end (digits only: 8 start digits, then ` – ` is inserted); the calendar picks start on the first tap and end on the second, with the range as a `brand-tint` band. Shows two months side by side on desktop (`hidden desk:block`) and one on phone.
 - Never `<input type="date">`.
 
 ## Props
@@ -15,7 +15,7 @@ The only date input. Takes and emits ISO `yyyy-mm-dd` strings, displaying `dd/mm
 - `minDate`, `maxDate`: ISO `yyyy-mm-dd` bounding dates.
 - `today`: ISO `yyyy-mm-dd` string passed from caller (no device clock reads).
 - `open`, `defaultOpen`, `onOpenChange`: controlled/uncontrolled Popover state.
-- `name`, `disabled`, `optional`, `label`, `helper`, `error`: form and field metadata.
+- `name`, `disabled`, `optional`, `label`, `helper`, `error`, `warning` (as TextField: amber border and message, not invalid, `error` wins): form and field metadata.
 - `size`: `'md' | 'lg' | 'xl'` (default `'lg'`), passed to its TextField: the same heights and text as TextField's steps (owner, 2026-11-04).
 - `textStyle`: `'figure' | 'regular'` (default `'figure'`), passed to its TextField: an `xl` field's text in `figure` or `body-lg` (owner, 2026-11-04).
 
@@ -25,7 +25,7 @@ The input box is a TextField (same height for each `size`, focus ring and error 
 FieldFrame, Popover, MonthCalendar, Icon, Button.
 
 ## Variants
-- Single date, date range, with min/max (days outside are disabled), error, disabled, open.
+- Single date, date range, with min/max (days outside are disabled), error, warning, disabled, open.
 - Size: `md`, `lg` (default), `xl` (story "Extra large"); `xl` with `textStyle="regular"` (story "Extra large regular").
 
 - Phone (below `desk`): the calendar opens as a bottom sheet like the Dialog sheet (handle, the label as title); a range shows one month with Today, Clear and Done. Desktop keeps the dropdown.
