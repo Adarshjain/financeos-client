@@ -1022,9 +1022,12 @@ export interface ErrorResponse {
 // Ingestion
 export interface FileSummary {
   filename: string;
-  status: 'SUCCESS' | 'FAILED' | 'SKIPPED';
+  status: 'SUCCESS' | 'FAILED' | 'SKIPPED' | 'HELD';
   linesParsed: number;
   errorMessage: string | null;
+  errorCode?: 'PASSWORD_REQUIRED' | 'WRONG_PASSWORD' | 'UNREADABLE' | 'OTHER' | null;
+  /** Set when the file waits for an account (status HELD). */
+  heldUploadId?: string | null;
   warning?: string | null;
   created?: number;
   duplicates?: number;

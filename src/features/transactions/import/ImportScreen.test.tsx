@@ -29,6 +29,7 @@ const clearAllFiles = vi.fn();
 const addFiles = vi.fn();
 let form: Record<string, unknown> = {};
 vi.mock('./useIngestForm', () => ({ useIngestForm: () => form }));
+vi.mock('./HeldUploads', () => ({ HeldUploads: () => null }));
 
 import { ImportScreen } from './ImportScreen';
 

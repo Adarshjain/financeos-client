@@ -25,6 +25,10 @@ describe('notificationHref', () => {
     expect(notificationHref(n({ kind: 'statement_imported' }))).toBeNull();
   });
 
+  it('upload_held opens the import page', () => {
+    expect(notificationHref(n({ kind: 'upload_held' }))).toBe('/transactions/import');
+  });
+
   it('bill_reminder opens the card account, emi_reminder opens the loan', () => {
     expect(notificationHref(n({ kind: 'bill_reminder', refs: { accountId: 'a1' } as never }))).toBe('/accounts/a1');
     expect(notificationHref(n({ kind: 'bill_reminder' }))).toBeNull();

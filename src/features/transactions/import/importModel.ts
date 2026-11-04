@@ -19,6 +19,11 @@ export function parseImportAccount(params: SearchParamsRecord): string | undefin
   return first(params.account);
 }
 
+/** `?held=`: a held file to scroll to and highlight (the Inbox row links here). */
+export function parseImportHeld(params: SearchParamsRecord): string | undefined {
+  return first(params.held);
+}
+
 /** The Import tab at a page of Recent imports, keeping the chosen account. */
 export function importUrl(opts: { page?: number; account?: string } = {}): string {
   const out = new URLSearchParams();
@@ -42,6 +47,9 @@ export function recentImportsSince(today: string): string {
 
 const JOB_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isJobId = (id: string) => JOB_ID.test(id);
+
+/** Where a held file waits for its account. */
+export const importHeldHref = (heldId: string) => appHref(`/transactions/import?held=${encodeURIComponent(heldId)}`);
 
 export const importJobHref = (jobId: string) => appHref(`/transactions/import/${encodeURIComponent(jobId)}`);
 

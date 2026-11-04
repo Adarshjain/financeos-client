@@ -8,31 +8,101 @@ import { Badge } from '@/components/ds/Badge/Badge';
 import { Banner } from '@/components/ds/Banner/Banner';
 import { Button } from '@/components/ds/Button/Button';
 import { Card } from '@/components/ds/Card/Card';
+import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
 import { GRID_GAP } from '@/components/ds/gridGap';
 import { KpiTile } from '@/components/ds/KpiTile/KpiTile';
 import { ListField } from '@/components/ds/ListField/ListField';
 import { Text } from '@/components/ds/Text/Text';
+import { TextField } from '@/components/ds/TextField/TextField';
 import { ActiveJobBody } from '@/features/jobs/ds/ActiveJobBody';
 import { JobActions } from '@/features/jobs/ds/JobActions';
 import { JobErrorBody } from '@/features/jobs/ds/JobErrorBody';
 import { isActiveJob, JOB_STATUS_BADGE } from '@/features/jobs/jobModel';
+import { emitJobStarted } from '@/features/jobs/jobsBus';
 import { startedLabel, tookLabel } from '@/features/jobs/jobsModel';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { subCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
+import { ActionError, unwrapAction } from '@/lib/actionResult';
+import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatCount, pluralize } from '@/lib/format';
 import type { FileSummary, JobResponse } from '@/lib/types';
 
-import { IMPORT_HREF, importFailureSummary, importJobHref, importJobTitle, importTotals, ingestResult } from './importModel';
+import { retryFileWithPassword } from './importActions';
+import { IMPORT_HREF, importFailureSummary, importHeldHref, importJobHref, importJobTitle, importTotals, ingestResult } from './importModel';
 
 const FILE_STATUS = {
   SUCCESS: { label: 'Done', tone: 'success' },
   SKIPPED: { label: 'Skipped', tone: 'warning' },
   FAILED: { label: 'Failed', tone: 'danger' },
+  HELD: { label: 'Needs an account', tone: 'warning' },
 } as const;
 
-function FileSection({ file }: { file: FileSummary }) {
+/** The password box for a file that is locked or opened with the wrong password; "Try again" starts a new import. */
+function PasswordRetry({ jobId, fileIndex, wrong }: { jobId: string; fileIndex: number; wrong: boolean }) {
+  const router = useRouter();
+  const id = React.useId();
+  const [password, setPassword] = React.useState('');
+  const [save, setSave] = React.useState(true);
+  const [pending, setPending] = React.useState(false);
+  const [error, setError] = React.useState<string | undefined>(wrong ? "That password didn't work." : undefined);
+
+  const submit = async () => {
+    if (!password) return;
+    setPending(true);
+    setError(undefined);
+    try {
+      const next = await unwrapAction(retryFileWithPassword(jobId, fileIndex, password, save));
+      emitJobStarted(next.id);
+      router.push(importJobHref(next.id));
+    } catch (e) {
+      setError(
+        e instanceof ActionError && e.status === 422 && e.code === 'WRONG_PASSWORD'
+          ? "That password didn't work."
+          : getErrorMessage(e, "Couldn't try the file again. Try again."),
+      );
+      setPending(false);
+    }
+  };
+
+  return (
+    <form
+      className="flex flex-col gap-space-8 p-space-16"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void submit();
+      }}
+    >
+      <TextField
+        type="password"
+        label="Statement password"
+        value={password}
+        onChange={(e) => {
+          setPassword(e.target.value);
+          setError(undefined);
+        }}
+        error={error}
+        disabled={pending}
+      />
+      <div className="flex items-center gap-space-8">
+        <Checkbox id={id} checked={save} onCheckedChange={(c) => setSave(c === true)} disabled={pending} />
+        <label htmlFor={id}>
+          <Text variant="body" as="span">
+            Save to this account
+          </Text>
+        </label>
+      </div>
+      <div>
+        <Button type="submit" size="sm" loading={pending} disabled={!password}>
+          Try again
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function FileSection({ file, jobId, fileIndex }: { file: FileSummary; jobId: string; fileIndex: number }) {
   const status = FILE_STATUS[file.status] ?? FILE_STATUS.FAILED;
   return (
     <Card
@@ -50,6 +120,18 @@ function FileSection({ file }: { file: FileSummary }) {
             <Banner tone={file.status === 'FAILED' ? 'danger' : 'warning'}>{file.errorMessage}</Banner>
           ) : null}
           {file.warning ? <Banner tone="warning">{file.warning}</Banner> : null}
+        </div>
+      ) : null}
+      {file.errorCode === 'PASSWORD_REQUIRED' || file.errorCode === 'WRONG_PASSWORD' ? (
+        <PasswordRetry jobId={jobId} fileIndex={fileIndex} wrong={file.errorCode === 'WRONG_PASSWORD'} />
+      ) : null}
+      {file.status === 'HELD' && file.heldUploadId ? (
+        <div className="p-space-16">
+          <Text variant="label" as="span">
+            <Button asChild variant="link" size="sm">
+              <Link href={importHeldHref(file.heldUploadId)}>Pick an account</Link>
+            </Button>
+          </Text>
         </div>
       ) : null}
     </Card>
@@ -136,7 +218,7 @@ function Body({ job }: { job: JobResponse }) {
             </Banner>
           ) : null}
           {(result?.fileDetails ?? []).map((f, i) => (
-            <FileSection key={`${i}-${f.filename}`} file={f} />
+            <FileSection key={`${i}-${f.filename}`} file={f} jobId={job.id} fileIndex={i} />
           ))}
         </>
       ) : null}

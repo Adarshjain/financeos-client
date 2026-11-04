@@ -19,6 +19,7 @@ import { Amount } from '@/components/organisms/Amount/Amount';
 import { DeleteStatementDialog } from './DeleteStatementDialog';
 import type { LineRowModel, StatementDetailModel } from './detailModel';
 import { EditDetailsDialog } from './EditDetailsDialog';
+import { MoveStatementDialog } from './MoveStatementDialog';
 
 const helper = createDataTableColumnHelper<LineRowModel>();
 
@@ -93,6 +94,7 @@ export interface StatementDetailCardProps {
 /** The right pane: the selected statement with its totals, its lines and its actions. */
 export function StatementDetailCard({ accountId, fy, model }: StatementDetailCardProps) {
   const [editOpen, setEditOpen] = React.useState(false);
+  const [moveOpen, setMoveOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
 
   return (
@@ -121,6 +123,7 @@ export function StatementDetailCard({ accountId, fy, model }: StatementDetailCar
           }
         >
           {model.isCard ? <Menu.Item onSelect={() => setEditOpen(true)}>Edit details</Menu.Item> : null}
+          <Menu.Item onSelect={() => setMoveOpen(true)}>Move to another account</Menu.Item>
           <Menu.Item tone="danger" onSelect={() => setDeleteOpen(true)}>
             Delete statement
           </Menu.Item>
@@ -196,6 +199,14 @@ export function StatementDetailCard({ accountId, fy, model }: StatementDetailCar
           }}
         />
       ) : null}
+      <MoveStatementDialog
+        open={moveOpen}
+        onOpenChange={setMoveOpen}
+        accountId={accountId}
+        statementId={model.statementId}
+        periodEndLabel={model.periodEndLabel}
+        fy={fy}
+      />
       <DeleteStatementDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
