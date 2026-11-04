@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,10 +39,25 @@ jobs:
 
       - run: npm run lint
 
-      - run: npm test
+  # Unit tests are the slowest step, so they run as parallel shards.
+  unit:
+    name: unit (${{ matrix.shard }}/4)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
 
-      # Last, because it is the slowest and the cheaper checks above localise a
-      # failure better.
-      - run: npm run build
-        env:
-          API_BASE_URL: http://localhost:6969
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx vitest run --shard=${{ matrix.shard }}/4
+
+  # No `npm run build` here: e2e.yml builds the client with the same
+  # API_BASE_URL in "Build server JAR and client", and Deploy builds with Vercel.
