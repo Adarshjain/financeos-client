@@ -1,3 +1,4 @@
+import type { Schemas } from '@/lib/api/types';
 import type { CategoryRef, CategorySource, SubcategoryRef } from '@/lib/categoryList.types';
 import type { Page } from '@/lib/pagination';
 import { FilterClause } from '@/lib/reports.types';
@@ -150,6 +151,8 @@ export type Transaction = TransactionBase & {
   reviewReasons?: ReviewReason[];
   appliedRuleId?: string | null;
   links?: TransactionLinkSummary[];
+  /** A link the server proposes for this transaction; null when none. */
+  suggestion?: Schemas['TransactionSuggestion'] | null;
   obligationRefs?: ObligationRef[];
   cardId?: string | null;
   cardLabel?: string | null;

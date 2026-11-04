@@ -144,23 +144,16 @@ export const payLoanInstallment = createDomainAction(
 
 // Auto-link suggestions
 
-export const loadLinkSuggestions = createDomainAction(
-  { fallbackError: "Couldn't load the suggestions. Try again." },
-  async (): Promise<Schemas['LinkSuggestionResponse'][]> => {
-    const { data } = await serverApi.GET('/api/v1/link-suggestions');
-    return (data ?? []) as Schemas['LinkSuggestionResponse'][];
-  },
-);
-
-/** Accepts one candidate: the server creates a USER link. */
+/** Accepts one candidate: the server creates a USER link (a lending suggestion settles the lending instead). */
 export const acceptLinkSuggestion = createDomainAction(
   { fallbackError: "Couldn't link the transactions. Try again." },
-  async (id: string, candidateId: string): Promise<Schemas['TransactionLinkResponse']> => {
+  async (id: string, candidateId: string): Promise<Schemas['TransactionLinkResponse'] | undefined> => {
     const { data } = await serverApi.POST('/api/v1/link-suggestions/{id}/accept', {
       params: { path: { id } },
       body: { candidateId },
     });
-    return data as Schemas['TransactionLinkResponse'];
+    // A lending suggestion settles the lending and answers 204 with no body.
+    return data as Schemas['TransactionLinkResponse'] | undefined;
   },
 );
 
