@@ -113,7 +113,7 @@ describe('SearchProvider', () => {
   it('lists the footer page Settings too', () => {
     renderShell();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
-    fireEvent.change(field(), { target: { value: 'se' } });
+    fireEvent.change(field(), { target: { value: 's' } });
     fireEvent.click(screen.getByRole('option', { name: 'Settings' }));
     expect(router.push).toHaveBeenCalledWith('/settings');
   });
@@ -121,7 +121,7 @@ describe('SearchProvider', () => {
   it('goes to a page and closes when its row is picked', () => {
     renderShell();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
-    fireEvent.change(field(), { target: { value: 'tr' } });
+    fireEvent.change(field(), { target: { value: 't' } });
     fireEvent.click(screen.getByRole('option', { name: 'Transactions' }));
     expect(router.push).toHaveBeenCalledWith('/transactions');
     expect(palette()).toBeNull();
@@ -130,7 +130,7 @@ describe('SearchProvider', () => {
   it('runs a Quick add action, opening its dialog, and closes', () => {
     renderShell();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
-    fireEvent.change(field(), { target: { value: 'tr' } });
+    fireEvent.change(field(), { target: { value: 't' } });
     fireEvent.click(screen.getByRole('option', { name: 'Trade' }));
     expect(openDialog).toHaveBeenCalledWith('trade');
     expect(router.push).not.toHaveBeenCalled();
@@ -194,13 +194,13 @@ describe('SearchProvider', () => {
     expect(palette()).toBeNull();
   });
 
-  it('shows the nudge for 1 or 2 characters and not from 3', async () => {
+  it('shows the nudge for 1 character and not from 2', async () => {
     renderShell();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    fireEvent.change(field(), { target: { value: 't' } });
+    expect(screen.getByText(/Type 2 or more characters/)).toBeInTheDocument();
     fireEvent.change(field(), { target: { value: 'tr' } });
-    expect(screen.getByText(/Type 3 or more characters/)).toBeInTheDocument();
-    fireEvent.change(field(), { target: { value: 'tra' } });
-    expect(screen.queryByText(/Type 3 or more characters/)).toBeNull();
+    expect(screen.queryByText(/Type 2 or more characters/)).toBeNull();
   });
 
   describe('Mark paid', () => {
