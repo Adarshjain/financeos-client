@@ -199,6 +199,19 @@ export function useGmailConnect() {
     }
   };
 
+  const handleSenderToggle = async (sender: GmailSenderResponse, enabled: boolean): Promise<boolean> => {
+    try {
+      await updateSenderMutation.mutateAsync({
+        id: sender.id,
+        body: { name: sender.name ?? undefined, senderAddress: sender.senderAddress, enabled },
+      });
+      return true;
+    } catch (err) {
+      toastError(err, "Couldn't update the sender. Try again.");
+      return false;
+    }
+  };
+
   const handleSenderDelete = async (id: string): Promise<boolean> => {
     try {
       await deleteSenderMutation.mutateAsync(id);
@@ -242,6 +255,7 @@ export function useGmailConnect() {
     openAddSenderDialog,
     openEditSenderDialog,
     handleSenderSubmit,
+    handleSenderToggle,
     handleSenderDelete,
   };
 }

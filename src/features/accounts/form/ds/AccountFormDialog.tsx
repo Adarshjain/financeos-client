@@ -95,7 +95,10 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
 
   const type = values.type;
   const isCard = type === AccountType.CREDIT_CARD;
-  const { data: allAccounts } = useAccounts(undefined, { enabled: isCard });
+  const syncsMail = isCard || type === AccountType.BANK_ACCOUNT;
+  // Creating a bank or card account also needs the list, to know whether its bank is new to the user.
+  const { data: allAccounts } = useAccounts(undefined, { enabled: isCard || (!isEdit && syncsMail) });
+  const existingBankIds = allAccounts ? allAccounts.map((a) => ('bank' in a ? a.bank : null)).filter((b): b is string => !!b) : undefined;
   // The edited account goes first so its own pool is offered before the list loads.
   const pools = distinctLimitPools([...(account ? [account] : []), ...(allAccounts ?? [])]);
   const currentPoolId = account?.type === AccountType.CREDIT_CARD ? account.limitPool?.id : undefined;
@@ -332,6 +335,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
                 values={values}
                 errors={errors}
                 isEdit={isEdit}
+                existingBankIds={existingBankIds}
                 today={today}
                 pools={pools}
                 poolOthers={otherPoolMembers(pools, values.limitPoolChoice, currentPoolId)}

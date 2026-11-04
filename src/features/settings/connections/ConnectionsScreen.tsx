@@ -70,6 +70,8 @@ export function ConnectionsScreen({
             senders={g.senders}
             onOpenAddSender={g.openAddSenderDialog}
             onOpenEditSender={g.openEditSenderDialog}
+            onToggleSender={g.handleSenderToggle}
+            onRemoveSender={g.handleSenderDelete}
           />
         <RecentSyncJobsCard />
       </div>
