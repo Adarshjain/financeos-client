@@ -66,7 +66,7 @@ test.describe('/ds app lock (@ui)', () => {
     // No click: the passkey prompt opens on its own and returns to the page.
     await page.waitForURL('**/settings');
     await expect(toggle(page)).toHaveAttribute('aria-checked', 'true');
-    expect(visited.some((u) => u.includes('/locked?from=%2Fsettings%2Fapp-lock'))).toBe(true);
+    expect(visited.some((u) => u.includes('/locked?from=%2Fsettings'))).toBe(true);
   });
 
   test('when the automatic prompt is refused the screen stays quiet; tapping Unlock then works', async ({ page }) => {
@@ -133,7 +133,7 @@ test.describe('/ds app lock (@ui)', () => {
     await heartbeat;
 
     await page.goto(`${E2E_CLIENT_URL}/settings`);
-    await expect(page).toHaveURL(/\/settings\/app-lock$/);
+    await expect(page).toHaveURL(/\/settings$/);
     await expect(toggle(page)).toHaveAttribute('aria-checked', 'true');
   });
 
@@ -189,7 +189,7 @@ test.describe('/ds app lock (@ui)', () => {
     await page.waitForTimeout(2300);
     await page.request.post(`${E2E_CLIENT_URL}/api/v1/app-lock/lock`);
     await page.reload();
-    await expect(page).toHaveURL(/\/settings\/app-lock$/);
+    await expect(page).toHaveURL(/\/settings$/);
     await expect(toggle(page)).toHaveAttribute('aria-checked', 'false');
     await page.goto(`${E2E_CLIENT_URL}/loans`);
     await expect(page).toHaveURL(/\/loans$/);
