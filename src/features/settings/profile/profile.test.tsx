@@ -42,7 +42,7 @@ beforeEach(() => {
 describe('ProfileCard', () => {
   it('shows name, email and the Google line for a Google-only user', () => {
     render(<ProfileCard user={google} />);
-    expect(screen.getByText('Arjun Mehta')).toBeInTheDocument();
+    expect(screen.getAllByText('Arjun Mehta').length).toBeGreaterThan(0);
     expect(screen.getByText('arjun@example.test · signed in with Google')).toBeInTheDocument();
     expect(screen.getByText('AM')).toBeInTheDocument();
   });

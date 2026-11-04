@@ -43,6 +43,7 @@
   "methods": {
     "authApi": [
       "deleteAccount",
+      "finishHello",
       "getCurrentUser",
       "getDeletionSummary",
       "googleStart",

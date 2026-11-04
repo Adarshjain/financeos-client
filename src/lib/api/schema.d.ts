@@ -3114,6 +3114,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/hello/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["finishHello"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/profile": {
         parameters: {
             query?: never;
@@ -6378,6 +6394,7 @@ export interface components {
         HelloRequest: {
             birthDate?: string | null;
             displayName?: string | null;
+            finish?: boolean | null;
             termsAccepted?: boolean;
         };
         HoldingDetailResponse: {
@@ -9414,6 +9431,7 @@ export interface components {
             email: string;
             hasPassword: boolean;
             helloDone: boolean;
+            helloProfileSaved: boolean;
             /** Format: uuid */
             id: string;
             pictureUrl?: string | null;
@@ -17118,6 +17136,35 @@ export interface operations {
                 "application/json": components["schemas"]["HelloRequest"];
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    finishHello: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

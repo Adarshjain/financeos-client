@@ -13,6 +13,9 @@ export const NAME_WARNING =
   "Without it we can't open statements your bank locks with your name. We'll still find your accounts from emails.";
 export const BIRTH_WARNING =
   "Without it we can't open statements your bank locks with it. We'll still find your accounts from emails, but card names and limits may stay empty.";
+export const SKIP_DIALOG_TITLE = 'Continue without Gmail?';
+export const SKIP_DIALOG_BODY =
+  'FinanceOS finds your accounts and transactions in your bank emails. It only reads them; it never sends or deletes mail. Without Gmail, you add everything yourself. You can connect it later in Settings.';
 export const CONSENT_ERROR = 'Agree to the Terms and Privacy policy to continue.';
 
 export function missingFields(input: Pick<HelloInput, 'name' | 'birthDate'>) {
@@ -33,6 +36,11 @@ export function pressOutcome(input: HelloInput): 'warn' | 'consent' | 'submit' {
   const missing = missingFields(input);
   if (!input.warned && (missing.name || missing.birthDate)) return 'warn';
   return input.consent ? 'submit' : 'consent';
+}
+
+/** Refresh on step 2 stays on step 2: terms saved, onboarding still open, and a two-step flow (no Gmail yet). */
+export function startStep(helloProfileSaved: boolean, hasGmail: boolean): 1 | 2 {
+  return helloProfileSaved && !hasGmail ? 2 : 1;
 }
 
 export function stepCounterVisible(hasGmail: boolean): boolean {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { BIRTH_WARNING, helloView, NAME_WARNING, pressOutcome, stepCounterVisible } from './helloModel';
+import { BIRTH_WARNING, helloView, NAME_WARNING, pressOutcome, startStep, stepCounterVisible } from './helloModel';
 
 const base = { name: 'Asha Rao', birthDate: '1990-04-05', consent: true, warned: false, onlyScreen: false };
 
@@ -54,5 +54,14 @@ describe('stepCounterVisible', () => {
   it('shows only when Connect Gmail will follow', () => {
     expect(stepCounterVisible(false)).toBe(true);
     expect(stepCounterVisible(true)).toBe(false);
+  });
+});
+
+describe('startStep', () => {
+  it('resumes on step 2 only when step 1 is saved and Gmail is not connected', () => {
+    expect(startStep(true, false)).toBe(2);
+    expect(startStep(false, false)).toBe(1);
+    expect(startStep(true, true)).toBe(1);
+    expect(startStep(false, true)).toBe(1);
   });
 });

@@ -4,9 +4,9 @@ import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
-import { Button } from '@/components/ds/Button/Button';
 import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
 import { DateField } from '@/components/ds/DateField/DateField';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
 import { Highlight } from '@/components/ds/Highlight/Highlight';
 import { PageFooter } from '@/components/ds/PageFooter/PageFooter';
 import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
@@ -24,13 +24,16 @@ import {
   NAME_CAPTION_GOOGLE,
   NAME_LABEL,
 } from '../birthDate';
-import { startGmailOAuthToHome, submitHello } from './helloActions';
+import { finishHello, startGmailOAuthToHome, submitHello } from './helloActions';
 import {
   BIRTH_WARNING,
   CONSENT_ERROR,
   helloView,
   NAME_WARNING,
   pressOutcome,
+  SKIP_DIALOG_BODY,
+  SKIP_DIALOG_TITLE,
+  startStep,
   stepCounterVisible,
 } from './helloModel';
 
@@ -41,6 +44,8 @@ export interface HelloScreenProps {
   birthDate: string | null;
   birthDateFromGoogle: boolean;
   hasGmail: boolean;
+  /** Step 1 is already saved (terms accepted) but onboarding is open: resume on step 2. */
+  helloProfileSaved?: boolean;
   today: string;
 }
 
@@ -55,17 +60,20 @@ export function HelloScreen({
   birthDate,
   birthDateFromGoogle,
   hasGmail,
+  helloProfileSaved = false,
   today,
 }: HelloScreenProps) {
   const router = useRouter();
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2>(startStep(helloProfileSaved, hasGmail));
   const [name, setName] = useState(displayName ?? '');
   const [birth, setBirth] = useState(birthDateFieldValue(birthDate));
-  const [consent, setConsent] = useState(false);
+  const [consent, setConsent] = useState(helloProfileSaved);
   const [warned, setWarned] = useState(false);
   const [consentError, setConsentError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [connecting, setConnecting] = useState(false);
+  const [skipping, setSkipping] = useState(false);
+  const [skipOpen, setSkipOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const view = helloView({
@@ -100,6 +108,8 @@ export function HelloScreen({
     const result = await submitHello({
       displayName: name.trim() || undefined,
       birthDate: birth || (keepsPartial ? undefined : ''),
+      // Two steps: onboarding finishes at Skip or a connected Gmail. One step: this is the end.
+      finish: hasGmail ? undefined : false,
     });
     if (!result.success) {
       setError(result.error.message);
@@ -114,7 +124,21 @@ export function HelloScreen({
     setStep(2);
   };
 
+  const skip = async () => {
+    setSkipping(true);
+    setError(null);
+    const result = await finishHello();
+    if (!result.success) {
+      setSkipOpen(false);
+      setError(result.error.message);
+      setSkipping(false);
+      return;
+    }
+    home();
+  };
+
   const connect = async () => {
+    setSkipOpen(false);
     setConnecting(true);
     setError(null);
     const result = await startGmailOAuthToHome();
@@ -134,7 +158,7 @@ export function HelloScreen({
 
   // Top row, body, then the footer pinned to the bottom on a phone; a centred column on desktop.
   const shell = (
-    top: { back?: () => void; counter: string; progress: number } | null,
+    top: { counter: string; progress: number } | null,
     body: React.ReactNode,
     footer: React.ReactNode
   ) => (
@@ -142,11 +166,6 @@ export function HelloScreen({
       <div className="w-full flex-1 desk:flex-none desk:max-w-container-md flex flex-col px-space-16 pt-space-16">
         {top ? (
           <div className="flex items-center gap-space-10 pb-space-8">
-            {top.back ? (
-              <Button variant="link" onClick={top.back} disabled={connecting}>
-                Back
-              </Button>
-            ) : null}
             <ProgressBar className="flex-1" value={top.progress} />
             <Text variant="caption" tone="ink-3">
               {top.counter}
@@ -171,8 +190,22 @@ export function HelloScreen({
 
   if (step === 2) {
     return shell(
-      { back: () => setStep(1), counter: '2 of 2', progress: 100 },
+      { counter: '2 of 2', progress: 100 },
       <>
+        <Dialog open={skipOpen} onOpenChange={(o) => !skipping && setSkipOpen(o)}>
+          <Dialog.Content
+            size="sm"
+            title={SKIP_DIALOG_TITLE}
+            secondary={{ label: 'Skip for now', onSelect: skip, loading: skipping }}
+            primary={{ label: 'Connect Gmail', onSelect: connect, disabled: skipping }}
+          >
+            <Dialog.Body>
+              <Text variant="body" tone="ink-2">
+                {SKIP_DIALOG_BODY}
+              </Text>
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog>
         <div className="flex flex-col gap-space-8">
           {headline('Connect the Gmail your ', 'bank', ' writes to')}
           <Text variant="body" tone="ink-3">
@@ -211,10 +244,12 @@ export function HelloScreen({
       <PageFooter
         sticky
         variant="plain"
-        secondary={{ label: 'Skip', onSelect: home, disabled: connecting }}
+        tertiary={{ label: 'Back', onSelect: () => setStep(1), disabled: connecting || skipping }}
+        secondary={{ label: 'Skip', onSelect: () => setSkipOpen(true), disabled: connecting }}
         primary={{
           label: connecting ? 'Opening Google…' : 'Connect Gmail',
           loading: connecting,
+          disabled: skipping,
           onSelect: connect,
         }}
       />
@@ -247,21 +282,15 @@ export function HelloScreen({
           size="xl"
           textStyle="regular"
           label={NAME_LABEL}
+          placeholder="Your full name"
           name="displayName"
           autoComplete="name"
           maxLength={MAX_NAME_LENGTH}
           value={name}
           onValueChange={setName}
           disabled={saving}
-          helper={
-            view.nameWarning ? (
-              <Text as="span" variant="caption" tone="warning">
-                {NAME_WARNING}
-              </Text>
-            ) : nameFromGoogle ? (
-              NAME_CAPTION_GOOGLE
-            ) : undefined
-          }
+          warning={view.nameWarning ? NAME_WARNING : undefined}
+          helper={nameFromGoogle ? NAME_CAPTION_GOOGLE : undefined}
         />
 
         <DateField
@@ -275,15 +304,8 @@ export function HelloScreen({
           value={birth}
           onValueChange={(v) => setBirth(typeof v === 'string' ? v : '')}
           disabled={saving}
-          helper={
-            view.birthWarning ? (
-              <Text as="span" variant="caption" tone="warning">
-                {BIRTH_WARNING}
-              </Text>
-            ) : birthDateFromGoogle && birth ? (
-              BIRTH_CAPTION_GOOGLE
-            ) : undefined
-          }
+          warning={view.birthWarning ? BIRTH_WARNING : undefined}
+          helper={birthDateFromGoogle && birth ? BIRTH_CAPTION_GOOGLE : undefined}
         />
 
         <Banner tone="neutral">
