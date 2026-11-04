@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 
-import { Banner } from '@/components/ds/Banner/Banner';
 import { GRID_GAP } from '@/components/ds/gridGap';
 import { Hero } from '@/components/ds/Hero/Hero';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
@@ -40,6 +39,7 @@ import {
   splitSuggestions,
   suggestionCount,
 } from './suggestionsModel';
+import { SuggestionsNote } from './SuggestionsNote';
 
 /** The Accounts list body: the KPI tiles and the four sections. The accounts are loaded; the other pieces stream in. */
 export function AccountsScreen({
@@ -78,12 +78,6 @@ export function AccountsScreen({
     body = (
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         {progressShown && scan ? <ScanProgressCard scan={scan} /> : null}
-        {foundCount > 0 ? (
-          <Banner tone="neutral" data-testid="suggestions-note">
-            We find these from your bank emails, so we can miss an account or get a detail wrong. Check each one
-            before you add it, and add any we missed yourself.
-          </Banner>
-        ) : null}
         {mode === 'full' ? (
         <Hero
           label="Net worth"
@@ -107,6 +101,7 @@ export function AccountsScreen({
           ]}
         />
         ) : null}
+        {foundCount > 0 ? <SuggestionsNote /> : null}
 
         <BankSection
           rows={sections.banks.open.map((a) => bankRow(a, today))}
