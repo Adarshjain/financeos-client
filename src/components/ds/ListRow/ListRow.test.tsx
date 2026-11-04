@@ -129,6 +129,15 @@ describe('ListRow', () => {
     expect(link.querySelector('svg')).toBeInTheDocument();
   });
 
+  it('fills the row and left-aligns when the asChild element is a button', () => {
+    render(
+      <ListRow asChild title="Name" trailing="Priya" chevron>
+        <button type="button" data-testid="row-button" />
+      </ListRow>,
+    );
+    expect(screen.getByTestId('row-button')).toHaveClass('w-full', 'text-left', 'flex');
+  });
+
   it('skips key interceptor when asChild is true', () => {
     const handleClick = vi.fn();
     render(
