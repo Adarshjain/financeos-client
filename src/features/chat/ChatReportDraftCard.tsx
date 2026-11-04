@@ -122,22 +122,22 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
     void queryClient.invalidateQueries({ queryKey: keys.reports.all });
     void queryClient.invalidateQueries({ queryKey: keys.dashboards.all });
   };
-  const remember = (next: DraftResult) => {
+  // Awaited inside each mutation, before the card shows the outcome, so a reload right after sees it too. Never rejects.
+  const remember = async (next: DraftResult): Promise<void> => {
     if (!conversationId || !messageId) return;
     const lost = () => showToast("Couldn't save this in the chat. After a reload the draft may show its actions again.", { tone: 'danger' });
-    saveDraftResult(conversationId, messageId, next).then((res) => (res.success ? undefined : lost()), lost);
+    await saveDraftResult(conversationId, messageId, next).then((res) => (res.success ? undefined : lost()), lost);
   };
   const finish = (next: DraftResult) => {
     setResult(next);
-    remember(next);
     refresh();
   };
   const undone = () => {
     setResult(null);
     setPrevious(null);
-    remember({ action: 'undone' });
     refresh();
   };
+  const deleted = (reportId: string): DraftResult => ({ action: 'deleted', reportId, reportName: draft.name ?? deleteName ?? undefined });
   const undoMutation = useMutation({
     mutationKey: UNDO_KEY,
     mutationFn: async ({ done, before }: { done: DraftResult; before: ReportResponse | null }) => {
@@ -149,6 +149,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
       }
       if ((done.action === 'saved' || done.action === 'saved-home') && done.reportId) await removeReport(done.reportId).catch(ignoreGone);
       if (done.action === 'updated' && before) await restoreReport(before);
+      await remember({ action: 'undone' });
     },
     onSuccess: undone,
     onError: (e) => showToast(getErrorMessage(e, "Couldn't undo. Try again."), { tone: 'danger' }),
@@ -173,6 +174,7 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
           showToast("Report saved, but couldn't add it to Home.", { tone: 'danger' });
         }
       }
+      await remember(done);
       return done;
     },
     onSuccess: (done) => {
@@ -193,7 +195,9 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
     mutationFn: async (reportId: string) => {
       const before = await getReport(reportId);
       await applyDraftUpdate(reportId, draft);
-      return { before, done: { action: 'updated', reportId, reportName: draft.name } as DraftResult };
+      const done: DraftResult = { action: 'updated', reportId, reportName: draft.name };
+      await remember(done);
+      return { before, done };
     },
     onSuccess: ({ before, done }) => {
       setPrevious(before);
@@ -209,10 +213,13 @@ export function ChatReportDraftCard({ draft, draftResult, conversationId, messag
   };
 
   const removeMutation = useMutation({
-    mutationFn: (reportId: string) => removeReport(reportId),
+    mutationFn: async (reportId: string) => {
+      await removeReport(reportId);
+      await remember(deleted(reportId));
+    },
     onSuccess: (_data, reportId) => {
       setConfirming(false);
-      finish({ action: 'deleted', reportId, reportName: draft.name ?? deleteName ?? undefined });
+      finish(deleted(reportId));
     },
     onError: (e) => {
       setConfirming(false);
