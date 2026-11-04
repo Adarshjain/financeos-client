@@ -9012,6 +9012,7 @@ export interface components {
             categorySource?: "AUTO" | "LINK" | "RULE" | "USER" | null;
             isTransactionExcluded: boolean;
             previous: components["schemas"]["Previous"];
+            ruleKey?: string | null;
             subcategory?: components["schemas"]["SubcategoryRef"];
             /** Format: uuid */
             transactionId: string;

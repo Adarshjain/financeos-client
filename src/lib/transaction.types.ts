@@ -249,6 +249,8 @@ export interface SetCategoryResponse {
   categoryRuleId?: string | null;
   categorySetAt?: string | null;
   isTransactionExcluded: boolean;
+  /** The short payee key a "do the same next time" rule would match; null when none. */
+  ruleKey?: string | null;
   previous: {
     categoryKey?: string | null;
     subcategoryKey?: string | null;
