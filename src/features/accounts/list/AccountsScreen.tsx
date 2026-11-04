@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 
+import { Banner } from '@/components/ds/Banner/Banner';
 import { GRID_GAP } from '@/components/ds/gridGap';
 import { Hero } from '@/components/ds/Hero/Hero';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
@@ -56,10 +57,11 @@ export function AccountsScreen({
   const scan = suggestions?.scan ?? null;
   const progressShown = isScanProgressShown(scan);
   const found = splitSuggestions(suggestions?.items ?? [], data.accounts ?? []);
+  const foundCount = suggestionCount(found.bank.bands) + suggestionCount(found.card.bands);
   const mode = accountsBodyMode({
     accountCount: data.accounts?.length ?? 0,
     progressShown,
-    suggestionCount: suggestionCount(found.bank.bands) + suggestionCount(found.card.bands),
+    suggestionCount: foundCount,
   });
   if (data.accounts === null) {
     body = <LoadError what="accounts" reference={data.errorReference} />;
@@ -76,6 +78,12 @@ export function AccountsScreen({
     body = (
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         {progressShown && scan ? <ScanProgressCard scan={scan} /> : null}
+        {foundCount > 0 ? (
+          <Banner tone="neutral" data-testid="suggestions-note">
+            We find these from your bank emails, so we can miss an account or get a detail wrong. Check each one
+            before you add it, and add any we missed yourself.
+          </Banner>
+        ) : null}
         {mode === 'full' ? (
         <Hero
           label="Net worth"
