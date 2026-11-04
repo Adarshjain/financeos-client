@@ -38,11 +38,11 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     expect(url.pathname).toBe('/settings/activity');
     expect(url.searchParams.get('status')).toBe('FAILED');
     expect(url.searchParams.get('type')).toBe('GMAIL_SYNC');
-    await expect(page.getByRole('tab', { name: 'Activity' })).toHaveAttribute('data-state', 'active', { timeout: 30000 });
+    await expect(page.getByRole('banner')).toContainText('Activity', { timeout: 30000 });
 
     await page.goto('/settings/jobs');
     await page.waitForURL('**/settings/activity');
-    await expect(page.getByRole('tab', { name: 'Activity' })).toHaveAttribute('data-state', 'active', { timeout: 30000 });
+    await expect(page.getByRole('banner')).toContainText('Activity', { timeout: 30000 });
   });
 
   test('old /loans/calendar redirects to /upcoming', async ({ page }) => {

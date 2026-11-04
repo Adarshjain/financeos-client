@@ -3,7 +3,6 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
-import { GRID_GAP } from '@/components/ds/gridGap';
 import type { LlmKeyDto } from '@/lib/api/types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
@@ -96,8 +95,8 @@ export function AiSettings() {
   return (
     <>
       {topError ? <Banner tone="danger" className="mb-space-8 desk:mb-space-16">{topError}</Banner> : null}
-      <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
-        <div className="desk:col-span-7">
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
+        <div>
           <YourKeysCard
             keys={s.keysList}
             testingKeyId={s.testingKeyId}
@@ -108,11 +107,11 @@ export function AiSettings() {
           />
         </div>
         {s.routing ? (
-          <div className="desk:col-span-7">
+          <div>
             <RoutingCard groups={groups} error={editing ? null : s.routingError} />
           </div>
         ) : null}
-        <div className="desk:col-span-5 desk:col-start-8 desk:row-start-1 desk:row-span-2">
+        <div>
           <HealthCard rows={healthRows} />
         </div>
       </div>

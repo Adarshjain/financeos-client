@@ -35,15 +35,20 @@ describe('useGmailMutations archive / unarchive', () => {
     vi.mocked(api.DELETE).mockResolvedValue({ data: undefined } as never);
   });
 
-  it('connection and sender writes do not refresh the router (the data is a query)', async () => {
+  it('sender writes do not refresh the router (the data is a query)', async () => {
     const { result } = setup();
-
-    await act(() => result.current.disconnectMutation.mutateAsync('c1'));
-    expect(routerRefresh).not.toHaveBeenCalled();
     await act(() => result.current.createSenderMutation.mutateAsync({} as never));
     await act(() => result.current.updateSenderMutation.mutateAsync({ id: 's1', body: {} as never }));
     await act(() => result.current.deleteSenderMutation.mutateAsync('s1'));
     expect(routerRefresh).not.toHaveBeenCalled();
+  });
+
+  it('disconnect and retry refresh the router too (they change the attention count)', async () => {
+    const { result } = setup();
+    await act(() => result.current.disconnectMutation.mutateAsync('c1'));
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+    await act(() => result.current.retryAttentionMutation.mutateAsync('l1'));
+    expect(routerRefresh).toHaveBeenCalledTimes(2);
   });
 
   it.each([

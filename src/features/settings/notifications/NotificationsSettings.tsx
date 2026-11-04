@@ -3,7 +3,6 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
-import { GRID_GAP } from '@/components/ds/gridGap';
 import { Text } from '@/components/ds/Text/Text';
 import { LoadError } from '@/features/shell/LoadError';
 import type { Account } from '@/lib/account.types';
@@ -34,18 +33,14 @@ function Loaded({ settings, cards, loans }: { settings: NotificationSettingsResp
     <Text variant="caption" tone="ink-3" as="p">
       Changes save automatically
     </Text>
-    <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
-      <div className="desk:col-span-7 flex flex-col gap-space-8 desk:gap-space-16">
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <PushCard settings={settings} browser={browser} />
         <BillsCard settings={settings} />
         <KindsCard settings={settings} group={statements} />
-      </div>
-      <div className="desk:col-span-5 flex flex-col gap-space-8 desk:gap-space-16">
         {rest.map((group) => (
           <KindsCard key={group.title} settings={settings} group={group} />
         ))}
         <MutedCard settings={settings} cards={cards} loans={loans} />
-      </div>
     </div>
     </div>
   );

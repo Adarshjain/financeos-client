@@ -16,7 +16,7 @@ vi.mock('@/features/shell/ShellPage', () => ({
     children,
   }: {
     title: string;
-    crumb?: string;
+    crumb?: React.ReactNode;
     phoneBackHref?: string;
     children: React.ReactNode;
   }) => (
@@ -53,8 +53,8 @@ beforeEach(() => {
 });
 
 const navs = () => screen.getAllByRole('navigation', { name: 'Settings sections' });
-const desktopNav = () => navs().find((n) => n.className.includes('hidden desk:flex'))!;
-const phoneNav = () => navs().find((n) => n.className.includes('desk:hidden'));
+const desktopNav = () => navs().find((n) => n.className.includes('hidden wide:flex'))!;
+const phoneNav = () => navs().find((n) => n.className.includes('wide:hidden'));
 const rowOf = (nav: HTMLElement, href: string) => within(nav).getAllByRole('link').find((r) => r.getAttribute('href') === href)!;
 
 describe('SettingsShell list', () => {
@@ -156,9 +156,9 @@ describe('SettingsShell layout', () => {
     expect(screen.getByTestId('crumb')).toHaveTextContent('Settings');
     expect(document.querySelector('[data-phone-back]')).toHaveAttribute('data-phone-back', '');
     expect(navs()).toHaveLength(2);
-    expect(phoneNav()!.className).toContain('desk:hidden');
-    expect(desktopNav().className).toContain('desk:w-container-xs');
-    expect(screen.getByText('body').parentElement!.className).toContain('hidden desk:block');
+    expect(phoneNav()!.className).toContain('wide:hidden');
+    expect(desktopNav().className).toContain('wide:w-container-xs');
+    expect(screen.getByText('body').parentElement!.className).toContain('hidden wide:block');
   });
 
   it('on a section: titled with it, back to /settings, no phone list, desktop list, content shown', () => {
@@ -168,7 +168,7 @@ describe('SettingsShell layout', () => {
     expect(document.querySelector('[data-phone-back]')).toHaveAttribute('data-phone-back', '/settings');
     expect(navs()).toHaveLength(1);
     expect(phoneNav()).toBeUndefined();
-    expect(desktopNav().className).toContain('hidden desk:flex');
+    expect(desktopNav().className).toContain('hidden wide:flex');
     expect(screen.getByText('body').parentElement!.className).not.toContain('hidden');
   });
 

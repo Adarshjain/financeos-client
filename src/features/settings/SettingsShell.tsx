@@ -157,7 +157,7 @@ function SettingsList({
 
 /**
  * The Settings frame, applied once by the settings route layout: a grouped list of sections and the
- * open section beside it. From `desk` both show (a fixed column and the content); on phone `/settings`
+ * open section beside it. From `wide` both show (a fixed column and the content) from `wide` (1200px); below `wide` `/settings`
  * shows only the list (nothing highlighted), and a section shows only its content under a top bar with a back arrow.
  */
 export function SettingsShell({
@@ -176,21 +176,22 @@ export function SettingsShell({
   return (
     <ShellPage
       title={index ? 'Settings' : active.label}
-      crumb={areaCrumb('settings')}
+      // Below `wide` a section is a drill-in: the crumb links back to the list (the arrow is phone-only).
+      crumb={index ? areaCrumb('settings') : <Link href={SETTINGS_HREF} prefetch={false}>{areaCrumb('settings')}</Link>}
       phoneBackHref={index ? undefined : SETTINGS_HREF}
     >
       <div className="flex items-start gap-space-24">
         {index && (
-          <SettingsList className="w-full desk:hidden" highlight={false} activeId={active.id} user={user} values={values} />
+          <SettingsList className="w-full max-w-container-lg wide:hidden" highlight={false} activeId={active.id} user={user} values={values} />
         )}
         <SettingsList
-          className="hidden desk:flex desk:w-container-xs desk:shrink-0"
+          className="hidden wide:flex wide:w-container-xs wide:shrink-0"
           highlight
           activeId={active.id}
           user={user}
           values={values}
         />
-        <div className={`min-w-0 flex-1 ${index ? 'hidden desk:block' : ''}`}>{children}</div>
+        <div className={`min-w-0 flex-1 max-w-container-lg ${index ? 'hidden wide:block' : ''}`}>{children}</div>
       </div>
     </ShellPage>
   );
