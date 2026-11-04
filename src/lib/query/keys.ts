@@ -193,6 +193,7 @@ export const keys = {
     llmHealth: () => [...keys.settings.all, 'llmHealth'] as const,
     llmCatalog: () => [...keys.settings.all, 'llmCatalog'] as const,
     gmailConnection: () => [...keys.settings.all, 'gmailConnection'] as const,
+    gmailBankDomains: () => [...keys.settings.all, 'gmailBankDomains'] as const,
     gmailSenders: () => [...keys.settings.all, 'gmailSenders'] as const,
     /** Every Gmail attention query, whatever its params (for invalidation). */
     gmailAttentionAll: () => [...keys.settings.all, 'gmailAttention'] as const,

@@ -9,6 +9,16 @@ import type { GmailSenderResponse } from '@/lib/api/types';
 
 const FORM_ID = 'sender-form';
 
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const DOMAIN_RE = /^([a-z0-9-]+\.)+[a-z]{2,}$/;
+export const SENDER_ADDRESS_ERROR = 'Enter an email address or a domain';
+
+/** Mirrors the server: an email address or a bare domain, after trim and lowercase. Returns the error text, or null when fine. */
+export function senderAddressError(raw: string): string | null {
+  const v = raw.trim().toLowerCase();
+  return EMAIL_RE.test(v) || DOMAIN_RE.test(v) ? null : SENDER_ADDRESS_ERROR;
+}
+
 interface SenderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -42,6 +52,17 @@ export function SenderDialog({
 }: SenderDialogProps) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [addressError, setAddressError] = useState<string | null>(null);
+
+  const submit = (e: React.FormEvent) => {
+    const err = senderAddressError(senderAddress);
+    setAddressError(err);
+    if (err) {
+      e.preventDefault();
+      return;
+    }
+    onSubmit(e);
+  };
 
   const confirmDelete = async () => {
     if (!editingSender) return;
@@ -77,7 +98,7 @@ export function SenderDialog({
           }}
         >
           <Dialog.Body>
-            <form id={FORM_ID} className="flex flex-col gap-space-8 desk:gap-space-12" onSubmit={onSubmit}>
+            <form id={FORM_ID} className="flex flex-col gap-space-8 desk:gap-space-12" onSubmit={submit} noValidate>
               <TextField
                 label="Sender name"
                 optional
@@ -87,12 +108,16 @@ export function SenderDialog({
                 onChange={(e) => setSenderName(e.target.value)}
               />
               <TextField
-                label="Sender email address"
+                label="Email address or domain"
                 name="senderAddress"
-                type="email"
-                placeholder="e.g., alerts@hdfcbank.net"
+                placeholder="alerts@hdfcbank.net or hdfcbank.net"
+                autoComplete="off"
                 value={senderAddress}
-                onChange={(e) => setSenderAddress(e.target.value)}
+                error={addressError ?? undefined}
+                onChange={(e) => {
+                  setAddressError(null);
+                  setSenderAddress(e.target.value);
+                }}
                 required
               />
               <SettingsToggle

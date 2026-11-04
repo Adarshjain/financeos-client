@@ -25,12 +25,15 @@ import {
   LIMIT_POOL_NONE,
   otherPoolMembersNote,
 } from './accountFormModel';
+import { BankDomainsHint } from './BankDomainsHint';
 import { FROM_EMAIL_CAPTION, type NameHint, type PrefilledFields } from './suggestionPrefill';
 
 export interface AccountFormFieldsProps {
   values: AccountFormValues;
   errors: FormErrors;
   isEdit: boolean;
+  /** Banks the user already has an account at; undefined while the list loads (the domains hint stays hidden). */
+  existingBankIds?: string[];
   today: string;
   pools: CreditLimitPool[];
   /** Other accounts sharing the picked pool, without the one being edited. */
@@ -135,6 +138,7 @@ export function AccountFormFields({
   values,
   errors,
   isEdit,
+  existingBankIds,
   today,
   pools,
   poolOthers,
@@ -216,7 +220,13 @@ export function AccountFormFields({
             searchPlaceholder="Search banks…"
             options={BANK_OPTIONS}
             value={values.bank}
-            helper={prefilled?.bank && values.bank === prefilledValues?.bank ? FROM_EMAIL_CAPTION : undefined}
+            helper={
+              prefilled?.bank && values.bank === prefilledValues?.bank ? (
+                FROM_EMAIL_CAPTION
+              ) : !isEdit && values.bank && existingBankIds && !existingBankIds.includes(values.bank) ? (
+                <BankDomainsHint bankId={values.bank} />
+              ) : undefined
+            }
             error={errors.bank}
             onValueChange={(v) => onChange({ bank: v as string })}
           />

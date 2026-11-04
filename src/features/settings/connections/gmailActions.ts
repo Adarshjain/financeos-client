@@ -21,6 +21,11 @@ export const loadGmailSenders = createDomainAction(
   async () => (await serverApi.GET('/api/v1/gmail/senders')).data ?? [],
 );
 
+export const loadBankDomains = createDomainAction(
+  { fallbackError: "Couldn't load the bank's domains. Try again." },
+  async () => (await serverApi.GET('/api/v1/gmail/bank-domains')).data ?? [],
+);
+
 export const loadGmailAttention = createDomainAction(
   { fallbackError: "Couldn't load the emails that need attention. Try again." },
   async (query: GmailAttentionQuery) => {

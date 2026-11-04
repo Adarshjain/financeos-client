@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { GmailSenderResponse } from '@/lib/api/types';
 
-import { SenderDialog } from './SenderDialog';
+import { senderAddressError,SenderDialog } from './SenderDialog';
 import { SendersCard } from './SendersCard';
 
 const senders = [
@@ -76,7 +76,7 @@ describe('SenderDialog', () => {
 
   it('reports typing and the switch', () => {
     const p = dialog(null);
-    fireEvent.change(screen.getByLabelText(/Sender email address/), { target: { value: 'x@y.test' } });
+    fireEvent.change(screen.getByLabelText(/Email address or domain/), { target: { value: 'x@y.test' } });
     expect(p.setSenderAddress).toHaveBeenCalledWith('x@y.test');
     fireEvent.click(screen.getByRole('switch'));
     expect(p.setSenderEnabled).toHaveBeenCalledWith(false);
@@ -114,5 +114,56 @@ describe('SenderDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     fireEvent.click(screen.getAllByRole('button', { name: 'Cancel' }).at(-1)!);
     expect(p.onDelete).not.toHaveBeenCalled();
+  });
+});
+
+describe('sender address validation', () => {
+  it('accepts an email address or a domain, trimmed and any case', () => {
+    expect(senderAddressError('alerts@hdfcbank.net')).toBeNull();
+    expect(senderAddressError('  HDFCBank.net ')).toBeNull();
+  });
+
+  it('rejects junk with the server text', () => {
+    for (const bad of ['', 'hdfc', 'a b@c.com', '@x.com', 'a@b', 'x.c']) {
+      expect(senderAddressError(bad)).toBe('Enter an email address or a domain');
+    }
+  });
+
+  it('blocks the submit and shows the error for junk, submits for a domain', () => {
+    const p = dialog(null, { senderAddress: 'junk' });
+    fireEvent.click(screen.getByRole('button', { name: 'Add sender' }));
+    expect(p.onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByText('Enter an email address or a domain')).toBeInTheDocument();
+  });
+
+  it('submits a bare domain', () => {
+    const p = dialog(null, { senderAddress: 'hdfcbank.net' });
+    fireEvent.click(screen.getByRole('button', { name: 'Add sender' }));
+    expect(p.onSubmit).toHaveBeenCalled();
+  });
+});
+
+describe('SendersCard bank grouping', () => {
+  const grouped = [
+    { id: 'b1', name: null, senderAddress: 'hdfcbank.net', enabled: true, bankId: 'hdfc' },
+    { id: 'b2', name: null, senderAddress: 'alerts@hdfcbank.bank.in', enabled: false, bankId: 'hdfc' },
+    { id: 's1', name: 'Other', senderAddress: 'x@y.com', enabled: true, bankId: null },
+  ] as GmailSenderResponse[];
+
+  it('shows one bank row, opens its sheet, toggles and removes after confirm', async () => {
+    const toggle = vi.fn();
+    const remove = vi.fn().mockResolvedValue(true);
+    render(<SendersCard senders={grouped} onOpenAddSender={vi.fn()} onOpenEditSender={vi.fn()} onToggleSender={toggle} onRemoveSender={remove} />);
+    expect(screen.getAllByText('HDFC Bank').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Any address at hdfcbank.net and 1 more').length).toBeGreaterThan(0);
+    expect(screen.queryByText('alerts@hdfcbank.bank.in')).toBeNull();
+    fireEvent.click(screen.getAllByText('HDFC Bank')[0]);
+    expect(await screen.findByText('alerts@hdfcbank.bank.in')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('switch', { name: 'Read mail from alerts@hdfcbank.bank.in' }));
+    expect(toggle).toHaveBeenCalledWith(grouped[1], true);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Remove' })[0]);
+    expect(remove).not.toHaveBeenCalled();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Remove' }).at(-1)!);
+    await waitFor(() => expect(remove).toHaveBeenCalledWith('b1'));
   });
 });

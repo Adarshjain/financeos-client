@@ -1594,6 +1594,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/gmail/bank-domains": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getBankDomains"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/gmail/connections": {
         parameters: {
             query?: never;
@@ -4540,6 +4556,10 @@ export interface components {
             updatedAt: string;
             warnings: string[];
         };
+        BankDomainsResponse: {
+            bankId: string;
+            domains: string[];
+        };
         BatchDeleteRequest: {
             transactionIds: string[];
         };
@@ -6286,6 +6306,7 @@ export interface components {
             senderAddress: string;
         };
         GmailSenderResponse: {
+            bankId?: string | null;
             enabled: boolean;
             /** Format: uuid */
             id: string;
@@ -13303,6 +13324,35 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getBankDomains: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BankDomainsResponse"][];
+                };
             };
             /** @description Error response */
             default: {
