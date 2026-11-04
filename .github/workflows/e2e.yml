@@ -221,7 +221,7 @@ jobs:
           echo "E2E suite: $SUITE (${{ matrix.name }})"
           if [ "$SUITE" = "full" ]; then
             read -r -a args <<< "$PW_ARGS"
-            E2E_COVERAGE_DUMP=1 npx playwright test --config e2e/playwright.config.ts --reporter=blob,list ${args[@]+"${args[@]}"}
+            E2E_COVERAGE_DUMP=1 npx playwright test --config e2e/playwright.config.ts --reporter=blob,list,github ${args[@]+"${args[@]}"}
           else
             specs=()
             while IFS= read -r spec; do specs+=("$spec"); done < <(grep -vE '^[[:space:]]*(#|$)' e2e/core-specs.txt)
