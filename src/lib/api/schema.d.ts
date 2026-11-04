@@ -8427,6 +8427,8 @@ export interface components {
             jobType?: string | null;
             /** Format: uuid */
             loanId?: string | null;
+            /** Format: uuid */
+            statementId?: string | null;
         };
         RegistrationOptionsRequest: {
             /** Format: int32 */
