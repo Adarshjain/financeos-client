@@ -12,10 +12,11 @@ const meta: Meta<typeof PageFooter> = {
     docs: {
       description: {
         component:
-          'The bottom action bar of a create or edit page: Cancel (ghost) and the primary at the right, the same as a Dialog footer; full width on a phone.',
+          'The bottom action bar of a create or edit page: Cancel (ghost) and the primary at the right, the same as a Dialog footer; full width on a phone. `variant="plain"` drops the band (background, top border, padding) from desk up, so the buttons sit at the end of the column; the phone bar is unchanged.',
       },
     },
   },
+  argTypes: { variant: { control: 'inline-radio', options: ['band', 'plain'] } },
   args: {
     secondary: { label: 'Cancel', onSelect: fn() },
     primary: { label: 'Create dashboard', onSelect: fn() },
@@ -28,6 +29,8 @@ type Story = StoryObj<typeof PageFooter>;
 export const Default: Story = {};
 
 export const Sticky: Story = { args: { sticky: true } };
+
+export const Plain: Story = { args: { variant: 'plain' } };
 
 export const PrimaryDisabled: Story = {
   args: { primary: { label: 'Save', disabled: true, onSelect: fn() } },

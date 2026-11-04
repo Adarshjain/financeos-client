@@ -32,6 +32,16 @@ describe('PageFooter', () => {
     expect(container.firstChild).toHaveClass('border-t');
   });
 
+  it('plain drops the band from desk up and keeps the phone bar', () => {
+    const { container, rerender } = render(<PageFooter sticky primary={{ label: 'Save' }} />);
+    expect(container.firstChild).not.toHaveClass('desk:bg-transparent');
+    rerender(<PageFooter sticky variant="plain" primary={{ label: 'Save' }} />);
+    expect(container.firstChild).toHaveClass('desk:static', 'desk:bg-transparent', 'desk:border-t-0', 'desk:p-0');
+    // Phone: still the pinned surface bar with its top border.
+    expect(container.firstChild).toHaveClass('sticky', 'max-desk:bg-surface', 'border-t');
+    expect(container.querySelector('.desk\\:justify-end')).toBeInTheDocument();
+  });
+
   it('disables and shows loading on the primary', () => {
     render(<PageFooter primary={{ label: 'Save', disabled: true }} />);
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();

@@ -134,35 +134,26 @@ export function HelloScreen({
 
   // Top row, body, then the footer pinned to the bottom on a phone; a centred column on desktop.
   const shell = (
-    top: { back?: () => void; counter: string | null; progress: number },
+    top: { back?: () => void; counter: string; progress: number } | null,
     body: React.ReactNode,
     footer: React.ReactNode
   ) => (
     <div className="min-h-dvh flex flex-col desk:items-center desk:justify-center desk:p-space-40">
-      <div className="w-full flex-1 desk:flex-none desk:max-w-md flex flex-col px-space-16">
-        <div className="flex items-center gap-space-10 pt-space-16 pb-space-6">
-          {top.back ? (
-            <Button variant="link" onClick={top.back} disabled={connecting}>
-              Back
-            </Button>
-          ) : (
-            <Button
-              variant="link"
-              className="invisible"
-              tabIndex={-1}
-              aria-hidden
-            >
-              Back
-            </Button>
-          )}
-          <ProgressBar className="flex-1" value={top.progress} />
-          {top.counter ? (
+      <div className="w-full flex-1 desk:flex-none desk:max-w-container-md flex flex-col px-space-16 pt-space-32">
+        {top ? (
+          <div className="flex items-center gap-space-10 pb-space-8">
+            {top.back ? (
+              <Button variant="link" onClick={top.back} disabled={connecting}>
+                Back
+              </Button>
+            ) : null}
+            <ProgressBar className="flex-1" value={top.progress} />
             <Text variant="caption" tone="ink-3">
               {top.counter}
             </Text>
-          ) : null}
-        </div>
-        <div className="flex flex-col gap-space-12 pt-space-12 pb-space-16">
+          </div>
+        ) : null}
+        <div className="flex flex-col gap-space-32 pt-space-24 pb-space-32">
           {body}
         </div>
         {footer}
@@ -171,7 +162,7 @@ export function HelloScreen({
   );
 
   const headline = (before: string, marked: string, after: string) => (
-    <Text as="h1" variant="page-title" family="display">
+    <Text as="h1" variant="hero-figure" family="display">
       {before}
       <Highlight text={marked} query={marked} />
       {after}
@@ -182,7 +173,7 @@ export function HelloScreen({
     return shell(
       { back: () => setStep(1), counter: '2 of 2', progress: 100 },
       <>
-        <div className="flex flex-col gap-space-8">
+        <div className="flex flex-col gap-space-12">
           {headline('Connect the Gmail your ', 'bank', ' writes to')}
           <Text variant="body" tone="ink-3">
             That&apos;s where your cards and accounts are hiding.
@@ -219,6 +210,7 @@ export function HelloScreen({
       </>,
       <PageFooter
         sticky
+        variant="plain"
         secondary={{ label: 'Skip', onSelect: home, disabled: connecting }}
         primary={{
           label: connecting ? 'Opening Google…' : 'Connect Gmail',
@@ -231,9 +223,9 @@ export function HelloScreen({
 
   const first = firstName(displayName);
   return shell(
-    { counter: twoSteps ? '1 of 2' : null, progress: twoSteps ? 50 : 100 },
+    twoSteps ? { counter: '1 of 2', progress: 50 } : null,
     <>
-      <div className="flex flex-col gap-space-8">
+      <div className="flex flex-col gap-space-12">
         {headline(`Hi ${first ?? 'there'}. Let's find `, 'all', ' your money.')}
         <Text variant="body" tone="ink-3">
           One minute. We&apos;ll find your cards and accounts from your bank
@@ -244,7 +236,7 @@ export function HelloScreen({
       <form
         id="hello-form"
         noValidate
-        className="flex flex-col gap-space-12"
+        className="flex flex-col gap-space-32"
         onSubmit={(e) => {
           e.preventDefault();
           void submit();
@@ -252,6 +244,7 @@ export function HelloScreen({
       >
         <TextField
           id="hello-name"
+          size="xl"
           label={NAME_LABEL}
           name="displayName"
           autoComplete="name"
@@ -272,6 +265,7 @@ export function HelloScreen({
 
         <DateField
           id="hello-birth"
+          size="xl"
           label={BIRTH_LABEL}
           today={today}
           minDate="1900-01-01"
@@ -324,6 +318,7 @@ export function HelloScreen({
     </>,
     <PageFooter
       sticky
+      variant="plain"
       primary={{
         label: saving ? 'Saving…' : view.label,
         type: 'submit',
