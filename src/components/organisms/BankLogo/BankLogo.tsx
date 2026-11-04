@@ -4,7 +4,7 @@ import { Avatar } from '@/components/ds/Avatar/Avatar';
 import { cn } from '@/components/ds/cn';
 import { Icon } from '@/components/ds/Icon/Icon';
 import { bankById } from '@/features/banks/banks';
-import { SPRITE_CELL, SPRITE_IDS } from '@/features/banks/bankSprite.generated';
+import { SPRITE_CELL, SPRITE_IDS, SPRITE_URL } from '@/features/banks/bankSprite.generated';
 
 export interface BankLogoProps {
   /** The server's bank id, such as `hdfc`. An unknown or missing id shows the first letter of `name` instead. */
@@ -17,7 +17,7 @@ export interface BankLogoProps {
   size?: 'md' | 'sm';
 }
 
-/** One bank's logo, cut from the shared sprite at public/banks/sprite.png, in the small square Avatar frame. */
+/** One bank's logo, cut from the shared bank sprite (public/banks, `SPRITE_URL`), in the small square Avatar frame. */
 export function BankLogo({ bankId, name, warning = !bankId, size = 'md' }: BankLogoProps) {
   const bank = bankId ? bankById(bankId) : undefined;
   if (!bank) {
@@ -50,7 +50,7 @@ export function BankLogo({ bankId, name, warning = !bankId, size = 'md' }: BankL
         size === 'sm' ? 'h-icon-sm w-icon-sm' : 'h-space-24 w-space-24',
       )}
       style={{
-        backgroundImage: 'url(/banks/sprite.png)',
+        backgroundImage: `url(${SPRITE_URL})`,
         backgroundSize: `${cells * 100}% 100%`,
         backgroundPosition: `${(bank.spriteIndex / (cells - 1)) * 100}% 0%`,
       }}
