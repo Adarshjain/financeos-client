@@ -23,8 +23,8 @@ test.describe('UI Smokes', () => {
     await page.goto('/dashboard');
     await expect(page.getByTestId('home-switch')).toBeVisible({ timeout: 45_000 });
 
-    // Sign out is on the profile card at the top of Settings
-    await page.goto('/settings');
+    // Sign out sits above Delete account on Settings > Profile
+    await page.goto('/settings/profile');
     await page.getByRole('button', { name: 'Sign out' }).click();
 
     await expect(page).toHaveURL(/\/login/);

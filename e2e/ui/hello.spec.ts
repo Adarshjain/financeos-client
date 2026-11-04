@@ -101,7 +101,7 @@ test.describe('Hello and profile (@ui)', () => {
     const user = await createUser(request, 'ui-profile-edit');
     await loginContext(context, user.cookie);
 
-    await page.goto('/settings');
+    await page.goto('/settings/profile');
     await page.getByRole('button', { name: /^Name/ }).click();
     const dialog = page.getByRole('dialog', { name: 'Edit profile' });
     await dialog.getByLabel('Your name, as your bank prints it').fill('Asha R Rao');

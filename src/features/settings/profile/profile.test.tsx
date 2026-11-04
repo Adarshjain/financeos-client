@@ -9,9 +9,6 @@ import { AppearanceCard } from './AppearanceCard';
 import { DeleteAccountCard } from './DeleteAccountCard';
 import { ProfileCard } from './ProfileCard';
 
-const logout = vi.fn();
-vi.mock('@/actions/auth', () => ({ logoutToDinero: (...a: unknown[]) => logout(...a) }));
-
 const deleteAccount = vi.fn();
 const get = vi.fn();
 vi.mock('./profileActions', () => ({ deleteAccount: (...a: unknown[]) => deleteAccount(...a) }));
@@ -32,7 +29,6 @@ function wrap(node: React.ReactNode) {
 }
 
 beforeEach(() => {
-  logout.mockReset();
   deleteAccount.mockReset();
   get.mockReset();
   setTheme.mockReset();
@@ -63,12 +59,6 @@ describe('ProfileCard', () => {
     render(<ProfileCard user={{ ...google, displayName: null } as UserResponse} />);
     expect(screen.getAllByText('arjun@example.test')).toHaveLength(1);
     expect(screen.getByText('Signed in with Google')).toBeInTheDocument();
-  });
-
-  it('runs the sign out action', async () => {
-    render(<ProfileCard user={google} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
-    await waitFor(() => expect(logout).toHaveBeenCalledTimes(1));
   });
 });
 

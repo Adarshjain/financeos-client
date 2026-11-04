@@ -1,8 +1,6 @@
 import React from 'react';
 
-import { logoutToDinero } from '@/actions/auth';
 import { Avatar } from '@/components/ds/Avatar/Avatar';
-import { Button } from '@/components/ds/Button/Button';
 import { Card } from '@/components/ds/Card/Card';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { todayInAppZone } from '@/lib/date-range';
@@ -11,7 +9,7 @@ import type { UserResponse } from '@/lib/types';
 import { ProfileEditRows } from './ProfileEditRows';
 import { profileInitials, profileLines } from './profileModel';
 
-/** Who is signed in, with the name and birth date rows (tap to edit) and Sign out. */
+/** Who is signed in, with the name and birth date rows (tap to edit). */
 export function ProfileCard({ user }: { user: UserResponse }) {
   const { name, detail } = profileLines(user);
   return (
@@ -29,13 +27,6 @@ export function ProfileCard({ user }: { user: UserResponse }) {
         }
         title={name}
         subtitle={detail}
-        trailing={
-          <form action={logoutToDinero}>
-            <Button type="submit" variant="secondary" size="sm">
-              Sign out
-            </Button>
-          </form>
-        }
       />
       <ProfileEditRows user={user} today={todayInAppZone()} />
     </Card>
