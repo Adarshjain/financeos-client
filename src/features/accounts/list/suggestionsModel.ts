@@ -219,11 +219,15 @@ export function fromEmailsLine(row: Pick<SuggestionRow, 'item'>): string {
 }
 
 /**
- * A row's second line in the Found card: the server's question while it asks one ("Is this your …?", "Older number on …?"),
- * else where it came from, the account it sits on and its number.
+ * A row's second line in the Found card: where it came from, the account it sits on and its number. While the server
+ * asks a question ("Is this your …?", "Older number on …?") the question follows the number we found, so the user
+ * can tell which account is meant; with no number, the email count and date stand in for it.
  */
 export function foundRowSub(row: Pick<SuggestionRow, 'item' | 'sub' | 'last4' | 'isThis' | 'olderOn'>): string {
-  if (row.isThis || row.olderOn) return row.sub;
+  if (row.isThis || row.olderOn) {
+    const seen = row.last4 ? `••${row.last4}` : row.item?.caption?.trim() || '';
+    return `${[fromEmailsLine(row), seen].filter(Boolean).join(' · ')}. ${row.sub}`;
+  }
   const parent = row.item?.parentAccount;
   return [fromEmailsLine(row), parent ? `On ${parent.name}` : '', row.last4 ? `••${row.last4}` : '']
     .filter(Boolean)

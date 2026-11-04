@@ -139,7 +139,7 @@ describe('suggestion rows in a section', () => {
     render(
       <FoundInEmailCard suggestions={sugg({ found: [row({ sub: 'Is this your Axis Magnus?', isThis: { accountId: 'a2', accountName: 'Axis Magnus' } })] })} />,
     );
-    expect(screen.getAllByText('Is this your Axis Magnus?').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/emails · ••\d{4}\. Is this your Axis Magnus\?$/).length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: 'Add' })).toBeNull();
     await user.click(screen.getAllByRole('button', { name: 'Yes' })[0]);
     await waitFor(() => expect(actions.answerIsThis).toHaveBeenCalledWith('s1', 'a2', true));

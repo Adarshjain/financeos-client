@@ -86,7 +86,7 @@ describe('Older number question', () => {
   it('asks "Older number on {account}?" with No and Yes instead of the buttons', async () => {
     render(<FoundInEmailCard suggestions={sugg('older', older())} />);
     await showBand('older');
-    expect(screen.getAllByText('Older number on HDFC Regalia?').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/••\d{4}\. Older number on HDFC Regalia\?$/).length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: 'Not mine' })).toBeNull();
   });
 
