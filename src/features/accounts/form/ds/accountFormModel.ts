@@ -148,6 +148,15 @@ export function fieldsFor(type: AccountType | null, limitPoolChoice: string = LI
   );
 }
 
+/** A by-hand account starts importing Gmail from this many days back (the field can be cleared or set earlier). */
+export const DEFAULT_GMAIL_HISTORY_DAYS = 30;
+
+/** The default "Import emails from" for a new hand-made account: the business date minus 30 days (yyyy-mm-dd). */
+export function defaultIngestFromDate(today: string): string {
+  const [y, m, d] = today.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d - DEFAULT_GMAIL_HISTORY_DAYS)).toISOString().slice(0, 10);
+}
+
 export function emptyValues(type: AccountType | null): AccountFormValues {
   return {
     type,

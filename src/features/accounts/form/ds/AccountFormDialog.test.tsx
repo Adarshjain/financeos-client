@@ -286,6 +286,14 @@ describe('Add account', () => {
     expect(screen.queryByText('Credit limit')).toBeNull();
   });
 
+  it('starts "Import emails from" 30 days back on a hand-made account, and the date can be cleared', async () => {
+    renderDialog({ initialType: AccountType.BANK_ACCOUNT });
+    const input = screen.getByLabelText('Import emails from');
+    expect(input).toHaveValue('13/09/2026'); // today is mocked as 2026-10-13
+    fireEvent.change(input, { target: { value: '' } });
+    expect(input).toHaveValue('');
+  });
+
   it('puts the import-date helper under its own field on a new bank account', () => {
     renderDialog({ initialType: AccountType.BANK_ACCOUNT });
     const input = screen.getByLabelText('Import emails from');

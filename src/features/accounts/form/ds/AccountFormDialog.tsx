@@ -30,6 +30,7 @@ import {
   addIdentifier,
   buildAccountRequest,
   defaultFinancialPosition,
+  defaultIngestFromDate,
   diffIdentifiers,
   emptyValues,
   fieldsFor,
@@ -76,7 +77,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
 
   const [prefill] = React.useState(() => (!account && fromSuggestion ? buildSuggestionPrefill(fromSuggestion) : null));
   const [values, setValues] = React.useState<AccountFormValues>(() =>
-    account ? valuesFromAccount(account) : (prefill?.values ?? emptyValues(initialType))
+    account ? valuesFromAccount(account) : (prefill?.values ?? { ...emptyValues(initialType), ingestFromDate: defaultIngestFromDate(today) })
   );
   const [errors, setErrors] = React.useState<FormErrors>({});
   const [identifierError, setIdentifierError] = React.useState<string | null>(null);

@@ -70,10 +70,10 @@ describe('AppLockRows', () => {
     expect(screen.getByText('1 minute')).toBeTruthy();
   });
 
-  it('offers the four choices', () => {
+  it('offers the six choices', () => {
     render(<AppLockRows status={on} />);
     fireEvent.click(screen.getByRole('combobox', { name: 'Lock after' }));
-    for (const label of ['Immediately', '5 minutes', '15 minutes']) expect(screen.getByText(label)).toBeTruthy();
+    for (const label of ['Immediately', '5 minutes', '15 minutes', '30 minutes', '1 hour']) expect(screen.getByText(label)).toBeTruthy();
     expect(screen.getAllByText('1 minute').length).toBeGreaterThan(0);
   });
 

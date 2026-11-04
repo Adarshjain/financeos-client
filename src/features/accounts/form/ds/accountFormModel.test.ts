@@ -7,6 +7,7 @@ import {
   addIdentifier,
   buildAccountRequest,
   defaultFinancialPosition,
+  defaultIngestFromDate,
   diffIdentifiers,
   DUPLICATE_LAST4,
   emptyValues,
@@ -82,6 +83,18 @@ describe('defaults', () => {
     expect(defaultFinancialPosition(AccountType.CREDIT_CARD)).toBe('liability');
     expect(defaultFinancialPosition(AccountType.BANK_ACCOUNT)).toBe('asset');
     expect(emptyValues(AccountType.CREDIT_CARD).financialPosition).toBe('liability');
+  });
+});
+
+describe('defaultIngestFromDate', () => {
+  it('is the business date minus 30 days, across month and year ends', () => {
+    expect(defaultIngestFromDate('2026-10-29')).toBe('2026-09-29');
+    expect(defaultIngestFromDate('2026-01-10')).toBe('2025-12-11');
+    expect(defaultIngestFromDate('2026-03-15')).toBe('2026-02-13');
+  });
+
+  it('leaves the empty form values without a date (the dialog adds the default for hand-made accounts)', () => {
+    expect(emptyValues(AccountType.BANK_ACCOUNT).ingestFromDate).toBe('');
   });
 });
 
