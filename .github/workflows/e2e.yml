@@ -204,6 +204,7 @@ jobs:
           cat e2e/logs/start-server.out
           if ! wait "$client_pid"; then echo "::error::Client did not start"; status=1; fi
           cat e2e/logs/start-client.out
+          if [ "$status" = 0 ] && ! bash e2e/scripts/check-fk-indexes.sh; then status=1; fi
           exit "$status"
 
       - name: Run Playwright E2E tests
