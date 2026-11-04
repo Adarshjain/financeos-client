@@ -5,6 +5,7 @@ import { GRID_GAP } from '@/components/ds/gridGap';
 import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 
+import { CoverageStrip } from './CoverageStrip';
 import { buildDetailModel } from './detailModel';
 import { buildStatementRow } from './listModel';
 import { MarkPaidAction } from './MarkPaidAction';
@@ -29,7 +30,15 @@ export async function AccountStatements({
   if (!data.statements || !data.view) {
     return <Banner tone="danger">Couldn&apos;t load statements. Try again.</Banner>;
   }
-  if (data.statements.length === 0) return <StatementsEmpty accountId={account.id} />;
+  const strip = data.coverage ? <CoverageStrip accountId={account.id} coverage={data.coverage} /> : null;
+  if (data.statements.length === 0) {
+    return (
+      <div className="flex flex-col gap-space-8 desk:gap-space-16">
+        {strip}
+        <StatementsEmpty accountId={account.id} />
+      </div>
+    );
+  }
 
   const { view } = data;
   const rows = view.inFy.map((s) =>
@@ -39,6 +48,7 @@ export async function AccountStatements({
 
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      {strip}
       {data.markPaid ? <MarkPaidAction accountName={account.name} target={data.markPaid} /> : null}
       <div className={`grid grid-cols-1 desk:grid-cols-12 items-start ${GRID_GAP}`}>
         <div className="desk:col-span-5 min-w-0">

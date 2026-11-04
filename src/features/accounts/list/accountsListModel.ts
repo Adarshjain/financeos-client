@@ -15,6 +15,8 @@ import { formatCount, formatDate, formatMoney, formatPercent } from '@/lib/forma
 import { AccountType } from '@/lib/types';
 import { utilisationTone } from '@/lib/utilisation';
 
+import { gmailFetchLine } from '../gmailFetchLine';
+
 export interface RewardTotal {
   accountId: string;
   points: number;
@@ -191,6 +193,8 @@ export interface BankRow {
   balance: string;
   asOf: string | null;
   phoneSub: string | null;
+  /** "Fetching older emails · 8 of 12 months" while older mail is being fetched. */
+  fetchLine: string | null;
   closed: boolean;
   /** The account itself, for the Edit dialog opened from the row. */
   account: BankAccount;
@@ -228,6 +232,7 @@ export function bankRow(account: BankAccount, today: string): BankRow {
     balance: formatMoney(sumBalances([account]), { decimals: 'exact', symbol: false }),
     asOf: current ? (isTx ? cap : `Stmt ${day}`) : null,
     phoneSub: current ? (isTx ? `As of ${day}` : `Statement ${day}`) : null,
+    fetchLine: gmailFetchLine(account.gmailFetch),
     closed: isAccountClosed(account, today),
     account,
   };
@@ -305,6 +310,7 @@ export interface CardRow {
   last4: string | null;
   bank: string | null;
   sharedLimit: string | null;
+  fetchLine: string | null;
   badges: BadgeModel[];
   closing: string | null;
   statementMissing: boolean;
@@ -335,6 +341,7 @@ export function cardBaseRow(card: CreditCard, today: string): CardBaseRow {
     sharedLimit: card.limitPool
       ? `Shared limit · ${card.limitPool.name} ${formatMoney(card.limitPool.creditLimit, { compact: true })}`
       : null,
+    fetchLine: gmailFetchLine(card.gmailFetch),
     extraBadges,
     closing:
       isAccountClosing(card, today) && card.closedOn

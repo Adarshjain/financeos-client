@@ -6,6 +6,7 @@ import type { StatementSummary } from '@/lib/statement.types';
 import { AccountType } from '@/lib/types';
 
 import { buildHeaderModel, type MarkPaidTarget } from '../overview/headerModel';
+import type { CoverageData } from './coverageModel';
 import type { StatementDetailData } from './detailModel';
 import { buildStatementsView, fyBounds, type StatementsView } from './listModel';
 
@@ -20,6 +21,8 @@ export interface StatementsData {
   bills: Record<string, CardBillResponse>;
   /** The card's current open bill, for the header's Mark paid. */
   markPaid: MarkPaidTarget | null;
+  /** Month-by-month coverage for the strip; null when its request failed (the strip is then left out). */
+  coverage?: CoverageData | null;
 }
 
 /** The account's statements; null when the request failed (the helper in apiClient turns errors into an empty list). */
@@ -29,6 +32,15 @@ async function loadStatements(accountId: string): Promise<StatementSummary[] | n
       params: { path: { accountId } },
     });
     return error || data == null ? null : (data as StatementSummary[]);
+  } catch {
+    return null;
+  }
+}
+
+async function loadCoverage(accountId: string): Promise<CoverageData | null> {
+  try {
+    const { data } = await serverApi.GET('/api/v1/accounts/{id}/coverage', { params: { path: { id: accountId } } });
+    return data && Array.isArray(data.months) ? data : null;
   } catch {
     return null;
   }
@@ -60,9 +72,9 @@ export async function loadStatementsData(
   today: string
 ): Promise<StatementsData> {
   const isCard = account.type === AccountType.CREDIT_CARD;
-  const statements = await loadStatements(account.id);
+  const [statements, coverage] = await Promise.all([loadStatements(account.id), loadCoverage(account.id)]);
   if (!statements) {
-    return { statements: null, view: null, detail: null, detailFailed: false, bills: {}, markPaid: null };
+    return { statements: null, view: null, detail: null, detailFailed: false, bills: {}, markPaid: null, coverage };
   }
   const view = buildStatementsView(statements, params.fy, params.statement, today);
 
@@ -87,5 +99,6 @@ export async function loadStatementsData(
     detailFailed: detail === 'failed' || (view.selectedId != null && detail == null),
     bills,
     markPaid: isCard ? buildHeaderModel(account, currentBill, today).markPaid : null,
+    coverage,
   };
 }

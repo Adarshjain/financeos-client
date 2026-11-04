@@ -239,6 +239,7 @@ const bankBaseColumns = [
       <NameCell
         name={row.original.name}
         last4={row.original.last4}
+        sub={row.original.fetchLine}
         accountId={row.original.id}
       />
     ),
@@ -370,7 +371,7 @@ const cardColumns = [
       <NameCell
         name={row.original.name}
         last4={row.original.last4}
-        sub={row.original.sharedLimit}
+        sub={[row.original.sharedLimit, row.original.fetchLine].filter(Boolean).join(' · ') || null}
         accountId={row.original.id}
       />
     ),
