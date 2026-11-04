@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 import { ActionBar } from '@/components/ds/ActionBar/ActionBar';
