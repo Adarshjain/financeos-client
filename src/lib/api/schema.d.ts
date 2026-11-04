@@ -404,6 +404,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{id}/close-prompt/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["dismissClosePrompt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/{id}/coverage": {
         parameters: {
             query?: never;
@@ -3066,6 +3082,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/loans/{id}/closed-prompt/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["dismissClosedPrompt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/loans/{id}/events": {
         parameters: {
             query?: never;
@@ -4642,6 +4674,7 @@ export interface components {
             reconciliationGap?: number | null;
             /** Format: uuid */
             replacesAccountId?: string | null;
+            suggestClose: boolean;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -4758,6 +4791,7 @@ export interface components {
             reconciliationGap?: number | null;
             /** Format: uuid */
             replacesAccountId?: string | null;
+            suggestClose: boolean;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -4885,6 +4919,17 @@ export interface components {
         BulkReattributeResponse: {
             /** Format: int32 */
             updatedCount: number;
+        };
+        Candidate: {
+            accountName?: string | null;
+            amount: number;
+            /** Format: date */
+            date: string;
+            description?: string | null;
+            /** Format: uuid */
+            lendingId?: string | null;
+            /** Format: uuid */
+            transactionId?: string | null;
         };
         CapStatus: {
             cap: number;
@@ -5638,6 +5683,7 @@ export interface components {
             replacesAccountId?: string | null;
             /** Format: date */
             statementExpectedNotifiedFor?: string | null;
+            suggestClose: boolean;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -6339,6 +6385,7 @@ export interface components {
             reconciliationGap?: number | null;
             /** Format: uuid */
             replacesAccountId?: string | null;
+            suggestClose: boolean;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -7124,6 +7171,7 @@ export interface components {
             transactionId?: string | null;
         };
         LoanDetailResponse: {
+            askClosed: boolean;
             charges: components["schemas"]["LoanChargeResponse"][];
             events: components["schemas"]["LoanEventResponse"][];
             loan: components["schemas"]["LoanResponse"];
@@ -7410,6 +7458,7 @@ export interface components {
             pushConfigured: boolean;
             pushEnabled: boolean;
             reminderOffsets: number[];
+            reminderStyle: string;
             /** Format: int32 */
             sendHour: number;
         };
@@ -7421,6 +7470,7 @@ export interface components {
             accountId?: string | null;
             accountName?: string | null;
             amount?: number | null;
+            askClosed: boolean;
             /** Format: uuid */
             counterpartyId?: string | null;
             counterpartyName?: string | null;
@@ -8080,6 +8130,8 @@ export interface components {
             /** Format: uuid */
             jobId?: string | null;
             jobType?: string | null;
+            /** Format: uuid */
+            loanId?: string | null;
         };
         RegistrationOptionsRequest: {
             /** Format: int32 */
@@ -9247,6 +9299,7 @@ export interface components {
             source: "gmail_transaction_alert" | "gmail_statement" | "manual" | "file_upload";
             sourcedDescription?: string | null;
             subcategory?: components["schemas"]["SubcategoryRef"];
+            suggestion?: components["schemas"]["TransactionSuggestion"];
             tags: components["schemas"]["TagResponse"][];
             /** Format: date-time */
             updatedAt: string;
@@ -9254,6 +9307,14 @@ export interface components {
         TransactionSearchRequest: {
             filters?: components["schemas"]["FilterClause"][] | null;
             search?: string | null;
+        };
+        TransactionSuggestion: {
+            candidates: components["schemas"]["Candidate"][];
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "TRANSFER" | "CC_PAYMENT" | "REFUND" | "EMI" | "LENDING" | "DIVIDEND";
+            label: string;
         };
         TransactionSummary: {
             accountName: string;
@@ -9518,6 +9579,7 @@ export interface components {
             } | null;
             pushEnabled?: boolean | null;
             reminderOffsets?: (number | null)[] | null;
+            reminderStyle?: string | null;
             /** Format: int32 */
             sendHour?: number | null;
         };
@@ -10583,6 +10645,35 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["BankAccountResponse"] | components["schemas"]["BrokerAccountResponse"] | components["schemas"]["CreditCardAccountResponse"] | components["schemas"]["GenericAccountResponse"];
                 };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismissClosePrompt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error response */
             default: {
@@ -17205,6 +17296,35 @@ export interface operations {
         };
     };
     closeLoan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismissClosedPrompt: {
         parameters: {
             query?: never;
             header?: never;
