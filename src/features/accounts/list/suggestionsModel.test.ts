@@ -161,11 +161,20 @@ describe('Found in your email card', () => {
     expect(foundRowSub(suggestionRow(debit))).toBe('From your HDFC Bank emails · On HDFC Savings · ••9911');
   });
 
-  it("keeps the server's question while it asks one", () => {
+  it("puts the server's question after the number we found, so the user can tell which account is meant", () => {
     const isThis = item({ candidateAccount: { id: 'c2', name: 'Axis Magnus' } as SuggestionItem['candidateAccount'] });
-    expect(foundRowSub(suggestionRow(isThis))).toBe('Is this your Axis Magnus?');
+    expect(foundRowSub(suggestionRow(isThis))).toBe('From your HDFC Bank emails · ••4321. Is this your Axis Magnus?');
     const older = item({ band: 'OLDER', parentAccount: { id: 'c1', name: 'HDFC Regalia', last4: '1111' } });
-    expect(foundRowSub(suggestionRow(older))).toBe('Older number on HDFC Regalia?');
+    expect(foundRowSub(suggestionRow(older))).toBe('From your HDFC Bank emails · ••4321. Older number on HDFC Regalia?');
+  });
+
+  it('uses the email count and date for a question row with no number', () => {
+    const isThis = item({
+      last4: '',
+      caption: '12 emails since Mar 2024',
+      candidateAccount: { id: 'c2', name: 'Axis Magnus' } as SuggestionItem['candidateAccount'],
+    });
+    expect(foundRowSub(suggestionRow(isThis))).toBe('From your HDFC Bank emails · 12 emails since Mar 2024. Is this your Axis Magnus?');
   });
 
   it('merges bank and card suggestions band by band, bank rows first, with every account to file under', () => {
