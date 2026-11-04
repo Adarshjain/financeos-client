@@ -133,3 +133,17 @@ export async function clearAccountDetect(api: ApiClient): Promise<void> {
   const res = await (api as any).DELETE('/api/e2e/account-detect');
   expectStatus(res, 204);
 }
+
+/** Runs recurring-payment detection for the current user now (synchronous), instead of waiting for the daily job. */
+export async function detectRecurring(api: ApiClient): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await (api as any).POST('/api/e2e/recurring/detect');
+  expectStatus(res, 204);
+}
+
+/** Moves an account's creation `days` into the past, so rules that need an account of a certain age apply to it. */
+export async function ageAccount(api: ApiClient, accountId: string, days: number): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res = await (api as any).POST(`/api/e2e/accounts/${accountId}/age`, { body: { days } });
+  expectStatus(res, 204);
+}
