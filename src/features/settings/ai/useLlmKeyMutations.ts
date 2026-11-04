@@ -16,7 +16,7 @@ import { keys } from '@/lib/query/keys';
  */
 export function useLlmKeyMutations() {
   const qc = useQueryClient();
-  // The Settings list shows the key count, which lives in the server layout.
+  // The main Settings page shows the key count (server-rendered), so its cached copy is dropped.
   const refreshLayout = useRouterRefresh();
   const invalidateAll = async () => {
     await qc.invalidateQueries({ queryKey: keys.settings.all });

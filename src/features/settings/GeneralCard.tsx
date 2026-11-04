@@ -1,18 +1,17 @@
 'use client';
 
+import Link from 'next/link';
 import React from 'react';
 
-import { Button } from '@/components/ds/Button/Button';
 import { Card } from '@/components/ds/Card/Card';
 import { Icon } from '@/components/ds/Icon/Icon';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
 import { Text } from '@/components/ds/Text/Text';
-import { SettingsToggle } from '@/components/organisms/SettingsToggle/SettingsToggle';
-import { useHideAmounts } from '@/features/shell/hideAmounts';
-import { originOf, type RevealOrigin,revealTheme } from '@/lib/themeReveal';
+import { originOf, type RevealOrigin, revealTheme } from '@/lib/themeReveal';
 
-import { type ThemeChoice, useThemeChoice } from './useThemeChoice';
+import { type ThemeChoice, useThemeChoice } from './profile/useThemeChoice';
+import { settingsSection } from './settingsSections';
 
 const THEME_OPTIONS = [
   { value: 'light', label: 'Light', icon: <Icon name="sun" size="xs" /> },
@@ -20,16 +19,15 @@ const THEME_OPTIONS = [
   { value: 'system', label: 'System', icon: <Icon name="monitor" size="xs" /> },
 ] as const;
 
-/** Theme (saved by next-themes on this device) and the Storybook link. */
-export function AppearanceCard() {
+/** Theme (saved by next-themes on this device) and the Notifications link. */
+export function GeneralCard() {
   const { theme, setTheme } = useThemeChoice();
-  const { hidden, setHidden } = useHideAmounts();
   // The theme change grows from the segment that was clicked (or the control's centre for keyboard use).
   const origin = React.useRef<RevealOrigin | undefined>(undefined);
   const control = React.useRef<HTMLDivElement>(null);
 
   return (
-    <Card title="Appearance" subtitle="Saved on this device">
+    <Card title="General">
       <ListRow
         title={<Text variant="body">Theme</Text>}
         trailing={
@@ -51,24 +49,9 @@ export function AppearanceCard() {
           </div>
         }
       />
-      <SettingsToggle
-        flush={false}
-        borderTop
-        label="Hide amounts"
-        description="Show ₹ — instead of balances and amounts."
-        checked={hidden}
-        onCheckedChange={setHidden}
-      />
-      <ListRow
-        title="Storybook"
-        subtitle="Every Dinero component, live"
-        trailing={
-          // A static page under public/, not a Next route: a plain anchor makes it a full page load.
-          <Button variant="link" size="sm" onClick={() => window.location.assign('/storybook')}>
-            Open
-          </Button>
-        }
-      />
+      <ListRow asChild borderTop chevron title="Notifications">
+        <Link href={settingsSection('notifications').href} prefetch={false} />
+      </ListRow>
     </Card>
   );
 }

@@ -21,7 +21,7 @@ test.describe('/ds app lock (@ui)', () => {
   const toggle = (page: Page) => page.getByRole('switch', { name: TOGGLE });
 
   async function turnOn(page: Page) {
-    await page.goto(`${E2E_CLIENT_URL}/settings/app-lock`);
+    await page.goto(`${E2E_CLIENT_URL}/settings`);
     await expect(toggle(page)).toBeEnabled();
     await toggle(page).click();
     await expect(toggle(page)).toHaveAttribute('aria-checked', 'true');
@@ -61,9 +61,9 @@ test.describe('/ds app lock (@ui)', () => {
     await beacon;
 
     const visited = trackVisited(page);
-    await page.goto(`${E2E_CLIENT_URL}/settings/app-lock`);
+    await page.goto(`${E2E_CLIENT_URL}/settings`);
     // No click: the passkey prompt opens on its own and returns to the page.
-    await page.waitForURL('**/settings/app-lock');
+    await page.waitForURL('**/settings');
     await expect(toggle(page)).toHaveAttribute('aria-checked', 'true');
     expect(visited.some((u) => u.includes('/locked?from=%2Fsettings%2Fapp-lock'))).toBe(true);
   });
@@ -72,7 +72,7 @@ test.describe('/ds app lock (@ui)', () => {
     await turnOn(page);
     await lockNow(page);
     await authenticator.setUserVerified(false);
-    await page.goto(`${E2E_CLIENT_URL}/settings/app-lock`);
+    await page.goto(`${E2E_CLIENT_URL}/settings`);
     await page.waitForURL('**/locked?from=*');
     await expect(page.getByRole('heading', { name: 'FinanceOS is locked' })).toBeVisible();
     await expect(page.getByText('Use Face ID or your fingerprint to open the app.')).toBeVisible();
@@ -84,7 +84,7 @@ test.describe('/ds app lock (@ui)', () => {
 
     await authenticator.setUserVerified(true);
     await page.getByRole('button', { name: 'Unlock' }).click();
-    await page.waitForURL('**/settings/app-lock');
+    await page.waitForURL('**/settings');
     await expect(toggle(page)).toHaveAttribute('aria-checked', 'true');
   });
 
@@ -118,7 +118,7 @@ test.describe('/ds app lock (@ui)', () => {
     await turnOn(page);
     await lockNow(page);
     await authenticator.setUserVerified(false); // stay on the lock screen
-    await page.goto(`${E2E_CLIENT_URL}/settings/app-lock`);
+    await page.goto(`${E2E_CLIENT_URL}/settings`);
     await page.waitForURL('**/locked?from=*');
 
     await page.getByRole('button', { name: 'Sign out' }).click();
@@ -131,7 +131,7 @@ test.describe('/ds app lock (@ui)', () => {
     await page.waitForURL((url) => !url.pathname.includes('/login'));
     await heartbeat;
 
-    await page.goto(`${E2E_CLIENT_URL}/settings/app-lock`);
+    await page.goto(`${E2E_CLIENT_URL}/settings`);
     await expect(page).toHaveURL(/\/settings\/app-lock$/);
     await expect(toggle(page)).toHaveAttribute('aria-checked', 'true');
   });
@@ -140,7 +140,7 @@ test.describe('/ds app lock (@ui)', () => {
     await turnOn(page);
     await lockNow(page);
     await authenticator.setUserVerified(false);
-    await page.goto(`${E2E_CLIENT_URL}/settings/app-lock`);
+    await page.goto(`${E2E_CLIENT_URL}/settings`);
     await page.waitForURL('**/locked?from=*');
     // The refused automatic try says nothing; only a tap shows the error.
     await page.waitForTimeout(1500);
@@ -153,14 +153,14 @@ test.describe('/ds app lock (@ui)', () => {
 
     await authenticator.setUserVerified(true);
     await page.getByRole('button', { name: 'Unlock' }).click();
-    await page.waitForURL('**/settings/app-lock');
+    await page.waitForURL('**/settings');
   });
 
   test('after five wrong answers the session ends and Unlock goes to sign-in', async ({ page, playwright }) => {
     await turnOn(page);
     await lockNow(page);
     await authenticator.setUserVerified(false); // the automatic try is refused, so it never counts
-    await page.goto(`${E2E_CLIENT_URL}/settings/app-lock`);
+    await page.goto(`${E2E_CLIENT_URL}/settings`);
     await page.waitForURL('**/locked?from=*');
 
     // The wrong answers come from outside the browser, so its cookie jar keeps the (soon ended) session like a real device would.
@@ -224,7 +224,7 @@ test.describe('/ds app lock (@ui)', () => {
     page.on('request', (r) => {
       if (r.url().endsWith('/api/v1/app-lock/heartbeat')) heartbeats.push(r.url());
     });
-    await page.goto(`${E2E_CLIENT_URL}/settings/app-lock`);
+    await page.goto(`${E2E_CLIENT_URL}/settings`);
     await expect(toggle(page)).toBeEnabled();
     await page.waitForTimeout(1500);
     expect(heartbeats).toHaveLength(0);

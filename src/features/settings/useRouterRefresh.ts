@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 
 /**
- * A function that re-runs the server layout (the Settings list values live there). It is a no-op outside
+ * A function that drops the client router cache (the main Settings page's values are server-rendered). It is a no-op outside
  * an app router (tests, Storybook), so the hooks that call it still render there.
  */
 export function useRouterRefresh(): () => void {

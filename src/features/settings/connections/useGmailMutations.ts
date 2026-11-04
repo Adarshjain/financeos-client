@@ -22,7 +22,7 @@ import { keys } from '@/lib/query/keys';
 /** Every write GmailConnect needs, grouped so the orchestrator hook stays thin. */
 export function useGmailMutations() {
   const qc = useQueryClient();
-  // The Settings list shows the attention count, which lives in the server layout.
+  // The main Settings page shows the attention count (server-rendered), so its cached copy is dropped.
   const refreshLayout = useRouterRefresh();
   const invalidateConnections = () => {
     return qc.invalidateQueries({ queryKey: keys.settings.gmailConnection() });
@@ -47,7 +47,7 @@ export function useGmailMutations() {
 
   const disconnectMutation = useMutation({
     mutationFn: (id: string) => unwrapAction(disconnectGmail(id)),
-    // Disconnecting can drop the mailbox's attention items, so the Settings list count refreshes too.
+    // Disconnecting can drop the mailbox's attention items, so the main Settings page count refreshes too.
     onSuccess: async () => {
       await invalidateConnections();
       refreshLayout();

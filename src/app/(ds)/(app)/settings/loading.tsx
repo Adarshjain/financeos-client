@@ -1,5 +1,5 @@
-import { ProfileSkeleton } from '@/features/settings/profile/ProfileSkeleton';
+import { SettingsSkeleton } from '@/features/settings/SettingsSkeleton';
 
 export default function DsSettingsLoading() {
-  return <ProfileSkeleton />;
+  return <SettingsSkeleton />;
 }

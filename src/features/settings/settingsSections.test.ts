@@ -1,39 +1,29 @@
 import { describe, expect, it } from 'vitest';
 
-import { activeSettingsSection, isSettingsIndex, settingsGroups, settingsSections } from './settingsSections';
+import { activeSettingsSection, isSettingsIndex, settingsSection, settingsSections } from './settingsSections';
 
 describe('settingsSections', () => {
-  it('groups the eight sections, the first group without a heading', () => {
-    expect(settingsGroups.map((g) => [g.label, g.sections.map((s) => s.label)])).toEqual([
-      [undefined, ['Profile']],
-      ['General', ['Appearance', 'App lock', 'Notifications']],
-      ['Data', ['Connections', 'AI']],
-      ['Help', ['Activity', 'Debug']],
+  it('lists the five drill-in sections with their routes', () => {
+    expect(settingsSections.map((s) => [s.label, s.href])).toEqual([
+      ['Notifications', '/settings/notifications'],
+      ['Connections', '/settings/connections'],
+      ['AI', '/settings/ai'],
+      ['Activity', '/settings/activity'],
+      ['Debug', '/settings/debug'],
     ]);
-    expect(settingsSections.map((s) => s.href)).toEqual([
-      '/settings/profile',
-      '/settings/appearance',
-      '/settings/app-lock',
-      '/settings/notifications',
-      '/settings/connections',
-      '/settings/ai',
-      '/settings/activity',
-      '/settings/debug',
-    ]);
+    expect(settingsSection('ai').label).toBe('AI');
   });
 
   it.each([
-    ['/settings', 'profile'],
-    ['/settings/', 'profile'],
-    ['/settings/profile', 'profile'],
-    ['/settings/app-lock', 'app-lock'],
-    ['/settings/appearance', 'appearance'],
     ['/settings/activity/', 'activity'],
     ['/settings/debug/deep', 'debug'],
-    ['/settings/unknown', 'profile'],
-    [null, 'profile'],
+    ['/settings/notifications', 'notifications'],
+    ['/settings', undefined],
+    ['/settings/profile', undefined],
+    ['/settings/unknown', undefined],
+    [null, undefined],
   ])('maps %s to %s', (path, id) => {
-    expect(activeSettingsSection(path).id).toBe(id);
+    expect(activeSettingsSection(path)?.id).toBe(id);
   });
 
   it('knows the index path', () => {
