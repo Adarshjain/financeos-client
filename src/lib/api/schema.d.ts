@@ -404,6 +404,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{id}/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCoverage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{id}/coverage/{month}/empty": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["markMonthEmpty"];
+        delete: operations["unmarkMonthEmpty"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/{id}/flow-summary": {
         parameters: {
             query?: never;
@@ -1522,6 +1554,54 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getAttentionItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gmail/attention/archive-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["archiveAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gmail/attention/retry-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["retryAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gmail/attention/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["summary_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4491,6 +4571,20 @@ export interface components {
             /** Format: int32 */
             reactivatedCount: number;
         };
+        AttentionBulkRequest: {
+            /** @enum {string} */
+            reason: "NO_ACCOUNT" | "IMPORT_OFF" | "NO_AI_KEY" | "LOCKED_STATEMENT" | "UNREADABLE_STATEMENT" | "FAILED";
+        };
+        AttentionBulkResponse: {
+            /** Format: int32 */
+            affected: number;
+        };
+        AttentionReasonCount: {
+            /** Format: int64 */
+            count: number;
+            /** @enum {string} */
+            reason: "NO_ACCOUNT" | "IMPORT_OFF" | "NO_AI_KEY" | "LOCKED_STATEMENT" | "UNREADABLE_STATEMENT" | "FAILED";
+        };
         BalancePointResponse: {
             balance: number;
             /** Format: date */
@@ -4533,6 +4627,7 @@ export interface components {
             excludeFromNetAsset: boolean;
             /** @enum {string|null} */
             financialPosition?: "asset" | "liability" | null;
+            gmailFetch?: components["schemas"]["GmailFetchProgress"];
             /** Format: uuid */
             id: string;
             /** Format: date */
@@ -4653,6 +4748,7 @@ export interface components {
             excludeFromNetAsset: boolean;
             /** @enum {string|null} */
             financialPosition?: "asset" | "liability" | null;
+            gmailFetch: components["schemas"]["GmailFetchProgress"];
             /** Format: uuid */
             id: string;
             /** Format: date */
@@ -5265,6 +5361,10 @@ export interface components {
             /** Format: int64 */
             youOweCount: number;
         };
+        CoverageResponse: {
+            fetching?: components["schemas"]["GmailFetchProgress"];
+            months: components["schemas"]["MonthCoverage"][];
+        };
         CreateAccountIdentifierRequest: {
             /** @enum {string|null} */
             kind?: "CUSTOMER_ID" | "ACCOUNT_NUMBER" | "CRN" | "OTHER" | null;
@@ -5519,6 +5619,7 @@ export interface components {
             excludeFromNetAsset: boolean;
             /** @enum {string|null} */
             financialPosition?: "asset" | "liability" | null;
+            gmailFetch: components["schemas"]["GmailFetchProgress"];
             /** Format: uuid */
             id: string;
             /** Format: date */
@@ -6229,6 +6330,7 @@ export interface components {
             excludeFromNetAsset: boolean;
             /** @enum {string|null} */
             financialPosition?: "asset" | "liability" | null;
+            gmailFetch: components["schemas"]["GmailFetchProgress"];
             /** Format: uuid */
             id: string;
             /** Format: date */
@@ -6281,10 +6383,14 @@ export interface components {
             nextRetryAt?: string | null;
             /** Format: date-time */
             processedAt?: string | null;
+            /** @enum {string} */
+            reason: "NO_ACCOUNT" | "IMPORT_OFF" | "NO_AI_KEY" | "LOCKED_STATEMENT" | "UNREADABLE_STATEMENT" | "FAILED";
             senderAddress?: string | null;
             /** @enum {string} */
             status: "DISCOVERED" | "PROCESSING" | "CREATED" | "RECONCILED" | "SKIPPED_NOT_TRANSACTION" | "SKIPPED_BEFORE_WATERMARK" | "SKIPPED_SENDER_DISABLED" | "SKIPPED_DUPLICATE" | "SKIPPED_MESSAGE_GONE" | "UNRESOLVED_ACCOUNT" | "ACCOUNT_NOT_OPTED_IN" | "FAILED_RETRYABLE" | "FAILED_PERMANENT" | "CLEANED_UP";
             subject?: string | null;
+            suggestedBankId?: string | null;
+            suggestedLast4?: string | null;
         };
         GmailConnectionResponse: {
             /** Format: date-time */
@@ -6299,6 +6405,12 @@ export interface components {
             /** Format: date-time */
             lastSyncedAt?: string | null;
             needsReconnect: boolean;
+        };
+        GmailFetchProgress: {
+            /** Format: int32 */
+            monthsDone: number;
+            /** Format: int32 */
+            monthsTotal: number;
         };
         GmailSenderRequest: {
             enabled?: boolean;
@@ -7233,6 +7345,11 @@ export interface components {
             notes?: string | null;
             structuredOutput: string;
             trainsOnData: string;
+        };
+        MonthCoverage: {
+            month: string;
+            /** @enum {string} */
+            state: "DATA" | "EMPTY" | "FETCHING" | "MARKED_EMPTY";
         };
         MonthOutflow: {
             beforeHistory: boolean;
@@ -10478,6 +10595,97 @@ export interface operations {
             };
         };
     };
+    getCoverage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CoverageResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    markMonthEmpty: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                month: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unmarkMonthEmpty: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                month: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getFlowSummary: {
         parameters: {
             query?: {
@@ -13185,6 +13393,7 @@ export interface operations {
                 size?: number;
                 includeRetryable?: boolean;
                 archived?: boolean;
+                reason?: "NO_ACCOUNT" | "IMPORT_OFF" | "NO_AI_KEY" | "LOCKED_STATEMENT" | "UNREADABLE_STATEMENT" | "FAILED";
             };
             header?: never;
             path?: never;
@@ -13199,6 +13408,103 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PageGmailAttentionItemResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    archiveAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttentionBulkRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AttentionBulkResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    retryAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttentionBulkRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AttentionBulkResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    summary_2: {
+        parameters: {
+            query?: {
+                includeRetryable?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AttentionReasonCount"][];
                 };
             };
             /** @description Error response */
