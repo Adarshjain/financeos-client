@@ -26,6 +26,7 @@ const meta: Meta<typeof Text> = {
         'title',
         'heading',
         'body',
+        'body-lg',
         'body-strong',
         'label',
         'caption',
@@ -109,6 +110,13 @@ export const Body: Story = {
   args: {
     variant: 'body',
     children: 'You will need an invite code.',
+  },
+};
+
+export const BodyLarge: Story = {
+  args: {
+    variant: 'body-lg',
+    children: 'Riya Sharma',
   },
 };
 

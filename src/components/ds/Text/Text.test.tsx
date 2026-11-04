@@ -18,7 +18,7 @@ describe('Text component', () => {
     expect(el).not.toHaveClass('font-text', 'font-display', 'text-left', 'text-center', 'text-right');
   });
 
-  it('supports all 12 type styles through variant prop', () => {
+  it('supports all 13 type styles through variant prop', () => {
     const variants: Record<TextVariant, string[]> = {
       'hero-figure': ['text-hero-figure'],
       'page-title': ['text-page-title'],
@@ -27,6 +27,7 @@ describe('Text component', () => {
       title: ['text-title'],
       heading: ['text-heading'],
       body: ['text-body'],
+      'body-lg': ['text-body-lg'],
       'body-strong': ['text-body-strong'],
       label: ['text-label'],
       caption: ['text-caption'],

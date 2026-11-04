@@ -12,6 +12,7 @@ export type TextVariant =
   | 'title'
   | 'heading'
   | 'body'
+  | 'body-lg'
   | 'body-strong'
   | 'label'
   | 'caption'
@@ -88,6 +89,7 @@ const variantStyles: Record<TextVariant, string> = {
   title: 'text-title',
   heading: 'text-heading',
   body: 'text-body',
+  'body-lg': 'text-body-lg',
   'body-strong': 'text-body-strong',
   label: 'text-label',
   caption: 'text-caption',

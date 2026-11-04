@@ -244,6 +244,8 @@ export function HelloScreen({
       >
         <TextField
           id="hello-name"
+          size="xl"
+          textStyle="regular"
           label={NAME_LABEL}
           name="displayName"
           autoComplete="name"
@@ -264,6 +266,8 @@ export function HelloScreen({
 
         <DateField
           id="hello-birth"
+          size="xl"
+          textStyle="regular"
           label={BIRTH_LABEL}
           today={today}
           minDate="1900-01-01"

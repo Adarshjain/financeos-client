@@ -12,6 +12,7 @@ export type TextFieldAlign = 'left' | 'right';
 export type TextFieldVariant = 'default' | 'embedded';
 export type TextFieldShape = 'default' | 'pill';
 export type TextFieldTone = 'neutral' | 'success';
+export type TextFieldTextStyle = 'figure' | 'regular';
 
 export interface TextFieldProps
   extends Omit<
@@ -25,6 +26,8 @@ export interface TextFieldProps
   tone?: TextFieldTone;
   /** `pill` matches a FilterChip of the same size: `size="md"` is the sm chip (28px, 10px side padding, like the md field's padding), `lg` (default) is the md chip (32px, 12px); full radius, label text. Use beside filter chips. */
   shape?: TextFieldShape;
+  /** The input text of an `xl` field: `figure` (default, the bold amount) or `regular` (`body-lg`, large non-bold text). Other sizes ignore it (owner, 2026-11-04). */
+  textStyle?: TextFieldTextStyle;
   label?: React.ReactNode;
   helper?: React.ReactNode;
   error?: React.ReactNode;
@@ -47,6 +50,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       variant = 'default',
       tone = 'neutral',
       shape = 'default',
+      textStyle = 'figure',
       type = 'text',
       inputMode,
       label,
@@ -169,7 +173,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             aria-describedby={hasError || helper ? helperId : undefined}
             className={cn(
               'w-full h-full bg-transparent border-0 p-0 text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0',
-              isXl ? 'text-figure' : isPill ? 'text-label' : 'text-body',
+              isXl ? (textStyle === 'regular' ? 'text-body-lg' : 'text-figure') : isPill ? 'text-label' : 'text-body',
               align === 'right' && 'text-end',
               type === 'search' &&
                 '[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden',

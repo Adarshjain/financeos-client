@@ -59,6 +59,7 @@ export const CN_FONT_SIZE = [
   'title',
   'heading',
   'body',
+  'body-lg',
   'body-strong',
   'label',
   'caption',

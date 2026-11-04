@@ -379,4 +379,11 @@ describe('size', () => {
     expect(input.closest('.h-control-xl')).not.toBeNull();
     expect(input).toHaveClass('text-figure');
   });
+
+  it('passes textStyle regular through: xl height with body-lg text', () => {
+    render(<DateField today="2026-10-13" label="Birth" size="xl" textStyle="regular" />);
+    const input = screen.getByLabelText('Birth');
+    expect(input.closest('.h-control-xl')).not.toBeNull();
+    expect(input).toHaveClass('text-body-lg');
+  });
 });
