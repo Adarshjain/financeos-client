@@ -50,6 +50,7 @@ test.describe('Account suggestions (@ui)', () => {
     await expect(page.getByText('••4321').first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Not mine' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Add', exact: true }).first()).toBeVisible();
+    await expect(page.getByTestId('suggestions-note')).toContainText('we can miss an account or get a detail wrong');
   });
 
   test('an entity that matches an existing account stays hidden', async ({ page }) => {
@@ -90,6 +91,7 @@ test.describe('Account suggestions (@ui)', () => {
     await page.reload();
     await expect(page.getByText('Bank accounts')).toBeVisible();
     await expect(page.getByText('••4321')).toHaveCount(0);
+    await expect(page.getByTestId('suggestions-note')).toHaveCount(0);
   });
 
   test('a low-confidence entity waits in a collapsed Maybe yours band until Show', async ({ page }) => {
