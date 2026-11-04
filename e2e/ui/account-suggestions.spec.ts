@@ -51,6 +51,11 @@ test.describe('Account suggestions (@ui)', () => {
     await expect(page.getByRole('button', { name: 'Not mine' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Add', exact: true }).first()).toBeVisible();
     await expect(page.getByTestId('suggestions-note')).toContainText('we can miss an account or get a detail wrong');
+    await page.getByTestId('suggestions-note').getByRole('button', { name: 'Close' }).click();
+    await expect(page.getByTestId('suggestions-note')).toHaveCount(0);
+    await page.reload();
+    await expect(foundBand(page, 1)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('suggestions-note')).toHaveCount(0);
   });
 
   test('an entity that matches an existing account stays hidden', async ({ page }) => {
