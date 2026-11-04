@@ -44,7 +44,25 @@ test.describe('Hello and profile (@ui)', () => {
     // No Gmail yet: screen 2, then Skip goes Home.
     await expect(page.getByRole('heading', { name: 'Connect the Gmail your bank writes to' })).toBeVisible();
     await expect(page.getByText('2 of 2')).toBeVisible();
+
+    // Step 1 saved the profile but onboarding is still open: a refresh stays on step 2, and so does the app gate.
+    const mid = await makeApi(user.cookie).GET('/api/v1/auth/me');
+    expect(mid.data).toMatchObject({ helloDone: false, helloProfileSaved: true });
+    await page.reload();
+    await expect(page.getByText('2 of 2')).toBeVisible();
+    await page.goto('/dashboard');
+    await page.waitForURL('**/welcome');
+    await expect(page.getByText('2 of 2')).toBeVisible();
+
+    // Back sits in the footer, before Skip and Connect Gmail.
+    await page.getByRole('button', { name: 'Back' }).click();
+    await expect(page.getByText('1 of 2')).toBeVisible();
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    await expect(page.getByText('2 of 2')).toBeVisible();
+
     await page.getByRole('button', { name: 'Skip' }).click();
+    await expect(page.getByRole('dialog', { name: 'Continue without Gmail?' })).toBeVisible();
+    await page.getByRole('button', { name: 'Skip for now' }).click();
     await page.waitForURL('**/dashboard');
 
     // Hello is done for good.
@@ -69,16 +87,22 @@ test.describe('Hello and profile (@ui)', () => {
     await expect(page.getByText('2 of 2')).toBeVisible();
 
     const me = await makeApi(user.cookie).GET('/api/v1/auth/me');
-    expect(me.data).toMatchObject({ helloDone: true });
+    expect(me.data).toMatchObject({ helloDone: false, helloProfileSaved: true });
     expect(me.data?.birthDate ?? null).toBeNull();
+
+    await page.getByRole('button', { name: 'Skip' }).click();
+    await page.getByRole('button', { name: 'Skip for now' }).click();
+    await page.waitForURL('**/dashboard');
+    const done = await makeApi(user.cookie).GET('/api/v1/auth/me');
+    expect(done.data).toMatchObject({ helloDone: true });
   });
 
-  test('Settings → Profile → Edit saves the name and birth date', async ({ context, page, request }) => {
+  test('Settings → Profile → Name row saves the name and birth date', async ({ context, page, request }) => {
     const user = await createUser(request, 'ui-profile-edit');
     await loginContext(context, user.cookie);
 
     await page.goto('/settings');
-    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    await page.getByRole('button', { name: /^Name/ }).click();
     const dialog = page.getByRole('dialog', { name: 'Edit profile' });
     await dialog.getByLabel('Your name, as your bank prints it').fill('Asha R Rao');
     await dialog.getByLabel('Date of birth').fill('06/05/1991');

@@ -40,6 +40,7 @@ test.describe('Auth API (@api)', () => {
       'birthDate',
       'birthDateSource',
       'helloDone',
+      'helloProfileSaved',
     ]);
     for (const key of Object.keys(data)) {
       expect(allowedKeys.has(key), `Unexpected key in UserResponse: ${key}`).toBe(true);

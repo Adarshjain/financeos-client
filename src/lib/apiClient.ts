@@ -397,8 +397,12 @@ export const authApi = {
     return data! as UserResponse;
   },
   getCurrentUser: async (): Promise<UserResponse> => authApi.me(),
-  hello: async (body: { displayName?: string; birthDate?: string; termsAccepted: boolean }): Promise<UserResponse> => {
+  hello: async (body: { displayName?: string; birthDate?: string; termsAccepted: boolean; finish?: boolean }): Promise<UserResponse> => {
     const { data } = await serverApi.POST('/api/v1/me/hello', { body });
+    return data! as UserResponse;
+  },
+  finishHello: async (): Promise<UserResponse> => {
+    const { data } = await serverApi.POST('/api/v1/me/hello/finish');
     return data! as UserResponse;
   },
   updateProfile: async (body: { displayName?: string; birthDate?: string }): Promise<UserResponse> => {

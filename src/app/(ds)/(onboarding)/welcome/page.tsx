@@ -26,6 +26,7 @@ export default async function HelloPage() {
       birthDate={user.birthDate ?? null}
       birthDateFromGoogle={user.birthDateSource === 'GOOGLE'}
       hasGmail={hasGmail}
+      helloProfileSaved={user.helloProfileSaved === true}
       today={todayInAppZone()}
     />
   );

@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
-import { Button } from '@/components/ds/Button/Button';
 import { DateField } from '@/components/ds/DateField/DateField';
 import { Dialog } from '@/components/ds/Dialog/Dialog';
 import { TextField } from '@/components/ds/TextField/TextField';
@@ -21,20 +20,41 @@ import type { UserResponse } from '@/lib/types';
 
 import { updateProfile } from './editProfileActions';
 
-/** The card's Edit action and its dialog (a bottom sheet on phone): the name and birth date banks lock statements with. */
-export function EditProfile({ user, today }: { user: UserResponse; today: string }) {
-  const [open, setOpen] = useState(false);
+export type ProfileField = 'name' | 'birth';
+
+/** The edit dialog (a bottom sheet on phone) for the name and birth date banks lock statements with; the card's rows open it with one field focused. */
+export function EditProfile({
+  user,
+  today,
+  open,
+  focus,
+  onOpenChange,
+}: {
+  user: UserResponse;
+  today: string;
+  open: boolean;
+  focus: ProfileField;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const setOpen = onOpenChange;
+  const nameRef = useRef<HTMLInputElement>(null);
+  const birthRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState('');
   const [birth, setBirth] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const show = () => {
+  // Fresh values each time it opens, then focus the tapped row's field once the dialog has mounted.
+  useEffect(() => {
+    if (!open) return;
     setName(user.displayName ?? '');
     setBirth(birthDateFieldValue(user.birthDate));
     setError(null);
-    setOpen(true);
-  };
+    const t = setTimeout(() => (focus === 'birth' ? birthRef : nameRef).current?.focus(), 0);
+    return () => clearTimeout(t);
+    // Only on open: a saved user must not reset a half-typed edit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const save = async () => {
     if (!name.trim()) {
@@ -59,9 +79,6 @@ export function EditProfile({ user, today }: { user: UserResponse; today: string
 
   return (
     <>
-      <Button variant="link" size="sm" onClick={show}>
-        Edit
-      </Button>
       <Dialog open={open} onOpenChange={(next) => !saving && setOpen(next)}>
         <Dialog.Content
           size="sm"
@@ -81,6 +98,7 @@ export function EditProfile({ user, today }: { user: UserResponse; today: string
             >
               {error ? <Banner tone="danger">{error}</Banner> : null}
               <TextField
+                ref={nameRef}
                 label={NAME_LABEL}
                 autoComplete="name"
                 maxLength={MAX_NAME_LENGTH}
@@ -89,6 +107,7 @@ export function EditProfile({ user, today }: { user: UserResponse; today: string
                 helper={user.hasPassword === false ? NAME_CAPTION_GOOGLE : undefined}
               />
               <DateField
+                ref={birthRef}
                 label={BIRTH_LABEL}
                 today={today}
                 minDate="1900-01-01"

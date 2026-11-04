@@ -44,6 +44,8 @@ export interface UserResponse {
   birthDate?: string | null;
   birthDateSource?: 'TYPED' | 'GOOGLE' | null;
   helloDone?: boolean;
+  /** Welcome step 1 (terms accepted) is saved. */
+  helloProfileSaved?: boolean;
 }
 
 export interface DeleteAccountRequest {
