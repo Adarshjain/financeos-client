@@ -42,14 +42,12 @@ function getColumnTrack(meta?: DataTableColumnMeta): string {
   switch (size) {
     case 'xs':
       return 'var(--ds-control-md)';
+    // As wide as the column's widest cell (header included), like an HTML table column.
     case 'sm':
-      return 'var(--ds-space-96)';
     case 'date':
-      return 'calc(var(--ds-space-96) * 1.25)';
     case 'md':
-      return 'calc(var(--ds-space-96) * 1.5)';
     case 'lg':
-      return 'calc(var(--ds-space-96) * 2)';
+      return 'auto';
     case 'fill':
     default: {
       const grow = meta?.grow ?? 1;

@@ -85,6 +85,7 @@ function DataTableInner<Row extends RowData>(
     <div
       ref={ref}
       role="table"
+      data-ds-table=""
       aria-busy={busy || undefined}
       style={
         {
@@ -92,7 +93,7 @@ function DataTableInner<Row extends RowData>(
           ...style,
         } as React.CSSProperties
       }
-      className={cn('relative w-full font-text', className)}
+      className={cn('relative w-full font-text desk:grid desk:grid-cols-template', className)}
       {...restProps}
     >
       {pager && <div>{pager}</div>}
@@ -113,7 +114,7 @@ function DataTableInner<Row extends RowData>(
             key={`skeleton-${i}`}
             className={cn(
               (i > 0 || firstRowBorder) && 'border-t border-line-soft',
-              'border-l-4 border-l-transparent bg-surface px-space-14 py-space-10 flex flex-col gap-space-8 desk:grid desk:grid-cols-template desk:gap-x-0 desk:px-0 desk:py-0 desk:min-h-space-40 desk:items-center',
+              'border-l-4 border-l-transparent bg-surface px-space-14 py-space-10 flex flex-col gap-space-8 desk:grid desk:grid-cols-subgrid desk:gap-x-0 desk:px-0 desk:py-0 desk:min-h-space-40 desk:items-center',
             )}
           >
             <div className="flex flex-col gap-space-8 desk:hidden">
@@ -172,6 +173,7 @@ function DataTableInner<Row extends RowData>(
             rowNode = (
               <div
                 key={row.id}
+                data-ds-row-slot=""
                 ref={(el) => {
                   if (isHighlighted && el && scrolledIdRef.current !== row.id) {
                     scrolledIdRef.current = row.id;
@@ -209,7 +211,11 @@ function DataTableInner<Row extends RowData>(
                 first={i === 0 && !firstRowBorder}
               />
             );
-            rowNode = wrapRow ? wrapRow(row.original, rowElement) : rowElement;
+            rowNode = (
+              <div data-ds-row-slot="">
+                {wrapRow ? wrapRow(row.original, rowElement) : rowElement}
+              </div>
+            );
           }
 
           return (
