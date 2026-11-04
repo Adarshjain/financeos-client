@@ -24,12 +24,13 @@ async function search(cookie: string, q: string) {
 }
 
 test.describe('Global search API (@api)', () => {
-  test('rejects text under 3 characters (after trimming) and over 100 with 400', async ({ request }) => {
+  test('rejects text under 2 characters (after trimming) and over 100 with 400', async ({ request }) => {
     const { cookie } = await newUser(request, 'search-len');
-    for (const q of ['', 'a', 'ab', '  ab  ', '   ']) {
+    for (const q of ['', 'a', '  a  ', '   ']) {
       expect((await search(cookie, q)).status, `q="${q}"`).toBe(400);
     }
     expect((await search(cookie, 'x'.repeat(101))).status).toBe(400);
+    expect((await search(cookie, 'ab')).status).toBe(200);
     expect((await search(cookie, 'abc')).status).toBe(200);
     expect((await search(cookie, 'x'.repeat(100))).status).toBe(200);
   });

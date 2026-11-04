@@ -1,5 +1,3 @@
-import type { Page } from '@playwright/test';
-
 import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
@@ -8,8 +6,6 @@ import { createBankAccount } from '../fixtures/seed/accounts';
 import { createTransaction } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
 import { expectToast } from '../fixtures/ui';
-
-const row = (page: Page, key: string) => page.locator(`[data-inbox-key="${key}"]`);
 
 test.describe('/ds auto-linking (@ui)', () => {
   let currentUser: CreatedUser;
@@ -41,7 +37,7 @@ test.describe('/ds auto-linking (@ui)', () => {
     await expect(page.getByText('Linked automatically')).toBeVisible({ timeout: 15_000 });
   });
 
-  test('one debit and two equal credits are a suggestion: Inbox Review, Link, toast, row gone', async ({ page }) => {
+  test('one debit and two equal credits are a suggestion: details panel Link, toast, section gone', async ({ page }) => {
     test.slow();
     const api = makeApi(currentUser.cookie);
     const from = await createBankAccount(api, { name: 'Suggest From', last4: '3333' });
@@ -49,7 +45,7 @@ test.describe('/ds auto-linking (@ui)', () => {
     const toB = await createBankAccount(api, { name: 'Suggest To B', last4: '5555' });
     await createTransaction(api, toA.id, { amount: 9100, description: 'Suggest in A' });
     await createTransaction(api, toB.id, { amount: 9100, description: 'Suggest in B' });
-    await createTransaction(api, from.id, { amount: -9100, description: 'Suggest out' });
+    const out = await createTransaction(api, from.id, { amount: -9100, description: 'Suggest out' });
 
     await expect
       .poll(async () => {
@@ -58,21 +54,18 @@ test.describe('/ds auto-linking (@ui)', () => {
       }, { timeout: 45_000 })
       .toBeGreaterThan(0);
 
-    await page.goto('/inbox');
-    const suggestionRow = row(page, 'link-suggestion:TRANSFER');
-    await expect(suggestionRow).toBeVisible({ timeout: 45_000 });
-    await expect(suggestionRow).toContainText('possible transfer');
+    // Link suggestions no longer sit in the Inbox: the debit's details panel offers them.
+    await page.goto(`/transactions?txn=${out.id}`);
+    const dialog = page.getByRole('dialog', { name: 'Suggest out' });
+    await expect(dialog).toBeVisible({ timeout: 45_000 });
+    await expect(dialog.getByText('Suggested link')).toBeVisible({ timeout: 45_000 });
+    await expect(dialog.getByRole('button', { name: 'Not this' })).toBeVisible();
 
-    const dialog = page.getByRole('dialog');
-    // A click before hydration is dropped: click again until the dialog opens.
+    // A click before hydration is dropped: click again until the link is made.
     await expect(async () => {
-      await suggestionRow.getByRole('button', { name: 'Review' }).click();
-      await expect(dialog).toBeVisible({ timeout: 2000 });
+      await dialog.getByRole('button', { name: 'Link', exact: true }).first().click({ timeout: 2000 });
+      await expectToast(page, 'Linked');
     }).toPass({ timeout: 15_000 });
-    await expect(dialog.getByText('Possible transfers')).toBeVisible();
-    await dialog.getByRole('button', { name: 'Link', exact: true }).click();
-
-    await expectToast(page, 'Linked');
-    await expect(suggestionRow).toHaveCount(0);
+    await expect(dialog.getByText('Suggested link')).toHaveCount(0);
   });
 });
