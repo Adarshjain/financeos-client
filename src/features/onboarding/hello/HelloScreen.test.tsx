@@ -51,6 +51,15 @@ describe('HelloScreen', () => {
     expect(screen.getByRole('button', { name: "Let's go" })).toBeInTheDocument();
   });
 
+  it('shows the step bar only in the two-step flow', () => {
+    const { unmount } = render(<HelloScreen {...props} />);
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    unmount();
+    render(<HelloScreen {...props} hasGmail />);
+    expect(screen.queryByRole('progressbar')).toBeNull();
+    expect(screen.queryByText('1 of 2')).toBeNull();
+  });
+
   it('the first press with an empty birth date warns and reads Continue anyway, without saving', () => {
     render(<HelloScreen {...props} />);
     tick();

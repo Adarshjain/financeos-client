@@ -369,3 +369,14 @@ describe('DateField control (UAT)', () => {
     expect(screen.getByText('Pick a date')).toBeInTheDocument();
   });
 });
+
+describe('size', () => {
+  it('passes its size to the field like TextField: lg by default, xl taller with larger text', () => {
+    const { rerender } = render(<DateField today="2026-10-13" label="Date" />);
+    expect(screen.getByLabelText('Date').closest('.h-control-md')).not.toBeNull();
+    rerender(<DateField today="2026-10-13" label="Date" size="xl" />);
+    const input = screen.getByLabelText('Date');
+    expect(input.closest('.h-control-xl')).not.toBeNull();
+    expect(input).toHaveClass('text-figure');
+  });
+});
