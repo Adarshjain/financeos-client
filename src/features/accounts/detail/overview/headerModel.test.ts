@@ -38,7 +38,7 @@ describe('buildHeaderModel for a card', () => {
   it('shows what is owed with the due date and unbilled spend, and allows Mark paid', () => {
     const m = buildHeaderModel(card, bill(), TODAY);
     expect(m.label).toBe('Amount you owe');
-    expect(m.figure).toBe('₹44,319');
+    expect(m.figure).toBe('₹44,319.00');
     expect(m.info).toBeUndefined();
     expect(m.markPaid).toEqual({ statementId: 's1', remaining: 44319 });
   });
@@ -67,7 +67,7 @@ describe('buildHeaderModel for a card', () => {
       TODAY
     );
     expect(m.label).toBe('Unbilled so far');
-    expect(m.figure).toBe('₹6,224');
+    expect(m.figure).toBe('₹6,224.00');
     expect(m.info).toBe('Next statement 5 Nov');
     expect(m.markPaid).toBeNull();
   });
@@ -79,7 +79,7 @@ describe('buildHeaderModel for a card', () => {
   it('leaves out the info it does not know', () => {
     const m = buildHeaderModel(card, bill({ status: 'AWAITING_STATEMENT', unbilledAmount: 100 }), TODAY);
     expect(m.info).toBeUndefined();
-    expect(m.figure).toBe('₹100');
+    expect(m.figure).toBe('₹100.00');
   });
 
   it('tones the owed headline danger, and leaves in-credit and unbilled neutral', () => {
@@ -91,14 +91,14 @@ describe('buildHeaderModel for a card', () => {
   it('labels a card in credit and floors a missing balance at zero owed', () => {
     expect(buildHeaderModel({ ...card, balance: 500 }, bill(), TODAY)).toMatchObject({
       label: 'In credit',
-      figure: '₹500',
+      figure: '₹500.00',
     });
-    expect(buildHeaderModel({ ...card, balance: undefined }, bill(), TODAY).figure).toBe('₹0');
+    expect(buildHeaderModel({ ...card, balance: undefined }, bill(), TODAY).figure).toBe('₹0.00');
   });
 
   it('falls back to the owed figure with no actions when the bills request failed', () => {
     const m = buildHeaderModel(card, null, TODAY);
-    expect(m).toMatchObject({ label: 'Amount you owe', figure: '₹44,319', markPaid: null });
+    expect(m).toMatchObject({ label: 'Amount you owe', figure: '₹44,319.00', markPaid: null });
   });
 
   it('hides Mark paid and says when it closed', () => {
@@ -121,7 +121,7 @@ describe('buildHeaderModel for other types', () => {
     const m = buildHeaderModel({ ...bank, balanceAnchored: true, anchorDate: '2026-10-05' }, null, TODAY);
     expect(m).toMatchObject({
       label: 'Balance',
-      figure: '₹1,20,000',
+      figure: '₹1,20,000.00',
       info: 'as of statement 5 Oct',
       markPaid: null,
     });
@@ -144,7 +144,7 @@ describe('buildHeaderModel for other types', () => {
       null,
       TODAY
     );
-    expect(m.figure).toBe('₹2,500');
+    expect(m.figure).toBe('₹2,500.00');
     expect(m.info).toBeUndefined();
   });
 
@@ -153,11 +153,11 @@ describe('buildHeaderModel for other types', () => {
     const wallet: GenericAccount = { id: 'w1', type: AccountType.GENERIC, name: 'Cash', balance: 200 };
     expect(buildHeaderModel(broker, null, TODAY)).toMatchObject({
       label: 'Portfolio value',
-      figure: '₹50,000',
+      figure: '₹50,000.00',
     });
     expect(buildHeaderModel(wallet, null, TODAY)).toMatchObject({
       label: 'Balance',
-      figure: '₹200',
+      figure: '₹200.00',
     });
     expect(buildHeaderModel(wallet, null, TODAY, '2026-10-10').info).toBe('last entry 10 Oct');
   });

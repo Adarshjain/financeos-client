@@ -82,7 +82,7 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(page.getByText('+₹11,795', { exact: true }))).toBeVisible();
       await expect(shown(page.getByText('66.7%', { exact: true }))).toBeVisible();
       await expect(shown(page.getByText('2 of 3', { exact: true }))).toBeVisible();
-      await expect(shown(page.getByText('₹580', { exact: true }))).toBeVisible();
+      await expect(shown(page.getByText('₹580.20', { exact: true }))).toBeVisible();
 
       for (const name of ['NIFTY 25200 CE', 'BANKNIFTY 56000 PE', /^NIFTY [A-Z]{3} FUT/]) {
         await expect(shown(page.getByText(name))).toBeVisible();

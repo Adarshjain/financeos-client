@@ -143,7 +143,7 @@ export function figuresModel(summary: FnoSummary): FnoFiguresModel {
     realised: { text: formatMoney(summary.realisedPnl, { sign: 'always' }), tone: moveTone(summary.realisedPnl) },
     winRate: formatPercent(summary.winRate),
     winSub: `${summary.winCount} of ${count}`,
-    charges: formatMoney(Math.round(summary.totalCharges)),
+    charges: formatMoney(summary.totalCharges, { decimals: 'exact' }),
   };
 }
 
@@ -293,8 +293,8 @@ export function fnoListRow(trade: FnoTradeResponse): FnoListRow {
     bought: formatQuantity(trade.buyValue, 2),
     sold: formatQuantity(trade.sellValue, 2),
     charges: formatMoney(trade.totalCharges ?? 0, { decimals: 'exact', symbol: false }),
-    pnlPlain: formatMoney(trade.realizedPnl, { sign: 'always', symbol: false }),
-    pnl: formatMoney(trade.realizedPnl, { sign: 'always' }),
+    pnlPlain: formatMoney(trade.realizedPnl, { sign: 'always', symbol: false, decimals: 'exact' }),
+    pnl: formatMoney(trade.realizedPnl, { sign: 'always', decimals: 'exact' }),
     pnlTone: moveTone(trade.realizedPnl),
     source,
     line,

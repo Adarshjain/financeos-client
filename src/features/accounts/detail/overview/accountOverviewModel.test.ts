@@ -157,8 +157,8 @@ describe('buildLinked', () => {
         ],
       }),
     ).toEqual([
-      { key: 'l1', label: 'Home loan EMI', value: '₹36,603 on the 5th' },
-      { key: 'l2', label: 'Car loan EMI', value: '₹17,748' },
+      { key: 'l1', label: 'Home loan EMI', value: '₹36,603.00 on the 5th' },
+      { key: 'l2', label: 'Car loan EMI', value: '₹17,748.00' },
       { key: 'card-bills', label: 'Card bills', value: 'Regalia, SBI' },
     ]);
   });
@@ -194,7 +194,7 @@ describe('broker cash and last entry', () => {
       tx('c', '2026-10-07', 25000, 'Transfer from HDFC', true),
       tx('d', '2026-10-11', 900, 'Dividend credit'),
     ]);
-    expect(m).toEqual({ available: '₹12,500', lastTransferIn: '₹5,000 · 9 Oct · Transfer from ICICI' });
+    expect(m).toEqual({ available: '₹12,500.00', lastTransferIn: '₹5,000 · 9 Oct · Transfer from ICICI' });
   });
 
   it('has no last transfer without a transfer credit, and shows a dash for a missing cash balance', () => {

@@ -63,7 +63,7 @@ export function loansHero(summary: LoansSummaryDetail, today: string): HeroModel
     value: formatMoney(summary.totalOutstanding),
     change:
       summary.overdueAmount > 0
-        ? { text: `${formatMoney(summary.overdueAmount)} overdue · ${formatCount(summary.overdueCount, ['EMI', 'EMIs'])}`, tone: 'danger' }
+        ? { text: `${formatMoney(summary.overdueAmount, { decimals: 'exact' })} overdue · ${formatCount(summary.overdueCount, ['EMI', 'EMIs'])}`, tone: 'danger' }
         : undefined,
     figures: [
       { label: 'EMIs a month', value: formatMoney(summary.monthlyEmiTotal) },
@@ -127,12 +127,12 @@ export function loanRow(loan: LoanResponse, today: string): LoanRow {
     lender: loan.lender?.trim() || null,
     kind: loan.loanType.replace(/_/g, ' '),
     rate: `${rate} ${loan.rateType}`,
-    emi: formatMoney(loan.currentEmi, { symbol: false }),
-    outstanding: formatMoney(loan.outstandingPrincipal, { symbol: false }),
+    emi: formatMoney(loan.currentEmi, { symbol: false, decimals: 'exact' }),
+    outstanding: formatMoney(loan.outstandingPrincipal, { symbol: false, decimals: 'exact' }),
     progressPct: loan.totalInstallments > 0 ? Math.min(100, (loan.settledInstallments / loan.totalInstallments) * 100) : 0,
     progressText: `${paid}${ends}`,
     next: nextCell(loan, today),
-    phoneSub: `${rate} · EMI ${formatMoney(loan.currentEmi)} · ${paid} paid`,
+    phoneSub: `${rate} · EMI ${formatMoney(loan.currentEmi, { decimals: 'exact' })} · ${paid} paid`,
     closed: loan.status !== 'active',
     href: appHref(`/loans/${loan.id}`),
   };

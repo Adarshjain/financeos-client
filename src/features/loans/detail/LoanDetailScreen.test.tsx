@@ -162,7 +162,7 @@ describe('schedule', () => {
   it('opens on the current financial year with its summary line', () => {
     renderView();
     expect(screen.getByText('Schedule')).toBeInTheDocument();
-    expect(screen.getByText('6 EMIs · principal ₹46,368')).toBeInTheDocument();
+    expect(screen.getByText('6 EMIs · principal ₹46,368.00')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'FY 26-27' })).toBeInTheDocument();
     for (const header of ['#', 'Due', 'Opening', 'EMI', 'Interest', 'Principal', 'Closing', 'Status']) {
       expect(screen.getAllByText(header).length).toBeGreaterThan(0);
@@ -181,14 +181,14 @@ describe('schedule', () => {
     renderView();
     await user.click(screen.getByRole('button', { name: 'FY 26-27' }));
     await user.click(await screen.findByRole('option', { name: 'FY 27-28' }));
-    expect(screen.getByText('1 EMI · principal ₹7,728')).toBeInTheDocument();
+    expect(screen.getByText('1 EMI · principal ₹7,728.00')).toBeInTheDocument();
     expect(screen.queryByText('Overdue 8 d')).toBeNull();
   });
 
   it('opens on the year of ?installment=N', () => {
     renderView({ highlightSeq: 17 });
     expect(screen.getByRole('button', { name: 'FY 27-28' })).toBeInTheDocument();
-    expect(screen.getByText('1 EMI · principal ₹7,728')).toBeInTheDocument();
+    expect(screen.getByText('1 EMI · principal ₹7,728.00')).toBeInTheDocument();
   });
 
   it('puts prepayments and rate changes in the table at their dates', () => {

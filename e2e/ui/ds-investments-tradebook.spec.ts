@@ -153,7 +153,7 @@ for (const viewport of VIEWPORTS) {
 
       await expect(page.getByText('Trade updated')).toBeVisible();
       await expect(dialog).toHaveCount(0);
-      await expect(shown(page.getByText(viewport.phone ? '₹10,000' : '10,000', { exact: true }))).toBeVisible();
+      await expect(shown(page.getByText(viewport.phone ? '₹10,000.00' : '10,000.00', { exact: true }))).toBeVisible();
       if (!viewport.phone) await expect(page.getByText('≈20.00', { exact: true })).toBeVisible();
     });
 

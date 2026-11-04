@@ -43,7 +43,7 @@ export function buildUsage(
     const b = report.rules.find((r) => r.ruleId === rule.id);
     const cash = b ? b.earnedUnit === 'RUPEES' : rule.rewardType !== 'POINTS';
     const value = b?.earned ?? 0;
-    earned[rule.id] = { text: cash ? formatMoney(value) : pts(value), zero: value === 0 };
+    earned[rule.id] = { text: cash ? formatMoney(value, { decimals: 'auto' }) : pts(value), zero: value === 0 };
   }
 
   const capUsage: RulesUsage['caps'] = {};

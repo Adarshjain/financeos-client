@@ -75,7 +75,7 @@ describe('loansHero', () => {
     expect(loansHero(summary, TODAY)).toEqual({
       label: 'Total outstanding',
       value: '₹50,50,000',
-      change: { text: '₹63,954 overdue · 3 EMIs', tone: 'danger' },
+      change: { text: '₹63,954.00 overdue · 3 EMIs', tone: 'danger' },
       figures: [
         { label: 'EMIs a month', value: '₹63,954' },
         { label: 'Next EMI', value: '5 Nov' },
@@ -129,11 +129,11 @@ describe('nextCell and loanRow', () => {
       kind: 'home',
       rate: '8.25% floating',
       lender: null,
-      emi: '36,603',
-      outstanding: '41,92,327',
+      emi: '36,603.00',
+      outstanding: '41,92,327.00',
       progressText: '13 of 240 · ends January 2045',
       next: { kind: 'overdue', label: '#14 overdue' },
-      phoneSub: '8.25% · EMI ₹36,603 · 13 of 240 paid',
+      phoneSub: '8.25% · EMI ₹36,603.00 · 13 of 240 paid',
       closed: false,
       href: '/loans/l1',
     });
@@ -153,10 +153,10 @@ describe('nextCell and loanRow', () => {
     expect(row.progressPct).toBe(0);
   });
 
-  it('rounds the money to whole rupees and carries the lender', () => {
+  it('shows paise and carries the lender', () => {
     const row = loanRow(loan({ outstandingPrincipal: 574156.02, currentEmi: 17748.4, lender: ' SBI ' }), TODAY);
-    expect(row.outstanding).toBe('5,74,156');
-    expect(row.emi).toBe('17,748');
+    expect(row.outstanding).toBe('5,74,156.02');
+    expect(row.emi).toBe('17,748.40');
     expect(row.lender).toBe('SBI');
   });
 

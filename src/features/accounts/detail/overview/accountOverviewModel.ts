@@ -143,8 +143,8 @@ export function buildLinked(payments: {
       key: emi.loanId,
       label: emi.name,
       value: Number.isFinite(day)
-        ? `${formatMoney(emi.amount)} on the ${ordinal(day)}`
-        : formatMoney(emi.amount),
+        ? `${formatMoney(emi.amount, { decimals: 'exact' })} on the ${ordinal(day)}`
+        : formatMoney(emi.amount, { decimals: 'exact' }),
     };
   });
   if (payments.cardBills.length > 0) {
@@ -174,7 +174,7 @@ export function buildBrokerCash(account: Broker, recent: readonly Transaction[] 
     ? [formatMoney(credit.amount, { decimals: 'auto' }), formatDate(credit.date, 'list'), credit.description || credit.sourcedDescription]
     : [];
   return {
-    available: account.cashBalance !== undefined ? formatMoney(account.cashBalance) : '—',
+    available: account.cashBalance !== undefined ? formatMoney(account.cashBalance, { decimals: 'exact' }) : '—',
     lastTransferIn: credit ? parts.filter(Boolean).join(' · ') : undefined,
   };
 }

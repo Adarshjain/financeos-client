@@ -53,7 +53,7 @@ function BillRow({ state, highlighted }: { state: BillCardState; highlighted: bo
               {statusWord(state)}
             </Text>
             <Text variant="body-strong" tone={phase === 'overdue' ? 'danger' : 'ink'} fraction="small" data-testid="bill-headline">
-              {headline != null ? formatMoney(headline) : '—'}
+              {headline != null ? formatMoney(headline, { decimals: 'exact' }) : '—'}
             </Text>
         </div>
       }

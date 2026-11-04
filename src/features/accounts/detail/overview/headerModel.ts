@@ -31,12 +31,12 @@ function cardHeader(
   closed: boolean
 ): Pick<HeaderModel, 'label' | 'figure' | 'figureTone' | 'info' | 'markPaid'> {
   const balance = account.balance ?? 0;
-  const owed = formatMoney(Math.max(0, -balance));
+  const owed = formatMoney(Math.max(0, -balance), { decimals: 'exact' });
   const inCredit = balance > 0;
   if (!bill) {
     return {
       label: inCredit ? 'In credit' : 'Amount you owe',
-      figure: inCredit ? formatMoney(balance) : owed,
+      figure: inCredit ? formatMoney(balance, { decimals: 'exact' }) : owed,
       figureTone: balance < 0 ? 'danger' : undefined,
       markPaid: null,
     };
@@ -48,7 +48,7 @@ function cardHeader(
   if (state.phase === 'awaiting') {
     return {
       label: 'Unbilled so far',
-      figure: formatMoney(unbilled ?? 0),
+      figure: formatMoney(unbilled ?? 0, { decimals: 'exact' }),
       info,
       markPaid: null,
     };
@@ -56,7 +56,7 @@ function cardHeader(
 
   return {
     label: inCredit ? 'In credit' : 'Amount you owe',
-    figure: inCredit ? formatMoney(balance) : owed,
+    figure: inCredit ? formatMoney(balance, { decimals: 'exact' }) : owed,
     figureTone: balance < 0 ? 'danger' : undefined,
     info,
     markPaid:
@@ -104,7 +104,7 @@ function buildBaseHeaderModel(
   if (account.type === AccountType.BROKER) {
     return {
       label: 'Portfolio value',
-      figure: formatMoney(account.balance ?? 0),
+      figure: formatMoney(account.balance ?? 0, { decimals: 'exact' }),
       info: closedInfo ?? info,
       markPaid: null,
     };
@@ -113,7 +113,7 @@ function buildBaseHeaderModel(
     const opening = account.openingBalance != null ? Number(account.openingBalance) : 0;
     return {
       label: 'Balance',
-      figure: formatMoney(account.balance ?? (Number.isFinite(opening) ? opening : 0)),
+      figure: formatMoney(account.balance ?? (Number.isFinite(opening) ? opening : 0), { decimals: 'exact' }),
       info: closedInfo ?? info,
       markPaid: null,
     };
@@ -121,7 +121,7 @@ function buildBaseHeaderModel(
   if (!info && lastEntry) info = `last entry ${formatDate(lastEntry, 'list')}`;
   return {
     label: 'Balance',
-    figure: formatMoney(account.balance ?? 0),
+    figure: formatMoney(account.balance ?? 0, { decimals: 'exact' }),
     info: closedInfo ?? info,
     markPaid: null,
   };

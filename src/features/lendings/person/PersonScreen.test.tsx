@@ -220,7 +220,7 @@ describe('expected return, person and matching cards', () => {
     });
     renderView();
     await user.click(screen.getByRole('button', { name: 'Find matches' }));
-    expect(await screen.findByText('UPI to Rahul · ₹25,000')).toBeInTheDocument();
+    expect(await screen.findByText('UPI to Rahul · ₹25,000.00')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Link' }));
     await waitFor(() => expect(m.linkTransaction.mutateAsync).toHaveBeenCalledWith({ id: 'e2', transactionId: 'tx5' }));
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
