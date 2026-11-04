@@ -13,12 +13,15 @@ import { CATEGORY_LIST_FIXTURE } from '@/lib/categoryList.fixtures';
 
 import { useSetCategory } from './useSetCategory';
 
-const previous = (source: string | null) => ({ success: true, data: { previous: { categoryKey: null, subcategoryKey: null, source } } });
+const previous = (source: string | null, ruleKey: string | null) => ({
+  success: true,
+  data: { ruleKey, previous: { categoryKey: null, subcategoryKey: null, source } },
+});
 const pick = { categoryKey: 'food', subcategoryKey: null };
-const txn = { id: 't1', description: 'Swiggy order', sourcedDescription: 'UPI/SWIGGY' };
+const txn = { id: 't1' };
 
-const run = async (source: string | null) => {
-  mocks.set.mockResolvedValue(previous(source));
+const run = async (source: string | null, ruleKey: string | null = 'SWIGGY') => {
+  mocks.set.mockResolvedValue(previous(source, ruleKey));
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>
   );
@@ -35,7 +38,7 @@ beforeEach(() => {
 describe('useSetCategory rule offer', () => {
   it.each(['RULE', 'AUTO'])('offers a rule when %s had set the category before', async (source) => {
     const [, opts] = await run(source);
-    expect(opts.action.label).toBe('Do the same next time for ‘SWIGGY ORDER’?');
+    expect(opts.action.label).toBe('Do the same next time for ‘SWIGGY’?');
     expect(opts.secondaryAction?.label).toBe('Undo');
   });
 
@@ -45,11 +48,17 @@ describe('useSetCategory rule offer', () => {
     expect(opts.secondaryAction).toBeUndefined();
   });
 
+  it('offers none when the server found no key', async () => {
+    const [, opts] = await run('RULE', null);
+    expect(opts.action.label).toBe('Undo');
+    expect(opts.secondaryAction).toBeUndefined();
+  });
+
   it('Yes creates a contains rule and says Rule saved', async () => {
     const [, opts] = await run('RULE');
     opts.action.onSelect();
     await vi.waitFor(() =>
-      expect(mocks.rule).toHaveBeenCalledWith({ merchantKey: 'SWIGGY ORDER', matchType: 'CONTAINS', categoryKey: 'food', subcategoryKey: null }),
+      expect(mocks.rule).toHaveBeenCalledWith({ merchantKey: 'SWIGGY', matchType: 'CONTAINS', categoryKey: 'food', subcategoryKey: null }),
     );
     await vi.waitFor(() => expect(mocks.show).toHaveBeenLastCalledWith('Rule saved'));
   });

@@ -16,13 +16,13 @@ import { patchChange } from '../optimistic/optimisticModel';
 import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
 import { createRule } from '../rules/ruleActions';
 import { setTransactionCategory } from '../transactionActions';
-import { categoryPatch, ruleOfferKey, savedMessage } from './categoryModel';
+import { categoryPatch, savedMessage } from './categoryModel';
 
 /** The Undo toast of a row's latest set: a new set on the row closes it, so an old Undo can never overwrite a newer pick. */
 const undoToastId = (transactionId: string) => `set-category-undo-${transactionId}`;
 
-/** The transaction to set; its description is the text a "next time" rule would match. */
-type SettableTransaction = Pick<Transaction, 'id'> & Partial<Pick<Transaction, 'description' | 'sourcedDescription'>>;
+/** The transaction to set. */
+type SettableTransaction = Pick<Transaction, 'id'>;
 
 /**
  * Sets a transaction's category: the row shows it at once and the save finishes behind it (a failure puts the old one back).
@@ -105,7 +105,7 @@ export function useSetCategory(list: readonly CategoryDef[]) {
         },
       };
       // A category a rule or the auto-categoriser had set offers a rule for the next ones; one the user set never does.
-      const offerKey = before.source === 'RULE' || before.source === 'AUTO' ? ruleOfferKey(transaction) : null;
+      const offerKey = before.source === 'RULE' || before.source === 'AUTO' ? response.ruleKey || null : null;
       showToast(savedMessage(list, pick), {
         id: undoToastId(transaction.id),
         ...(offerKey
