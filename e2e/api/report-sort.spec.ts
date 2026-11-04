@@ -141,7 +141,7 @@ test.describe('Runtime header sort on report runs (@api)', () => {
     const definition = (sort?: unknown) => ({
       mode: 'aggregated',
       rows: [{ field: 'kind' }],
-      measures: [{ field: 'value', aggregation: 'sum' }],
+      measures: [{ field: 'signedValue', aggregation: 'sum' }],
       filters: [],
       ...(sort ? { sort } : {}),
     });
@@ -151,23 +151,23 @@ test.describe('Runtime header sort on report runs (@api)', () => {
       name: 'Net worth by kind',
       type: 'TABLE',
       datasource: 'net_worth',
-      definition: definition([{ key: 'value_sum', direction: 'desc' }]),
+      definition: definition([{ key: 'signedValue_sum', direction: 'desc' }]),
     } as never);
     const bySaved = await runSaved(api, saved.id);
     expectStatus(bySaved, 200);
-    expect(pivotRows(bySaved, 'kind', 'value_sum')).toEqual([
+    expect(pivotRows(bySaved, 'kind', 'signedValue_sum')).toEqual([
       ['bank_account', 9000],
       ['lending', 4000],
-      ['credit_card', 1200],
+      ['credit_card', -1200],
     ]);
-    expect(kinds(await runSaved(api, saved.id, 'value_sum,asc')), 'the runtime clause replaces the saved one').toEqual([
+    expect(kinds(await runSaved(api, saved.id, 'signedValue_sum,asc')), 'the runtime clause replaces the saved one').toEqual([
       'credit_card',
       'lending',
       'bank_account',
     ]);
     expect(kinds(await runSaved(api, saved.id, 'kind,asc'))).toEqual(['bank_account', 'credit_card', 'lending']);
     // Stable across pages.
-    const second = await runSaved(api, saved.id, 'value_sum,asc', 1, 2);
+    const second = await runSaved(api, saved.id, 'signedValue_sum,asc', 1, 2);
     expect(kinds(second)).toEqual(['bank_account']);
 
     const adHoc = await runAdHoc(api, { type: 'TABLE', datasource: 'net_worth', definition: definition() }, 'kind,desc');

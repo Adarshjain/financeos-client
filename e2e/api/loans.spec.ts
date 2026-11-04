@@ -577,25 +577,17 @@ test.describe('Loans API (@api)', () => {
     const account = await createBankAccount(api, { name: 'Match Bank Account' });
     const otherAccount = await createBankAccount(api, { name: 'Other Bank Account' });
 
-    const loan = await createLoan(api, {
-      name: 'Match Candidate Loan',
-      principal: 120000,
-      annualRatePct: 12,
-      tenureMonths: 12,
-      startDate,
-      firstEmiDate: startDate,
-      paymentAccountId: account.id,
-    });
-
-    // Overdue seq 1 due date is startDate; EMI is 10661.85
-    // 1. Candidate within ±7 days and ±₹20 (e.g. +2 days, ₹10660)
+    // The debits go in before the loan, and two of them fit installment 1 (EMI 10661.85, due startDate; the fit is
+    // within 7 days and max(₹100, 1%)). The background auto-linker settles an installment only when it has exactly
+    // one candidate, so it never takes this one and the installment stays a suggestion.
+    // 1. Candidate +2 days, ₹10660
     const candTxn = await createTransaction(api, account.id, {
       amount: -10660,
       date: addDays(startDate, 2),
       description: 'HDFC EMI Debit',
     });
 
-    // 2. Txn with amount ₹50 off (₹10600) -> should NOT match
+    // 2. A second fitting debit (₹61.85 off, inside the ₹100 floor)
     await createTransaction(api, account.id, {
       amount: -10600,
       date: addDays(startDate, 1),
@@ -607,6 +599,16 @@ test.describe('Loans API (@api)', () => {
       amount: -10661.85,
       date: addDays(startDate, 1),
       description: 'Debit Other Account',
+    });
+
+    const loan = await createLoan(api, {
+      name: 'Match Candidate Loan',
+      principal: 120000,
+      annualRatePct: 12,
+      tenureMonths: 12,
+      startDate,
+      firstEmiDate: startDate,
+      paymentAccountId: account.id,
     });
 
     const matches = await matchSuggestions(api, loan.id);

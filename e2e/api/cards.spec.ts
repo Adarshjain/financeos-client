@@ -229,6 +229,46 @@ test.describe('Cards and Cardholders API (@api)', () => {
     expect(genericCardRes.response.status).toBe(400);
   });
 
+  test('delete card: only a closed card can go, an open card or the only card is refused, an unknown card is 404', async ({
+    api,
+  }) => {
+    const cc = await createCreditCard(api, { name: 'Cards Delete CC' });
+    const ch = await addCardholder(api, cc.id, { personName: 'Delete Holder', last4: undefined });
+    const withCard = await addCard(api, cc.id, ch.id, '5555', '2025-01-10');
+    const oldId = withCard.cards[0].id;
+    const path = (cardId: string) => ({ params: { path: { accountId: cc.id, cardholderId: ch.id, cardId } } });
+    const del = '/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}' as const;
+
+    // An open card must be closed or replaced first.
+    expect((await api.DELETE(del, path(oldId))).response.status).toBe(400);
+
+    const replaced = await api.POST(
+      '/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}/replace',
+      { ...path(oldId), body: { newLast4: '7777', issuedOn: '2025-02-01' } }
+    );
+    expect(replaced.response.status).toBe(200);
+    const newId = replaced.data!.cards.find((c) => c.last4 === '7777')!.id;
+
+    // The closed card is deleted; the holder keeps the open one.
+    expect((await api.DELETE(del, path(oldId))).response.status).toBe(204);
+    const holders = await api.GET('/api/v1/accounts/{accountId}/cardholders', { params: { path: { accountId: cc.id } } });
+    const holder = (holders.data ?? []).find((h) => h.id === ch.id)!;
+    expect(holder.cards.map((c) => c.last4)).toEqual(['7777']);
+    expect(holder.currentLast4).toBe('7777');
+
+    // Gone for good: a second delete is 404, as is any unknown card.
+    expect((await api.DELETE(del, path(oldId))).response.status).toBe(404);
+    expect((await api.DELETE(del, path('00000000-0000-4000-8000-000000000000'))).response.status).toBe(404);
+
+    // The holder's only card (even closed) cannot be deleted: delete the cardholder instead.
+    const closed = await api.POST(
+      '/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}/close',
+      { ...path(newId), body: { closedOn: '2025-03-01' } }
+    );
+    expect(closed.response.status).toBe(200);
+    expect((await api.DELETE(del, path(newId))).response.status).toBe(400);
+  });
+
   test('tenancy: cardholder and card endpoints reject foreign user and unauthenticated', async ({
     api: apiA,
     request,

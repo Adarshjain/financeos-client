@@ -32,6 +32,10 @@ test.describe('Tags API (@api)', () => {
     expect(shown.map((t) => t.description).sort()).toEqual(['Tag row 1', 'Tag row 2']);
     expect(shown[0].tags.map((t) => t.name)).toContain('Goa 2026');
 
+    const one = await api.GET('/api/v1/tags/{id}', { params: { path: { id: goa.id } } });
+    expectStatus(one, 200);
+    expect(one.data).toMatchObject({ id: goa.id, name: 'Goa 2026', transactionCount: 2 });
+
     // Deleting a tag removes it from its transactions and changes nothing else.
     expectStatus(await api.DELETE('/api/v1/tags/{id}', { params: { path: { id: goa.id } } }), 204);
     const after = await searchAll(api, [{ field: 'accountId', operator: 'is', value: bank.id }]);

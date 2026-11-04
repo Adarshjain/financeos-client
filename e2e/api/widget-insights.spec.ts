@@ -54,7 +54,7 @@ function monthOutflowFilters(month: string, accountIds: string[]): unknown[] {
   return [
     { field: 'account', operator: 'in', value: accountIds },
     { field: 'type', operator: 'is', value: 'DEBIT' },
-    { field: 'isExcluded', operator: 'is', value: false },
+    { field: 'isExcludedFromOutflow', operator: 'is', value: false },
     { field: 'linkType', operator: 'not_in', value: ['TRANSFER', 'REVERSAL'] },
     { field: 'date', operator: 'between', value: { from, to } },
   ];
@@ -63,6 +63,18 @@ function monthOutflowFilters(month: string, accountIds: string[]): unknown[] {
 /** A day of the month `offset` months from the current IST month. */
 function dayIn(offset: number, day: number): string {
   return `${ym(istMonth(offset))}-${String(day).padStart(2, '0')}`;
+}
+
+/**
+ * Links a pair the way the user would. Auto-linking pairs an equal debit and credit on two accounts in the
+ * background after ingest, as the same link type, so when it got there first the link already exists.
+ */
+async function linkPair(api: ApiClient, type: 'TRANSFER' | 'CC_PAYMENT', debitId: string, creditId: string): Promise<void> {
+  const res = await api.POST('/api/v1/transaction-links', {
+    body: { type, members: [{ transactionId: debitId, isAnchor: true }, { transactionId: creditId, isAnchor: false }] },
+  });
+  if (res.response.status === 400 && JSON.stringify(res.error).includes(`already in a ${type} link`)) return;
+  expectStatus(res, 201);
 }
 
 async function getAccount(api: ApiClient, id: string) {
@@ -189,7 +201,7 @@ test.describe('GET /insights/emergency-fund (@api)', () => {
     // Month -2 also has a transfer to the wallet, a reversed debit and an excluded debit: none is outflow.
     const transferOut = await createTransaction(api, bank.id, { amount: -7000, date: dayIn(-2, 12), description: 'EF transfer out' });
     const transferIn = await createTransaction(api, wallet.id, { amount: 7000, date: dayIn(-2, 12), description: 'EF transfer in' });
-    await linkTransactions(api, 'TRANSFER', transferOut.id, transferIn.id);
+    await linkPair(api, 'TRANSFER', transferOut.id, transferIn.id);
     const reversed = await createTransaction(api, bank.id, { amount: -800, date: dayIn(-2, 14), description: 'EF reversed' });
     const reversal = await createTransaction(api, bank.id, { amount: 800, date: dayIn(-2, 15), description: 'EF reversal' });
     await linkTransactions(api, 'REVERSAL', reversed.id, reversal.id);
@@ -198,7 +210,7 @@ test.describe('GET /insights/emergency-fund (@api)', () => {
     await createTransaction(api, bank.id, { amount: -6000, date: dayIn(-1, 10), description: 'EF m1' });
     const billPaid = await createTransaction(api, bank.id, { amount: -1500, date: dayIn(-1, 20), description: 'EF card bill' });
     const billIn = await createTransaction(api, card.id, { amount: 1500, date: dayIn(-1, 20), description: 'EF card payment' });
-    await linkTransactions(api, 'CC_PAYMENT', billPaid.id, billIn.id);
+    await linkPair(api, 'CC_PAYMENT', billPaid.id, billIn.id);
     // Not liquid: the excluded account, the closed one, the card. Not a full month: today.
     await createTransaction(api, hidden.id, { amount: -11111, date: dayIn(-1, 5), description: 'EF hidden spend' });
     await createTransaction(api, closed.id, { amount: -2222, date: dayIn(-1, 5), description: 'EF closed spend' });
