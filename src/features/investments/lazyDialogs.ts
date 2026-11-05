@@ -9,3 +9,4 @@ export const loadResetInstrumentDialog = () => import('./instruments/ResetInstru
 export const loadFnoAddDialog = () => import('./fno/FnoAddDialog').then((m) => m.FnoAddDialog);
 export const loadFnoTradeDialog = () => import('./fno/FnoTradeDialog').then((m) => m.FnoTradeDialog);
 export const loadEpfAddDialog = () => import('./epf/EpfAddDialog').then((m) => m.EpfAddDialog);
+export const loadNpsAccountDialog = () => import('./nps/NpsAccountDialog').then((m) => m.NpsAccountDialog);

@@ -9,8 +9,10 @@ import {
   addTransactionLink,
   attachDividendTransaction,
   attachEpfWithdrawalTransaction,
+  attachNpsContributionTransaction,
   detachDividendTransaction,
   detachEpfWithdrawalTransaction,
+  detachNpsContributionTransaction,
   loadTransaction,
   loadTransactionLinks,
   removeLoanPayment,
@@ -55,3 +57,11 @@ export const unlinkEpfWithdrawalTransaction = (entryId: string): Promise<void> =
 /** Attaches a credit to the EPF withdrawal (TDS is not recorded again). */
 export const linkEpfWithdrawalTransaction = (entryId: string, transactionId: string): Promise<void> =>
   unwrapAction(attachEpfWithdrawalTransaction(entryId, transactionId));
+
+/** Detaches the bank payment from the NPS contribution. */
+export const unlinkNpsContributionTransaction = (entryId: string): Promise<void> =>
+  unwrapAction(detachNpsContributionTransaction(entryId));
+
+/** Attaches a bank payment to the NPS contribution. */
+export const linkNpsContributionTransaction = (entryId: string, transactionId: string): Promise<void> =>
+  unwrapAction(attachNpsContributionTransaction(entryId, transactionId));

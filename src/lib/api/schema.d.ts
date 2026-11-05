@@ -3626,6 +3626,342 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/nps/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createNpsAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/accounts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateNpsAccount"];
+        post?: never;
+        delete: operations["deleteNpsAccount"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/accounts/{id}/allocation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["replaceNpsAllocation"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listNpsEntries"];
+        put?: never;
+        post: operations["createNpsEntry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/entries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getNpsEntry"];
+        put: operations["updateNpsEntry"];
+        post?: never;
+        delete: operations["deleteNpsEntry"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/entries/{id}/suggestion/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["dismissNpsLinkSuggestion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/entries/{id}/transaction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["linkNpsEntryTransaction"];
+        delete: operations["unlinkNpsEntryTransaction"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/gmail-detections/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["unlockNpsGmailStatements"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/gmail-detections/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["retryNpsGmailImports"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/gmail-detections/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ignoreNpsGmailDetection"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/gmail-detections/{key}/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["addNpsGmailDetectionAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/import/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["commitNpsStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/import/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewNpsStatement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/import/statements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listNpsStatements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/import/statements/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteNpsStatement"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/schemes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["searchNpsSchemes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/schemes/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getNpsScheme"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/setup/not-nps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["markSetupNotNps"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getNpsSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/transactions/{txnId}/not-nps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["markNotNps"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/transactions/{txnId}/record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["recordNpsPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/obligations/upcoming": {
         parameters: {
             query?: never;
@@ -5735,7 +6071,7 @@ export interface components {
             name?: string | null;
             symbol?: string | null;
             /** @enum {string|null} */
-            type?: "stock" | "mutual_fund" | "etf" | null;
+            type?: "stock" | "mutual_fund" | "etf" | "nps_scheme" | null;
             yahooSymbol?: string | null;
         };
         CreateInvestmentTransactionRequest: {
@@ -6702,7 +7038,7 @@ export interface components {
             reason: "NO_ACCOUNT" | "IMPORT_OFF" | "NO_AI_KEY" | "LOCKED_STATEMENT" | "UNREADABLE_STATEMENT" | "FAILED";
             senderAddress?: string | null;
             /** @enum {string} */
-            status: "DISCOVERED" | "PROCESSING" | "CREATED" | "RECONCILED" | "SKIPPED_NOT_TRANSACTION" | "SKIPPED_BEFORE_WATERMARK" | "SKIPPED_SENDER_DISABLED" | "SKIPPED_DUPLICATE" | "SKIPPED_MESSAGE_GONE" | "UNRESOLVED_ACCOUNT" | "ACCOUNT_NOT_OPTED_IN" | "FAILED_RETRYABLE" | "FAILED_PERMANENT" | "CLEANED_UP";
+            status: "DISCOVERED" | "PROCESSING" | "CREATED" | "RECONCILED" | "SKIPPED_NOT_TRANSACTION" | "SKIPPED_BEFORE_WATERMARK" | "SKIPPED_SENDER_DISABLED" | "SKIPPED_DUPLICATE" | "SKIPPED_MESSAGE_GONE" | "UNRESOLVED_ACCOUNT" | "ACCOUNT_NOT_OPTED_IN" | "FAILED_RETRYABLE" | "FAILED_PERMANENT" | "CLEANED_UP" | "NPS_IMPORTED" | "NPS_PASSWORD_NEEDED" | "NPS_ACCOUNT_NEEDED" | "NPS_ENTRY" | "NPS_IGNORED";
             subject?: string | null;
             suggestedBankId?: string | null;
             suggestedLast4?: string | null;
@@ -6745,7 +7081,7 @@ export interface components {
         };
         Group: {
             /** @enum {string} */
-            assetType: "stock" | "mutual_fund" | "etf";
+            assetType: "stock" | "mutual_fund" | "etf" | "nps_scheme";
             /** Format: int32 */
             count: number;
             value: number;
@@ -6863,7 +7199,7 @@ export interface components {
         };
         HoldingDetailResponse: {
             /** @enum {string} */
-            assetType: "stock" | "mutual_fund" | "etf";
+            assetType: "stock" | "mutual_fund" | "etf" | "nps_scheme";
             avgCost: number;
             brokers: components["schemas"]["Broker"][];
             currentValue: number;
@@ -7006,6 +7342,10 @@ export interface components {
             /** Format: uuid */
             loanId?: string | null;
             /** Format: uuid */
+            npsEntryId?: string | null;
+            /** Format: uuid */
+            npsPendingId?: string | null;
+            /** Format: uuid */
             statementId?: string | null;
             /** Format: uuid */
             transactionId?: string | null;
@@ -7063,7 +7403,7 @@ export interface components {
             source: string;
             symbol: string;
             /** @enum {string} */
-            type: "stock" | "mutual_fund" | "etf";
+            type: "stock" | "mutual_fund" | "etf" | "nps_scheme";
             yahooSymbol: string;
         };
         InstrumentInfoDto: {
@@ -7072,7 +7412,7 @@ export interface components {
             name: string;
             symbol?: string | null;
             /** @enum {string} */
-            type: "stock" | "mutual_fund" | "etf";
+            type: "stock" | "mutual_fund" | "etf" | "nps_scheme";
         };
         InstrumentListPage: {
             items: components["schemas"]["InstrumentResponse"][];
@@ -7095,7 +7435,7 @@ export interface components {
             /** Format: date-time */
             priceAt?: string | null;
             /** @enum {string} */
-            source: "AMFI" | "YAHOO" | "MANUAL";
+            source: "AMFI" | "YAHOO" | "MANUAL" | "NPS_TRUST";
         };
         InstrumentRequest: {
             amfiCode?: string;
@@ -7105,7 +7445,7 @@ export interface components {
             name: string;
             symbol?: string;
             /** @enum {string} */
-            type: "stock" | "mutual_fund" | "etf";
+            type: "stock" | "mutual_fund" | "etf" | "nps_scheme";
             yahooSymbol?: string;
         };
         InstrumentResponse: {
@@ -7125,7 +7465,7 @@ export interface components {
             /** Format: date */
             lastPriceAsOf?: string | null;
             /** @enum {string|null} */
-            lastPriceSource?: "AMFI" | "YAHOO" | "MANUAL" | null;
+            lastPriceSource?: "AMFI" | "YAHOO" | "MANUAL" | "NPS_TRUST" | null;
             mergeNote?: string | null;
             mergedHoldings: boolean;
             name: string;
@@ -7137,7 +7477,7 @@ export interface components {
             /** @enum {string} */
             taxClass: "EQUITY_ORIENTED" | "SPECIFIED_DEBT" | "OTHER";
             /** @enum {string} */
-            type: "stock" | "mutual_fund" | "etf";
+            type: "stock" | "mutual_fund" | "etf" | "nps_scheme";
             /** Format: date-time */
             updatedAt: string;
             yahooSymbol?: string | null;
@@ -7147,7 +7487,7 @@ export interface components {
             invested: number;
             percentage: number;
             /** @enum {string} */
-            type: "stock" | "mutual_fund" | "etf";
+            type: "stock" | "mutual_fund" | "etf" | "nps_scheme";
         };
         InvestmentTransactionResponse: {
             /** Format: uuid */
@@ -7241,7 +7581,7 @@ export interface components {
             /** @enum {string} */
             triggerSource: "USER" | "CRON";
             /** @enum {string} */
-            type: "STATEMENT_INGEST" | "GMAIL_SYNC" | "PRICE_REFRESH" | "INVESTMENT_IMPORT_COMMIT" | "BROKER_RECONCILE_COMMIT" | "RULE_APPLY" | "CATEGORY_BACKFILL" | "ACCOUNT_DETECT";
+            type: "STATEMENT_INGEST" | "GMAIL_SYNC" | "PRICE_REFRESH" | "INVESTMENT_IMPORT_COMMIT" | "BROKER_RECONCILE_COMMIT" | "RULE_APPLY" | "CATEGORY_BACKFILL" | "ACCOUNT_DETECT" | "NPS_GMAIL_IMPORT";
         };
         Keys: {
             auth: string;
@@ -7382,7 +7722,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            kind: "TRANSFER" | "CC_PAYMENT" | "REFUND" | "EMI" | "LENDING" | "DIVIDEND";
+            kind: "TRANSFER" | "CC_PAYMENT" | "REFUND" | "EMI" | "LENDING" | "DIVIDEND" | "NPS";
             transaction: components["schemas"]["TransactionSummary"];
         };
         LiquidAccount: {
@@ -7611,7 +7951,7 @@ export interface components {
             name: string;
             symbol?: string | null;
             /** @enum {string} */
-            type: "stock" | "mutual_fund" | "etf";
+            type: "stock" | "mutual_fund" | "etf" | "nps_scheme";
         };
         MemberRef: {
             isAnchor?: boolean;
@@ -7766,6 +8106,393 @@ export interface components {
             /** Format: int32 */
             sendHour: number;
         };
+        NpsAccountRequest: {
+            /** @enum {string|null} */
+            cra?: "PROTEAN" | "KFINTECH" | "CAMS" | null;
+            /** Format: uuid */
+            employerId?: string | null;
+            holderName?: string | null;
+            pran?: string | null;
+            readGmail?: boolean | null;
+            /** @enum {string|null} */
+            relation?: "SELF" | "CHILD" | null;
+            schemeChoice?: string | null;
+            /** @enum {string|null} */
+            sector?: "ALL_CITIZEN" | "CORPORATE" | "GOVT" | "VATSALYA" | "UPS" | null;
+            statementPassword?: string | null;
+            /** @enum {string|null} */
+            status?: "ACTIVE" | "CLOSED" | null;
+            tier2Active?: boolean | null;
+        };
+        NpsAllocationRequest: {
+            choice?: string | null;
+            rows?: components["schemas"]["NpsAllocationRowRequest"][];
+            /** @enum {string} */
+            tier?: "I" | "II";
+        };
+        NpsAllocationRowRequest: {
+            percent?: number;
+            schemeCode?: string;
+        };
+        NpsEntryLineRequest: {
+            nav?: number | null;
+            schemeCode?: string;
+            units?: number;
+        };
+        NpsEntryLineResponse: {
+            amount?: number | null;
+            nav?: number | null;
+            schemeCode: string;
+            schemeName?: string | null;
+            units: number;
+        };
+        NpsEntryRequest: {
+            /** Format: uuid */
+            accountId?: string;
+            amount?: number | null;
+            /** @enum {string|null} */
+            contributor?: "SELF" | "EMPLOYER" | null;
+            description?: string | null;
+            lines?: components["schemas"]["NpsEntryLineRequest"][] | null;
+            /** Format: date */
+            navDate?: string | null;
+            note?: string | null;
+            /** Format: date */
+            postedDate?: string;
+            /** @enum {string} */
+            tier?: "I" | "II";
+            /** @enum {string} */
+            type?: "CONTRIBUTION" | "CHARGE" | "REBALANCE" | "SWITCH" | "MIGRATION" | "WITHDRAWAL" | "OPENING" | "ADJUSTMENT" | "OTHER";
+        };
+        NpsEntryResponse: {
+            /** Format: uuid */
+            accountId: string;
+            amount?: number | null;
+            /** @enum {string|null} */
+            contributor?: "SELF" | "EMPLOYER" | null;
+            description?: string | null;
+            /** Format: uuid */
+            id: string;
+            lines: components["schemas"]["NpsEntryLineResponse"][];
+            /** Format: date */
+            navDate?: string | null;
+            note?: string | null;
+            /** Format: date */
+            postedDate: string;
+            /** @enum {string} */
+            source: "MANUAL" | "STATEMENT" | "EMAIL" | "BANK";
+            /** @enum {string} */
+            status: "CONFIRMED" | "ESTIMATED" | "PENDING";
+            /** @enum {string} */
+            tier: "I" | "II";
+            /** Format: uuid */
+            transactionId?: string | null;
+            /** @enum {string} */
+            type: "CONTRIBUTION" | "CHARGE" | "REBALANCE" | "SWITCH" | "MIGRATION" | "WITHDRAWAL" | "OPENING" | "ADJUSTMENT" | "OTHER";
+        };
+        NpsGmailAccountRequest: {
+            /** @enum {string} */
+            relation?: "SELF" | "CHILD";
+            /** @enum {string|null} */
+            sector?: "ALL_CITIZEN" | "CORPORATE" | "GOVT" | "VATSALYA" | "UPS" | null;
+        };
+        NpsGmailDetectionAccepted: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: int32 */
+            importing: number;
+        };
+        NpsGmailPasswordRequest: {
+            password?: string;
+        };
+        NpsGmailPasswordResult: {
+            /** Format: int32 */
+            opened: number;
+            /** Format: int32 */
+            stillLocked: number;
+        };
+        NpsGmailRetry: {
+            /** Format: int32 */
+            importing: number;
+        };
+        NpsImportAccount: {
+            holderName?: string | null;
+            /** Format: uuid */
+            id?: string | null;
+            pranLast4?: string | null;
+            proposal?: components["schemas"]["NpsImportProposal"];
+            /** @enum {string|null} */
+            relation?: "SELF" | "CHILD" | null;
+        };
+        NpsImportAdjustment: {
+            schemeCode: string;
+            schemeName?: string | null;
+            units: number;
+        };
+        NpsImportCommitRequest: {
+            /** Format: uuid */
+            accountId?: string | null;
+            newAccount?: components["schemas"]["NpsImportNewAccount"];
+            /** Format: uuid */
+            previewId?: string;
+        };
+        NpsImportNewAccount: {
+            /** @enum {string|null} */
+            cra?: "PROTEAN" | "KFINTECH" | "CAMS" | null;
+            /** Format: uuid */
+            employerId?: string | null;
+            holderName?: string | null;
+            /** @enum {string|null} */
+            relation?: "SELF" | "CHILD" | null;
+            /** @enum {string|null} */
+            sector?: "ALL_CITIZEN" | "CORPORATE" | "GOVT" | "VATSALYA" | "UPS" | null;
+        };
+        NpsImportPreviewResponse: {
+            account?: components["schemas"]["NpsImportAccount"];
+            passwordNeeded: boolean;
+            /** Format: uuid */
+            previewId?: string | null;
+            result?: components["schemas"]["NpsImportResultResponse"];
+            rows: components["schemas"]["NpsImportRow"][];
+            statement?: components["schemas"]["NpsImportStatement"];
+        };
+        NpsImportProposal: {
+            /** @enum {string} */
+            cra: "PROTEAN" | "KFINTECH" | "CAMS";
+            holderName?: string | null;
+            pranMasked: string;
+            /** @enum {string} */
+            relation: "SELF" | "CHILD";
+            /** @enum {string|null} */
+            sector?: "ALL_CITIZEN" | "CORPORATE" | "GOVT" | "VATSALYA" | "UPS" | null;
+        };
+        NpsImportResultResponse: {
+            /** Format: uuid */
+            accountId?: string | null;
+            /** Format: int32 */
+            added: number;
+            adjustments: components["schemas"]["NpsImportAdjustment"][];
+            incomplete: boolean;
+            /** Format: date */
+            periodEnd: string;
+            /** Format: date */
+            periodStart: string;
+            /** Format: int32 */
+            skipped: number;
+            /** Format: uuid */
+            statementId?: string | null;
+            unitsMismatch: boolean;
+            unmapped: string[];
+            /** Format: int32 */
+            upgraded: number;
+            warnings: string[];
+        };
+        NpsImportRow: {
+            /** @enum {string} */
+            action: "ADD" | "UPGRADE" | "SKIP" | "UNMAPPED";
+            amount?: number | null;
+            /** Format: date */
+            date: string;
+            description?: string | null;
+            nav?: number | null;
+            schemeCode?: string | null;
+            schemeName: string;
+            /** @enum {string} */
+            tier: "I" | "II";
+            /** @enum {string} */
+            type: "CONTRIBUTION" | "CHARGE" | "REBALANCE" | "SWITCH" | "MIGRATION" | "WITHDRAWAL" | "OPENING" | "ADJUSTMENT" | "OTHER";
+            units?: number | null;
+        };
+        NpsImportStatement: {
+            holderName?: string | null;
+            layout?: string | null;
+            /** Format: date */
+            periodEnd: string;
+            /** Format: date */
+            periodStart: string;
+            pranMasked: string;
+            schemeChoice?: string | null;
+        };
+        NpsLinkRequest: {
+            /** Format: uuid */
+            transactionId?: string;
+        };
+        NpsRecordRequest: {
+            /** Format: uuid */
+            accountId?: string | null;
+            /** @enum {string|null} */
+            tier?: "I" | "II" | null;
+        };
+        NpsSchemeDetailResponse: {
+            entries: components["schemas"]["NpsEntryResponse"][];
+            holdings: components["schemas"]["NpsSummaryHolding"][];
+            scheme: components["schemas"]["NpsSchemeResponse"];
+        };
+        NpsSchemeResponse: {
+            assetClass?: string | null;
+            /** Format: uuid */
+            instrumentId: string;
+            name: string;
+            nav?: number | null;
+            /** Format: date */
+            navDate?: string | null;
+            pfmCode?: string | null;
+            pfmName?: string | null;
+            schemeCode: string;
+            /** @enum {string|null} */
+            tier?: "I" | "II" | "TTS" | null;
+            /** @enum {string} */
+            variant: "NONE" | "DIRECT" | "GS" | "POP";
+        };
+        NpsStatementResponse: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            importedAt: string;
+            incomplete: boolean;
+            /** Format: date */
+            periodEnd: string;
+            /** Format: date */
+            periodStart: string;
+            /** @enum {string} */
+            source: "UPLOAD" | "GMAIL";
+            /** @enum {string} */
+            tier: "I" | "II";
+            unitsMismatch: boolean;
+            /** Format: int32 */
+            warningCount: number;
+            warnings: string[];
+        };
+        NpsSummaryAccount: {
+            /** @enum {string} */
+            cra: "PROTEAN" | "KFINTECH" | "CAMS";
+            employer?: components["schemas"]["NpsSummaryEmployerRef"];
+            holderName: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: date */
+            latestStatementEnd?: string | null;
+            pranMasked: string;
+            readGmail: boolean;
+            /** @enum {string} */
+            relation: "SELF" | "CHILD";
+            schemeChoice?: string | null;
+            /** @enum {string|null} */
+            sector?: "ALL_CITIZEN" | "CORPORATE" | "GOVT" | "VATSALYA" | "UPS" | null;
+            /** @enum {string} */
+            status: "ACTIVE" | "CLOSED";
+            /** @enum {string|null} */
+            tier1Status?: "ACTIVE" | "FROZEN" | "OTHER" | null;
+            /** Format: date */
+            tier1StatusAsOf?: string | null;
+            tier2Active: boolean;
+            tiers: components["schemas"]["NpsSummaryTier"][];
+        };
+        NpsSummaryAllocation: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: date */
+            asOf: string;
+            percent: number;
+            schemeCode: string;
+            /** @enum {string} */
+            tier: "I" | "II";
+        };
+        NpsSummaryEmployerRef: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        NpsSummaryFlags: {
+            hasEstimated: boolean;
+            navStale: boolean;
+            statementStale: boolean;
+            unitsMismatch: boolean;
+        };
+        NpsSummaryHero: {
+            contributedThisFy: number;
+            dayChange?: number | null;
+            dayChangePct?: number | null;
+            gain: number;
+            gainPct?: number | null;
+            invested: number;
+            investedEmployer: number;
+            investedSelf: number;
+            /** Format: date */
+            navAsOf?: string | null;
+            value: number;
+            xirr?: number | null;
+        };
+        NpsSummaryHolding: {
+            /** Format: uuid */
+            accountId: string;
+            assetClass?: string | null;
+            estimated: boolean;
+            nav?: number | null;
+            /** Format: date */
+            navDate?: string | null;
+            schemeCode: string;
+            schemeName: string;
+            /** @enum {string} */
+            tier: "I" | "II";
+            units: number;
+            value: number;
+        };
+        NpsSummaryPendingGmail: {
+            /** Format: date */
+            firstPeriodStart?: string | null;
+            holderName?: string | null;
+            /** Format: uuid */
+            key: string;
+            /** Format: date */
+            lastPeriodEnd?: string | null;
+            pranLast4: string;
+            /** @enum {string|null} */
+            sectorGuess?: "ALL_CITIZEN" | "CORPORATE" | "GOVT" | "VATSALYA" | "UPS" | null;
+            /** Format: int32 */
+            statementCount: number;
+        };
+        NpsSummaryResponse: {
+            accounts: components["schemas"]["NpsSummaryAccount"][];
+            allocation: components["schemas"]["NpsSummaryAllocation"][];
+            /** Format: int32 */
+            failedGmail: number;
+            flags: components["schemas"]["NpsSummaryFlags"];
+            hero: components["schemas"]["NpsSummaryHero"];
+            holdings: components["schemas"]["NpsSummaryHolding"][];
+            /** Format: int32 */
+            lockedGmail: number;
+            pendingGmail: components["schemas"]["NpsSummaryPendingGmail"][];
+            thisFy: components["schemas"]["NpsSummaryThisFy"];
+        };
+        NpsSummarySchemeUnits: {
+            nav?: number | null;
+            schemeCode: string;
+            schemeName: string;
+            units: number;
+            value: number;
+        };
+        NpsSummaryThisFy: {
+            byTier: components["schemas"]["NpsSummaryTierSplit"][];
+            employer: number;
+            self: number;
+        };
+        NpsSummaryTier: {
+            gain: number;
+            invested: number;
+            schemes: components["schemas"]["NpsSummarySchemeUnits"][];
+            /** @enum {string} */
+            tier: "I" | "II";
+            value: number;
+        };
+        NpsSummaryTierSplit: {
+            employer: number;
+            self: number;
+            /** @enum {string} */
+            tier: "I" | "II";
+        };
         OAuthStartResponse: {
             authorizationUrl: string;
         };
@@ -7806,7 +8533,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            kind: "LENDING" | "LOAN_PAYMENT" | "LOAN_EVENT" | "LOAN_CHARGE" | "DIVIDEND" | "EPF_WITHDRAWAL";
+            kind: "LENDING" | "LOAN_PAYMENT" | "LOAN_EVENT" | "LOAN_CHARGE" | "DIVIDEND" | "EPF_WITHDRAWAL" | "NPS_CONTRIBUTION";
             label: string;
             /** @enum {string} */
             origin: "USER" | "AUTO" | "IMPORT";
@@ -8043,6 +8770,24 @@ export interface components {
             /** Format: int32 */
             totalPages: number;
         };
+        PageNpsEntryResponse: {
+            content: components["schemas"]["NpsEntryResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
         PageRewardLineResponse: {
             content: components["schemas"]["RewardLineResponse"][];
             empty: boolean;
@@ -8261,7 +9006,7 @@ export interface components {
             /** Format: date-time */
             lastPriceAt?: string | null;
             /** @enum {string|null} */
-            lastPriceSource?: "AMFI" | "YAHOO" | "MANUAL" | null;
+            lastPriceSource?: "AMFI" | "YAHOO" | "MANUAL" | "NPS_TRUST" | null;
             /** Format: date */
             mergedIntoDate?: string | null;
             mergedIntoName?: string | null;
@@ -8583,7 +9328,7 @@ export interface components {
             name: string;
             symbol?: string;
             /** @enum {string} */
-            type: "stock" | "mutual_fund" | "etf";
+            type: "stock" | "mutual_fund" | "etf" | "nps_scheme";
             yahooSymbol?: string;
         };
         Restore: {
@@ -8968,7 +9713,7 @@ export interface components {
         };
         Row: {
             /** @enum {string} */
-            assetType: "stock" | "mutual_fund" | "etf";
+            assetType: "stock" | "mutual_fund" | "etf" | "nps_scheme";
             avgCost: number;
             /** Format: int32 */
             brokerCount: number;
@@ -9669,7 +10414,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            kind: "TRANSFER" | "CC_PAYMENT" | "REFUND" | "EMI" | "LENDING" | "DIVIDEND";
+            kind: "TRANSFER" | "CC_PAYMENT" | "REFUND" | "EMI" | "LENDING" | "DIVIDEND" | "NPS";
             label: string;
         };
         TransactionSummary: {
@@ -14876,7 +15621,7 @@ export interface operations {
         parameters: {
             query?: {
                 search?: string;
-                type?: "stock" | "mutual_fund" | "etf";
+                type?: "stock" | "mutual_fund" | "etf" | "nps_scheme";
                 sort?: string;
                 stale?: boolean;
                 held?: boolean;
@@ -14946,7 +15691,7 @@ export interface operations {
         parameters: {
             query?: {
                 q?: string;
-                type?: "stock" | "mutual_fund" | "etf";
+                type?: "stock" | "mutual_fund" | "etf" | "nps_scheme";
             };
             header?: never;
             path?: never;
@@ -18817,6 +19562,849 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["NotificationSettingsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createNpsAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpsAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsSummaryAccount"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateNpsAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpsAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsSummaryAccount"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteNpsAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    replaceNpsAllocation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpsAllocationRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsSummaryAccount"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listNpsEntries: {
+        parameters: {
+            query?: {
+                accountId?: string;
+                tier?: "I" | "II";
+                type?: "CONTRIBUTION" | "CHARGE" | "REBALANCE" | "SWITCH" | "MIGRATION" | "WITHDRAWAL" | "OPENING" | "ADJUSTMENT" | "OTHER";
+                schemeCode?: string;
+                from?: string;
+                to?: string;
+                contributor?: "SELF" | "EMPLOYER";
+                /** @description Zero-based page index (0..N) */
+                page?: number;
+                /** @description The size of the page to be returned */
+                size?: number;
+                /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
+                sort?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageNpsEntryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createNpsEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpsEntryRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsEntryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getNpsEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsEntryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateNpsEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpsEntryRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsEntryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteNpsEntry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismissNpsLinkSuggestion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpsLinkRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    linkNpsEntryTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpsLinkRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsEntryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unlinkNpsEntryTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unlockNpsGmailStatements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpsGmailPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsGmailPasswordResult"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    retryNpsGmailImports: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsGmailRetry"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ignoreNpsGmailDetection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    addNpsGmailDetectionAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpsGmailAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsGmailDetectionAccepted"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    commitNpsStatement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NpsImportCommitRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsImportResultResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    previewNpsStatement: {
+        parameters: {
+            query?: {
+                password?: string;
+                accountId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: Blob;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsImportPreviewResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listNpsStatements: {
+        parameters: {
+            query?: {
+                accountId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsStatementResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteNpsStatement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    searchNpsSchemes: {
+        parameters: {
+            query?: {
+                query?: string;
+                tier?: "I" | "II" | "TTS";
+                variant?: "NONE" | "DIRECT" | "GS" | "POP";
+                pfm?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsSchemeResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getNpsScheme: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsSchemeDetailResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    markSetupNotNps: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getNpsSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsSummaryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    markNotNps: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                txnId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    recordNpsPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                txnId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["NpsRecordRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsEntryResponse"];
                 };
             };
             /** @description Error response */

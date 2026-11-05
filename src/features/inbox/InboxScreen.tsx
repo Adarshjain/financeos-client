@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
 import { Badge } from '@/components/ds/Badge/Badge';
@@ -10,16 +11,19 @@ import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { Text } from '@/components/ds/Text/Text';
 import { LoadError } from '@/features/shell/LoadError';
+import { unwrapAction } from '@/lib/actionResult';
 import type { InboxItemResponse } from '@/lib/api/types';
 import { useInbox } from '@/lib/query/hooks/useInbox';
+import { keys } from '@/lib/query/keys';
 import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
 
+import { loadNpsRecordTarget } from './inboxActions';
 import type { PendingBillAction } from './inboxBillActions';
 import { InboxBillHost } from './InboxBillHost';
 import { INBOX_SECTIONS, type InboxSectionKey } from './inboxModel';
 import { dsInboxNotifier } from './inboxNotifier';
 import { InboxRow } from './InboxRow';
-import { INBOX_SECTION_TITLES, pendingFor, type RowButton, type RowMenuAction } from './inboxRowsModel';
+import { INBOX_SECTION_TITLES, type NpsRowAction, pendingFor, type RowButton, type RowMenuAction } from './inboxRowsModel';
 import { InboxSkeleton } from './InboxSkeleton';
 import { UPCOMING_HREF } from './inboxUpcomingTabs';
 import { useInboxDeepLink } from './useInboxDeepLink';
@@ -35,24 +39,40 @@ export interface InboxScreenProps {
 /** The Inbox tab: Act now and Needs a look in one card, plus the dialogs rows open. */
 export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
   const { data, isLoading, error, refetch } = useInbox();
-  const { snooze, dismiss, epfLink, epfDismiss, noStatement } = useInboxMutations(dsInboxNotifier);
+  const { snooze, dismiss, epfLink, epfDismiss, noStatement, npsPendingAction, npsPaymentAction } = useInboxMutations(dsInboxNotifier);
   const [pendingBill, setPendingBill] = React.useState<PendingBillAction | null>(null);
   const closeBill = React.useCallback(() => setPendingBill(null), []);
 
   const items = React.useMemo(() => data?.items ?? [], [data]);
+  // Which account a debit is recorded to, and whether Tier II is open on it: read only when a Record row is shown.
+  const hasRecordRow = items.some((i) => i.kind === 'nps_record');
+  const { data: recordTarget, isLoading: recordTargetLoading } = useQuery({
+    queryKey: [...keys.nps.all, 'recordTarget'],
+    queryFn: () => unwrapAction(loadNpsRecordTarget()),
+    enabled: hasRecordRow,
+  });
+  const rowOptions = React.useMemo(() => ({ npsTier2: recordTarget?.tier2 ?? false, npsTargetLoading: recordTargetLoading }), [recordTarget, recordTargetLoading]);
   const deepLink = useInboxDeepLink(highlightKey, data ? items : null);
   // Snooze and dismiss hide the row in the cache at once; the deferred rows let it fold away.
   const shownItems = useDeferredRows(items);
 
+  const onNps = (item: InboxItemResponse, action: NpsRowAction) => {
+    if (action === 'add_self' || action === 'add_child' || action === 'ignore') return npsPendingAction(item, action);
+    return npsPaymentAction(item, action, recordTarget?.accountId);
+  };
+
   const onBillButton = (item: InboxItemResponse, button: RowButton) => {
     if (button.epf === 'link') return epfLink(item);
     if (button.epf === 'dismiss') return epfDismiss(item);
+    if (button.nps) return onNps(item, button.nps);
     const pending = pendingFor(item, button);
     if (pending) setPendingBill(pending);
   };
 
-  const onMenuAction = (item: InboxItemResponse, action: RowMenuAction) =>
-    noStatement(item.key, action.skip.accountId, action.skip.periodEnd);
+  const onMenuAction = (item: InboxItemResponse, action: RowMenuAction) => {
+    if (action.nps) return onNps(item, action.nps);
+    if (action.skip) noStatement(item.key, action.skip.accountId, action.skip.periodEnd);
+  };
 
   let body: React.ReactNode;
   if (isLoading) {
@@ -85,6 +105,7 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
                 sectionKey={key}
                 items={shownItems.filter((i) => i.section === key)}
                 highlightKey={deepLink.found ? highlightKey : null}
+                rowOptions={rowOptions}
                 onBillButton={onBillButton}
                 onMenuAction={onMenuAction}
                 onSnooze={(item, until) => snooze(item.key, until)}

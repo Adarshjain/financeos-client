@@ -5,5 +5,6 @@ export function obligationRefHref(kind: ObligationKind, parentId: string): strin
   if (kind === 'LENDING') return `/loans/lendings/${parentId}`;
   if (kind === 'DIVIDEND') return `/investments/dividends?instrumentId=${parentId}`;
   if (kind === 'EPF_WITHDRAWAL') return '/investments/epf';
+  if (kind === 'NPS_CONTRIBUTION') return '/investments/nps';
   return `/loans/${parentId}`;
 }

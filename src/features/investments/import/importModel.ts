@@ -17,6 +17,7 @@ export const MODE_OPTIONS: SelectOption[] = [
   { value: 'reconcile_groww', label: 'Groww reconciliation (Order History + Capital Gains)' },
   { value: 'mf_cas', label: 'Mutual funds CAS (CAMS / KFintech PDF)' },
   { value: 'epf_passbook', label: 'EPF passbook (EPFO PDF)' },
+  { value: 'nps_statement', label: 'NPS statement (Protean, KFintech or CAMS PDF)' },
 ];
 
 export const SCOPE_OPTIONS: SelectOption[] = [

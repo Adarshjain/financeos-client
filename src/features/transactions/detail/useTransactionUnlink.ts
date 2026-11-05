@@ -17,8 +17,10 @@ import {
   deleteTransactionLink,
   linkDividendTransaction,
   linkEpfWithdrawalTransaction,
+  linkNpsContributionTransaction,
   unlinkDividendTransaction,
   unlinkEpfWithdrawalTransaction,
+  unlinkNpsContributionTransaction,
 } from './transactionDetailApi';
 
 /**
@@ -46,6 +48,12 @@ export function useTransactionUnlink(transactionId: string) {
   /** EPF dialogs and the Inbox suggestions read their own queries; a link or unlink makes them stale. */
   const refreshEpf = () => {
     void queryClient.invalidateQueries({ queryKey: keys.epf.all });
+    void queryClient.invalidateQueries({ queryKey: keys.inbox.all });
+  };
+
+  /** The NPS tab and the Inbox suggestions read their own queries; a link or unlink makes them stale. */
+  const refreshNps = () => {
+    void queryClient.invalidateQueries({ queryKey: keys.nps.all });
     void queryClient.invalidateQueries({ queryKey: keys.inbox.all });
   };
 
@@ -131,6 +139,25 @@ export function useTransactionUnlink(transactionId: string) {
                 refreshEpf();
               },
               'Linked to the EPF withdrawal',
+              "Couldn't restore the link. Try again.",
+            ),
+          },
+        });
+      }
+    } else if (ref.kind === 'NPS_CONTRIBUTION') {
+      const ok = await run(key, () => unlinkNpsContributionTransaction(ref.id), "Couldn't unlink the NPS contribution. Try again.");
+      if (ok) {
+        refreshNps();
+        showToast('NPS contribution unlinked', {
+          action: {
+            label: 'Undo',
+            onSelect: undoWith(
+              key,
+              async () => {
+                await linkNpsContributionTransaction(ref.id, transactionId);
+                refreshNps();
+              },
+              'Linked to the NPS contribution',
               "Couldn't restore the link. Try again.",
             ),
           },

@@ -17,6 +17,7 @@ import {
   loadEpfAddDialog,
   loadFnoAddDialog,
   loadInstrumentAddDialog,
+  loadNpsAccountDialog,
   loadRecordTradeDialog,
 } from './lazyDialogs';
 
@@ -26,6 +27,7 @@ import {
 function useAddDialog(tab: InvestmentsTabId) {
   const dividends = useLazyDialog(loadDividendAddDialog);
   const epf = useLazyDialog(loadEpfAddDialog);
+  const nps = useLazyDialog(loadNpsAccountDialog);
   const fno = useLazyDialog(loadFnoAddDialog);
   const corporateActions = useLazyDialog(loadCorporateActionDialog);
   const instruments = useLazyDialog(loadInstrumentAddDialog);
@@ -35,6 +37,8 @@ function useAddDialog(tab: InvestmentsTabId) {
       return dividends;
     case 'epf':
       return epf;
+    case 'nps':
+      return nps;
     case 'fno':
       return fno;
     case 'corporate-actions':
@@ -50,6 +54,7 @@ function useAddDialog(tab: InvestmentsTabId) {
 const ADD_LABELS: Record<InvestmentsTabId, string | undefined> = {
   holdings: 'Record trade',
   epf: 'Record EPF entry',
+  nps: 'Add NPS account',
   dividends: 'Record dividend',
   tradebook: 'Add trade',
   fno: 'Add F&O trade',

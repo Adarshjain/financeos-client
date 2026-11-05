@@ -114,7 +114,7 @@ export interface TransactionLinkSummary {
   memberCount: number;
 }
 
-export type ObligationKind = 'LENDING' | 'LOAN_PAYMENT' | 'LOAN_EVENT' | 'LOAN_CHARGE' | 'DIVIDEND' | 'EPF_WITHDRAWAL';
+export type ObligationKind = 'LENDING' | 'LOAN_PAYMENT' | 'LOAN_EVENT' | 'LOAN_CHARGE' | 'DIVIDEND' | 'EPF_WITHDRAWAL' | 'NPS_CONTRIBUTION';
 
 /**
  * A direct-FK reference from a lending ledger entry, loan row or dividend row

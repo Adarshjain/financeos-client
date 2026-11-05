@@ -6,6 +6,9 @@ describe('obligationRefHref', () => {
   it('sends an EPF withdrawal to the EPF tab, with no parameters', () => {
     expect(obligationRefHref('EPF_WITHDRAWAL', 'employer-1')).toBe('/investments/epf');
   });
+  it('sends an NPS contribution to the NPS tab', () => {
+    expect(obligationRefHref('NPS_CONTRIBUTION', 'acc-1')).toBe('/investments/nps');
+  });
   it('keeps the other kinds', () => {
     expect(obligationRefHref('LENDING', 'p1')).toBe('/loans/lendings/p1');
     expect(obligationRefHref('DIVIDEND', 'i1')).toBe('/investments/dividends?instrumentId=i1');

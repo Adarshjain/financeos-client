@@ -93,3 +93,22 @@ export const attachEpfWithdrawalTransaction = createDomainAction(
     });
   },
 );
+
+/** Detaches the bank payment from the NPS contribution. */
+export const detachNpsContributionTransaction = createDomainAction(
+  { fallbackError: "Couldn't unlink the NPS contribution. Try again." },
+  async (entryId: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/nps/entries/{id}/transaction', { params: { path: { id: entryId } } });
+  },
+);
+
+/** Attaches a bank payment to the NPS contribution. */
+export const attachNpsContributionTransaction = createDomainAction(
+  { fallbackError: "Couldn't link the NPS contribution. Try again." },
+  async (entryId: string, transactionId: string): Promise<void> => {
+    await serverApi.POST('/api/v1/nps/entries/{id}/transaction', {
+      params: { path: { id: entryId } },
+      body: { transactionId },
+    });
+  },
+);

@@ -5,14 +5,39 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { skipStatementPeriod, undoStatementSkip } from '@/features/accounts/detail/statements/statementSkipActions';
+import { importingMessage } from '@/features/investments/nps/npsGmailModel';
+import { scheduleNpsImportRefetch } from '@/features/investments/nps/npsImportRefetch';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { InboxItemResponse, InboxResponse, InboxSummaryResponse } from '@/lib/api/types';
 import { formatDate } from '@/lib/format';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 
-import { dismissEpfSuggestion, dismissInboxItem, linkEpfSuggestion, snoozeInboxItem, undoInboxState } from './inboxActions';
+import {
+  addNpsPendingAccount,
+  dismissEpfSuggestion,
+  dismissInboxItem,
+  dismissNpsLink,
+  ignoreNpsPending,
+  linkEpfSuggestion,
+  linkNpsContribution,
+  markNotNps,
+  markNpsSetupNotNps,
+  recordNpsPayment,
+  snoozeInboxItem,
+  undoInboxState,
+} from './inboxActions';
 import { summarise } from './inboxModel';
+import type { NpsRowAction } from './inboxRowsModel';
+
+export function npsPendingMessage(outcome: NpsPendingOutcome): string {
+  if (outcome === 'IGNORED') return 'Ignored';
+  return importingMessage(outcome.importing);
+}
+
+/** What happened to a Gmail-found NPS account: ignored, or its statements are importing (`importing` of them). */
+export type NpsPendingOutcome = 'IGNORED' | { importing: number };
 
 /** How snooze, dismiss and undo tell the user what happened. The default is sonner toasts. */
 export interface InboxNotifier {
@@ -26,6 +51,12 @@ export interface InboxNotifier {
   epfLinked?: () => void;
   epfDismissed?: () => void;
   epfFailed?: (error: unknown) => void;
+  /** An NPS account from Gmail was added, or an NPS email ignored; either failing puts the row back. */
+  npsPendingDone?: (outcome: NpsPendingOutcome) => void;
+  npsPendingFailed?: (error: unknown) => void;
+  /** An NPS payment was linked, recorded, or turned down; any failing puts the row back. */
+  npsPaymentDone?: (action: 'link' | 'dismiss' | 'record' | 'not_nps') => void;
+  npsPaymentFailed?: (error: unknown) => void;
   /** A card's cycle was marked "No statement this period"; undo takes the mark back. */
   statementSkipped?: (undo: () => void) => void;
   statementSkipFailed?: (error: unknown) => void;
@@ -42,6 +73,11 @@ export const sonnerInboxNotifier: InboxNotifier = {
   epfLinked: () => toast.success('Linked to the EPF withdrawal'),
   epfDismissed: () => toast.success('Dismissed'),
   epfFailed: (e) => toast.error(getErrorMessage(e, "Couldn't update this suggestion. Try again.")),
+  npsPendingDone: (outcome) => toast.success(npsPendingMessage(outcome)),
+  npsPendingFailed: (e) => toast.error(getErrorMessage(e, "Couldn't update this. Try again.")),
+  npsPaymentDone: (action) =>
+    toast.success({ link: 'Linked to the NPS contribution', dismiss: 'Dismissed', record: 'Recorded as an NPS contribution', not_nps: 'Marked as not NPS' }[action]),
+  npsPaymentFailed: (e) => toast.error(getErrorMessage(e, "Couldn't update this. Try again.")),
   statementSkipped: (undo) =>
     toast.success('No statement this period', { action: { label: 'Undo', onClick: undo } }),
   statementSkipFailed: (e) => toast.error(getErrorMessage(e, "Couldn't mark this period. Try again.")),
@@ -191,7 +227,75 @@ export function useInboxMutations(notifier: InboxNotifier = sonnerInboxNotifier)
     onSettled: settle,
   });
 
+  // Add as mine / my child's, or Ignore, on an NPS Gmail row: the row goes at once and returns if the server says no.
+  const npsPending = useMutation({
+    mutationKey: INBOX_ACTION_KEY,
+    mutationFn: async ({ item, action }: { item: InboxItemResponse; action: 'add_self' | 'add_child' | 'ignore' }) => {
+      const id = item.refs.npsPendingId;
+      if (!id) throw new Error('This row has no NPS email to act on');
+      if (action === 'ignore') {
+        await unwrapAction(ignoreNpsPending(id));
+        return 'IGNORED' as NpsPendingOutcome;
+      }
+      return (await unwrapAction(addNpsPendingAccount(id, action === 'add_self' ? 'SELF' : 'CHILD'))) as NpsPendingOutcome;
+    },
+    onMutate: ({ item }) => hideRow(qc, item.key),
+    onSuccess: (outcome) => {
+      void qc.invalidateQueries({ queryKey: keys.nps.all });
+      void invalidateInvestmentQueries(qc);
+      router.refresh();
+      notifier.npsPendingDone?.(outcome);
+      // The import runs as a job: re-read once it has had time to land, then again.
+      if (outcome !== 'IGNORED') scheduleNpsImportRefetch(qc);
+    },
+    onError: (e, _vars, snapshot) => {
+      restore(qc, snapshot);
+      notifier.npsPendingFailed?.(e);
+    },
+    onSettled: settle,
+  });
+
+  // Link / Not this one on an NPS pairing, Record (with a tier and account) / Not NPS on a debit.
+  const npsPayment = useMutation({
+    mutationKey: INBOX_ACTION_KEY,
+    mutationFn: async ({ item, action, accountId }: { item: InboxItemResponse; action: NpsRowAction; accountId?: string | null }) => {
+      if (action === 'setup_not_nps') {
+        await unwrapAction(markNpsSetupNotNps());
+        return 'not_nps' as const;
+      }
+      const { npsEntryId, transactionId } = item.refs;
+      if (!transactionId) throw new Error('This row has no payment to act on');
+      if (action === 'link' || action === 'dismiss') {
+        if (!npsEntryId) throw new Error('This row has no NPS contribution to act on');
+        await unwrapAction((action === 'link' ? linkNpsContribution : dismissNpsLink)(npsEntryId, transactionId));
+        return action;
+      }
+      if (action === 'not_nps') {
+        await unwrapAction(markNotNps(transactionId));
+        return action;
+      }
+      const tier = action === 'record_II' ? 'II' : action === 'record_I' ? 'I' : undefined;
+      await unwrapAction(recordNpsPayment(transactionId, accountId ?? undefined, tier));
+      return 'record' as const;
+    },
+    onMutate: ({ item }) => hideRow(qc, item.key),
+    onSuccess: (done) => {
+      void qc.invalidateQueries({ queryKey: keys.transactions.all });
+      void qc.invalidateQueries({ queryKey: keys.nps.all });
+      void invalidateInvestmentQueries(qc);
+      router.refresh();
+      notifier.npsPaymentDone?.(done);
+    },
+    onError: (e, _vars, snapshot) => {
+      restore(qc, snapshot);
+      notifier.npsPaymentFailed?.(e);
+    },
+    onSettled: settle,
+  });
+
   return {
+    npsPaymentAction: (item: InboxItemResponse, action: NpsRowAction, accountId?: string | null) => npsPayment.mutate({ item, action, accountId }),
+    npsPendingAction: (item: InboxItemResponse, action: 'add_self' | 'add_child' | 'ignore') => npsPending.mutate({ item, action }),
     epfLink: (item: InboxItemResponse) => epfLink.mutate(item),
     epfDismiss: (item: InboxItemResponse) => epfDismiss.mutate(item),
     snooze: (key: string, until: string) => snooze.mutate({ key, until }),

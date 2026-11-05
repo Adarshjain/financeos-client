@@ -12,6 +12,8 @@ import { ShellPage } from '@/features/shell/ShellPage';
 import type { Broker } from '@/lib/account.types';
 
 import { HOLDINGS_HREF } from '../investmentsTabs';
+import { importableCount, readyToImport, totalsOf } from '../nps/npsImportModel';
+import { NPS_HREF } from '../nps/npsModel';
 import { TRADEBOOK_HREF } from '../tradebook/tradebookModel';
 import { importableTotal } from './epfImportModel';
 import { EpfResultStep } from './EpfResultStep';
@@ -19,12 +21,14 @@ import { EpfReviewStep } from './EpfReviewStep';
 import { EpfUploadStep } from './EpfUploadStep';
 import { IMPORT_STEPS } from './importModel';
 import { dineroImportNotify } from './notify';
+import { NpsResultStep, NpsReviewStep, NpsUploadStep } from './NpsImportSteps';
 import { ResultStep } from './ResultStep';
 import { ReviewStep } from './ReviewStep';
 import type { ImportMode } from './types';
 import { UploadStep } from './UploadStep';
 import { useEpfImport } from './useEpfImport';
 import { useImportWizard } from './useImportWizard';
+import { useNpsImport } from './useNpsImport';
 
 /**
  * /investments/import: the Zerodha, Groww and mutual-fund CAS import as its own page.
@@ -33,15 +37,18 @@ import { useImportWizard } from './useImportWizard';
 export function ImportTradebookScreen({ brokers, initialMode }: { brokers: Broker[]; initialMode?: ImportMode }) {
   const wizard = useImportWizard({ brokerAccounts: brokers, notify: dineroImportNotify, initialMode });
   const epf = useEpfImport(dineroImportNotify);
+  const nps = useNpsImport(dineroImportNotify);
   const { mode } = wizard;
   // A new import type starts clean: no files, preview or result from the one before.
   const changeMode = (next: ImportMode) => {
     if (next === mode) return;
     wizard.resetWizard();
     epf.reset();
+    nps.reset();
     wizard.setMode(next);
   };
   if (mode === 'epf_passbook') return <EpfScreen wizard={wizard} epf={epf} onModeChange={changeMode} />;
+  if (mode === 'nps_statement') return <NpsScreen wizard={wizard} nps={nps} onModeChange={changeMode} />;
   return <TradebookScreen brokers={brokers} wizard={wizard} onModeChange={changeMode} />;
 }
 
@@ -49,7 +56,7 @@ type Wizard = ReturnType<typeof useImportWizard>;
 
 const EPF_HREF = appHref('/investments/epf');
 
-/** Once the entries are in, drops the router's cached pages so Open EPF shows them. Mounted for the EPF import only. */
+/** Once the entries are in, drops the router's cached pages so Open EPF / Open NPS shows them. Mounted for the EPF and NPS imports only. */
 function RefreshWhenDone() {
   const router = useRouter();
   React.useEffect(() => {
@@ -112,6 +119,67 @@ function EpfScreen({ wizard, epf, onModeChange }: { wizard: Wizard; epf: ReturnT
                 : [
                     { id: 'another', label: 'Import another', variant: 'secondary', onSelect: epf.reset },
                     { id: 'open', label: 'Open EPF', variant: 'primary', href: EPF_HREF },
+                  ]
+          }
+        />
+      </div>
+    </ShellPage>
+  );
+}
+
+/** The NPS statement import: the PDFs, what each says it will add, and the result. */
+function NpsScreen({ wizard, nps, onModeChange }: { wizard: Wizard; nps: ReturnType<typeof useNpsImport>; onModeChange: (mode: ImportMode) => void }) {
+  const { step, isPreviewing, isCommitting, files, results } = nps;
+  const several = files.length > 1;
+  const count = importableCount(files);
+  return (
+    <ShellPage crumb={subCrumb('investments')} title="Import tradebook" backHref={TRADEBOOK_HREF}>
+      <div className="mx-auto flex max-w-container-md flex-col gap-space-8 desk:gap-space-16 pb-space-48">
+        <Card title="Investment bulk import">
+          <div className="px-space-16 pb-space-16 desk:px-space-20 desk:pb-space-20">
+            <Stepper steps={IMPORT_STEPS} current={step - 1} />
+          </div>
+        </Card>
+
+        {step === 1 ? <NpsUploadStep nps={nps} mode={wizard.mode} onModeChange={onModeChange} /> : null}
+        {step === 2 ? <NpsReviewStep nps={nps} mode={wizard.mode} onModeChange={onModeChange} /> : null}
+        {step === 3 && results ? (
+          <>
+            <RefreshWhenDone />
+            <NpsResultStep totals={totalsOf(results)} />
+          </>
+        ) : null}
+
+        <SelectionBar
+          className="fixed inset-x-0 bottom-0 desk:bottom-safe-12"
+          actions={
+            step === 1
+              ? [
+                  { id: 'cancel', label: 'Cancel', variant: 'link', disabled: isPreviewing, href: TRADEBOOK_HREF },
+                  {
+                    id: 'preview',
+                    label: isPreviewing ? (several ? 'Reading statements…' : 'Reading statement…') : several ? 'Preview statements' : 'Preview statement',
+                    variant: 'primary',
+                    loading: isPreviewing,
+                    disabled: isPreviewing || files.length === 0,
+                    onSelect: () => void nps.previewAll(),
+                  },
+                ]
+              : step === 2
+                ? [
+                    { id: 'back', label: 'Back', variant: 'link', disabled: isCommitting || isPreviewing, onSelect: () => nps.setStep(1) },
+                    {
+                      id: 'import',
+                      label: isCommitting ? 'Importing entries…' : `Import ${count} entries`,
+                      variant: 'primary',
+                      loading: isCommitting,
+                      disabled: isCommitting || isPreviewing || !readyToImport(files),
+                      onSelect: () => void nps.commit(),
+                    },
+                  ]
+                : [
+                    { id: 'another', label: 'Import another', variant: 'secondary', onSelect: nps.reset },
+                    { id: 'open', label: 'Open NPS', variant: 'primary', href: NPS_HREF },
                   ]
           }
         />

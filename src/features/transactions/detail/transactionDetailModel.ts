@@ -167,7 +167,7 @@ export function linkRows(
       subtitle: ref.amount != null ? rupees(ref.amount) : undefined,
       ref,
       unlink:
-        ref.kind === 'LENDING' || ref.kind === 'DIVIDEND' || ref.kind === 'EPF_WITHDRAWAL'
+        ref.kind === 'LENDING' || ref.kind === 'DIVIDEND' || ref.kind === 'EPF_WITHDRAWAL' || ref.kind === 'NPS_CONTRIBUTION'
           ? 'now'
           : ref.kind === 'LOAN_PAYMENT' && ref.parentId
             ? 'confirm'

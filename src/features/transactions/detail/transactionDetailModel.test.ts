@@ -149,6 +149,18 @@ describe('linkRows', () => {
   });
 });
 
+describe('linkRows, NPS contribution', () => {
+  it('opens the NPS tab and unlinks at once', () => {
+    const rows = linkRows(
+      't1',
+      [],
+      [{ kind: 'NPS_CONTRIBUTION', id: 'n1', parentId: 'acc1', label: 'NPS · Tier I · Contribution' }],
+      () => '',
+    );
+    expect(rows[0]).toMatchObject({ kind: 'record', href: '/investments/nps', unlink: 'now', title: 'NPS · Tier I · Contribution' });
+  });
+});
+
 describe('deleteImpact', () => {
   it('says what stays when records are linked', () => {
     const impact = deleteImpact(
