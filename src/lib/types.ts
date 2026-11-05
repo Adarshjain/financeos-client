@@ -40,6 +40,8 @@ export interface UserResponse {
   hasPassword?: boolean;
   createdAt: string;
   admin?: boolean;
+  /** An explicit failures admin: sees Settings → Debug → Failures. */
+  failuresAdmin?: boolean;
   /** "yyyy-MM-dd", or "--MM-dd" when the year is unknown. */
   birthDate?: string | null;
   birthDateSource?: 'TYPED' | 'GOOGLE' | null;
