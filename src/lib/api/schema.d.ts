@@ -628,6 +628,166 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/failures/gmail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listGmail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/failures/gmail/{ledgerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["gmailDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/failures/gmail/{ledgerId}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["retryGmail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/failures/gmail/{ledgerId}/skip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["skipGmail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/failures/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listJobs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/failures/jobs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["jobDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/failures/jobs/{id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["dismissJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/failures/jobs/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["retryJob_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/failures/retry-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["retryAll_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/failures/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["summary_3"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/app-lock/disable": {
         parameters: {
             query?: never;
@@ -6809,6 +6969,67 @@ export interface components {
             /** Format: date-time */
             timestamp?: string | null;
         };
+        FailedGmailItemResponse: {
+            /** Format: int32 */
+            attemptCount: number;
+            connectionEmail: string;
+            dismissReason?: string | null;
+            /** Format: date-time */
+            dismissedAt?: string | null;
+            dismissedBy?: string | null;
+            error?: string | null;
+            errorDetail?: string | null;
+            gmailMessageId: string;
+            /** Format: date-time */
+            internalDate?: string | null;
+            /** Format: uuid */
+            ledgerId: string;
+            /** Format: date-time */
+            nextRetryAt?: string | null;
+            /** Format: date-time */
+            processedAt?: string | null;
+            sender?: string | null;
+            /** @enum {string} */
+            status: "DISCOVERED" | "PROCESSING" | "CREATED" | "RECONCILED" | "SKIPPED_NOT_TRANSACTION" | "SKIPPED_BEFORE_WATERMARK" | "SKIPPED_SENDER_DISABLED" | "SKIPPED_DUPLICATE" | "SKIPPED_MESSAGE_GONE" | "UNRESOLVED_ACCOUNT" | "ACCOUNT_NOT_OPTED_IN" | "FAILED_RETRYABLE" | "FAILED_PERMANENT" | "CLEANED_UP" | "NPS_IMPORTED" | "NPS_PASSWORD_NEEDED" | "NPS_ACCOUNT_NEEDED" | "NPS_ENTRY" | "NPS_IGNORED" | "SKIPPED_BY_ADMIN";
+            subject?: string | null;
+            userEmail: string;
+            /** Format: uuid */
+            userId: string;
+        };
+        FailedJobResponse: {
+            /** Format: int32 */
+            attempt: number;
+            dismissReason?: string | null;
+            /** Format: date-time */
+            dismissedAt?: string | null;
+            dismissedBy?: string | null;
+            error?: string | null;
+            errorCode?: string | null;
+            errorDetail?: string | null;
+            /** Format: date-time */
+            finishedAt?: string | null;
+            /** Format: uuid */
+            id: string;
+            jobName: string;
+            retryable: boolean;
+            /** Format: date-time */
+            startedAt?: string | null;
+            type: string;
+            userEmail?: string | null;
+            /** Format: uuid */
+            userId?: string | null;
+        };
+        FailureReasonRequest: {
+            reason: string;
+        };
+        FailureSummaryResponse: {
+            /** Format: int64 */
+            failedGmailPermanent: number;
+            /** Format: int64 */
+            failedGmailRetryable: number;
+            /** Format: int64 */
+            failedJobs: number;
+        };
         FieldDef: {
             aggregations: ("sum" | "avg" | "count" | "min" | "max")[];
             allowedInReports: ("KPI" | "CHART" | "TABLE")[];
@@ -7038,7 +7259,7 @@ export interface components {
             reason: "NO_ACCOUNT" | "IMPORT_OFF" | "NO_AI_KEY" | "LOCKED_STATEMENT" | "UNREADABLE_STATEMENT" | "FAILED";
             senderAddress?: string | null;
             /** @enum {string} */
-            status: "DISCOVERED" | "PROCESSING" | "CREATED" | "RECONCILED" | "SKIPPED_NOT_TRANSACTION" | "SKIPPED_BEFORE_WATERMARK" | "SKIPPED_SENDER_DISABLED" | "SKIPPED_DUPLICATE" | "SKIPPED_MESSAGE_GONE" | "UNRESOLVED_ACCOUNT" | "ACCOUNT_NOT_OPTED_IN" | "FAILED_RETRYABLE" | "FAILED_PERMANENT" | "CLEANED_UP" | "NPS_IMPORTED" | "NPS_PASSWORD_NEEDED" | "NPS_ACCOUNT_NEEDED" | "NPS_ENTRY" | "NPS_IGNORED";
+            status: "DISCOVERED" | "PROCESSING" | "CREATED" | "RECONCILED" | "SKIPPED_NOT_TRANSACTION" | "SKIPPED_BEFORE_WATERMARK" | "SKIPPED_SENDER_DISABLED" | "SKIPPED_DUPLICATE" | "SKIPPED_MESSAGE_GONE" | "UNRESOLVED_ACCOUNT" | "ACCOUNT_NOT_OPTED_IN" | "FAILED_RETRYABLE" | "FAILED_PERMANENT" | "CLEANED_UP" | "NPS_IMPORTED" | "NPS_PASSWORD_NEEDED" | "NPS_ACCOUNT_NEEDED" | "NPS_ENTRY" | "NPS_IGNORED" | "SKIPPED_BY_ADMIN";
             subject?: string | null;
             suggestedBankId?: string | null;
             suggestedLast4?: string | null;
@@ -8644,6 +8865,42 @@ export interface components {
             /** Format: int32 */
             totalPages: number;
         };
+        PageFailedGmailItemResponse: {
+            content: components["schemas"]["FailedGmailItemResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
+        PageFailedJobResponse: {
+            content: components["schemas"]["FailedJobResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
         PageFnoTradeResponse: {
             content: components["schemas"]["FnoTradeResponse"][];
             empty: boolean;
@@ -9338,6 +9595,18 @@ export interface components {
             setAt?: string | null;
             /** @enum {string|null} */
             source?: "AUTO" | "LINK" | "RULE" | "USER" | null;
+        };
+        RetryAllRequest: {
+            /** @enum {string} */
+            kind: "gmail" | "jobs";
+        };
+        RetryAllResponse: {
+            /** Format: int32 */
+            affected: number;
+            /** Format: int32 */
+            jobsEnqueued: number;
+            /** Format: int32 */
+            skipped: number;
         };
         RewardAccountConfigRequest: {
             /** Format: uuid */
@@ -10743,6 +11012,7 @@ export interface components {
             createdAt: string;
             displayName?: string | null;
             email: string;
+            failuresAdmin: boolean;
             hasPassword: boolean;
             helloDone: boolean;
             helloProfileSaved: boolean;
@@ -12285,6 +12555,324 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["BankAccountResponse"] | components["schemas"]["BrokerAccountResponse"] | components["schemas"]["CreditCardAccountResponse"] | components["schemas"]["GenericAccountResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listGmail: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+                status?: "DISCOVERED" | "PROCESSING" | "CREATED" | "RECONCILED" | "SKIPPED_NOT_TRANSACTION" | "SKIPPED_BEFORE_WATERMARK" | "SKIPPED_SENDER_DISABLED" | "SKIPPED_DUPLICATE" | "SKIPPED_MESSAGE_GONE" | "UNRESOLVED_ACCOUNT" | "ACCOUNT_NOT_OPTED_IN" | "FAILED_RETRYABLE" | "FAILED_PERMANENT" | "CLEANED_UP" | "NPS_IMPORTED" | "NPS_PASSWORD_NEEDED" | "NPS_ACCOUNT_NEEDED" | "NPS_ENTRY" | "NPS_IGNORED" | "SKIPPED_BY_ADMIN";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageFailedGmailItemResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    gmailDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ledgerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FailedGmailItemResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    retryGmail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ledgerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EnqueueResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    skipGmail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ledgerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FailureReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listJobs: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+                includeDismissed?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageFailedJobResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    jobDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FailedJobResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismissJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FailureReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    retryJob_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EnqueueResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    retryAll_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetryAllRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RetryAllResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    summary_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FailureSummaryResponse"];
                 };
             };
             /** @description Error response */
