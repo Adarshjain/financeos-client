@@ -163,12 +163,13 @@ test.describe('Gmail connect, senders and empty sync', () => {
 
     const list = await api.GET('/api/v1/gmail/senders');
     expectStatus(list, 200);
-    expect(list.data?.map((s) => s.id)).toEqual([created.id]);
+    // Connecting also gave the user the NPS document senders; the user's own sender is one of them.
+    expect(list.data?.map((s) => s.id)).toContain(created.id);
 
     const del = await api.DELETE('/api/v1/gmail/senders/{id}', { params: { path: { id: created.id } } });
     expectStatus(del, 204);
     const after = await api.GET('/api/v1/gmail/senders');
-    expect(after.data).toHaveLength(0);
+    expect(after.data?.map((s) => s.id)).not.toContain(created.id);
 
     const missing = await api.DELETE('/api/v1/gmail/senders/{id}', { params: { path: { id: randomUUID() } } });
     expect([400, 404]).toContain(missing.response.status);
@@ -176,6 +177,13 @@ test.describe('Gmail connect, senders and empty sync', () => {
 
   test('a sync with no enabled senders succeeds with an all-zero summary and never calls Gmail', async () => {
     await waitForGmailJobsIdle(api);
+    // Connecting added the NPS document senders; remove every sender, as a user would, so none is enabled.
+    const senders = await api.GET('/api/v1/gmail/senders');
+    expectStatus(senders, 200);
+    for (const sender of senders.data ?? []) {
+      expectStatus(await api.DELETE('/api/v1/gmail/senders/{id}', { params: { path: { id: sender.id } } }), 204);
+    }
+    expect((await api.GET('/api/v1/gmail/senders')).data?.filter((x) => x.enabled)).toHaveLength(0);
     const before = await messagesListCount(identity);
 
     const { job, summary } = await runSync(api);
@@ -231,8 +239,12 @@ test.describe('Gmail sync journey', () => {
     });
     accountId = account.id;
     await createSender(api);
+    // Connecting scans the bank and NPS document senders at once, before the journey's mailbox exists: an
+    // empty mailbox answers those list calls (an unstubbed call counts as unmatched), then is replaced.
+    const connectMailbox = await registerMailbox(identity, []);
     await connectGmail(api, identity);
     await waitForGmailJobsIdle(api);
+    await removeMappings(connectMailbox.mappingIds);
 
     const statementPdf = await genBankPdf({
       bank: 'HDFC Bank',
@@ -337,7 +349,7 @@ test.describe('Gmail sync journey', () => {
     const last = queries[queries.length - 1];
     const match = last.match(/^from:\(([^)]+)\) after:(\d+)$/);
     expect(match, `unexpected list query ${last}`).not.toBeNull();
-    expect(match![1]).toBe(BANK_SENDER);
+    expect(match![1].split(' OR ')).toContain(BANK_SENDER);
     const afterEpoch = Number(match![2]);
     const nowEpoch = Math.floor(Date.now() / 1000);
     // 15-minute overlap behind the previous listing, allowing for the run so far.

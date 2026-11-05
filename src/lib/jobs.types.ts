@@ -6,7 +6,8 @@ export type JobType =
   | 'BROKER_RECONCILE_COMMIT'
   | 'RULE_APPLY'
   | 'CATEGORY_BACKFILL'
-  | 'ACCOUNT_DETECT';
+  | 'ACCOUNT_DETECT'
+  | 'NPS_GMAIL_IMPORT';
 
 export type JobStatus =
   | 'PENDING'

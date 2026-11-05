@@ -21,6 +21,7 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
 vi.mock('./tradebook/TradeDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-trade', 'RecordTradeDialog'));
 vi.mock('./dividends/DividendFormDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-dividend', 'DividendAddDialog'));
 vi.mock('./epf/EpfAddDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-epf', 'EpfAddDialog'));
+vi.mock('./nps/NpsAccountDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-nps', 'NpsAccountDialog'));
 vi.mock('./fno/FnoAddDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-fno', 'FnoAddDialog'));
 vi.mock('./corporate-actions/CorporateActionDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-action', 'CorporateActionDialog'));
 vi.mock('./instruments/InstrumentAddDialog', async () => (await import('@/test/fakeDialog')).fakeDialog('dialog-instrument', 'InstrumentAddDialog'));
@@ -43,11 +44,12 @@ beforeEach(() => {
 });
 
 describe('InvestmentsShell', () => {
-  it('shows the seven tabs with Holdings active and the page below them', () => {
+  it('shows the eight tabs with Holdings active and the page below them', () => {
     renderShell();
     expect(tabTexts()).toEqual([
       'Holdings',
       'EPF',
+      'NPS',
       'Dividends',
       'Tradebook',
       'F&O',
@@ -60,7 +62,7 @@ describe('InvestmentsShell', () => {
 
   it('shows no counts on any tab', () => {
     renderShell();
-    expect(tabTexts()).toEqual(['Holdings', 'EPF', 'Dividends', 'Tradebook', 'F&O', 'Corporate actions', 'Instruments']);
+    expect(tabTexts()).toEqual(['Holdings', 'EPF', 'NPS', 'Dividends', 'Tradebook', 'F&O', 'Corporate actions', 'Instruments']);
   });
 
   it('links every tab to its Dinero page', () => {
@@ -68,6 +70,7 @@ describe('InvestmentsShell', () => {
     const href = (label: RegExp) => screen.getByRole('tab', { name: label }).getAttribute('href');
     expect(href(/^Holdings/)).toBe('/investments');
     expect(href(/^EPF/)).toBe('/investments/epf');
+    expect(href(/^NPS/)).toBe('/investments/nps');
     expect(href(/^Tradebook/)).toBe('/investments/tradebook');
     expect(href(/^Dividends/)).toBe('/investments/dividends');
     expect(href(/^F&O/)).toBe('/investments/fno');
@@ -107,6 +110,7 @@ describe('InvestmentsShell', () => {
   it.each([
     ['/investments', 'trade', 'Record trade'],
     ['/investments/epf', 'epf', 'Record EPF entry'],
+    ['/investments/nps', 'nps', 'Add NPS account'],
     ['/investments/dividends', 'dividend', 'Record dividend'],
     ['/investments/corporate-actions', 'action', 'Record corporate action'],
     ['/investments/instruments', 'instrument', 'Add instrument'],

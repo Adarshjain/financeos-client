@@ -117,6 +117,61 @@ describe('rowButtons, EPF suggestion', () => {
   });
 });
 
+describe('rowButtons, NPS Gmail rows', () => {
+  it('a password row links to the NPS tab', () => {
+    const row = item({
+      key: 'nps_password:p1',
+      kind: 'nps_password',
+      href: '/investments/nps',
+      refs: { npsPendingId: 'p1' },
+      actions: [action({ type: 'nps_password', label: 'Enter password' }), action({ type: 'dismiss', label: 'Dismiss' })],
+    });
+    expect(rowButtons(row)).toEqual([
+      { id: 'nps_password', label: 'Enter password', variant: 'secondary', href: '/investments/nps' },
+    ]);
+  });
+
+  it('a new-account row acts in place: Mine and My child\'s inline, Ignore in the menu', () => {
+    const row = item({
+      key: 'nps_new_account:p2',
+      kind: 'nps_new_account',
+      refs: { npsPendingId: 'p2' },
+      actions: [
+        action({ type: 'nps_add_self', label: 'Add as mine' }),
+        action({ type: 'nps_add_child', label: "Add as my child's" }),
+        action({ type: 'nps_ignore', label: 'Ignore' }),
+      ],
+    });
+    expect(rowButtons(row).map((b) => [b.label, b.nps])).toEqual([
+      ['Mine', 'add_self'],
+      ["My child's", 'add_child'],
+    ]);
+    expect(rowMenuActions(row)).toEqual([{ id: 'nps_ignore', label: 'Ignore', nps: 'ignore' }]);
+  });
+
+  it('disables the in-place buttons when the row has no pending id', () => {
+    const row = item({ key: 'nps_new_account:p3', kind: 'nps_new_account', actions: [action({ type: 'nps_add_self', label: 'Add as mine' })] });
+    expect(rowButtons(row)[0].disabled).toBe(true);
+  });
+});
+
+describe('rowButtons, nps_setup row', () => {
+  const row = item({
+    key: 'nps_setup',
+    kind: 'nps_setup',
+    href: '/investments/nps',
+    actions: [
+      action({ type: 'open', label: 'Open', href: '/investments/nps' }),
+      action({ type: 'nps_setup_not_nps', label: 'Not NPS' }),
+      action({ type: 'dismiss', label: 'Dismiss' }),
+    ],
+  });
+  it('has one inline Set up link and Not NPS in the menu', () => {
+    expect(rowButtons(row)).toEqual([{ id: 'nps_setup', label: 'Set up', variant: 'secondary', href: '/investments/nps' }]);
+    expect(rowMenuActions(row)).toEqual([{ id: 'nps_setup_not_nps', label: 'Not NPS', nps: 'setup_not_nps' }]);
+  });
+});
+
 describe('no_statement is a menu action, not a button', () => {
   const upload = action({ type: 'upload', label: 'Upload', href: '/transactions/import?account=A1' });
   const skip = action({
@@ -150,5 +205,49 @@ describe('no_statement is a menu action, not a button', () => {
 
   it('a row without the action has no menu actions', () => {
     expect(rowMenuActions(item({ key: 'a', kind: 'job', actions: [SNOOZE, DISMISS] }))).toEqual([]);
+  });
+});
+
+describe('NPS payment rows', () => {
+  const match = item({
+    key: 'nps_match:e1:t1',
+    kind: 'nps_match',
+    refs: { npsEntryId: 'e1', transactionId: 't1' },
+    actions: [action({ type: 'nps_link', label: 'Link' }), action({ type: 'nps_dismiss', label: 'Not this one' })],
+  });
+  const record = item({
+    key: 'nps_record:t2',
+    kind: 'nps_record',
+    refs: { transactionId: 't2' },
+    actions: [action({ type: 'nps_record', label: 'Record' }), action({ type: 'nps_not_nps', label: 'Not NPS' })],
+  });
+
+  it('a pairing offers Link and Not this one', () => {
+    expect(rowButtons(match).map((b) => [b.label, b.nps, b.disabled])).toEqual([
+      ['Link', 'link', false],
+      ['Not this one', 'dismiss', false],
+    ]);
+  });
+
+  it('a pairing is disabled without its ids', () => {
+    expect(rowButtons({ ...match, refs: {} }).every((b) => b.disabled)).toBe(true);
+  });
+
+  it('a debit to record shows Record and Not NPS when Tier II is closed', () => {
+    expect(rowButtons(record).map((b) => b.nps)).toEqual(['record', 'not_nps']);
+    expect(rowMenuActions(record)).toEqual([]);
+  });
+
+  it('Record and the tier buttons wait for the target to load; Not NPS does not', () => {
+    expect(rowButtons(record, { npsTargetLoading: true }).map((b) => [b.nps, b.disabled])).toEqual([['record', true], ['not_nps', false]]);
+    expect(rowButtons(record, { npsTier2: true, npsTargetLoading: true }).every((b) => b.disabled)).toBe(true);
+  });
+
+  it('with Tier II open it shows the two tiers inline and Not NPS in the menu', () => {
+    expect(rowButtons(record, { npsTier2: true }).map((b) => [b.label, b.nps])).toEqual([
+      ['Tier I', 'record_I'],
+      ['Tier II', 'record_II'],
+    ]);
+    expect(rowMenuActions(record, { npsTier2: true })).toEqual([{ id: 'nps_not_nps', label: 'Not NPS', nps: 'not_nps' }]);
   });
 });

@@ -23,6 +23,8 @@ export function getJobTypeLabel(type: JobType): string {
       return 'Rule apply';
     case 'ACCOUNT_DETECT':
       return 'Account detection';
+    case 'NPS_GMAIL_IMPORT':
+      return 'NPS Gmail import';
     default:
       return type;
   }

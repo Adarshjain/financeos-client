@@ -41,7 +41,7 @@ for (const viewport of VIEWPORTS) {
 
       await expect(page.getByRole('tab', { name: 'Holdings' })).toHaveAttribute('data-state', 'active');
       // The tab order, and no counts on any tab.
-      await expect(page.getByRole('main').getByRole('tab')).toHaveText(['Holdings', 'EPF', 'Dividends', 'Tradebook', 'F&O', 'Corporate actions', 'Instruments']);
+      await expect(page.getByRole('main').getByRole('tab')).toHaveText(['Holdings', 'EPF', 'NPS', 'Dividends', 'Tradebook', 'F&O', 'Corporate actions', 'Instruments']);
       await expect(page.getByRole('tab', { name: 'Tradebook' })).toHaveAttribute('href', '/investments/tradebook');
 
       // The hero names its headline figure at both sizes.

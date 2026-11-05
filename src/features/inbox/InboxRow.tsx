@@ -11,12 +11,13 @@ import { SwipeActions } from '@/components/ds/SwipeActions/SwipeActions';
 import type { InboxItemResponse } from '@/lib/api/types';
 
 import { appTodayPlus, canDismiss, canSnooze, inboxRowId } from './inboxModel';
-import { type RowButton, rowButtons, type RowMenuAction, rowMenuActions } from './inboxRowsModel';
+import { type RowButton, rowButtons, type RowMenuAction, rowMenuActions, type RowOptions } from './inboxRowsModel';
 import { InboxSnoozeMenu } from './InboxSnoozeMenu';
 
 export interface InboxRowProps {
   item: InboxItemResponse;
   highlighted: boolean;
+  rowOptions?: RowOptions;
   onBillButton: (item: InboxItemResponse, button: RowButton) => void;
   onMenuAction: (item: InboxItemResponse, action: RowMenuAction) => void;
   onSnooze: (item: InboxItemResponse, until: string) => void;
@@ -28,11 +29,13 @@ export interface InboxRowProps {
  * snooze and dismiss icons the server allows. On phone, swiping right snoozes until tomorrow and
  * swiping left dismisses.
  */
-export function InboxRow({ item, highlighted, onBillButton, onMenuAction, onSnooze, onDismiss }: InboxRowProps) {
+export function InboxRow({ item, highlighted, rowOptions, onBillButton, onMenuAction, onSnooze, onDismiss }: InboxRowProps) {
   const snoozable = canSnooze(item);
   const dismissable = canDismiss(item);
-  const buttons = rowButtons(item);
-  const menuActions = rowMenuActions(item).map((a) => ({ id: a.id, label: a.label, onSelect: () => onMenuAction(item, a) }));
+  const buttons = rowButtons(item, rowOptions);
+  // A new Gmail-found NPS account has no Dismiss: swiping left is Ignore.
+  const ignoreAction = rowMenuActions(item, rowOptions).find((a) => a.nps === 'ignore');
+  const menuActions = rowMenuActions(item, rowOptions).map((a) => ({ id: a.id, label: a.label, onSelect: () => onMenuAction(item, a) }));
 
   return (
     <ContextMenu
@@ -42,7 +45,7 @@ export function InboxRow({ item, highlighted, onBillButton, onMenuAction, onSnoo
       ]}
     >
     <SwipeActions
-      disabled={!snoozable && !dismissable}
+      disabled={!snoozable && !dismissable && !ignoreAction}
       left={
         snoozable
           ? {
@@ -54,7 +57,14 @@ export function InboxRow({ item, highlighted, onBillButton, onMenuAction, onSnoo
           : undefined
       }
       right={
-        dismissable
+        ignoreAction
+          ? {
+              label: 'Ignore',
+              icon: <Icon name="close" size="sm" />,
+              tone: 'danger',
+              onTrigger: () => onMenuAction(item, ignoreAction),
+            }
+          : dismissable
           ? {
               label: 'Dismiss',
               icon: <Icon name="close" size="sm" />,

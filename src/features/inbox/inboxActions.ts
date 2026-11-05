@@ -54,3 +54,70 @@ export const dismissEpfSuggestion = createDomainAction(
     await serverApi.POST('/api/v1/inbox/{key}/dismiss', { params: { path: { key } } });
   },
 );
+
+/** A new NPS account found in Gmail: add it as the user's own or their child's. */
+export const addNpsPendingAccount = createDomainAction(
+  { fallbackError: "Couldn't add the account. Try again." },
+  async (key: string, relation: 'SELF' | 'CHILD'): Promise<{ importing: number }> => {
+    const { data } = await serverApi.POST('/api/v1/nps/gmail-detections/{key}/account', { params: { path: { key } }, body: { relation } });
+    return { importing: data?.importing ?? 0 };
+  },
+);
+
+/** Ignore an NPS account Gmail found. */
+export const ignoreNpsPending = createDomainAction(
+  { fallbackError: "Couldn't ignore this. Try again." },
+  async (key: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/nps/gmail-detections/{key}', { params: { path: { key } } });
+  },
+);
+
+/** "Not NPS" on the "Looks like you invest in NPS" suggestion: it stops being offered. */
+export const markNpsSetupNotNps = createDomainAction(
+  { fallbackError: "Couldn't update this. Try again." },
+  async (): Promise<void> => {
+    await serverApi.POST('/api/v1/nps/setup/not-nps');
+  },
+);
+
+/** Links a bank payment to an NPS contribution (an Inbox pairing the user confirms). */
+export const linkNpsContribution = createDomainAction(
+  { fallbackError: "Couldn't link the payment. Try again." },
+  async (npsEntryId: string, transactionId: string): Promise<void> => {
+    await serverApi.POST('/api/v1/nps/entries/{id}/transaction', { params: { path: { id: npsEntryId } }, body: { transactionId } });
+  },
+);
+
+/** "Not this one": the server stops pairing this payment with this contribution. */
+export const dismissNpsLink = createDomainAction(
+  { fallbackError: "Couldn't update this suggestion. Try again." },
+  async (npsEntryId: string, transactionId: string): Promise<void> => {
+    await serverApi.POST('/api/v1/nps/entries/{id}/suggestion/dismiss', { params: { path: { id: npsEntryId } }, body: { transactionId } });
+  },
+);
+
+/** Records a bank debit as an NPS contribution (the tier and account are optional: the server defaults them). */
+export const recordNpsPayment = createDomainAction(
+  { fallbackError: "Couldn't record the contribution. Try again." },
+  async (transactionId: string, accountId?: string, tier?: 'I' | 'II'): Promise<void> => {
+    await serverApi.POST('/api/v1/nps/transactions/{txnId}/record', { params: { path: { txnId: transactionId } }, body: { accountId, tier } });
+  },
+);
+
+/** "Not NPS": the debit stops being offered as a contribution to record. */
+export const markNotNps = createDomainAction(
+  { fallbackError: "Couldn't update this payment. Try again." },
+  async (transactionId: string): Promise<void> => {
+    await serverApi.POST('/api/v1/nps/transactions/{txnId}/not-nps', { params: { path: { txnId: transactionId } } });
+  },
+);
+
+/** The own active accounts a debit could be recorded to: the one to name (when there is exactly one) and whether Tier II is open. */
+export const loadNpsRecordTarget = createDomainAction(
+  { fallbackError: "Couldn't load the NPS accounts." },
+  async (): Promise<{ accountId: string | null; tier2: boolean }> => {
+    const { data } = await serverApi.GET('/api/v1/nps/summary');
+    const own = (data?.accounts ?? []).filter((a) => a.relation === 'SELF' && a.status === 'ACTIVE');
+    return { accountId: own.length === 1 ? own[0].id : null, tier2: own.some((a) => a.tier2Active) };
+  },
+);

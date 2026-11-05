@@ -204,6 +204,10 @@ export const keys = {
     employers: () => [...keys.epf.all, 'employers'] as const,
   },
 
+  nps: {
+    all: ['nps'] as const,
+  },
+
   diagnostics: {
     all: ['diagnostics'] as const,
     lookup: (ref: string, type: string) => [...keys.diagnostics.all, ref, type] as const,

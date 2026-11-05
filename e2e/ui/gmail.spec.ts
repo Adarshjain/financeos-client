@@ -97,7 +97,8 @@ test.describe('Gmail settings UI (@ui)', () => {
 
   test('Add sender dialog creates an On sender', async ({ page }) => {
     await page.goto('/settings/connections');
-    await expect(page.getByText('No allowed senders yet')).toBeVisible();
+    // Connecting adds the NPS document senders, so the list is never empty.
+    await expect(page.getByText('NPS (Protean)').first()).toBeVisible();
 
     await page.getByRole('button', { name: 'Add sender', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Add allowed sender' });
@@ -203,7 +204,8 @@ test.describe('Gmail settings UI (@ui)', () => {
     expect(imported).toHaveLength(1);
     expect(imported[0].sourcedDescription).toBe('UBER');
 
-    await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
+    // The list also holds the NPS document senders: pick the bank sender's row, not the first one.
+    await page.getByRole('button', { name: new RegExp(BANK_SENDER.replace('.', '\\.')) }).first().click();
     const dialog = page.getByRole('dialog', { name: 'Edit allowed sender' });
     await expect(dialog).toBeVisible();
     await expect(dialog.getByLabel('Email address or domain')).toHaveValue(BANK_SENDER);

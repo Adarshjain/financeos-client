@@ -3,10 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { activeInvestmentsTab, holdingHref, investmentsTabHref, investmentsTabs } from './investmentsTabs';
 
 describe('investments tabs', () => {
-  it('lists the seven tabs in owner order', () => {
+  it('lists the eight tabs in owner order', () => {
     expect(investmentsTabs.map((t) => t.label)).toEqual([
       'Holdings',
       'EPF',
+      'NPS',
       'Dividends',
       'Tradebook',
       'F&O',
@@ -23,6 +24,7 @@ describe('investments tabs', () => {
     const hrefs = Object.fromEntries(investmentsTabs.map((t) => [t.id, investmentsTabHref(t)]));
     expect(hrefs.holdings).toBe('/investments');
     expect(hrefs.epf).toBe('/investments/epf');
+    expect(hrefs.nps).toBe('/investments/nps');
     expect(hrefs.tradebook).toBe('/investments/tradebook');
     expect(hrefs.fno).toBe('/investments/fno');
     expect(hrefs['corporate-actions']).toBe('/investments/corporate-actions');
@@ -31,6 +33,7 @@ describe('investments tabs', () => {
   it('finds the active tab from the pathname, Holdings for anything else', () => {
     expect(activeInvestmentsTab('/investments')).toBe('holdings');
     expect(activeInvestmentsTab('/investments/epf')).toBe('epf');
+    expect(activeInvestmentsTab('/investments/nps')).toBe('nps');
     expect(activeInvestmentsTab('/investments/')).toBe('holdings');
     expect(activeInvestmentsTab('/investments/dividends')).toBe('dividends');
     expect(activeInvestmentsTab('/investments/corporate-actions/')).toBe('corporate-actions');
