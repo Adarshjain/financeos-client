@@ -33,7 +33,10 @@ test.describe('Failures UI (@ui)', () => {
     await expect(page.getByRole('banner')).toContainText('Debug');
     await expect(page.getByRole('link', { name: /Failures/ })).toHaveCount(0);
 
-    const res = await page.goto(`${E2E_CLIENT_URL}/settings/debug/failures`);
-    expect(res?.status()).toBe(404);
+    // Settings streams behind its loading skeleton, so notFound() renders the not-found screen
+    // under a 200; the API itself answers 403 to non-admins.
+    await page.goto(`${E2E_CLIENT_URL}/settings/debug/failures`);
+    await expect(page.getByText('Page not found')).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Emails/ })).toHaveCount(0);
   });
 });

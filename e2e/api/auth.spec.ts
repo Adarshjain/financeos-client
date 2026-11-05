@@ -37,6 +37,7 @@ test.describe('Auth API (@api)', () => {
       'role',
       'hasPassword',
       'admin',
+      'failuresAdmin',
       'birthDate',
       'birthDateSource',
       'helloDone',

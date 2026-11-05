@@ -36,7 +36,7 @@ async function failAddSender(page: Page, message: string) {
   await page.getByRole('button', { name: 'Add sender', exact: true }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Add allowed sender' });
   await expect(dialog).toBeVisible();
-  await dialog.getByLabel('Sender email address').fill('debug-toast@bank.test');
+  await dialog.getByLabel('Email address or domain').fill('debug-toast@bank.test');
   await dialog.getByRole('button', { name: 'Add sender', exact: true }).click();
 }
 
