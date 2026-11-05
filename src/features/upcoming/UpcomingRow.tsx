@@ -67,6 +67,14 @@ export function UpcomingRow({
     Boolean(onSetDetails) && item.type === 'card_bill' && !item.date && Boolean(item.statementId);
   const canSettle = item.type === 'lending_due' && Boolean(item.counterpartyId);
 
+  const menuActions: { id: string; label: string; onSelect: () => void }[] = [];
+  if (canSkipStatement) {
+    menuActions.push({ id: 'no-statement', label: 'No statement this period', onSelect: () => onSkipStatement?.(item) });
+  }
+  if (regular && item.seriesId && onStopTracking) {
+    menuActions.push({ id: 'stop', label: 'Stop tracking', onSelect: () => onStopTracking(item) });
+  }
+
   const subtitle = (
     <>
       {parts.join(' · ')}
@@ -104,11 +112,7 @@ export function UpcomingRow({
           </Text>
         )
       }
-      actions={
-        regular && item.seriesId && onStopTracking
-          ? [{ id: 'stop', label: 'Stop tracking', onSelect: () => onStopTracking(item) }]
-          : undefined
-      }
+      actions={menuActions.length > 0 ? menuActions : undefined}
       title={obligationTitle(item)}
       subtitle={subtitle}
       trailing={
@@ -150,15 +154,6 @@ export function UpcomingRow({
               <Link href={appHref(uploadHref)} prefetch={false}>
                 Upload
               </Link>
-            </Button>
-          ) : null}
-          {canSkipStatement ? (
-            <Button
-              variant="link"
-              size="sm"
-              onClick={() => onSkipStatement?.(item)}
-            >
-              No statement this period
             </Button>
           ) : null}
           {canSettle ? (

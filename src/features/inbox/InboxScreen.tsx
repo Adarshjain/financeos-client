@@ -19,7 +19,7 @@ import { InboxBillHost } from './InboxBillHost';
 import { INBOX_SECTIONS, type InboxSectionKey } from './inboxModel';
 import { dsInboxNotifier } from './inboxNotifier';
 import { InboxRow } from './InboxRow';
-import { INBOX_SECTION_TITLES, pendingFor, type RowButton } from './inboxRowsModel';
+import { INBOX_SECTION_TITLES, pendingFor, type RowButton, type RowMenuAction } from './inboxRowsModel';
 import { InboxSkeleton } from './InboxSkeleton';
 import { UPCOMING_HREF } from './inboxUpcomingTabs';
 import { useInboxDeepLink } from './useInboxDeepLink';
@@ -47,10 +47,12 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
   const onBillButton = (item: InboxItemResponse, button: RowButton) => {
     if (button.epf === 'link') return epfLink(item);
     if (button.epf === 'dismiss') return epfDismiss(item);
-    if (button.skip) return noStatement(item.key, button.skip.accountId, button.skip.periodEnd);
     const pending = pendingFor(item, button);
     if (pending) setPendingBill(pending);
   };
+
+  const onMenuAction = (item: InboxItemResponse, action: RowMenuAction) =>
+    noStatement(item.key, action.skip.accountId, action.skip.periodEnd);
 
   let body: React.ReactNode;
   if (isLoading) {
@@ -84,6 +86,7 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
                 items={shownItems.filter((i) => i.section === key)}
                 highlightKey={deepLink.found ? highlightKey : null}
                 onBillButton={onBillButton}
+                onMenuAction={onMenuAction}
                 onSnooze={(item, until) => snooze(item.key, until)}
                 onDismiss={(item) => (item.kind === 'epf_match' ? epfDismiss(item) : dismiss(item.key))}
               />

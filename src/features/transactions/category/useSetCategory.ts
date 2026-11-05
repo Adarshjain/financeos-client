@@ -106,11 +106,11 @@ export function useSetCategory(list: readonly CategoryDef[]) {
       };
       // A category a rule or the auto-categoriser had set offers a rule for the next ones; one the user set never does.
       const offerKey = before.source === 'RULE' || before.source === 'AUTO' ? response.ruleKey || null : null;
-      showToast(savedMessage(list, pick), {
+      showToast(offerKey ? `${savedMessage(list, pick)}. Do the same next time for ‘${offerKey}’?` : savedMessage(list, pick), {
         id: undoToastId(transaction.id),
         ...(offerKey
           ? {
-              action: { label: `Do the same next time for ‘${offerKey}’?`, onSelect: () => void saveRule(offerKey, pick) },
+              action: { label: 'Add rule', onSelect: () => void saveRule(offerKey, pick) },
               secondaryAction: undo,
             }
           : { action: undo }),

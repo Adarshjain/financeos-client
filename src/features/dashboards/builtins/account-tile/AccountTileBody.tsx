@@ -82,7 +82,7 @@ export function AccountTileBody({ params, className }: BuiltinBodyProps) {
           {label}
         </Text>
         <Text variant="figure" as="div" truncate>
-          <Button variant="link" onClick={() => setOpen(true)}>
+          <Button variant="link" size="inherit" onClick={() => setOpen(true)}>
             {figure}
           </Button>
         </Text>

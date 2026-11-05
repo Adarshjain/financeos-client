@@ -38,7 +38,7 @@ export function NetWorthView({ data, loading, onKpiValueClick }: TemplateViewPro
     <div className="flex flex-col gap-space-4" data-testid="net-worth-view" aria-busy={loading || undefined}>
       <Text variant="figure" as="div" truncate data-testid="net-worth-value">
         {onKpiValueClick ? (
-          <Button variant="link" onClick={onKpiValueClick}>
+          <Button variant="link" size="inherit" onClick={onKpiValueClick}>
             {figure}
           </Button>
         ) : (

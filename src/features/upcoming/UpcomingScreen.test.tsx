@@ -241,16 +241,20 @@ describe('UpcomingScreen row trailing', () => {
     expect(screen.getByRole('link', { name: 'Upload' })).toHaveAttribute('href', '/transactions/import?account=A1');
   });
 
-  it('an ended statement-expected cycle offers No statement this period, which marks that card and period end', () => {
+  it('an ended statement-expected cycle offers No statement this period in its row menu, which marks that card and period end', async () => {
     render(<UpcomingScreen />);
-    fireEvent.click(screen.getByRole('button', { name: 'No statement this period' }));
+    expect(screen.queryByRole('button', { name: 'No statement this period' })).toBeNull();
+    const trailing = screen.getByRole('link', { name: 'Upload' }).parentElement as HTMLElement;
+    await userEvent.click(within(trailing).getByRole('button', { name: 'More options' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'No statement this period' }));
     expect(skipStatement).toHaveBeenCalledWith('A1', '2026-10-03');
   });
 
-  it('a statement-expected cycle that has not ended has no such button', () => {
+  it('a statement-expected cycle that has not ended has no menu item', () => {
     mockQuery({ data: [row({ type: 'statement_expected', status: 'upcoming', date: '2026-10-20', amount: null, accountId: 'A1', title: 'x' })] });
     render(<UpcomingScreen />);
     expect(screen.queryByRole('button', { name: 'No statement this period' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'More options' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Upload' })).toBeInTheDocument();
   });
 

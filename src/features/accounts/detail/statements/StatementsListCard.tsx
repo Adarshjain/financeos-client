@@ -83,6 +83,17 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
                   </Text>
                 }
                 subtitle={entry.caption}
+                actions={
+                  missing
+                    ? [
+                        {
+                          id: 'no-statement',
+                          label: 'No statement this period',
+                          onSelect: () => void statementSkip.skip(accountId, entry.periodEnd),
+                        },
+                      ]
+                    : undefined
+                }
                 trailing={
                   missing ? (
                     <>
@@ -90,13 +101,6 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
                         <Link href={appHref(`/transactions/import?account=${accountId}`)} prefetch={false}>
                           Upload
                         </Link>
-                      </Button>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        onClick={() => void statementSkip.skip(accountId, entry.periodEnd)}
-                      >
-                        No statement this period
                       </Button>
                     </>
                   ) : (

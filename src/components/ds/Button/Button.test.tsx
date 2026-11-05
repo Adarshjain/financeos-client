@@ -49,6 +49,14 @@ describe('Button component', () => {
     expect(screen.getByRole('button')).toHaveClass('underline', 'font-bold', 'decoration-line-heavy');
   });
 
+  it('link with size inherit keeps the surrounding text size (KPI figures)', () => {
+    render(<Button variant="link" size="inherit">₹1,20,000</Button>);
+    const button = screen.getByRole('button');
+    expect(button).not.toHaveClass('text-label');
+    expect(button).not.toHaveClass('text-body');
+    expect(button).not.toHaveClass('h-control-md');
+  });
+
   it('link text size follows the size prop and defaults to label', () => {
     const { rerender } = render(<Button variant="link">Reset</Button>);
     expect(screen.getByRole('button')).toHaveClass('text-label');
