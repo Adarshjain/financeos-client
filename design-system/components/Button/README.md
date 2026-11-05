@@ -29,7 +29,7 @@ Buttons: one primary per view, secondary for everything else, ghost for low-emph
 - `danger-ghost`: `ghost` layout and heights with the `danger` text colour; hover `hover` fill and `danger-hover` text, pressed `pressed` fill and `danger-pressed` text; same disabled and loading states as ghost. For destructive secondary or tertiary Dialog footer actions (owner 2026-10-25, "Ghost actions").
 - `danger-link`: a `link` in the `danger` text colour for Delete / Remove link actions (owner, 2026-10-23); same underline, sizes and icon handling (including the icon size below); hover `danger-hover`, pressed `danger-pressed`.
 - Sizes: `btn-s` 26px inside rows and card headers (desktop), default 32px (`control-md`, the same as a form field), `btn-xl` 44px for auth.
-- Type: every size uses the `label` style (12px); `link` defaults to the `label` size, never large (owner, 2026-11-02); only an explicit `size="md"`/`"xl"` makes it body (auth).
+- Type: every size uses the `label` style (12px); `link` defaults to the `label` size, never large (owner, 2026-11-02); only an explicit `size="md"`/`"xl"` makes it body (auth). `size="inherit"` (links only) keeps the surrounding text size: KPI figures that open their underlying data stay figure-sized (owner, 2026-11-04).
 - Layout: `inline` (default) or `stacked` (icon above label at 64px height, for quick-action cards).
 
 ## States

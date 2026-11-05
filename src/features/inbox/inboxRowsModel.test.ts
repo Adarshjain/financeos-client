@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { pendingFor, rowButtons } from './inboxRowsModel';
+import { pendingFor, rowButtons, rowMenuActions } from './inboxRowsModel';
 import { action, DISMISS, item, SNOOZE } from './inboxTestUtils';
 
 describe('rowButtons', () => {
@@ -117,7 +117,7 @@ describe('rowButtons, EPF suggestion', () => {
   });
 });
 
-describe('rowButtons: no_statement', () => {
+describe('no_statement is a menu action, not a button', () => {
   const upload = action({ type: 'upload', label: 'Upload', href: '/transactions/import?account=A1' });
   const skip = action({
     type: 'no_statement',
@@ -125,30 +125,30 @@ describe('rowButtons: no_statement', () => {
     payload: { accountId: 'A1', date: '2026-10-03' },
   });
 
-  it('is a plain button carrying the card and period end, beside Upload', () => {
+  it('leaves only Upload as a button and exposes the skip as a menu action carrying the card and period end', () => {
     const row = item({ key: 'a', kind: 'statement_expected', href: '/transactions/import?account=A1', actions: [upload, SNOOZE, skip] });
     expect(rowButtons(row)).toEqual([
       { id: 'upload-0', label: 'Upload', variant: 'secondary', href: '/transactions/import?account=A1' },
-      {
-        id: 'no_statement-1',
-        label: 'No statement this period',
-        variant: 'link',
-        skip: { accountId: 'A1', periodEnd: '2026-10-03' },
-        disabled: false,
-      },
+    ]);
+    expect(rowMenuActions(row)).toEqual([
+      { id: 'no_statement-1', label: 'No statement this period', skip: { accountId: 'A1', periodEnd: '2026-10-03' } },
     ]);
   });
 
   it('never becomes a link to the row href', () => {
     const row = item({ key: 'a', kind: 'statement_expected', href: '/x', actions: [skip] });
-    expect(rowButtons(row)[0].href).toBeUndefined();
+    expect(rowButtons(row)).toEqual([]);
   });
 
-  it('falls back to the row refs and date, and is disabled when neither names them', () => {
+  it('falls back to the row refs and date, and is left out when neither names them', () => {
     const bare = action({ type: 'no_statement', label: 'No statement this period' });
     const withRefs = item({ key: 'a', kind: 'statement_expected', date: '2026-10-03', refs: { accountId: 'A2' }, actions: [bare] });
-    expect(rowButtons(withRefs)[0]).toMatchObject({ skip: { accountId: 'A2', periodEnd: '2026-10-03' }, disabled: false });
+    expect(rowMenuActions(withRefs)[0]).toMatchObject({ skip: { accountId: 'A2', periodEnd: '2026-10-03' } });
     const none = item({ key: 'b', kind: 'statement_expected', actions: [bare] });
-    expect(rowButtons(none)[0]).toMatchObject({ skip: undefined, disabled: true });
+    expect(rowMenuActions(none)).toEqual([]);
+  });
+
+  it('a row without the action has no menu actions', () => {
+    expect(rowMenuActions(item({ key: 'a', kind: 'job', actions: [SNOOZE, DISMISS] }))).toEqual([]);
   });
 });

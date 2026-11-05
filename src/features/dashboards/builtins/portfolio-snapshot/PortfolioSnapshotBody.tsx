@@ -74,7 +74,7 @@ export function PortfolioSnapshotBody() {
     <div data-testid="portfolio-snapshot-widget">
       <div className="px-space-16 pb-space-12">
         <Text variant="figure" as="div">
-          <Button variant="link" onClick={() => setOpen(true)} title="View underlying data for Portfolio value">
+          <Button variant="link" size="inherit" onClick={() => setOpen(true)} title="View underlying data for Portfolio value">
             {formatMoney(value)}
           </Button>
         </Text>

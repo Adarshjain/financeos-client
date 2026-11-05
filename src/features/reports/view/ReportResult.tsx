@@ -139,7 +139,7 @@ function KpiResult({
       label={hideMeasure ? undefined : label}
       value={
         onOpen ? (
-          <Button variant="link" onClick={onOpen} title="View underlying data">
+          <Button variant="link" size="inherit" onClick={onOpen} title="View underlying data">
             {concealMoney(fmt(data.value))}
           </Button>
         ) : (

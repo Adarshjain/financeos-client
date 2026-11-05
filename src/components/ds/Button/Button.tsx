@@ -24,7 +24,8 @@ export type ButtonSize = 'sm' | 'md' | 'xl';
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
-  size?: ButtonSize;
+  /** `'inherit'` is for links only: the link takes the surrounding text size (a figure that opens its underlying data). */
+  size?: ButtonSize | 'inherit';
   layout?: ButtonLayout;
   fullWidth?: boolean;
   iconOnly?: boolean;
@@ -78,7 +79,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const isLink = variant === 'link' || variant === 'danger-link';
-    const size: ButtonSize = sizeProp ?? 'md';
+    const size: ButtonSize = sizeProp === 'inherit' ? 'md' : sizeProp ?? 'md';
     const asChildContent = asChild && React.isValidElement(children)
       ? (children as React.ReactElement<{ children?: React.ReactNode }>).props.children
       : children;
@@ -106,10 +107,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     // Links carry no height or padding: `size` only sets their text (sm or no size = label, md/xl = body).
     // A link is never large by default (owner, 2026-11-02): without a `size` it uses the label style, not the surrounding size.
+    // `size="inherit"` keeps the surrounding size on purpose, for KPI figures that open their underlying data.
     const sizeClasses = isLink
-      ? sizeProp === 'md' || sizeProp === 'xl'
-        ? 'text-body'
-        : 'text-label'
+      ? sizeProp === 'inherit'
+        ? ''
+        : sizeProp === 'md' || sizeProp === 'xl'
+          ? 'text-body'
+          : 'text-label'
       : isStacked
         ? 'h-space-64 px-space-8 py-space-8 gap-space-4 rounded-ds-lg text-label font-semibold flex-col items-center justify-center text-center'
         : {

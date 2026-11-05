@@ -26,9 +26,14 @@ export interface RowButton {
   bill?: BillActionType;
   /** An EPF suggestion's own buttons: attach the credit, or say it is not this one. */
   epf?: 'link' | 'dismiss';
-  /** "No statement this period": the card and the period end to mark as having no statement. */
-  skip?: { accountId: string; periodEnd: string };
   disabled?: boolean;
+}
+
+/** A row's "More options" menu item: "No statement this period", with the card and period end to mark. */
+export interface RowMenuAction {
+  id: string;
+  label: string;
+  skip: { accountId: string; periodEnd: string };
 }
 
 /** The server's action type for marking a card's cycle as having no statement. */
@@ -79,23 +84,13 @@ function epfButtons(item: InboxItemResponse): RowButton[] {
 /** The row's buttons from the server's actions (snooze and dismiss are separate); a summary row shows one. */
 export function rowButtons(item: InboxItemResponse): RowButton[] {
   if (item.kind === 'epf_match') return epfButtons(item);
-  const actions = primaryActions(item).slice(0, item.rowType === 'summary' ? 1 : undefined);
+  const actions = primaryActions(item)
+    .filter((a) => a.type !== NO_STATEMENT)
+    .slice(0, item.rowType === 'summary' ? 1 : undefined);
   const buttons: RowButton[] = [];
   actions.forEach((action, index) => {
     const id = `${action.type}-${index}`;
     const variant = DOING.has(action.type) ? 'secondary' : 'link';
-    if (action.type === NO_STATEMENT) {
-      const accountId = action.payload?.accountId ?? item.refs.accountId;
-      const periodEnd = action.payload?.date ?? item.date;
-      buttons.push({
-        id,
-        label: action.label,
-        variant,
-        skip: accountId && periodEnd ? { accountId, periodEnd } : undefined,
-        disabled: !accountId || !periodEnd,
-      });
-      return;
-    }
     if (isBillAction(action.type)) {
       buttons.push({
         id,
@@ -115,6 +110,19 @@ export function rowButtons(item: InboxItemResponse): RowButton[] {
     buttons.push({ id, label, variant, href });
   });
   return buttons;
+}
+
+/** The row's menu actions: "No statement this period" (left out when the server names no card or period end). */
+export function rowMenuActions(item: InboxItemResponse): RowMenuAction[] {
+  const actions: RowMenuAction[] = [];
+  primaryActions(item).forEach((action, index) => {
+    if (action.type !== NO_STATEMENT) return;
+    const accountId = action.payload?.accountId ?? item.refs.accountId;
+    const periodEnd = action.payload?.date ?? item.date;
+    if (!accountId || !periodEnd) return;
+    actions.push({ id: `${action.type}-${index}`, label: action.label, skip: { accountId, periodEnd } });
+  });
+  return actions;
 }
 
 /** What a bill button opens: the row's statement, whichever action carried it. */

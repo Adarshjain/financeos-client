@@ -46,8 +46,8 @@ test.describe('Category: Do the same next time (@ui)', () => {
     await changeToGifts(page, 'SWIGGY ORDER 4412 BANGALORE', 'Food');
 
     // The toast offers a rule for the payee next to Undo.
-    await expect(page.getByText('Set to Gifts')).toBeVisible();
-    const offer = page.getByRole('button', { name: /Do the same next time for .SWIGGY.\?/ });
+    await expect(page.getByText(/Set to Gifts\. Do the same next time for .SWIGGY.\?/)).toBeVisible();
+    const offer = page.getByRole('button', { name: 'Add rule' });
     await expect(offer).toBeVisible();
     await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
     await offer.click();
@@ -78,7 +78,7 @@ test.describe('Category: Do the same next time (@ui)', () => {
 
     await open(page, 'SWIGGY ORDER 1010 DELHI');
     await changeToGifts(page, 'SWIGGY ORDER 1010 DELHI', 'Food');
-    await expect(page.getByRole('button', { name: /Do the same next time/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Add rule' })).toBeVisible();
     await page.getByRole('button', { name: 'Undo' }).click();
     await expect.poll(async () => (await searchAll(api)).find((t) => t.id === first.id)?.category?.key).toBe('food');
 
@@ -97,7 +97,7 @@ test.describe('Category: Do the same next time (@ui)', () => {
     const picker = page.getByRole('dialog', { name: 'Category' });
     await picker.getByRole('button', { name: 'Gifts', exact: true }).click();
     await expect(page.getByText('Set to Gifts')).toBeVisible();
-    await expect(page.getByRole('button', { name: /Do the same next time/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Add rule' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
   });
 });

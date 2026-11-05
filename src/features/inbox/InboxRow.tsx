@@ -11,13 +11,14 @@ import { SwipeActions } from '@/components/ds/SwipeActions/SwipeActions';
 import type { InboxItemResponse } from '@/lib/api/types';
 
 import { appTodayPlus, canDismiss, canSnooze, inboxRowId } from './inboxModel';
-import { type RowButton, rowButtons } from './inboxRowsModel';
+import { type RowButton, rowButtons, type RowMenuAction, rowMenuActions } from './inboxRowsModel';
 import { InboxSnoozeMenu } from './InboxSnoozeMenu';
 
 export interface InboxRowProps {
   item: InboxItemResponse;
   highlighted: boolean;
   onBillButton: (item: InboxItemResponse, button: RowButton) => void;
+  onMenuAction: (item: InboxItemResponse, action: RowMenuAction) => void;
   onSnooze: (item: InboxItemResponse, until: string) => void;
   onDismiss: (item: InboxItemResponse) => void;
 }
@@ -27,10 +28,11 @@ export interface InboxRowProps {
  * snooze and dismiss icons the server allows. On phone, swiping right snoozes until tomorrow and
  * swiping left dismisses.
  */
-export function InboxRow({ item, highlighted, onBillButton, onSnooze, onDismiss }: InboxRowProps) {
+export function InboxRow({ item, highlighted, onBillButton, onMenuAction, onSnooze, onDismiss }: InboxRowProps) {
   const snoozable = canSnooze(item);
   const dismissable = canDismiss(item);
   const buttons = rowButtons(item);
+  const menuActions = rowMenuActions(item).map((a) => ({ id: a.id, label: a.label, onSelect: () => onMenuAction(item, a) }));
 
   return (
     <ContextMenu
@@ -71,6 +73,7 @@ export function InboxRow({ item, highlighted, onBillButton, onSnooze, onDismiss 
         highlighted={highlighted}
         title={item.title}
         subtitle={item.subtitle ?? undefined}
+        actions={menuActions.length > 0 ? menuActions : undefined}
         trailing={
           <>
             {buttons.map((button) =>

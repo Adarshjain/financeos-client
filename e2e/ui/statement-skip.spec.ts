@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
@@ -27,6 +27,12 @@ test.describe('No statement this period (@ui)', () => {
     await loginContext(context, currentUser.cookie);
   });
 
+  /** The skip lives in the row's More options menu. */
+  const chooseSkip = async (page: Page, scope: Locator) => {
+    await scope.getByRole('button', { name: 'More options' }).click();
+    await page.getByRole('menuitem', { name: SKIP }).click();
+  };
+
   const undoFromToast = async (page: Page) => {
     await page.locator('[data-sonner-toast]').getByRole('button', { name: 'Undo' }).first().click();
   };
@@ -38,14 +44,16 @@ test.describe('No statement this period (@ui)', () => {
     const row = page.getByTestId('inbox-row').filter({ hasText: 'Skip Inbox Card' });
     await expect(row).toContainText('statement missing');
     await expect(row.getByRole('link', { name: 'Upload' })).toBeVisible();
+    await expect(row.getByRole('button', { name: SKIP })).toHaveCount(0);
 
-    await row.getByRole('button', { name: SKIP }).click();
+    await chooseSkip(page, row);
     await expectToast(page, SKIP);
     await expect(row).toHaveCount(0);
 
     await undoFromToast(page);
     await expect(row).toBeVisible();
-    await expect(row.getByRole('button', { name: SKIP })).toBeVisible();
+    await row.getByRole('button', { name: 'More options' }).click();
+    await expect(page.getByRole('menuitem', { name: SKIP })).toBeVisible();
   });
 
   test('Upcoming: mark the cycle, the overdue row moves on to the next cycle; Undo brings it back', async ({ page }) => {
@@ -53,15 +61,16 @@ test.describe('No statement this period (@ui)', () => {
     await seedCardMissingOneStatement(currentUser, 'Skip Upcoming Card', '8102');
     await page.goto('/upcoming');
     await expect(page.getByText('Skip Upcoming Card statement expected')).toBeVisible();
-    await expect(page.getByRole('button', { name: SKIP })).toBeVisible();
-
-    await page.getByRole('button', { name: SKIP }).click();
+    const upcomingRow = page.getByRole('button', { name: 'More options' }).locator('xpath=ancestor::div[contains(@class,"border-l-4")][1]').filter({ hasText: 'Skip Upcoming Card statement expected' });
+    await upcomingRow.getByRole('button', { name: 'More options' }).click();
+    await expect(page.getByRole('menuitem', { name: SKIP })).toBeVisible();
+    await page.getByRole('menuitem', { name: SKIP }).click();
     await expectToast(page, SKIP);
-    // The skipped cycle counts as covered: the row moves to the next cycle, which is not over yet, so no skip button.
-    await expect(page.getByRole('button', { name: SKIP })).toHaveCount(0);
+    // The skipped cycle counts as covered: the row moves to the next cycle, which is not over yet, so no skip item.
+    await expect(upcomingRow).toHaveCount(0);
 
     await undoFromToast(page);
-    await expect(page.getByRole('button', { name: SKIP })).toBeVisible();
+    await expect(upcomingRow).toHaveCount(1);
   });
 
   test('Statements tab: Statement missing row, mark it, a No statement row shows; its Undo brings the warning back', async ({ page }) => {
@@ -76,7 +85,8 @@ test.describe('No statement this period (@ui)', () => {
     await expect(missing.getByRole('link', { name: 'Upload' })).toHaveAttribute('href', `/transactions/import?account=${card.id}`);
     await expect(skipped).toHaveCount(0);
 
-    await missing.getByRole('button', { name: SKIP }).click();
+    await expect(missing.getByRole('button', { name: SKIP })).toHaveCount(0);
+    await chooseSkip(page, missing);
     await expect(missing).toHaveCount(0);
     await expect(skipped).toHaveCount(1);
     await expect(skipped).toContainText('No statement');

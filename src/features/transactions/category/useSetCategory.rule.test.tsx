@@ -37,8 +37,9 @@ beforeEach(() => {
 
 describe('useSetCategory rule offer', () => {
   it.each(['RULE', 'AUTO'])('offers a rule when %s had set the category before', async (source) => {
-    const [, opts] = await run(source);
-    expect(opts.action.label).toBe('Do the same next time for ‘SWIGGY’?');
+    const [message, opts] = await run(source);
+    expect(message).toMatch(/\. Do the same next time for ‘SWIGGY’\?$/);
+    expect(opts.action.label).toBe('Add rule');
     expect(opts.secondaryAction?.label).toBe('Undo');
   });
 

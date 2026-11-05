@@ -67,7 +67,7 @@ export function RewardsEarnedView({ widget, data, loading, onPageChange }: Templ
     <div data-testid="rewards-earned-view" aria-busy={loading || undefined}>
       <div className="flex flex-col gap-space-2 pb-space-8">
         <Text variant="figure" as="div">
-          <Button variant="link" onClick={() => setDrill({ title: `${title} · ${formatMoney(model.totalInr)}`, cardId: null })}>
+          <Button variant="link" size="inherit" onClick={() => setDrill({ title: `${title} · ${formatMoney(model.totalInr)}`, cardId: null })}>
             {concealMoney(formatMoney(model.totalInr))}
           </Button>
         </Text>
