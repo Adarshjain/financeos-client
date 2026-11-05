@@ -1677,6 +1677,48 @@ export const jobsApi = {
   },
 };
 
+/** Admin-only: failed background items across users (server `/admin/failures`, 403 unless an explicit admin). */
+export const failuresApi = {
+  summary: async (): Promise<Schemas['FailureSummaryResponse']> => {
+    const { data } = await serverApi.GET('/api/v1/admin/failures/summary');
+    return data! as Schemas['FailureSummaryResponse'];
+  },
+  listJobs: async (params: { page: number; size: number; includeDismissed: boolean }): Promise<Schemas['PageFailedJobResponse']> => {
+    const { data } = await serverApi.GET('/api/v1/admin/failures/jobs', { params: { query: params } });
+    return data! as Schemas['PageFailedJobResponse'];
+  },
+  getJob: async (id: string): Promise<Schemas['FailedJobResponse']> => {
+    const { data } = await serverApi.GET('/api/v1/admin/failures/jobs/{id}', { params: { path: { id } } });
+    return data! as Schemas['FailedJobResponse'];
+  },
+  listGmail: async (params: { page: number; size: number; status?: 'FAILED_RETRYABLE' | 'FAILED_PERMANENT' | 'SKIPPED_BY_ADMIN' }): Promise<Schemas['PageFailedGmailItemResponse']> => {
+    const { data } = await serverApi.GET('/api/v1/admin/failures/gmail', { params: { query: params } });
+    return data! as Schemas['PageFailedGmailItemResponse'];
+  },
+  getGmail: async (ledgerId: string): Promise<Schemas['FailedGmailItemResponse']> => {
+    const { data } = await serverApi.GET('/api/v1/admin/failures/gmail/{ledgerId}', { params: { path: { ledgerId } } });
+    return data! as Schemas['FailedGmailItemResponse'];
+  },
+  retryGmail: async (ledgerId: string): Promise<Schemas['EnqueueResponse']> => {
+    const { data } = await serverApi.POST('/api/v1/admin/failures/gmail/{ledgerId}/retry', { params: { path: { ledgerId } } });
+    return data! as Schemas['EnqueueResponse'];
+  },
+  skipGmail: async (ledgerId: string, reason: string): Promise<void> => {
+    await serverApi.POST('/api/v1/admin/failures/gmail/{ledgerId}/skip', { params: { path: { ledgerId } }, body: { reason } });
+  },
+  retryJob: async (id: string): Promise<Schemas['EnqueueResponse']> => {
+    const { data } = await serverApi.POST('/api/v1/admin/failures/jobs/{id}/retry', { params: { path: { id } } });
+    return data! as Schemas['EnqueueResponse'];
+  },
+  dismissJob: async (id: string, reason: string): Promise<void> => {
+    await serverApi.POST('/api/v1/admin/failures/jobs/{id}/dismiss', { params: { path: { id } }, body: { reason } });
+  },
+  retryAll: async (kind: 'gmail' | 'jobs'): Promise<Schemas['RetryAllResponse']> => {
+    const { data } = await serverApi.POST('/api/v1/admin/failures/retry-all', { body: { kind } });
+    return data! as Schemas['RetryAllResponse'];
+  },
+};
+
 // ---------------------------------------------------------------------------
 // Gmail
 // ---------------------------------------------------------------------------

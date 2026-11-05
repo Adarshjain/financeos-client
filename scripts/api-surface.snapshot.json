@@ -16,6 +16,7 @@
     "dashboardsApi",
     "dividendsApi",
     "epfApi",
+    "failuresApi",
     "fnoApi",
     "gmailApi",
     "importsApi",
@@ -380,6 +381,18 @@
       "get",
       "list",
       "retry"
+    ],
+    "failuresApi": [
+      "dismissJob",
+      "getGmail",
+      "getJob",
+      "listGmail",
+      "listJobs",
+      "retryAll",
+      "retryGmail",
+      "retryJob",
+      "skipGmail",
+      "summary"
     ],
     "gmailApi": [
       "createSender",

@@ -1,11 +1,14 @@
 'use client';
 
+import Link from 'next/link';
 import React from 'react';
 
 import { Card } from '@/components/ds/Card/Card';
+import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { LoadError } from '@/features/shell/LoadError';
 
+import { settingsSection } from '../settingsSections';
 import { LocalFailuresCard } from './LocalFailuresCard';
 import { LookupCard } from './LookupCard';
 import { RequestCard } from './RequestCard';
@@ -18,15 +21,24 @@ interface DebugScreenProps {
   initialRef?: string;
   initialType?: string;
   admin: boolean;
+  /** An explicit failures admin: shows the Failures entry. */
+  failuresAdmin?: boolean;
 }
 
 /** The Debug tab: the admin lookup, its results, and this device's recent failures. */
-export function DebugScreen({ initialRef = '', initialType = 'auto', admin }: DebugScreenProps) {
+export function DebugScreen({ initialRef = '', initialType = 'auto', admin, failuresAdmin = false }: DebugScreenProps) {
   const { currentRef, currentType, search, select } = useDebugRef(initialRef, initialType, admin);
   const { data, isLoading, isError, refetch } = useDiagnosticsLookup(currentRef, currentType, admin);
 
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      {failuresAdmin ? (
+        <Card>
+          <ListRow asChild chevron title="Failures" subtitle="Failed emails and jobs across users">
+            <Link href={`${settingsSection('debug').href}/failures`} prefetch={false} />
+          </ListRow>
+        </Card>
+      ) : null}
       <LookupCard
         key={`${currentRef}|${currentType}`}
         admin={admin}
