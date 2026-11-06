@@ -519,13 +519,30 @@ test.describe('Gmail sync journey', () => {
     expect(after.filter((t) => t.source === 'gmail_transaction_alert')).toHaveLength(0);
   });
 
+  test('an alert inside a period a statement already covers creates no transaction', async () => {
+    test.slow();
+    const covered = alertMail({ last4: '1234', amount: 777, merchant: 'COVERED CAFE', date: isoDaysAgo(20), sentAt: daysAgo(20) });
+    await removeMappings(mailbox.mappingIds);
+    mailbox = await registerMailbox(identity, [...mailbox.messages, covered]);
+    await scriptExtractions(api, [
+      extractionFor(covered, { json: extractedTxn({ amount: 777, date: isoDaysAgo(20), last4: '1234', merchant: 'COVERED CAFE' }) }),
+    ]);
+    const { summary } = await runSync(api);
+    expect(summary).toMatchObject({ discovered: 1, processed: 1, created: 0, skipped: 1 });
+    const row = summary.messages.find((m) => m.gmailMessageId === covered.id);
+    expect(row?.status).toBe('SKIPPED_BEFORE_WATERMARK');
+    expect(row?.error).toMatch(/^Covered by statement/);
+    const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: accountId }]);
+    expect(txns.filter((t) => t.sourcedDescription === 'COVERED CAFE')).toHaveLength(0);
+  });
+
   test('a later statement reconciles an earlier alert instead of duplicating it', async () => {
     test.slow();
-    const amazon = alertMail({ last4: '1234', amount: 999, merchant: 'AMAZON', date: isoDaysAgo(12), sentAt: daysAgo(12) });
+    const amazon = alertMail({ last4: '1234', amount: 999, merchant: 'AMAZON', date: isoDaysAgo(7), sentAt: daysAgo(7) });
     await removeMappings(mailbox.mappingIds);
     mailbox = await registerMailbox(identity, [...mailbox.messages, amazon]);
     await scriptExtractions(api, [
-      extractionFor(amazon, { json: extractedTxn({ amount: 999, date: isoDaysAgo(12), last4: '1234', merchant: 'AMAZON' }) }),
+      extractionFor(amazon, { json: extractedTxn({ amount: 999, date: isoDaysAgo(7), last4: '1234', merchant: 'AMAZON' }) }),
     ]);
     const first = await runSync(api);
     expect(first.summary).toMatchObject({ discovered: 1, processed: 1, created: 1 });
@@ -533,12 +550,12 @@ test.describe('Gmail sync journey', () => {
     const pdf = await genBankPdf({
       bank: 'HDFC Bank',
       accountLast10: '5566771234',
-      periodStart: isoDaysAgo(15),
-      periodEnd: isoDaysAgo(8),
+      periodStart: isoDaysAgo(9),
+      periodEnd: isoDaysAgo(3),
       opening: 87800,
       rows: [
-        { date: isoDaysAgo(12), description: 'AMAZON', debit: 999 },
-        { date: isoDaysAgo(11), description: 'FUEL STATION', debit: 500 },
+        { date: isoDaysAgo(7), description: 'AMAZON', debit: 999 },
+        { date: isoDaysAgo(6), description: 'FUEL STATION', debit: 500 },
       ],
     });
     const statement2 = statementMail({ pdf, sentAt: daysAgo(0) });
