@@ -124,3 +124,41 @@ test.describe('Move a statement to another account (@ui)', () => {
     expect((await getAccountStatements(api, target.id)).length).toBe(1);
   });
 });
+
+test.describe('Picking a statement brings its card into view (@ui)', () => {
+  test('phone: tapping an older statement row shows its detail card in the viewport', async ({ context, request, page }) => {
+    test.setTimeout(120000);
+    const user = await createUser(request, 'ui-statement-scroll');
+    await loginContext(context, user.cookie);
+    // a short phone screen: the detail card below the list starts out of view
+    await page.setViewportSize({ width: 390, height: 600 });
+    const api = makeApi(user.cookie);
+    const account = await createBankAccount(api, { name: 'Scroll Bank', last4: '8899', bank: 'hdfc', openingBalance: SPEC.opening });
+    const may: BankSpec = {
+      ...SPEC,
+      periodStart: '2026-05-01',
+      periodEnd: '2026-05-31',
+      opening: 62800.0,
+      rows: [{ date: '2026-05-06', description: 'ACME PAYROLL CREDIT', credit: 40000.0 }],
+    };
+    await uploadAndIngest(api, account.id, [
+      { filename: 'scroll-apr.pdf', buffer: await genBankPdf(SPEC) },
+      { filename: 'scroll-may.pdf', buffer: await genBankPdf(may) },
+    ]);
+    const statements = await getAccountStatements(api, account.id);
+    expect(statements.length).toBeGreaterThanOrEqual(2);
+
+    await page.goto(`/accounts/${account.id}/statements`);
+    const main = page.getByRole('main');
+    const actions = page.getByRole('button', { name: 'More actions' }).locator('visible=true').first();
+    const aprRow = main.getByRole('button').filter({ hasText: /Apr/ }).first();
+    await aprRow.waitFor({ timeout: 60000 });
+    // before the tap the card sits below the list, low on the screen or under it
+    expect((await actions.boundingBox())?.y ?? 0).toBeGreaterThan(300);
+    await aprRow.click();
+    await page.waitForURL(/statement=/);
+    // the card's header (its More actions button) lands in the upper half of the screen, under the top bar
+    await expect(actions).toBeInViewport();
+    await expect.poll(async () => (await actions.boundingBox())?.y ?? -1, { timeout: 5000 }).toBeLessThan(300);
+  });
+});

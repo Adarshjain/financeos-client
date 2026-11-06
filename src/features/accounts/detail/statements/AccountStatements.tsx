@@ -9,6 +9,7 @@ import { CoverageStrip } from './CoverageStrip';
 import { buildDetailModel } from './detailModel';
 import { buildListRows, buildStatementRow } from './listModel';
 import { MarkPaidAction } from './MarkPaidAction';
+import { ScrollIntoViewOnSelect } from './ScrollIntoViewOnSelect';
 import { StatementDetailCard } from './StatementDetailCard';
 import { loadStatementsData } from './statementsData';
 import { StatementsEmpty } from './StatementsEmpty';
@@ -64,7 +65,7 @@ export async function AccountStatements({
           />
         </div>
         {selected ? (
-          <div className="desk:col-span-7 min-w-0">
+          <ScrollIntoViewOnSelect selectedId={selected} fromAddress={Boolean(params.statement)} className="desk:col-span-7 min-w-0">
             {data.detail ? (
               <StatementDetailCard
                 accountId={account.id}
@@ -74,7 +75,7 @@ export async function AccountStatements({
             ) : (
               <Banner tone="danger">Couldn&apos;t load statement details. Try again.</Banner>
             )}
-          </div>
+          </ScrollIntoViewOnSelect>
         ) : null}
       </div>
     </div>

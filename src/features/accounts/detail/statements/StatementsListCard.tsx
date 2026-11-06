@@ -151,7 +151,7 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
                 {row.badge ? <StatusWord tone={row.badge.tone}>{row.badge.label}</StatusWord> : null}
               </>
             }
-            onClick={() => router.push(`${base}?statement=${row.id}&fy=${fy}`)}
+            onClick={() => router.push(`${base}?statement=${row.id}&fy=${fy}`, { scroll: false })}
           />
           );
         })
