@@ -327,7 +327,7 @@ describe('/accounts/[id]/statements', () => {
   it('opens another statement through the url, keeping the year', async () => {
     await renderPage();
     await user.click(screen.getByText('5 Sep 26'));
-    expect(push).toHaveBeenCalledWith('/accounts/c1/statements?statement=s2&fy=26-27');
+    expect(push).toHaveBeenCalledWith('/accounts/c1/statements?statement=s2&fy=26-27', { scroll: false });
   });
 
   it('switches the year through the url', async () => {
