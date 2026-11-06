@@ -137,6 +137,20 @@ describe('AttentionItemRow locked statement', () => {
     );
   });
 
+  it('Set import date opens the Edit dialog in place on the import date', async () => {
+    account.data = bank;
+    renderRow(item({ accountId: 'a1', reason: 'IMPORT_OFF', status: 'ACCOUNT_NOT_OPTED_IN', error: null }));
+    fireEvent.click(screen.getByRole('button', { name: 'Set import date' }));
+    const input = await screen.findByLabelText(/^Import emails from/, undefined, { timeout: 5000 });
+    await waitFor(() => expect(input).toHaveFocus());
+    expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it('Set import date stays a link to /accounts without an account', () => {
+    renderRow(item({ reason: 'IMPORT_OFF', status: 'ACCOUNT_NOT_OPTED_IN', error: null }));
+    expect(screen.getByRole('link', { name: 'Set import date' })).toHaveAttribute('href', '/accounts');
+  });
+
   it('stays a link to /accounts without an account', () => {
     renderRow(item({}));
     expect(

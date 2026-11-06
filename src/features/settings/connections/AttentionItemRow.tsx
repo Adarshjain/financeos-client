@@ -11,11 +11,12 @@ import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
 import { loadAccountForm } from '@/features/accounts/form/ds/AccountDialogs';
 import type { AccountFormDialogProps } from '@/features/accounts/form/ds/AccountFormDialog';
+import type { AccountFocusField } from '@/features/accounts/form/ds/AccountFormFields';
 import { formatDate, formatDateTime } from '@/lib/format';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useAccount } from '@/lib/query/hooks/useAccounts';
 
-import { attentionEditAccountId, attentionHintLink, type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItemModel';
+import { attentionEditTarget, attentionHintLink, type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItemModel';
 
 interface AttentionItemRowProps {
   item: AttentionItem;
@@ -61,8 +62,8 @@ function Details({ item, archived }: { item: AttentionItem; archived: boolean })
 
 type FormDialog = React.ComponentType<AccountFormDialogProps>;
 
-/** The hint as a button: on press loads the form's code and the account together (nothing before), then opens its Edit dialog in place on the password; falls back to the account page. */
-function EditAccountHint({ accountId, label, href }: { accountId: string; label: string; href: string }) {
+/** The hint as a button: on press loads the form's code and the account together (nothing before), then opens its Edit dialog in place on the field; falls back to the account page. */
+function EditAccountHint({ accountId, focusField, label, href }: { accountId: string; focusField: AccountFocusField; label: string; href: string }) {
   const [pressed, setPressed] = useState(false);
   const [ready, setReady] = useState(false);
   const { Component: AccountFormDialog, run, preload } = useLazyDialog(loadAccountForm);
@@ -83,12 +84,12 @@ function EditAccountHint({ accountId, label, href }: { accountId: string; label:
           {label}
         </Button>
       </Text>
-      {pressed ? <EditAccountLoader accountId={accountId} href={href} Dialog={AccountFormDialog} onReady={() => setReady(true)} onClose={close} /> : null}
+      {pressed ? <EditAccountLoader accountId={accountId} focusField={focusField} href={href} Dialog={AccountFormDialog} onReady={() => setReady(true)} onClose={close} /> : null}
     </>
   );
 }
 
-function EditAccountLoader({ accountId, href, Dialog, onReady, onClose }: { accountId: string; href: string; Dialog: FormDialog | null; onReady: () => void; onClose: () => void }) {
+function EditAccountLoader({ accountId, focusField, href, Dialog, onReady, onClose }: { accountId: string; focusField: AccountFocusField; href: string; Dialog: FormDialog | null; onReady: () => void; onClose: () => void }) {
   const router = useRouter();
   const { data: account, isError, isSuccess } = useAccount(accountId);
   const failed = isError || (isSuccess && !account);
@@ -104,7 +105,7 @@ function EditAccountLoader({ accountId, href, Dialog, onReady, onClose }: { acco
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [failed]);
   if (!account || !Dialog) return null;
-  return <Dialog account={account} focusField="statementPassword" onClose={onClose} />;
+  return <Dialog account={account} focusField={focusField} onClose={onClose} />;
 }
 
 /** One Gmail item that could not become a transaction: what happened, the next step, details and actions. */
@@ -112,7 +113,7 @@ export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarc
   const [showDetails, setShowDetails] = useState(false);
   const { label, summary, hint } = describeAttentionItem(item);
   const hintLink = attentionHintLink(item);
-  const editAccountId = attentionEditAccountId(item);
+  const editTarget = attentionEditTarget(item);
   const archived = Boolean(item.archivedAt);
   const emailDate = item.internalDate ?? item.discoveredAt;
 
@@ -135,8 +136,8 @@ export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarc
         <Text variant="body" tone="ink-2" as="p">
           {summary}
         </Text>
-        {hintLink && editAccountId ? (
-          <EditAccountHint accountId={editAccountId} label={hintLink.label} href={hintLink.href} />
+        {hintLink && editTarget ? (
+          <EditAccountHint accountId={editTarget.accountId} focusField={editTarget.focusField} label={hintLink.label} href={hintLink.href} />
         ) : hintLink ? (
           <Text variant="label" as="span">
             <Button asChild variant="link">

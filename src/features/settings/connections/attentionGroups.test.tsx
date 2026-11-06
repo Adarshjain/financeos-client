@@ -128,7 +128,7 @@ describe('grouped attention list', () => {
     expect(screen.queryByRole('button', { name: 'Show more' })).toBeNull();
   });
 
-  it('hints: AI key and import are links, locked statement is a button', async () => {
+  it('hints: AI key is a link, import and locked statement are buttons', async () => {
     setup(
       [
         row({ id: 'k', reason: 'NO_AI_KEY', status: 'FAILED_PERMANENT', error: 'No active LLM API keys' }),
@@ -142,7 +142,7 @@ describe('grouped attention list', () => {
       ],
     );
     expect((await screen.findByRole('link', { name: 'Add an AI key' })).getAttribute('href')).toBe('/settings/ai');
-    expect(screen.getByRole('link', { name: 'Set import date' }).getAttribute('href')).toBe('/accounts/acc-9');
+    expect(screen.getByRole('button', { name: 'Set import date' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add the statement password' })).toBeInTheDocument();
   });
 });

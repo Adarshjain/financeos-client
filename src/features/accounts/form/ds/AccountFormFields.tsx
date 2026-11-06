@@ -57,8 +57,11 @@ export interface AccountFormFieldsProps {
   /** Add from a suggestion: shown under the statement password while it is empty. */
   passwordCaption?: string | null;
   /** Edit mode: the field to scroll to and focus once the dialog opens. */
-  focusField?: 'statementPassword';
+  focusField?: AccountFocusField;
 }
+
+/** Fields the Edit dialog can open on (scrolled to and focused). */
+export type AccountFocusField = 'statementPassword' | 'ingestFromDate';
 
 /** "Your emails mention A and B. Tap one to use it." with each name a link. */
 function NameHints({ hints, onPick }: { hints: NameHint[]; onPick: (name: string) => void }) {
@@ -159,12 +162,13 @@ export function AccountFormFields({
   focusField,
 }: AccountFormFieldsProps) {
   const passwordRef = React.useRef<HTMLInputElement>(null);
+  const ingestFromRef = React.useRef<HTMLInputElement>(null);
   const focusedRef = React.useRef(false);
   React.useEffect(() => {
-    if (focusField !== 'statementPassword' || focusedRef.current) return;
+    if (!focusField || focusedRef.current) return;
     // Deferred: the dialog's focus trap moves focus on open and would otherwise win.
     const t = setTimeout(() => {
-      const el = passwordRef.current;
+      const el = (focusField === 'statementPassword' ? passwordRef : ingestFromRef).current;
       if (!el) return;
       focusedRef.current = true;
       el.scrollIntoView({ block: 'center' });
@@ -405,6 +409,7 @@ export function AccountFormFields({
           />
           {syncs ? (
             <DateField
+              ref={ingestFromRef}
               label="Import emails from"
               helper={
                 isEdit

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  attentionEditAccountId,
+  attentionEditTarget,
   attentionHintLink,
   type AttentionItem,
   describeAttentionItem,
@@ -147,14 +147,19 @@ describe('attentionHintLink', () => {
   });
 });
 
-describe('attentionEditAccountId', () => {
-  it('returns the account for a locked statement', () => {
-    expect(attentionEditAccountId({ reason: 'LOCKED_STATEMENT', accountId: 'a1' })).toBe('a1');
+describe('attentionEditTarget', () => {
+  it('opens a locked statement on the password', () => {
+    expect(attentionEditTarget({ reason: 'LOCKED_STATEMENT', accountId: 'a1' })).toEqual({ accountId: 'a1', focusField: 'statementPassword' });
+  });
+  it('opens import off on the import date', () => {
+    expect(attentionEditTarget({ reason: 'IMPORT_OFF', accountId: 'a1' })).toEqual({ accountId: 'a1', focusField: 'ingestFromDate' });
   });
   it('is null without an account', () => {
-    expect(attentionEditAccountId({ reason: 'LOCKED_STATEMENT' })).toBeNull();
+    expect(attentionEditTarget({ reason: 'LOCKED_STATEMENT' })).toBeNull();
+    expect(attentionEditTarget({ reason: 'IMPORT_OFF' })).toBeNull();
   });
   it('is null for other reasons', () => {
-    expect(attentionEditAccountId({ reason: 'IMPORT_OFF', accountId: 'a1' })).toBeNull();
+    expect(attentionEditTarget({ reason: 'NO_AI_KEY', accountId: 'a1' })).toBeNull();
+    expect(attentionEditTarget({ reason: 'FAILED', accountId: 'a1' })).toBeNull();
   });
 });
