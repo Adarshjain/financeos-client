@@ -56,6 +56,8 @@ export interface AccountFormFieldsProps {
   limitHint?: string | null;
   /** Add from a suggestion: shown under the statement password while it is empty. */
   passwordCaption?: string | null;
+  /** Edit mode: the field to scroll to and focus once the dialog opens. */
+  focusField?: 'statementPassword';
 }
 
 /** "Your emails mention A and B. Tap one to use it." with each name a link. */
@@ -154,7 +156,22 @@ export function AccountFormFields({
   nameHints = [],
   limitHint,
   passwordCaption,
+  focusField,
 }: AccountFormFieldsProps) {
+  const passwordRef = React.useRef<HTMLInputElement>(null);
+  const focusedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (focusField !== 'statementPassword' || focusedRef.current) return;
+    // Deferred: the dialog's focus trap moves focus on open and would otherwise win.
+    const t = setTimeout(() => {
+      const el = passwordRef.current;
+      if (!el) return;
+      focusedRef.current = true;
+      el.scrollIntoView({ block: 'center' });
+      el.focus({ preventScroll: true });
+    }, 0);
+    return () => clearTimeout(t);
+  }, [focusField]);
   const type = values.type;
   if (!type) return null;
   const isBank = type === AccountType.BANK_ACCOUNT;
@@ -180,6 +197,7 @@ export function AccountFormFields({
 
   const password = (
     <TextField
+      ref={passwordRef}
       label="Statement PDF password"
       optional
       type="password"
