@@ -6,6 +6,8 @@ export interface SuggestionRow {
   key: string;
   seq: number;
   tx: Transaction;
+  /** The debit's size in rupees. */
+  amount: number;
   /** `#14 "SBI Home Loan EMI" 5 Oct · ₹39,052` */
   text: string;
 }
@@ -16,12 +18,20 @@ export function suggestionRows(response: MatchSuggestionsResponse | null): Sugge
   return response.suggestions
     .filter((s) => s.candidates.length > 0)
     .flatMap((s) =>
-      s.candidates.map((tx) => ({
-        key: `${s.installmentSeq}:${tx.id}`,
-        seq: s.installmentSeq,
-        tx,
-        text: `#${s.installmentSeq} "${tx.description || 'DEBIT'}" ${formatDate(tx.date, 'list')} · ${formatMoney(Math.abs(tx.amount), { decimals: 'auto' })}`,
-      })),
+      // A debit with no rupee amount yet cannot be recorded as a payment, so it is not suggested.
+      s.candidates.flatMap((tx) =>
+        tx.amount == null
+          ? []
+          : [
+              {
+                key: `${s.installmentSeq}:${tx.id}`,
+                seq: s.installmentSeq,
+                tx,
+                amount: Math.abs(tx.amount),
+                text: `#${s.installmentSeq} "${tx.description || 'DEBIT'}" ${formatDate(tx.date, 'list')} · ${formatMoney(Math.abs(tx.amount), { decimals: 'auto' })}`,
+              },
+            ],
+      ),
     );
 }
 

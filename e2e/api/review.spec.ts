@@ -3,7 +3,8 @@ import { resetLlm, setLlmMode } from '../fixtures/control';
 import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import { uploadAndIngest } from '../fixtures/seed/statements';
-import { findById, searchAll } from '../fixtures/seed/transactions';
+import type { TransactionResponse } from '../fixtures/seed/transactions';
+import { createTransaction, findById, searchAll } from '../fixtures/seed/transactions';
 import { secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
@@ -22,8 +23,8 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     await setLlmMode(api, 'SCHEMA_DEFAULT');
   });
 
-  // Rows of one statement are never compared with each other, so the duplicates come from an
-  // overlapping statement that repeats the Blue Tokai and Amazon rows (same date, same narration).
+  // An overlapping statement that repeats the Blue Tokai and Amazon rows ATTACHES to the existing rows
+  // (nothing new is created, nothing is flagged). Rows that need review are put there with a PUT.
   const reviewBankSpec: BankSpec = {
     bank: 'HDFC Bank',
     accountLast10: '9988776655',
@@ -57,7 +58,26 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     { filename: `${name}-overlap.pdf`, buffer: await genBankPdf(overlapBankSpec) },
   ];
 
-  test('Ingest-produced review reasons: DUPLICATE_SUSPECT populated with reviewType=NEEDS_REVIEW, clean rows auto-reviewed', async ({
+  type Api = Parameters<typeof searchAll>[0];
+  const putReason = async (api: Api, t: TransactionResponse, reviewReasons: ('DUPLICATE_SUSPECT')[]) =>
+    expectStatus(
+      await api.PUT('/api/v1/transactions/{id}', {
+        params: { path: { id: t.id } },
+        body: { date: t.date, amount: t.amount!, description: t.description ?? 'ROW', reviewType: 'NEEDS_REVIEW', reviewReasons },
+      }),
+      200,
+    );
+  // Ingests both files (3 rows) and flags the Blue Tokai and Amazon rows plus a manual Amazon twin.
+  const seedFlagged = async (api: Api, accountId: string, name: string) => {
+    await uploadAndIngest(api, accountId, await reviewFiles(name));
+    const rows = await searchAll(api, [{ field: 'accountId', operator: 'is', value: accountId }]);
+    const twin = await createTransaction(api, accountId, { date: '2026-04-21', amount: -3499, description: 'AMAZON PAY INDIA TWIN' });
+    const flagged = [...rows.filter((t) => !(t.sourcedDescription ?? '').includes('UBER')), twin];
+    for (const t of flagged) await putReason(api, t, ['DUPLICATE_SUSPECT']);
+    return flagged;
+  };
+
+  test('Overlapping statement attaches (no flags); a row put in review carries its reason, clean rows stay auto-reviewed', async ({
     api,
   }) => {
     const account = await createBankAccount(api, {
@@ -66,29 +86,23 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     const { job, result } = await uploadAndIngest(api, account.id, await reviewFiles('review-stmt'));
     expect(job.status).toBe('SUCCEEDED');
     expect(result.filesProcessed).toBe(2);
-    expect(result.totalCreated).toBe(5);
-    expect(result.totalDuplicatesFound).toBe(4);
+    // The overlap file's two rows attach to the first file's rows.
+    expect(result.totalCreated).toBe(3);
 
     const txns = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
     ]);
-    expect(txns.length).toBe(5);
-
-    // The 4 duplicate rows need review; the single Uber row has no reason and is auto-reviewed
-    const flagged = txns.filter((t) => t.reviewType === 'NEEDS_REVIEW');
-    expect(flagged.length).toBe(4);
-    for (const t of flagged) {
-      expect(t.reviewReasons).toEqual(['DUPLICATE_SUSPECT']);
+    expect(txns.length).toBe(3);
+    for (const t of txns) {
+      expect(t.reviewType).toBe('AUTO_REVIEWED');
+      expect(t.reviewReasons ?? []).toEqual([]);
     }
 
-    // Duplicate rows carry DUPLICATE_SUSPECT
-    const blueTokaiRows = txns.filter((t) =>
-      (t.sourcedDescription || t.description || '').includes('BLUE TOKAI')
-    );
-    expect(blueTokaiRows.length).toBe(2);
-    for (const s of blueTokaiRows) {
-      expect(s.reviewReasons).toContain('DUPLICATE_SUSPECT');
-    }
+    const blueTokai = txns.find((t) => (t.sourcedDescription || t.description || '').includes('BLUE TOKAI'))!;
+    await putReason(api, blueTokai, ['DUPLICATE_SUSPECT']);
+    const flagged = await findById(api, blueTokai.id);
+    expect(flagged?.reviewType).toBe('NEEDS_REVIEW');
+    expect(flagged?.reviewReasons).toEqual(['DUPLICATE_SUSPECT']);
 
     // Single row carries no review reason and is auto-reviewed
     const uberRow = txns.find((t) =>
@@ -106,13 +120,13 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     const account = await createBankAccount(api, {
       name: 'Batch Review Account',
     });
-    await uploadAndIngest(api, account.id, await reviewFiles('batch-review-stmt'));
+    const flagged = await seedFlagged(api, account.id, 'batch-review-stmt');
 
     const txns = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
     ]);
 
-    const blueTokaiRows = txns.filter((t) =>
+    const blueTokaiRows = flagged.filter((t) =>
       (t.sourcedDescription || t.description || '').includes('BLUE TOKAI')
     );
     const uberRow = txns.find((t) =>
@@ -175,21 +189,21 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     const account = await createBankAccount(api, {
       name: 'Search Filter Account',
     });
-    await uploadAndIngest(api, account.id, await reviewFiles('search-stmt'));
+    await seedFlagged(api, account.id, 'search-stmt');
 
-    // 1. Search with reviewType = NEEDS_REVIEW -> the 4 duplicate rows (the Uber row is auto-reviewed)
+    // 1. Search with reviewType = NEEDS_REVIEW -> the 3 flagged rows (the Uber row is auto-reviewed)
     const needsReviewRows = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
       { field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' },
     ]);
-    expect(needsReviewRows.length).toBe(4);
+    expect(needsReviewRows.length).toBe(3);
 
-    // 2. Search with reviewReason = DUPLICATE_SUSPECT -> exactly the 4 duplicate rows returned
+    // 2. Search with reviewReason = DUPLICATE_SUSPECT -> exactly the 3 flagged rows returned
     const dupRows = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
       { field: 'reviewReason', operator: 'is', value: 'DUPLICATE_SUSPECT' },
     ]);
-    expect(dupRows.length).toBe(4);
+    expect(dupRows.length).toBe(3);
 
     // 3. Review all flagged rows for DUPLICATE_SUSPECT
     const allIds = needsReviewRows.map((r) => r.id);
@@ -208,12 +222,12 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     ]);
     expect(remainingNeedsReview.length).toBe(0);
 
-    // 5. Search with reviewType = MANUALLY_REVIEWED -> the 4 reviewed rows returned
+    // 5. Search with reviewType = MANUALLY_REVIEWED -> the 3 reviewed rows returned
     const manualRows = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
       { field: 'reviewType', operator: 'is', value: 'MANUALLY_REVIEWED' },
     ]);
-    expect(manualRows.length).toBe(4);
+    expect(manualRows.length).toBe(3);
   });
 
   test('Merge duplicate pair: kept row clears DUPLICATE_SUSPECT and delete row is removed', async ({
@@ -222,13 +236,9 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     const account = await createBankAccount(api, {
       name: 'Merge Review Account',
     });
-    await uploadAndIngest(api, account.id, await reviewFiles('merge-stmt'));
+    const flagged = await seedFlagged(api, account.id, 'merge-stmt');
 
-    const txns = await searchAll(api, [
-      { field: 'accountId', operator: 'is', value: account.id },
-    ]);
-
-    const amazonRows = txns.filter((t) =>
+    const amazonRows = flagged.filter((t) =>
       (t.sourcedDescription || t.description || '').includes('AMAZON')
     );
     expect(amazonRows.length).toBe(2);

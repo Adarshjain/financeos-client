@@ -11,6 +11,7 @@ import type {
   CounterpartySummary,
   UnrecordedTransfer,
 } from '@/lib/lending.types';
+import { absAmount } from '@/lib/transactionAmount';
 
 // ---- URL state -------------------------------------------------------------
 
@@ -239,7 +240,7 @@ export function transferRows(
           transactionId: tx.id,
           personName: person.counterpartyName,
           entryLabel: formatDate(entry.entryDate, 'list'),
-          title: `${description} · ${formatMoney(Math.abs(tx.amount), { decimals: 'exact' })}`,
+          title: `${description} · ${formatMoney(absAmount(tx.amount), { decimals: 'exact' })}`,
           subtitle: [formatDate(tx.date, 'list'), account, notes ? `"${notes}"` : null].filter(Boolean).join(' · '),
         });
       }
@@ -273,7 +274,7 @@ export function unrecordedRows(
       counterpartyId: t.counterpartyId,
       transactionId: tx.id,
       personName: t.counterpartyName,
-      title: `${word} ${t.counterpartyName} · ${formatMoney(Math.abs(tx.amount), { decimals: 'exact' })}`,
+      title: `${word} ${t.counterpartyName} · ${formatMoney(absAmount(tx.amount), { decimals: 'exact' })}`,
       subtitle: [formatDate(tx.date, 'list'), accountNames.get(tx.accountId)].filter(Boolean).join(' · '),
     };
   });

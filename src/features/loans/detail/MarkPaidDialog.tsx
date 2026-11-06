@@ -13,6 +13,7 @@ import { resolveAmountExpression, sanitizeAmountExpressionInput } from '@/lib/am
 import type { InstallmentDto } from '@/lib/loan.types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import type { Transaction } from '@/lib/transaction.types';
+import { absAmountText } from '@/lib/transactionAmount';
 import { getAccountName } from '@/lib/utils';
 
 import { PAYMENT_TRANSACTION_HINT } from './eventFormModel';
@@ -47,7 +48,7 @@ export interface MarkPaidDialogProps {
   onClose: () => void;
 }
 
-const amountText = (tx: Transaction) => String(Math.abs(tx.amount));
+const amountText = (tx: Transaction) => absAmountText(tx.amount);
 
 /**
  * Mark EMI paid: link the debit we found, record without a transaction, or pick another debit. What was

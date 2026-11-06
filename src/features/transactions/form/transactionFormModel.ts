@@ -7,6 +7,7 @@ import type {
   TransactionChannel,
   TransactionRequest,
 } from '@/lib/transaction.types';
+import { directionAmount } from '@/lib/transactionAmount';
 import { parseCalendarDate } from '@/lib/utils';
 
 import { isValidMcc } from './mcc';
@@ -20,11 +21,16 @@ export const NO_CHANNEL = 'NONE';
 export type Direction = 'debit' | 'credit';
 
 /** The reasons the server accepts on an edit. */
-export const EDITABLE_REASONS: readonly ReviewReason[] = [
+export type EditableReason = Exclude<ReviewReason, 'NOT_ON_STATEMENT'>;
+
+export const EDITABLE_REASONS: readonly EditableReason[] = [
   'UNRECONCILED',
   'DUPLICATE_SUSPECT',
   'DATE_CORRECTED',
 ];
+
+/** NOT_ON_STATEMENT is set by the app, never by a person: it is not offered on the form. */
+export const isEditableReason = (r: ReviewReason): r is EditableReason => (EDITABLE_REASONS as readonly string[]).includes(r);
 
 export interface TransactionFormValues {
   direction: Direction;
@@ -38,7 +44,7 @@ export interface TransactionFormValues {
   description: string;
   mcc: string;
   reviewType: ReviewType;
-  reviewReasons: ReviewReason[];
+  reviewReasons: EditableReason[];
   excluded: boolean;
   monitored: boolean;
   monitoringReason: string;
@@ -81,15 +87,16 @@ export function emptyValues(today: string, accountId = ''): TransactionFormValue
 /** The Edit form: every stored field. */
 export function valuesFromTransaction(t: Transaction): TransactionFormValues {
   return {
-    direction: t.amount > 0 ? 'credit' : 'debit',
-    amount: Math.abs(t.amount).toFixed(2),
+    direction: (directionAmount(t) ?? -1) > 0 ? 'credit' : 'debit',
+    // A foreign charge still waiting for its statement has no amount: the field stays empty.
+    amount: t.amount != null ? Math.abs(t.amount).toFixed(2) : '',
     date: t.date.slice(0, 10),
     accountId: t.accountId,
     cardId: t.cardId ?? NO_CARD,
     description: t.description ?? '',
     mcc: t.mcc ?? '',
     reviewType: t.reviewType ?? 'MANUALLY_REVIEWED',
-    reviewReasons: (t.reviewReasons ?? []).filter((r) => EDITABLE_REASONS.includes(r)),
+    reviewReasons: (t.reviewReasons ?? []).filter(isEditableReason),
     excluded: Boolean(t.isTransactionExcluded),
     monitored: Boolean(t.isTransactionUnderMonitoring),
     monitoringReason: t.monitoringReason ?? '',
@@ -121,7 +128,7 @@ export function reasonsMissing(values: TransactionFormValues, original?: Transac
   if (values.reviewType !== 'NEEDS_REVIEW' || values.reviewReasons.length > 0) return false;
   const storedWithNone =
     original?.reviewType === 'NEEDS_REVIEW' &&
-    (original.reviewReasons ?? []).filter((r) => EDITABLE_REASONS.includes(r)).length === 0;
+    (original.reviewReasons ?? []).filter(isEditableReason).length === 0;
   return !storedWithNone;
 }
 
@@ -138,7 +145,11 @@ export interface ProblemContext {
 export function formProblems(values: TransactionFormValues, ctx: ProblemContext): FormErrors {
   const errors: FormErrors = {};
   const amount = Number(values.amount);
-  if (!values.amount.trim() || !Number.isFinite(amount) || amount <= 0) errors.amount = 'Enter an amount above ₹0.';
+  // The server accepts a null amount only while the stored one is null.
+  const mayStayEmpty = ctx.isUpdate && ctx.original != null && ctx.original.amount == null && !values.amount.trim();
+  if (!mayStayEmpty && (!values.amount.trim() || !Number.isFinite(amount) || amount <= 0)) {
+    errors.amount = 'Enter an amount above ₹0.';
+  }
   if (!values.date) errors.date = 'Pick a date.';
   if (!values.accountId) {
     errors.accountId =
@@ -162,6 +173,8 @@ export interface RequestContext {
   category?: CategoryPick | null;
   /** The chosen account takes cards (credit card or bank account). */
   supportsCards: boolean;
+  /** The reasons the stored row already has: those a person cannot edit (Not on statement) are sent along with the ticked ones. */
+  storedReasons?: readonly ReviewReason[];
 }
 
 /** The create or update body. Review status and reasons go only on an update; reasons only with Needs review. */
@@ -171,7 +184,7 @@ export function buildRequest(values: TransactionFormValues, ctx: RequestContext)
     cardId: values.cardId === NO_CARD ? null : values.cardId,
     supportsCards: ctx.supportsCards,
     description: values.description,
-    amount: String(signedAmount(values)),
+    amount: values.amount.trim() ? String(signedAmount(values)) : '',
     tagIds: ctx.tagIds,
     category: ctx.category,
     date: parseCalendarDate(values.date),
@@ -188,6 +201,8 @@ export function buildRequest(values: TransactionFormValues, ctx: RequestContext)
     isEmi: values.emi,
     isInternational: values.international,
     reviewType: values.reviewType,
-    reviewReasons: values.reviewReasons,
+    reviewReasons: values.reviewReasons.length > 0
+      ? [...values.reviewReasons, ...(ctx.storedReasons ?? []).filter((r) => !isEditableReason(r))]
+      : values.reviewReasons,
   });
 }

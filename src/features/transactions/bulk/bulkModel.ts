@@ -2,6 +2,7 @@ import { deleteImpact } from '@/features/transactions/detail/transactionDetailMo
 import { REASON_WORDS } from '@/features/transactions/list/transactionRowsModel';
 import { formatMoney, pluralize } from '@/lib/format';
 import type { ReviewReason, Transaction } from '@/lib/transaction.types';
+import { sumAmounts } from '@/lib/transactionAmount';
 
 type Reviewable = Pick<Transaction, 'reviewType' | 'reviewReasons'>;
 
@@ -17,10 +18,11 @@ export function isApprovable(t: Reviewable): boolean {
 
 /** "₹5,382 · 2 need review": the size of the selection (money in and out added up) and how much of it needs review. */
 export function selectionSummary(selected: Pick<Transaction, 'amount' | 'reviewType' | 'reviewReasons'>[]): string {
-  const total = selected.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  // A foreign charge still waiting for its statement has no rupee amount: it adds nothing, and a selection of only those shows no total.
+  const money = selected.some((t) => t.amount != null) ? formatMoney(sumAmounts(selected, Math.abs)) : '';
   const flagged = selected.filter(isApprovable).length;
-  const money = formatMoney(total);
-  return flagged > 0 ? `${money} · ${flagged} need review` : money;
+  if (flagged === 0) return money;
+  return money ? `${money} · ${flagged} need review` : `${flagged} need review`;
 }
 
 /** The Merge hint: the pair when two are picked, "pick 2" otherwise (it is disabled then). */
@@ -65,7 +67,7 @@ export function deleteCopy(
     const [t] = transactions;
     const name = t.description || t.sourcedDescription || '—';
     return {
-      title: `Delete ${name} · ${formatMoney(Math.abs(t.amount), { decimals: 'exact' })}?`,
+      title: `Delete ${name}${t.amount != null ? ` · ${formatMoney(Math.abs(t.amount), { decimals: 'exact' })}` : ''}?`,
       impact: deleteImpact(t as Transaction),
       confirmLabel: 'Delete',
     };

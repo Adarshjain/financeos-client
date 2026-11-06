@@ -156,7 +156,7 @@ export function singleCandidateBatches(matches: readonly LoanMatchSuggestions[])
   for (const loan of matches) {
     const items = loan.suggestions
       .filter((s) => s.candidates.length === 1)
-      .map((s) => paymentItemFor(s.installmentSeq, s.candidates[0]));
+      .flatMap((s) => paymentItemFor(s.installmentSeq, s.candidates[0]) ?? []);
     if (items.length > 0) batches.push({ loanId: loan.loanId, items });
   }
   return batches;

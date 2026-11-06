@@ -5,6 +5,7 @@ import { DS_PREFIX } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatDate, formatMoney, formatQuantity } from '@/lib/format';
 import type { DividendFilters, DividendInstrumentTotal, DividendReceiptFilter } from '@/lib/investments.types';
+import { absAmount } from '@/lib/transactionAmount';
 import type { Dividend, DividendReceiptStatus, DividendReceiptSummary, DividendSuggestion, DividendSummary, DividendType } from '@/lib/types';
 
 import type { MatchReason, UnrecordedCredit } from './receiptTypes';
@@ -389,7 +390,7 @@ const VARIANCE_TOLERANCE = 1;
 
 /** Signed gap between the linked credit and the expected net, or null when the dividend isn't linked or the gap is within tolerance. */
 export function receiptVariance(dividend: Dividend): number | null {
-  if (!dividend.transaction) return null;
+  if (!dividend.transaction || dividend.transaction.signedAmount == null) return null;
   const expectedNet = Number(dividend.amount || 0) - Number(dividend.tds || 0);
   const diff = dividend.transaction.signedAmount - expectedNet;
   return Math.abs(diff) > VARIANCE_TOLERANCE ? diff : null;
@@ -431,7 +432,7 @@ export const REASON_LABELS: Record<MatchReason, string> = {
 /** One bank credit in the banner: its description, amount and day. */
 function creditPhrase(c: UnrecordedCredit): string {
   const t = c.transaction;
-  return `"${t.description || t.sourcedDescription || 'Transaction'}" ${formatMoney(Math.abs(t.amount))} on ${formatDate(t.date, 'list')}`;
+  return `"${t.description || t.sourcedDescription || 'Transaction'}" ${formatMoney(absAmount(t.amount))} on ${formatDate(t.date, 'list')}`;
 }
 
 /** The banner over the list: how many credits look like dividends and the first two, or null with none. */

@@ -35,7 +35,7 @@ function isStale(coverageEnd: string | null | undefined, today: string): boolean
 
 function candidateLabel(c: DividendMatchCandidate, account: string): string {
   const t = c.transaction;
-  return `${t.description || t.sourcedDescription || 'Transaction'} · ${account} · ${formatDate(t.date, 'list')} · +${formatMoney(Math.abs(t.amount), { decimals: 'auto' })}`;
+  return `${t.description || t.sourcedDescription || 'Transaction'} · ${account} · ${formatDate(t.date, 'list')}${t.amount != null ? ` · +${formatMoney(Math.abs(t.amount), { decimals: 'auto' })}` : ''}`;
 }
 
 interface ItemProps {
@@ -217,9 +217,11 @@ export function DividendReconcileDialog({ unrecorded, today, onRecord, onChanged
                         <Text variant="body-strong" as="span" truncate>
                           {t.description || t.sourcedDescription || 'Transaction'}
                         </Text>
-                        <Text variant="body-strong" tone="positive" as="span">
-                          {`+${formatMoney(Math.abs(t.amount), { decimals: 'auto' })}`}
-                        </Text>
+                        {t.amount != null ? (
+                          <Text variant="body-strong" tone="positive" as="span">
+                            {`+${formatMoney(Math.abs(t.amount), { decimals: 'auto' })}`}
+                          </Text>
+                        ) : null}
                       </div>
                       <Text variant="label" tone="ink-3" as="div">
                         {`${getAccountName(accounts, t.accountId)} · ${formatDate(t.date, 'list')}`}
@@ -231,7 +233,7 @@ export function DividendReconcileDialog({ unrecorded, today, onRecord, onChanged
                             size="sm"
                             onClick={() =>
                               onRecord({
-                                amount: Math.abs(t.amount),
+                                amount: t.amount != null ? Math.abs(t.amount) : undefined,
                                 payDate: t.date,
                                 linkTransactionId: t.id,
                                 brokerAccountId: h?.brokerAccountId,

@@ -10,6 +10,7 @@ import { notify } from '@/lib/notify';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
+import { absAmountText } from '@/lib/transactionAmount';
 
 import { loadActiveLoans, loadLoanInstallments, payLoanInstallment } from './linkActions';
 
@@ -80,7 +81,7 @@ export function useLoanPaymentLink({
       setLoanId('');
       setInstallmentSeq(undefined);
       setPaymentDate(transaction.date);
-      setAmount(Math.abs(transaction.amount).toString());
+      setAmount(absAmountText(transaction.amount));
     }
     prevOpenRef.current = open;
   }, [open, transaction]);

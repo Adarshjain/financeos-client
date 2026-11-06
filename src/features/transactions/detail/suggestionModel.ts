@@ -20,6 +20,6 @@ export const dismissLabel = (kind: Kind) => (kind === 'REFUND' ? 'Not a refund' 
  */
 export function candidateIdFor(kind: Kind, t: Pick<Transaction, 'id' | 'amount'>, c: Candidate): string | null {
   if (kind === 'LENDING') return c.lendingId ?? null;
-  if ((kind === 'TRANSFER' || kind === 'CC_PAYMENT') && t.amount > 0) return t.id;
+  if ((kind === 'TRANSFER' || kind === 'CC_PAYMENT') && t.amount != null && t.amount > 0) return t.id;
   return c.transactionId ?? null;
 }

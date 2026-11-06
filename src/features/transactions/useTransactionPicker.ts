@@ -187,8 +187,8 @@ export function useTransactionPicker({
 
     return [...filtered].sort((a, b) => {
       if (suggestAmt != null) {
-        const aExact = Math.abs(a.amount) === suggestAmt ? 0 : 1;
-        const bExact = Math.abs(b.amount) === suggestAmt ? 0 : 1;
+        const aExact = a.amount != null && Math.abs(a.amount) === suggestAmt ? 0 : 1;
+        const bExact = b.amount != null && Math.abs(b.amount) === suggestAmt ? 0 : 1;
         if (aExact !== bExact) return aExact - bExact;
       }
       if (suggestDateMs != null) {

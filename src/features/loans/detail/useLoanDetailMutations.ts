@@ -137,7 +137,7 @@ export function useLoanDetailMutations(loanId: string) {
     if (!matches) return;
     const items = matches.suggestions
       .filter((s) => s.candidates.length > 0)
-      .map((s) => paymentItemFor(s.installmentSeq, s.candidates[0]));
+      .flatMap((s) => paymentItemFor(s.installmentSeq, s.candidates[0]) ?? []);
     if (items.length === 0) return;
     try {
       const result = await mutations.addPaymentsBatch.mutateAsync({ items } satisfies BatchLoanPaymentRequest);

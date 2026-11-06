@@ -10,8 +10,8 @@ import type {
 // ---- Picking a transaction fills what is still empty -------------------------------------------
 
 /** The amount field after a transaction is picked: what was typed, else the transaction's amount. */
-export function prefillAmount(current: string, tx: { amount: number }): string {
-  return current || String(Math.abs(tx.amount));
+export function prefillAmount(current: string, tx: { amount?: number | null }): string {
+  return current || (tx.amount != null ? String(Math.abs(tx.amount)) : '');
 }
 
 /** The date field after a transaction is picked: what was typed, else the transaction's date. */

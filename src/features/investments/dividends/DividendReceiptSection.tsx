@@ -35,7 +35,7 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, mutati
   const word = receiptWord(dividend.receiptStatus);
   const variance = receiptVariance(dividend);
   const expectedNet = Number(dividend.amount || 0) - Number(dividend.tds || 0);
-  const hint = tdsHint(txn ? txn.signedAmount : null, Number(amount) || 0, tds);
+  const hint = tdsHint(txn?.signedAmount ?? null, Number(amount) || 0, tds);
   const busy = mutations.receiptBusy;
 
   const run = async (action: () => Promise<unknown>, done: string, failed: string) => {

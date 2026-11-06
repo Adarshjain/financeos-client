@@ -7,6 +7,7 @@ import { createRule } from '../fixtures/seed/categories';
 import { addLending, createCounterparty, pay } from '../fixtures/seed/loans';
 import { getInbox, inboxRow, ingestCardStatement, loanWithFirstEmiIn, setBillDue, shiftDate } from '../fixtures/seed/nav';
 import { uploadAndIngest } from '../fixtures/seed/statements';
+import { searchAll } from '../fixtures/seed/transactions';
 import { expectUnauthenticated, newUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
@@ -227,25 +228,21 @@ test.describe('Inbox API: summary rows (@api)', () => {
     ],
   };
 
-  // Rows of one statement are never compared, so an overlapping statement repeats the Blue Tokai row to
-  // make both copies DUPLICATE_SUSPECT (the only reason a statement row waits for review now).
-  const overlapSpec: BankSpec = {
-    ...reviewSpec,
-    periodStart: '2026-04-05',
-    periodEnd: '2026-05-04',
-    rows: [
-      { date: '2026-04-05', description: 'BLUE TOKAI COFFEE ROASTERS', debit: 650.0 },
-      { date: '2026-04-25', description: 'NETFLIX SUBSCRIPTION', debit: 649.0 },
-    ],
-  };
-
   test('the review queue is one needs_look summary row: dismissable, never snoozable, counted in the badge', async ({ request }) => {
     const { api } = await newUser(request, 'inbox-review');
     const account = await createBankAccount(api, { name: 'Inbox Review Account' });
     await uploadAndIngest(api, account.id, [
       { filename: 'inbox-review.pdf', buffer: await genBankPdf(reviewSpec) },
-      { filename: 'inbox-review-overlap.pdf', buffer: await genBankPdf(overlapSpec) },
     ]);
+    // Statement matching no longer parks rows for review, so put one row in the queue by hand.
+    const [txn] = await searchAll(api, [{ field: 'accountId', operator: 'is', value: account.id }]);
+    expectStatus(
+      await api.PUT('/api/v1/transactions/{id}', {
+        params: { path: { id: txn.id } },
+        body: { date: txn.date, amount: txn.amount!, description: txn.description ?? 'ROW', reviewType: 'NEEDS_REVIEW', reviewReasons: ['NOT_ON_STATEMENT'] },
+      }),
+      200,
+    );
 
     const before = await getInbox(api);
     const row = inboxRow(before, 'review');

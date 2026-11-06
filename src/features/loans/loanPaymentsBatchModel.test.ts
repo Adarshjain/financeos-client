@@ -19,7 +19,11 @@ describe('paymentItemFor', () => {
       amount: 36603,
       transactionId: 't1',
     });
-    expect(paymentItemFor(1, { id: 't2', date: '2026-10-06', amount: 500 } as Transaction).amount).toBe(500);
+    expect(paymentItemFor(1, { id: 't2', date: '2026-10-06', amount: 500 } as Transaction)?.amount).toBe(500);
+  });
+
+  it('has nothing to record for a debit with no rupee amount yet', () => {
+    expect(paymentItemFor(3, { id: 't3', date: '2026-10-07', amount: null } as Transaction)).toBeNull();
   });
 });
 

@@ -58,6 +58,9 @@ const TRANSACTION_KEYS = new Set([
   'isEmi',
   'isInternational',
   'links',
+  'originalAmount',
+  'originalCurrency',
+  'notOnStatement',
   'obligationRefs',
   'suggestion',
 ]);

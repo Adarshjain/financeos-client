@@ -47,6 +47,18 @@ const REVIEW_TYPE_WORDS: Record<Exclude<ReviewType, 'NEEDS_REVIEW'>, string> = {
 
 const rupees = (value: number) => formatMoney(Math.abs(value), { decimals: 'exact' });
 
+/** dd/mm of a calendar day, for the statement period in a sentence. */
+const dayMonth = (day: string) => formatDate(day, 'input').slice(0, 5);
+
+/** What NOT_ON_STATEMENT means for this transaction, or null when it is not tagged with it. */
+export function notOnStatementText(t: Transaction): string | null {
+  if (!(t.reviewReasons ?? []).includes('NOT_ON_STATEMENT')) return null;
+  const start = t.notOnStatement?.periodStart;
+  const end = t.notOnStatement?.periodEnd;
+  const when = start && end ? `your ${dayMonth(start)}–${dayMonth(end)} statement` : 'your statement';
+  return `Missing from ${when}. It may have failed or been reversed.`;
+}
+
 /** The reasons as words, "Needs review" when it has none. */
 function reasonItems(t: Transaction): StatusWordItem[] {
   const reasons = t.reviewReasons ?? [];
@@ -147,13 +159,13 @@ export function linkRows(
     for (const m of link.members) {
       if (m.transactionId === transactionId) continue;
       const role = m.roleLabel || getDerivedRoleLabel(link.type as LinkType, m.isAnchor);
-      const signed = formatMoney(m.signedAmount, { decimals: 'exact', sign: 'always' });
+      const signed = m.signedAmount != null ? formatMoney(m.signedAmount, { decimals: 'exact', sign: 'always' }) : '';
       rows.push({
         kind: 'transaction',
         key: `${link.id}:${m.transactionId}`,
         title: m.description || 'Transaction',
         otherId: m.transactionId,
-        subtitle: [role, signed, formatDate(m.date, 'list'), accountName(m.accountId)].join(' · '),
+        subtitle: [role, signed, formatDate(m.date, 'list'), accountName(m.accountId)].filter(Boolean).join(' · '),
         link,
       });
     }

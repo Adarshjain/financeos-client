@@ -35,8 +35,10 @@ export interface SearchTransaction {
   description: string;
   accountId: string;
   accountName: string;
-  /** Signed: credit +, debit −. */
-  amount: number;
+  /** Signed: credit +, debit −. Null for a foreign charge still waiting for its statement. */
+  amount: number | null;
+  originalAmount?: number | null;
+  originalCurrency?: string | null;
 }
 
 export interface SearchHolding {

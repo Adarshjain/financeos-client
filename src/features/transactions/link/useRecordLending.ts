@@ -24,6 +24,8 @@ import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
+import { directionAmount } from '@/lib/transactionAmount';
+import { absAmountText } from '@/lib/transactionAmount';
 
 import { attachLendingTransaction, createLending, loadPersonLendings } from './linkActions';
 
@@ -75,7 +77,7 @@ export function useRecordLending({
   // Server rule: DEBIT (negative amount) <-> lent, CREDIT <-> borrowed. Locked,
   // not user-editable. Defaults to 'lent' when there's no subject transaction
   // yet (the body isn't rendered in that case, so this value is unused).
-  const direction: LendingDirection = (transaction?.amount ?? -1) < 0 ? 'lent' : 'borrowed';
+  const direction: LendingDirection = ((transaction && directionAmount(transaction)) ?? -1) < 0 ? 'lent' : 'borrowed';
 
   const [party, setParty] = React.useState<CounterpartySelection | null>(null);
   const [kind, setKind] = React.useState<LendingKind>('principal');
@@ -94,7 +96,7 @@ export function useRecordLending({
       setParty(null);
       setKind('principal');
       kindTouchedRef.current = false;
-      setAmount(Math.abs(transaction.amount).toString());
+      setAmount(absAmountText(transaction.amount));
       setEntryDate(transaction.date);
       setExpectedReturnDate('');
       setNotes('');

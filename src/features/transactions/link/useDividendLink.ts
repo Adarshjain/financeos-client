@@ -11,6 +11,7 @@ import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
+import { absAmountText } from '@/lib/transactionAmount';
 
 import {
   filterDividends,
@@ -72,7 +73,7 @@ export function useDividendLink({
       setTdsChoice(null);
       setHolding('');
       setType('dividend');
-      setAmount(Math.abs(transaction.amount).toString());
+      setAmount(absAmountText(transaction.amount));
       setPayDate(transaction.date);
       setExDate('');
       setTds('');

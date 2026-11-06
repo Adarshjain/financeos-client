@@ -6,12 +6,13 @@ import { type SearchPaletteGroup, type SearchPaletteItem } from '@/components/ds
 import { TransactionRow } from '@/components/organisms/TransactionRow/TransactionRow';
 import { ALL_TIME, DEFAULT_QUERY, transactionsUrl } from '@/features/transactions/list/transactionsUrl';
 import { supportsIngestion } from '@/lib/account.types';
-import { formatDate, formatMoney } from '@/lib/format';
+import { formatDate } from '@/lib/format';
+import { rowAmount } from '@/lib/transactionAmount';
 import type { AccountType } from '@/lib/types';
 
 import { appHref } from '../routes';
 import { SearchAmount } from './SearchAmount';
-import { type GlobalSearchResult, SEARCH_MIN_CHARS } from './searchApi';
+import { type GlobalSearchResult, SEARCH_MIN_CHARS, type SearchTransaction } from './searchApi';
 
 export interface SearchPage {
   id: string;
@@ -74,9 +75,10 @@ export function transactionsSearchHref(q: string): string {
 }
 
 /** A transaction amount as the Transactions list writes it: "+46,800.00" for a credit, "24,990.00" for a debit. */
-function transactionAmount(amount: number): string {
-  const text = formatMoney(Math.abs(amount), { decimals: 'exact', symbol: false });
-  return amount > 0 ? `+${text}` : text;
+function transactionAmount(t: SearchTransaction): string {
+  const shown = rowAmount(t);
+  if (!shown) return '—';
+  return shown.credit ? `+${shown.text}` : shown.text;
 }
 
 function joinTitle(parts: Array<string | null | undefined>): string {
@@ -112,8 +114,8 @@ export function buildSearchGroups({ query, result, pages, actions, go, onAddTran
         description={t.description}
         date={formatDate(t.date, 'list')}
         account={t.accountName}
-        amount={transactionAmount(t.amount)}
-        isCredit={t.amount > 0}
+        amount={transactionAmount(t)}
+        isCredit={rowAmount(t)?.credit ?? false}
         query={text}
       />
     ),

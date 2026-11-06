@@ -19,7 +19,7 @@ import {
   uploadAndIngest,
   uploadStatements,
 } from '../fixtures/seed/statements';
-import { createTransaction, findById, searchAll } from '../fixtures/seed/transactions';
+import { createTransaction, searchAll } from '../fixtures/seed/transactions';
 import { expectUnauthenticated, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
@@ -104,7 +104,7 @@ test.describe('Statements Ingestion API', () => {
       const match = txns.find(
         (t) =>
           t.date === expectedTxn.date &&
-          Math.abs(t.amount - expectedTxn.amount) < 0.01 &&
+          t.amount != null && Math.abs(t.amount - expectedTxn.amount) < 0.01 &&
           (t.sourcedDescription || t.description) === expectedTxn.description
       );
       expect(match, `Transaction ${JSON.stringify(expectedTxn)} should be in DB`).toBeDefined();
@@ -227,7 +227,7 @@ test.describe('Statements Ingestion API', () => {
     }
   });
 
-  test('A row repeated by an overlapping statement is DUPLICATE_SUSPECT on both copies; a different reference number is not', async ({
+  test('A row repeated by an overlapping statement attaches to the existing row: no new transaction and no DUPLICATE_SUSPECT', async ({
     api,
   }) => {
     const account = await createBankAccount(api, {
@@ -266,28 +266,21 @@ test.describe('Statements Ingestion API', () => {
     ]);
 
     expect(result.fileDetails[0].status).toBe('SUCCESS');
-    expect(result.totalCreated).toBe(2);
-    expect(result.totalDuplicatesFound).toBe(1);
-    expect(result.duplicateDetails?.map((d) => d.description)).toEqual(['COFFEE SHOP CAFE']);
+    // Overlapping lines attach to the existing rows: nothing is created or flagged. A rent line whose
+    // narration differs only in its reference number attaches too (same day, same amount).
+    expect(result.totalCreated).toBe(0);
 
     const txns = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
     ]);
-    expect(txns.length).toBe(4);
-    const coffee = txns.filter((t) => t.sourcedDescription === 'COFFEE SHOP CAFE');
-    expect(coffee).toHaveLength(2);
-    for (const t of coffee) {
-      expect(t.reviewType).toBe('NEEDS_REVIEW');
-      expect(t.reviewReasons).toContain('DUPLICATE_SUSPECT');
-    }
-    const rent = txns.filter((t) => (t.sourcedDescription ?? '').includes('RENT PAYMENT'));
-    expect(rent).toHaveLength(2);
-    for (const t of rent) {
+    expect(txns).toHaveLength(2);
+    expect(txns.filter((t) => t.sourcedDescription === 'COFFEE SHOP CAFE')).toHaveLength(1);
+    for (const t of txns) {
       expect(t.reviewReasons ?? []).not.toContain('DUPLICATE_SUSPECT');
     }
   });
 
-  test('A manual entry is merged into a statement row when it names the same counterparty, and only flagged when less certain', async ({
+  test('A statement line attaches to a manual entry of the same day and amount: no new row and no DUPLICATE_SUSPECT', async ({
     api,
   }) => {
     const account = await createBankAccount(api, {
@@ -314,9 +307,9 @@ test.describe('Statements Ingestion API', () => {
       periodEnd: '2026-04-30',
       opening: 50000.0,
       rows: [
-        // Names Swiggy at a word start ("Limited" is ignored) -> certain: merged into the statement row.
+        // Names Swiggy at a word start ("Limited" is ignored).
         { date: '2026-04-10', description: 'UPI/DR/412345/SWIGGY/YESB', debit: 450.0 },
-        // Same text as the manual entry except the reference number -> uncertain: both rows stay flagged.
+        // Same text as the manual entry except the reference number.
         { date: '2026-04-12', description: 'UPI/DR/900002/ZOMATO/HDFC', debit: 300.0 },
       ],
     };
@@ -325,23 +318,20 @@ test.describe('Statements Ingestion API', () => {
       { filename: 'manual-vs-statement.pdf', buffer: await genBankPdf(spec) },
     ]);
 
-    expect(result.totalCreated).toBe(2);
-    expect(result.totalDuplicatesFound).toBe(1);
-    expect(result.duplicateDetails?.map((d) => d.description)).toEqual(['UPI/DR/900002/ZOMATO/HDFC']);
+    // Both statement lines attach to the manual entries (same day and amount): nothing is created or flagged.
+    expect(result.totalCreated).toBe(0);
 
-    // The certain pair is merged: the manual entry is gone, the statement row stays unflagged.
-    expect(await findById(api, swiggy.id)).toBeNull();
-    // The uncertain pair stays, both rows flagged.
-    expect((await findById(api, zomato.id))?.reviewReasons).toContain('DUPLICATE_SUSPECT');
-
-    const txns = await searchAll(api, [
-      { field: 'accountId', operator: 'is', value: account.id },
-    ]);
-    const swiggyRow = txns.find((t) => t.sourcedDescription === 'UPI/DR/412345/SWIGGY/YESB');
-    const zomatoRow = txns.find((t) => t.sourcedDescription === 'UPI/DR/900002/ZOMATO/HDFC');
-    expect(swiggyRow).toBeDefined();
-    expect(swiggyRow?.reviewReasons ?? []).not.toContain('DUPLICATE_SUSPECT');
-    expect(zomatoRow?.reviewReasons).toContain('DUPLICATE_SUSPECT');
+    const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: account.id }]);
+    expect(txns).toHaveLength(2);
+    const swiggyRow = txns.find((t) => t.id === swiggy.id);
+    const zomatoRow = txns.find((t) => t.id === zomato.id);
+    // The manual rows keep their own description and take the statement narration as the source.
+    expect(swiggyRow?.sourcedDescription).toBe('UPI/DR/412345/SWIGGY/YESB');
+    expect(swiggyRow?.description).toBe('Swiggy Limited');
+    expect(zomatoRow?.sourcedDescription).toBe('UPI/DR/900002/ZOMATO/HDFC');
+    for (const t of txns) {
+      expect(t.reviewReasons ?? []).not.toContain('DUPLICATE_SUSPECT');
+    }
   });
 
   test('Variants: XLSX string, XLSX numeric, XLSX grouped integers, dd-MMM-yyyy, newest-first, ref-column, no-balance', async ({
@@ -458,8 +448,8 @@ test.describe('Statements Ingestion API', () => {
     ]);
     expect(txns.length).toBe(5);
 
-    const debitTxns = txns.filter((t) => t.amount < 0);
-    const creditTxns = txns.filter((t) => t.amount > 0);
+    const debitTxns = txns.filter((t) => t.amount != null && t.amount < 0);
+    const creditTxns = txns.filter((t) => t.amount != null && t.amount > 0);
     expect(debitTxns.length).toBe(4);
     expect(creditTxns.length).toBe(1);
 

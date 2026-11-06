@@ -13,7 +13,7 @@ export type TransactionSource = 'gmail_transaction_alert' | 'gmail_statement' | 
 
 export type ReviewType = 'NEEDS_REVIEW' | 'AUTO_REVIEWED' | 'MANUALLY_REVIEWED' | 'NA';
 
-export type ReviewReason = 'UNRECONCILED' | 'DUPLICATE_SUSPECT' | 'DATE_CORRECTED';
+export type ReviewReason = 'UNRECONCILED' | 'DUPLICATE_SUSPECT' | 'DATE_CORRECTED' | 'NOT_ON_STATEMENT';
 
 export type TransactionChannel = 'ONLINE' | 'POS' | 'UPI' | 'CONTACTLESS' | 'ATM' | 'OTHER';
 
@@ -45,7 +45,9 @@ export interface TransactionBase {
   reviewType?: ReviewType | null;
 }
 
-export type TransactionRequest = Omit<TransactionBase, 'source' | 'reviewType'> & {
+export type TransactionRequest = Omit<TransactionBase, 'source' | 'reviewType' | 'amount'> & {
+  /** Null only when editing a transaction whose stored amount is null. */
+  amount: number | null;
   tagIds: string[];
   /** Create: the category to set. Update: send only when the user changed it; an edit never re-categorises. */
   categoryKey?: string;
@@ -91,7 +93,7 @@ export interface CreateTransactionLinkRequest {
 export interface MemberSummary {
   transactionId: string;
   date: string;
-  signedAmount: number;
+  signedAmount?: number | null;
   description?: string;
   accountId: string;
   isAnchor: boolean;
@@ -133,8 +135,20 @@ export interface ObligationRef {
   origin?: LinkOrigin;
 }
 
-export type Transaction = TransactionBase & {
+/** The statement a NOT_ON_STATEMENT transaction is missing from; the periods are null when an endpoint sends the id only. */
+export interface NotOnStatement {
+  statementId: string;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+}
+
+export type Transaction = Omit<TransactionBase, 'amount'> & {
   id: string;
+  /** Null for a foreign charge still waiting for its statement: see originalAmount / originalCurrency. */
+  amount: number | null;
+  originalAmount?: number | null;
+  originalCurrency?: string | null;
+  notOnStatement?: NotOnStatement | null;
   createdAt: string;
   updatedAt?: string;
   reviewedAt?: string | null;

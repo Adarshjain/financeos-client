@@ -310,10 +310,10 @@ test.describe('Gmail sync journey', () => {
     expect(alert).toMatchObject({
       amount: -1250.5,
       date: isoDaysAgo(5),
-      reviewType: 'NEEDS_REVIEW',
+      reviewType: 'AUTO_REVIEWED',
       sourcedDescription: 'SWIGGY',
     });
-    expect(alert?.reviewReasons).toContain('UNRECONCILED');
+    expect(alert?.reviewReasons ?? []).toEqual([]);
 
     const fromStatement = txns.filter((t) => t.source === 'gmail_statement');
     expect(fromStatement.map((t) => [t.sourcedDescription, t.amount]).sort()).toEqual([
@@ -449,7 +449,7 @@ test.describe('Gmail sync journey', () => {
     expect(await attentionItems(api)).toHaveLength(0);
     const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: late.id }]);
     expect(txns).toHaveLength(1);
-    expect(txns[0]).toMatchObject({ amount: -640, sourcedDescription: 'UBER', source: 'gmail_transaction_alert', reviewType: 'NEEDS_REVIEW' });
+    expect(txns[0]).toMatchObject({ amount: -640, sourcedDescription: 'UBER', source: 'gmail_transaction_alert', reviewType: 'AUTO_REVIEWED' });
 
     // A row that has been imported is no longer retryable.
     const done = await api.POST('/api/v1/gmail/attention/{ledgerId}/retry', {
@@ -519,7 +519,9 @@ test.describe('Gmail sync journey', () => {
     expect(after.filter((t) => t.source === 'gmail_transaction_alert')).toHaveLength(0);
   });
 
-  test('an alert inside a period a statement already covers creates no transaction', async () => {
+  // The imported statement covers day 40..10 ago on this bank account: a bank alert is tagged when its date is on or
+  // before period end - 1 and the statement does not list it; later days stay untagged (the next statement may still carry it).
+  test('an alert inside a covered period that the statement lacks is created and tagged Not on statement', async () => {
     test.slow();
     const covered = alertMail({ last4: '1234', amount: 777, merchant: 'COVERED CAFE', date: isoDaysAgo(20), sentAt: daysAgo(20) });
     await removeMappings(mailbox.mappingIds);
@@ -528,12 +530,73 @@ test.describe('Gmail sync journey', () => {
       extractionFor(covered, { json: extractedTxn({ amount: 777, date: isoDaysAgo(20), last4: '1234', merchant: 'COVERED CAFE' }) }),
     ]);
     const { summary } = await runSync(api);
-    expect(summary).toMatchObject({ discovered: 1, processed: 1, created: 0, skipped: 1 });
+    expect(summary).toMatchObject({ discovered: 1, processed: 1, created: 1, skipped: 0 });
     const row = summary.messages.find((m) => m.gmailMessageId === covered.id);
-    expect(row?.status).toBe('SKIPPED_BEFORE_WATERMARK');
-    expect(row?.error).toMatch(/^Covered by statement/);
+    expect(row?.status).toBe('CREATED');
     const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: accountId }]);
-    expect(txns.filter((t) => t.sourcedDescription === 'COVERED CAFE')).toHaveLength(0);
+    const cafe = txns.filter((t) => t.sourcedDescription === 'COVERED CAFE');
+    expect(cafe).toHaveLength(1);
+    expect(cafe[0].reviewReasons).toContain('NOT_ON_STATEMENT');
+    expect(cafe[0].notOnStatement?.periodEnd).toBe(isoDaysAgo(10));
+  });
+
+  test('an alert in the last days of a covered period is created untagged', async () => {
+    test.slow();
+    // Period end is day 10; a bank alert dated on the end day is inside the last day, so it stays Pending.
+    const late = alertMail({ last4: '1234', amount: 123, merchant: 'LAST DAY CAFE', date: isoDaysAgo(10), sentAt: daysAgo(10) });
+    await removeMappings(mailbox.mappingIds);
+    mailbox = await registerMailbox(identity, [...mailbox.messages, late]);
+    await scriptExtractions(api, [
+      extractionFor(late, { json: extractedTxn({ amount: 123, date: isoDaysAgo(10), last4: '1234', merchant: 'LAST DAY CAFE' }) }),
+    ]);
+    const { summary } = await runSync(api);
+    expect(summary).toMatchObject({ discovered: 1, processed: 1, created: 1 });
+    const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: accountId }]);
+    const row = txns.filter((t) => t.sourcedDescription === 'LAST DAY CAFE');
+    expect(row).toHaveLength(1);
+    expect(row[0].reviewReasons).not.toContain('NOT_ON_STATEMENT');
+  });
+
+  test('an alert that matches a statement line attaches to it instead of creating a transaction', async () => {
+    test.slow();
+    // The statement lists GROCERY MART 2200 on day 20.
+    const grocery = alertMail({ last4: '1234', amount: 2200, merchant: 'GROCERY MART', date: isoDaysAgo(20), sentAt: daysAgo(20) });
+    await removeMappings(mailbox.mappingIds);
+    mailbox = await registerMailbox(identity, [...mailbox.messages, grocery]);
+    await scriptExtractions(api, [
+      extractionFor(grocery, { json: extractedTxn({ amount: 2200, date: isoDaysAgo(20), last4: '1234', merchant: 'GROCERY MART' }) }),
+    ]);
+    const before = await searchAll(api, [{ field: 'accountId', operator: 'is', value: accountId }]);
+    const { summary } = await runSync(api);
+    expect(summary).toMatchObject({ discovered: 1, processed: 1, created: 0, skipped: 1 });
+    const row = summary.messages.find((m) => m.gmailMessageId === grocery.id);
+    expect(row?.status).toBe('SKIPPED_DUPLICATE');
+    const attached = (row?.transactions ?? []) as Array<{ id: string }>;
+    expect(attached).toHaveLength(1);
+    expect(attached[0].id).toBeTruthy();
+    const after = await searchAll(api, [{ field: 'accountId', operator: 'is', value: accountId }]);
+    expect(after).toHaveLength(before.length);
+    expect(after.some((t) => t.id === attached[0].id)).toBe(true);
+  });
+
+  test('a USD alert creates a transaction with no rupee amount until its statement arrives', async () => {
+    test.slow();
+    const usd = alertMail({ last4: '1234', amount: 20, merchant: 'OVERSEAS SAAS', date: isoDaysAgo(2), sentAt: daysAgo(2) });
+    await removeMappings(mailbox.mappingIds);
+    mailbox = await registerMailbox(identity, [...mailbox.messages, usd]);
+    await scriptExtractions(api, [
+      extractionFor(usd, {
+        json: { ...extractedTxn({ amount: 20, date: isoDaysAgo(2), last4: '1234', merchant: 'OVERSEAS SAAS' }), currency: 'USD' },
+      }),
+    ]);
+    const { summary } = await runSync(api);
+    expect(summary).toMatchObject({ discovered: 1, processed: 1, created: 1 });
+    const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: accountId }]);
+    const foreign = txns.filter((t) => t.sourcedDescription === 'OVERSEAS SAAS');
+    expect(foreign).toHaveLength(1);
+    expect(foreign[0].amount ?? null).toBeNull();
+    expect(foreign[0].originalCurrency).toBe('USD');
+    expect(Math.abs(foreign[0].originalAmount ?? 0)).toBe(20);
   });
 
   test('a later statement reconciles an earlier alert instead of duplicating it', async () => {
@@ -703,9 +766,10 @@ test.describe('Gmail alert date later than the email', () => {
 
     const capped = byMerchant.get('MISREAD DATE')!;
     expect(capped.date).toBe(isoDaysAgo(6));
-    expect(capped.reviewType).toBe('NEEDS_REVIEW');
-    expect(capped.reviewReasons).toContain('DATE_CORRECTED');
-    expect(capped.reviewReasons).toContain('UNRECONCILED');
+    // Pending alerts are auto-reviewed with no reasons; the date is still capped to the send day.
+    expect(capped.reviewType).toBe('AUTO_REVIEWED');
+    expect(capped.reviewReasons ?? []).not.toContain('DATE_CORRECTED');
+    expect(capped.reviewReasons ?? []).not.toContain('UNRECONCILED');
 
     for (const [merchant, date] of [['SAME DAY', isoDaysAgo(6)], ['EARLIER DAY', isoDaysAgo(8)]] as const) {
       const kept = byMerchant.get(merchant)!;
@@ -719,17 +783,16 @@ test.describe('Gmail alert date later than the email', () => {
     expect(prompt).toContain(`Email sent on: ${isoDaysAgo(6)} `);
   });
 
-  test('changing the date yourself clears the flag; the transaction stays in review for reconciliation', async () => {
+  test('changing the date of a capped alert yourself keeps it flag-free and auto-reviewed', async () => {
     const capped = (await searchAll(api)).find((t) => t.sourcedDescription === 'MISREAD DATE')!;
     const res = await api.PUT('/api/v1/transactions/{id}', {
       params: { path: { id: capped.id } },
-      body: { date: isoDaysAgo(7), amount: -209.7, description: capped.description ?? 'MISREAD DATE', reviewType: 'NEEDS_REVIEW' },
+      body: { date: isoDaysAgo(7), amount: -209.7, description: capped.description ?? 'MISREAD DATE' },
     });
     expectStatus(res, 200);
     expect(res.data!.date).toBe(isoDaysAgo(7));
-    expect(res.data!.reviewReasons).not.toContain('DATE_CORRECTED');
-    expect(res.data!.reviewReasons).toContain('UNRECONCILED');
-    expect(res.data!.reviewType).toBe('NEEDS_REVIEW');
+    expect(res.data!.reviewReasons ?? []).toEqual([]);
+    expect(res.data!.reviewType).toBe('AUTO_REVIEWED');
   });
 });
 

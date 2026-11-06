@@ -8,6 +8,7 @@ import { formatMoney } from '@/lib/format';
 import { useCategoryList } from '@/lib/query/hooks/useCategoryList';
 import { useCategoryRecent } from '@/lib/query/hooks/useCategoryRecent';
 import type { Transaction } from '@/lib/transaction.types';
+import { absAmount } from '@/lib/transactionAmount';
 
 import { directionOf, pickOf } from './categoryModel';
 import { useSetCategory } from './useSetCategory';
@@ -25,7 +26,7 @@ export function CategoryDialog({ transaction, onClose }: CategoryDialogProps) {
   const { setCategory } = useSetCategory(list);
   const direction = directionOf(transaction);
   const recent = useCategoryRecent(direction);
-  const amount = formatMoney(Math.abs(transaction.amount), { decimals: 'exact' });
+  const amount = formatMoney(absAmount(transaction.amount), { decimals: 'exact' });
   const name = transaction.description || transaction.sourcedDescription || '';
   return (
     <CategoryPicker

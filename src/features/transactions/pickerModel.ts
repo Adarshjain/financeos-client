@@ -8,8 +8,11 @@ export interface PickerSummaryLike {
   date: string;
   accountId: string;
   accountName?: string | null;
-  signedAmount?: number;
-  amount?: number;
+  signedAmount?: number | null;
+  /** Null for a foreign charge still waiting for its statement. */
+  amount?: number | null;
+  originalAmount?: number | null;
+  originalCurrency?: string | null;
 }
 
 /** "₹2,300", "₹2,300.50": whole figures bare, paise only when there are some. */
@@ -17,7 +20,13 @@ function rupeesOf(value: number): string {
   return formatMoney(Math.abs(value), { decimals: 'exact' });
 }
 
-/** The amount of a summary, signed (a debit is negative). */
+/** "USD 20.00" for a summary with no rupee amount yet; empty when it has no original either. */
+function foreignOf(tx: PickerSummaryLike): string {
+  if (tx.originalAmount == null || !tx.originalCurrency) return '';
+  return `${tx.originalCurrency} ${formatMoney(Math.abs(tx.originalAmount), { decimals: 'exact', symbol: false })}`;
+}
+
+/** The amount of a summary, signed (a debit is negative); 0 when it has none (callers show the foreign amount instead). */
 export function summaryAmount(tx: PickerSummaryLike): number {
   return tx.signedAmount ?? tx.amount ?? 0;
 }
@@ -49,12 +58,13 @@ export function pickerListItem(
   note?: string | null,
 ): { id: string; title: string; subtitle: string; amount: string; isCredit: boolean } {
   const signed = summaryAmount(tx);
+  const hasAmount = tx.signedAmount != null || tx.amount != null;
   const where = account.last4 ? `${account.name} ••${account.last4}` : account.name;
   return {
     id: tx.id,
     title: tx.description || tx.sourcedDescription || 'Transaction',
     subtitle: [formatDate(tx.date, 'list'), where, note].filter(Boolean).join(' · '),
-    amount: rupeesOf(signed),
+    amount: hasAmount ? rupeesOf(signed) : foreignOf(tx),
     isCredit: signed > 0,
   };
 }

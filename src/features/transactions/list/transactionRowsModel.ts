@@ -5,6 +5,7 @@ import type { Account } from '@/lib/account.types';
 import { categoryLabel } from '@/lib/categoryList';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { ReviewReason, Transaction, TransactionSource } from '@/lib/transaction.types';
+import { rowAmount } from '@/lib/transactionAmount';
 
 /** A transaction as the list draws it: the strings and flags `TransactionRow` and the table columns take. */
 export interface TransactionListRow extends TransactionRowData {
@@ -59,6 +60,7 @@ export const REASON_WORDS: Record<ReviewReason, string> = {
   UNRECONCILED: 'Unreconciled',
   DUPLICATE_SUSPECT: 'Duplicate',
   DATE_CORRECTED: 'Date corrected',
+  NOT_ON_STATEMENT: 'Not on statement',
 };
 
 const SOURCE_WORDS: Partial<Record<TransactionSource, string>> = {
@@ -125,8 +127,9 @@ function bankIdOf(accounts: RowContext['accounts'], accountId: string): string |
 
 export function transactionRow(t: Transaction, ctx: RowContext): TransactionListRow {
   const excluded = Boolean(t.isTransactionExcluded);
-  const credit = t.amount > 0;
-  const amount = formatMoney(Math.abs(t.amount), { decimals: 'exact', symbol: false });
+  const shownAmount = rowAmount(t);
+  const credit = shownAmount?.credit ?? false;
+  const amount = shownAmount?.text ?? '—';
   const shown = t.category;
   const categories = shown ? [shown.name] : [];
   const source = ctx.showSource ? SOURCE_WORDS[t.source] : undefined;
@@ -137,7 +140,7 @@ export function transactionRow(t: Transaction, ctx: RowContext): TransactionList
     date: formatDate(t.date, 'list'),
     weekday: weekdayOf(t.date),
     description: t.description || t.sourcedDescription || '—',
-    amount: t.amount,
+    amount: t.amount ?? '',
     formattedAmount: credit ? `+${amount}` : amount,
     isCredit: credit,
     account: ctx.accounts ? (ctx.accounts.find((a) => a.id === t.accountId)?.name ?? 'Unknown') : undefined,
