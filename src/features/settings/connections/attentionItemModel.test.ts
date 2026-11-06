@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  attentionEditAccountId,
   attentionHintLink,
   type AttentionItem,
   describeAttentionItem,
@@ -143,5 +144,17 @@ describe('attentionHintLink', () => {
     expect(attentionHintLink({ reason: 'NO_ACCOUNT', accountId: null })).toBeNull();
     expect(attentionHintLink({ reason: 'FAILED', accountId: null })).toBeNull();
     expect(attentionHintLink({ reason: 'UNREADABLE_STATEMENT', accountId: null })).toBeNull();
+  });
+});
+
+describe('attentionEditAccountId', () => {
+  it('returns the account for a locked statement', () => {
+    expect(attentionEditAccountId({ reason: 'LOCKED_STATEMENT', accountId: 'a1' })).toBe('a1');
+  });
+  it('is null without an account', () => {
+    expect(attentionEditAccountId({ reason: 'LOCKED_STATEMENT' })).toBeNull();
+  });
+  it('is null for other reasons', () => {
+    expect(attentionEditAccountId({ reason: 'IMPORT_OFF', accountId: 'a1' })).toBeNull();
   });
 });

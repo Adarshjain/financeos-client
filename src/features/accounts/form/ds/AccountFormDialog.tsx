@@ -70,10 +70,12 @@ export interface AccountFormDialogProps {
   prefillBank?: string;
   /** Add mode: the last 4 digits to start with. */
   prefillLast4?: string;
+  /** Edit mode: the field to scroll to and focus once the dialog opens. */
+  focusField?: 'statementPassword';
 }
 
 /** Add account and Edit account: one dialog, the fields follow the picked type. */
-export function AccountFormDialog({ account, initialType = null, onClose, onCreated, fromSuggestion, prefillBank, prefillLast4 }: AccountFormDialogProps) {
+export function AccountFormDialog({ account, initialType = null, onClose, onCreated, fromSuggestion, prefillBank, prefillLast4, focusField }: AccountFormDialogProps) {
   const router = useRouter();
   const isEdit = Boolean(account);
   const today = todayInAppZone();
@@ -342,6 +344,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
                 />
               ) : null}
               <AccountFormFields
+                focusField={isEdit ? focusField : undefined}
                 values={values}
                 errors={errors}
                 isEdit={isEdit}

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -8,9 +9,13 @@ import { Card } from '@/components/ds/Card/Card';
 import { ListField } from '@/components/ds/ListField/ListField';
 import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
+import { loadAccountForm } from '@/features/accounts/form/ds/AccountDialogs';
+import type { AccountFormDialogProps } from '@/features/accounts/form/ds/AccountFormDialog';
 import { formatDate, formatDateTime } from '@/lib/format';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import { useAccount } from '@/lib/query/hooks/useAccounts';
 
-import { attentionHintLink, type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItemModel';
+import { attentionEditAccountId, attentionHintLink, type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItemModel';
 
 interface AttentionItemRowProps {
   item: AttentionItem;
@@ -54,11 +59,60 @@ function Details({ item, archived }: { item: AttentionItem; archived: boolean })
   );
 }
 
+type FormDialog = React.ComponentType<AccountFormDialogProps>;
+
+/** The hint as a button: on press loads the form's code and the account together (nothing before), then opens its Edit dialog in place on the password; falls back to the account page. */
+function EditAccountHint({ accountId, label, href }: { accountId: string; label: string; href: string }) {
+  const [pressed, setPressed] = useState(false);
+  const [ready, setReady] = useState(false);
+  const { Component: AccountFormDialog, run, preload } = useLazyDialog(loadAccountForm);
+  const close = () => {
+    setPressed(false);
+    setReady(false);
+  };
+  const open = () => {
+    setPressed(true);
+    void run(() => {}).then((loaded) => {
+      if (!loaded) close();
+    });
+  };
+  return (
+    <>
+      <Text variant="label" as="span">
+        <Button variant="link" loading={pressed && !ready} onPointerDown={preload} onClick={open}>
+          {label}
+        </Button>
+      </Text>
+      {pressed ? <EditAccountLoader accountId={accountId} href={href} Dialog={AccountFormDialog} onReady={() => setReady(true)} onClose={close} /> : null}
+    </>
+  );
+}
+
+function EditAccountLoader({ accountId, href, Dialog, onReady, onClose }: { accountId: string; href: string; Dialog: FormDialog | null; onReady: () => void; onClose: () => void }) {
+  const router = useRouter();
+  const { data: account, isError, isSuccess } = useAccount(accountId);
+  const failed = isError || (isSuccess && !account);
+  const shown = Boolean(account && Dialog);
+  React.useEffect(() => {
+    if (shown) onReady();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shown]);
+  React.useEffect(() => {
+    if (!failed) return;
+    onClose();
+    router.push(href);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [failed]);
+  if (!account || !Dialog) return null;
+  return <Dialog account={account} focusField="statementPassword" onClose={onClose} />;
+}
+
 /** One Gmail item that could not become a transaction: what happened, the next step, details and actions. */
 export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarchive }: AttentionItemRowProps) {
   const [showDetails, setShowDetails] = useState(false);
   const { label, summary, hint } = describeAttentionItem(item);
   const hintLink = attentionHintLink(item);
+  const editAccountId = attentionEditAccountId(item);
   const archived = Boolean(item.archivedAt);
   const emailDate = item.internalDate ?? item.discoveredAt;
 
@@ -81,7 +135,9 @@ export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarc
         <Text variant="body" tone="ink-2" as="p">
           {summary}
         </Text>
-        {hintLink ? (
+        {hintLink && editAccountId ? (
+          <EditAccountHint accountId={editAccountId} label={hintLink.label} href={hintLink.href} />
+        ) : hintLink ? (
           <Text variant="label" as="span">
             <Button asChild variant="link">
               <Link href={hintLink.href}>{hintLink.label}</Link>

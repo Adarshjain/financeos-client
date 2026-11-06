@@ -144,3 +144,8 @@ export function attentionHintLink(item: Pick<AttentionItem, 'reason' | 'accountI
       return null;
   }
 }
+
+/** The account whose Edit dialog opens in place for this item's next step (a locked statement); null when it links elsewhere. */
+export function attentionEditAccountId(item: Pick<AttentionItem, 'reason' | 'accountId'>): string | null {
+  return item.reason === 'LOCKED_STATEMENT' && item.accountId ? item.accountId : null;
+}
