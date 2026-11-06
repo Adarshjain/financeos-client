@@ -14,6 +14,7 @@ import { formatDate, formatMoney } from '@/lib/format';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
+import { absAmount } from '@/lib/transactionAmount';
 
 import { acceptLinkSuggestion, dismissLinkSuggestion } from '../link/linkActions';
 import { acceptedWord,acceptLabel, candidateIdFor, dismissLabel, isActionable } from './suggestionModel';
@@ -67,7 +68,7 @@ export function TransactionSuggestionSection({ transaction: t }: { transaction: 
             key={c.transactionId ?? c.lendingId ?? i}
             wrap
             title={c.description || '—'}
-            subtitle={`${formatDate(c.date, 'list')}${account} · ${formatMoney(Math.abs(c.amount), { decimals: 'exact' })}`}
+            subtitle={`${formatDate(c.date, 'list')}${account} · ${formatMoney(absAmount(c.amount), { decimals: 'exact' })}`}
             trailing={
               candidateId ? (
                 <Button size="sm" loading={accept.isPending && accept.variables === candidateId} disabled={busy} onClick={() => accept.mutate(candidateId)}>

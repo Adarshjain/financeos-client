@@ -105,7 +105,7 @@ export interface GmailCardModel {
 
 export function buildGmailCard(input: {
   ingestFromDate: string | null | undefined;
-  lastAlert: { description: string; amount: number; date: string } | null | undefined;
+  lastAlert: { description: string; amount?: number | null; date: string } | null | undefined;
   unmatchedCount: number | null | undefined;
   today: string;
 }): GmailCardModel {
@@ -117,7 +117,7 @@ export function buildGmailCard(input: {
     lastAlert: input.unmatchedCount == null && !alert
       ? '—'
       : alert
-      ? `${alert.description} ${formatMoney(Math.abs(alert.amount), { decimals: 'auto' })} · ${
+      ? `${[alert.description, alert.amount != null ? formatMoney(Math.abs(alert.amount), { decimals: 'auto' }) : null].filter(Boolean).join(' ')} · ${
           alert.date === input.today ? 'today' : formatDate(alert.date, 'list')
         }`
       : undefined,
@@ -168,7 +168,7 @@ export interface BrokerCashModel {
 
 export function buildBrokerCash(account: Broker, recent: readonly Transaction[] | null): BrokerCashModel {
   const credit = [...(recent ?? [])]
-    .filter((t) => t.amount > 0 && t.links?.some((l) => l.type === 'TRANSFER'))
+    .filter((t) => t.amount != null && t.amount > 0 && t.links?.some((l) => l.type === 'TRANSFER'))
     .sort((a, b) => b.date.localeCompare(a.date))[0];
   const parts = credit
     ? [formatMoney(credit.amount, { decimals: 'auto' }), formatDate(credit.date, 'list'), credit.description || credit.sourcedDescription]

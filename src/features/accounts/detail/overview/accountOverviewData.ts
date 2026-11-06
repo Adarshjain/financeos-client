@@ -16,7 +16,7 @@ export interface PaymentsFrom {
 }
 
 export interface GmailSummary {
-  lastAlert: { description: string; amount: number; date: string } | null;
+  lastAlert: { description: string; amount?: number | null; date: string } | null;
   unmatchedCount: number;
 }
 

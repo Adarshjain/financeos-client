@@ -24,7 +24,7 @@ const DEBIT_ONLY_TYPES: readonly LinkType[] = ['FEE', 'EMI'];
 /** The link types to offer between transactions: all of them, minus Fee and EMI when the subject is a credit. */
 export function linkTypesFor(subject: Pick<Transaction, 'amount'> | undefined): LinkType[] {
   const all = Object.keys(LINK_TYPE_LABELS) as LinkType[];
-  return subject && subject.amount >= 0 ? all.filter((t) => !DEBIT_ONLY_TYPES.includes(t)) : all;
+  return subject && subject.amount != null && subject.amount >= 0 ? all.filter((t) => !DEBIT_ONLY_TYPES.includes(t)) : all;
 }
 
 /** The records a transaction can be attached to, instead of another transaction. */
@@ -36,6 +36,9 @@ export const RECORD_KIND_LABELS = {
 } as const;
 
 export type DisabledKinds = Partial<Record<LinkKind, string>>;
+
+/** A foreign charge has no rupee amount until its statement arrives, so a record that needs one waits. */
+const NO_AMOUNT_YET = 'Waiting for the statement to show the amount';
 
 /**
  * Which records cannot take this transaction, with the reason shown to the person. Several transactions at
@@ -52,18 +55,22 @@ export function disabledLinkKinds(subject: Transaction | undefined, selectedCoun
   const result: DisabledKinds = {};
   const refs = subject.obligationRefs ?? [];
   if (refs.some((r) => r.kind !== 'LENDING')) result.LENDING = 'Already linked to a loan or dividend record';
+  else if (subject.amount == null) result.LENDING = NO_AMOUNT_YET;
   if (refs.length > 0) result.LOAN_PAYMENT = 'Already linked to a ledger/loan record';
+  else if (subject.amount == null) result.LOAN_PAYMENT = NO_AMOUNT_YET;
   else if (subject.amount >= 0) result.LOAN_PAYMENT = 'Loan payments must be money-out (debit) transactions';
   if (refs.length > 0) result.DIVIDEND = 'Already linked to a ledger/loan/dividend record';
+  else if (subject.amount == null) result.DIVIDEND = NO_AMOUNT_YET;
   else if (subject.amount < 0) result.DIVIDEND = 'Dividends must be money-in (credit) transactions';
   if (refs.length > 0) result.EPF_WITHDRAWAL = 'Already linked to a record';
+  else if (subject.amount == null) result.EPF_WITHDRAWAL = NO_AMOUNT_YET;
   else if (subject.amount < 0) result.EPF_WITHDRAWAL = 'EPF withdrawals must be money-in (credit) transactions';
   return result;
 }
 
 /** The main ("anchor") transaction unless told otherwise: the first money-out one, else the first. */
 export function defaultAnchorId(members: readonly Transaction[]): string {
-  return (members.find((t) => t.amount < 0) ?? members[0])?.id ?? '';
+  return (members.find((t) => t.amount != null && t.amount < 0) ?? members[0])?.id ?? '';
 }
 
 /** The anchor to use: the chosen one while it is still a member, else the default. */
@@ -108,10 +115,11 @@ export function counterpartRules(
   reference: Pick<Transaction, 'amount' | 'accountId'> | undefined,
   isCreditCard: (accountId: string) => boolean,
 ): { type: TypeFilter; accept: (t: CounterpartCandidate) => boolean } {
-  if (!reference) return { type: null, accept: () => true };
+  // Without a rupee amount the direction is unknown, so nothing is filtered out.
+  if (!reference || reference.amount == null) return { type: null, accept: () => true };
   const debit = reference.amount < 0;
   const opposite: TypeFilter = debit ? 'CREDIT' : 'DEBIT';
-  const isOpposite = (t: CounterpartCandidate) => (t.amount < 0) !== debit;
+  const isOpposite = (t: CounterpartCandidate) => t.amount != null && (t.amount < 0) !== debit;
   switch (type) {
     case 'TRANSFER':
       return { type: opposite, accept: (t) => isOpposite(t) && t.accountId !== reference.accountId };
@@ -128,7 +136,7 @@ export function counterpartRules(
       return { type: opposite, accept: (t) => isOpposite(t) && t.accountId === reference.accountId };
     case 'FEE':
     case 'EMI':
-      return { type: 'DEBIT', accept: (t) => t.amount < 0 };
+      return { type: 'DEBIT', accept: (t) => t.amount != null && t.amount < 0 };
   }
 }
 
@@ -197,10 +205,9 @@ export function coverageLine(
 ): string | null {
   if (type !== 'REFUND') return null;
   const purchase = members.find((t) => t.id === anchorId);
-  if (!purchase || purchase.amount >= 0) return null;
+  if (!purchase || purchase.amount == null || purchase.amount >= 0) return null;
   const refunded = members
-    .filter((t) => t.id !== anchorId && t.amount > 0)
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => (t.id !== anchorId && t.amount != null && t.amount > 0 ? sum + t.amount : sum), 0);
   if (refunded <= 0) return null;
   const paid = Math.abs(purchase.amount);
   const base = `Refunds ${formatMoney(refunded, { decimals: 'exact' })} of ${formatMoney(paid, { decimals: 'exact' })}`;
@@ -213,7 +220,8 @@ export function coverageLine(
 export function linkTitle(members: readonly Transaction[]): string {
   if (members.length === 1) {
     const t = members[0];
-    return `Link ${t.description || t.sourcedDescription || 'transaction'} · ${formatMoney(Math.abs(t.amount), { decimals: 'exact' })} to…`;
+    const money = t.amount != null ? ` · ${formatMoney(Math.abs(t.amount), { decimals: 'exact' })}` : '';
+    return `Link ${t.description || t.sourcedDescription || 'transaction'}${money} to…`;
   }
   return `Link ${members.length} transactions`;
 }

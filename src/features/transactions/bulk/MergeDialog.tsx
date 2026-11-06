@@ -9,8 +9,9 @@ import { Dialog } from '@/components/ds/Dialog/Dialog';
 import type { IconName } from '@/components/ds/Icon/registry';
 import { TransactionRow } from '@/components/organisms/TransactionRow/TransactionRow';
 import type { Account } from '@/lib/account.types';
-import { formatDate, formatMoney } from '@/lib/format';
+import { formatDate } from '@/lib/format';
 import type { Transaction } from '@/lib/transaction.types';
+import { rowAmount } from '@/lib/transactionAmount';
 
 import { computeDefaultKeepId, mergeChecks, mergeSourceLabel, mergeWarning } from './mergeModel';
 import { useMergeTransactions } from './useBulkMutations';
@@ -26,8 +27,9 @@ export interface MergeDialogProps {
 
 /** The amount as the Transactions list writes it: "+45.00" for a credit, "7,430.00" for a debit. */
 const amountOf = (t: Transaction) => {
-  const amount = formatMoney(Math.abs(t.amount), { decimals: 'exact', symbol: false });
-  return t.amount > 0 ? `+${amount}` : amount;
+  const shown = rowAmount(t);
+  if (!shown) return '—';
+  return shown.credit ? `+${shown.text}` : shown.text;
 };
 
 /**
@@ -79,7 +81,7 @@ export function MergeDialog({ transactions, accounts, onClose, onMerged }: Merge
             unsetCategoryLabel="Uncategorized"
             provenance={mergeSourceLabel(t.source)}
             amount={amountOf(t)}
-            isCredit={t.amount > 0}
+            isCredit={rowAmount(t)?.credit ?? false}
           />
         </div>
       </Card>

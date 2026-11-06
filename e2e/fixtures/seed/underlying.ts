@@ -42,6 +42,7 @@ export const NET_WORTH_KIND_LABELS: Record<string, string> = {
   epf: 'EPF',
   loan: 'Loan',
   lending: 'Lending',
+  nps: 'NPS',
 };
 export const NET_WORTH_SIDE_LABELS: Record<string, string> = { asset: 'Asset', liability: 'Liability' };
 /** The net_worth underlying-only `group` labels, in the order the listing shows them. */

@@ -145,7 +145,8 @@ export function buildTransactionRequest(
     accountId: p.accountId,
     cardId: p.supportsCards ? p.cardId || null : null,
     description: p.description ?? undefined,
-    amount: Number(p.amount),
+    // An empty amount is sent as null: valid only while the stored amount is null.
+    amount: p.amount.trim() === '' ? null : Number(p.amount),
     tagIds: p.tagIds,
     date: toCalendarDate(p.date),
     isTransactionExcluded: p.isExcluded,

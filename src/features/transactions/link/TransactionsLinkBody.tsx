@@ -11,8 +11,9 @@ import { Text } from '@/components/ds/Text/Text';
 import { TextField } from '@/components/ds/TextField/TextField';
 import { TransactionRow } from '@/components/organisms/TransactionRow/TransactionRow';
 import type { Account } from '@/lib/account.types';
-import { formatDate, formatMoney } from '@/lib/format';
+import { formatDate } from '@/lib/format';
 import type { LinkType, Transaction } from '@/lib/transaction.types';
+import { rowAmount } from '@/lib/transactionAmount';
 
 import { pickerListItem } from '../pickerModel';
 import { TransactionPickerField } from '../TransactionPickerField';
@@ -45,7 +46,7 @@ export function TransactionsLinkBody({ type, state, accounts, multi }: Transacti
     () => counterpartRules(type, reference, (id) => (accounts.find((a) => a.id === id)?.type as string) === 'credit_card'),
     [type, reference, accounts],
   );
-  const accept = React.useCallback((t: { amount: number; accountId: string }) => rules.accept(t), [rules]);
+  const accept = React.useCallback((t: { amount?: number | null; accountId: string }) => rules.accept(t), [rules]);
 
   // One transaction: the dialog already names it, so the rows are the others picked so far.
   const rows: Transaction[] = multi ? members : members.slice(1);
@@ -80,7 +81,7 @@ export function TransactionsLinkBody({ type, state, accounts, multi }: Transacti
           const item = pickerListItem(t, accountOf(accounts, t.accountId));
           const role: LinkRole = t.id === anchorId ? 'anchor' : 'member';
           const last4 = accountOf(accounts, t.accountId).last4;
-          const amount = formatMoney(Math.abs(t.amount), { decimals: 'exact', symbol: false });
+          const shown = rowAmount(t);
           return (
             <ListRow key={t.id} flush className="gap-space-8 py-0">
               <TransactionRow
@@ -93,8 +94,8 @@ export function TransactionsLinkBody({ type, state, accounts, multi }: Transacti
                 plastic={last4 ? `••${last4}` : undefined}
                 tags={t.tags?.map((tag) => tag.name)}
                 provenance={multi ? undefined : roleLabel(type, role)}
-                amount={item.isCredit ? `+${amount}` : amount}
-                isCredit={item.isCredit}
+                amount={shown ? (shown.credit ? `+${shown.text}` : shown.text) : '—'}
+                isCredit={shown?.credit ?? false}
               />
               {multi ? (
                 <Select

@@ -5,7 +5,9 @@ import type { Transaction } from '@/lib/transaction.types';
 import { addLoanPaymentsBatch } from './loanActions';
 
 /** The payment that marks an installment paid by a bank debit: that day, that amount, that transaction. */
-export function paymentItemFor(installmentSeq: number, tx: Transaction): BatchLoanPaymentItem {
+/** Null when the debit has no rupee amount yet, so there is nothing to record. */
+export function paymentItemFor(installmentSeq: number, tx: Transaction): BatchLoanPaymentItem | null {
+  if (tx.amount == null) return null;
   return {
     installmentSeq,
     paymentDate: tx.date,

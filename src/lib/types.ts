@@ -368,7 +368,7 @@ export interface DividendTransactionSummary {
   accountName?: string | null;
   date: string;
   description?: string | null;
-  signedAmount: number;
+  signedAmount?: number | null;
 }
 
 export interface Dividend {

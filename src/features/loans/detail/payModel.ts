@@ -1,6 +1,7 @@
 import { formatDate, formatMoney } from '@/lib/format';
 import type { InstallmentDto, InstallmentMatchSuggestion } from '@/lib/loan.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { absAmount } from '@/lib/transactionAmount';
 
 export type PayChoice = 'found' | 'none' | 'pick';
 
@@ -31,7 +32,7 @@ export function foundDebit(
 /** `"SBI Home Loan EMI" · HDFC Bank Savings · 5 Oct · ₹39,052` */
 export function foundDebitLine(tx: Transaction, accountName: string): string {
   const text = tx.description || tx.sourcedDescription || 'Bank debit';
-  return `"${text}" · ${accountName} · ${formatDate(tx.date, 'list')} · ${formatMoney(Math.abs(tx.amount), { decimals: 'auto' })}`;
+  return `"${text}" · ${accountName} · ${formatDate(tx.date, 'list')} · ${formatMoney(absAmount(tx.amount), { decimals: 'auto' })}`;
 }
 
 export interface PayValues {

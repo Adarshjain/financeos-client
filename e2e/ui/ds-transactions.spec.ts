@@ -10,7 +10,7 @@ import type { TransactionResponse } from '../fixtures/seed/transactions';
 import { createTransaction, searchAll, todayString } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
 
-type Reason = 'UNRECONCILED' | 'DATE_CORRECTED' | 'DUPLICATE_SUSPECT' | 'DATE_CORRECTED';
+type Reason = 'UNRECONCILED' | 'DATE_CORRECTED' | 'DUPLICATE_SUSPECT' | 'NOT_ON_STATEMENT';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const LONG_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -35,7 +35,7 @@ async function flag(api: ApiClient, t: TransactionResponse, reasons: Reason[]) {
     params: { path: { id: t.id } },
     body: {
       accountId: t.accountId,
-      amount: t.amount,
+      amount: t.amount ?? undefined,
       date: t.date,
       description: t.description ?? undefined,
       reviewType: 'NEEDS_REVIEW',
@@ -262,6 +262,13 @@ for (const viewport of VIEWPORTS) {
         await toggleNeedsReview(page);
         await page.waitForURL((u) => !u.search.includes('review='));
         await expect(row(page, 'Rent Advance')).toHaveCount(1);
+      });
+
+      test('a row tagged NOT_ON_STATEMENT shows the Not on statement label', async ({ page }) => {
+        const { api, rent } = await seedList();
+        await flag(api, rent, ['NOT_ON_STATEMENT']);
+        await open(page);
+        await expect(row(page, 'Rent Advance')).toContainText('Not on statement');
       });
 
       test('the period defaults to all time; ?period=last_14_days shows a chip that removing clears', async ({ page }) => {

@@ -43,7 +43,7 @@ export interface PreviewMatchesRequest {
 export interface RuleMatchTransaction {
   id: string;
   date: string;
-  amount: string | number;
+  amount: string | number | null;
   type: 'CREDIT' | 'DEBIT' | null;
   sourcedDescription: string;
   category?: CategoryRef | null;

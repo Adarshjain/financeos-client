@@ -10,6 +10,7 @@ import { formatCount, formatDate, formatMoney, formatPercent, initialsOf } from 
 import type { RewardReport } from '@/lib/rewards.types';
 import type { CardCycleSummary } from '@/lib/statement.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { rowAmount } from '@/lib/transactionAmount';
 import { utilisationTone } from '@/lib/utilisation';
 
 import { paidTiming } from '../billsHistoryModel';
@@ -355,8 +356,9 @@ export interface TransactionRowModel {
 /** "+45.00" for a credit, "7,430.00" for a debit; the balance in whole rupees or null. */
 export function buildRecentTransactions(items: readonly Transaction[]): TransactionRowModel[] {
   return items.map((t) => {
-    const credit = t.amount > 0;
-    const amount = formatMoney(Math.abs(t.amount), { decimals: 'exact', symbol: false });
+    const shown = rowAmount(t);
+    const credit = shown?.credit ?? false;
+    const amount = shown?.text ?? '—';
     return {
       id: t.id,
       date: formatDate(t.date, 'list'),

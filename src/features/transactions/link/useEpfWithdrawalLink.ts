@@ -12,6 +12,7 @@ import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
+import { absAmountText } from '@/lib/transactionAmount';
 
 import { createEpfWithdrawal, linkEpfWithdrawal, loadEpfEmployers, loadEpfWithdrawals } from './linkActions';
 
@@ -110,9 +111,9 @@ export function useEpfWithdrawalLink({ transaction, open, onOpenChange, onSucces
       setEmployerIdState('');
       setKindState('PARTIAL');
       setCreditedOn(transaction.date);
-      setEmployee(Math.abs(transaction.amount).toString());
+      setEmployee(absAmountText(transaction.amount));
       setEmployer('');
-      setPension(Math.abs(transaction.amount).toString());
+      setPension(absAmountText(transaction.amount));
       setTdsOn(false);
       setTds('');
       setNote('');

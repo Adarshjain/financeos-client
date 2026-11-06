@@ -36,10 +36,14 @@ export interface MergeChecks {
 }
 
 export function mergeChecks(tx1: Transaction, tx2: Transaction): MergeChecks {
+  // A null amount (a foreign charge awaiting its statement) against a known one differs in amount; two nulls are the same.
+  const a1 = tx1.amount;
+  const a2 = tx2.amount;
+  const bothKnown = a1 != null && a2 != null;
   return {
     differentAccount: tx1.accountId !== tx2.accountId,
-    directionMismatch: Math.sign(tx1.amount) !== Math.sign(tx2.amount),
-    amountMismatch: Math.abs(tx1.amount - tx2.amount) > 0.001,
+    directionMismatch: bothKnown && Math.sign(a1) !== Math.sign(a2),
+    amountMismatch: bothKnown ? Math.abs(a1 - a2) > 0.001 : a1 !== a2,
   };
 }
 

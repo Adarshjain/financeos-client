@@ -161,3 +161,47 @@ describe('buildRequest', () => {
     expect(buildRequest(filled({ mcc: '' }), { ...base, isUpdate: true }).mcc).toBe('');
   });
 });
+
+describe('a transaction with no stored amount', () => {
+  const foreign = () => stored({ amount: null, originalAmount: -20, originalCurrency: 'USD' });
+
+  it('opens the form with an empty amount and the direction of the original', () => {
+    expect(valuesFromTransaction(foreign()).amount).toBe('');
+    expect(valuesFromTransaction(foreign()).direction).toBe('debit');
+    expect(valuesFromTransaction(stored({ amount: null, originalAmount: 20, originalCurrency: 'USD' })).direction).toBe('credit');
+  });
+
+  it('may stay empty on Edit, but not on Add', () => {
+    const values = { ...valuesFromTransaction(foreign()), reviewReasons: ['UNRECONCILED' as const] };
+    expect(formProblems(values, { isUpdate: true, original: foreign(), selectableAccounts: accounts }).amount).toBeUndefined();
+    expect(formProblems({ ...values, amount: '' }, { isUpdate: false, selectableAccounts: accounts }).amount).toBeDefined();
+  });
+
+  it('still needs an amount on Edit when one is stored', () => {
+    const values = { ...valuesFromTransaction(stored()), amount: '' };
+    expect(formProblems(values, { isUpdate: true, original: stored(), selectableAccounts: accounts }).amount).toBeDefined();
+  });
+
+  it('sends a null amount for an empty field', () => {
+    const values = valuesFromTransaction(foreign());
+    expect(buildRequest(values, { isUpdate: true, tagIds: [], supportsCards: false }).amount).toBeNull();
+  });
+});
+
+describe('reasons a person cannot edit', () => {
+  it('is not offered on the form', () => {
+    const values = valuesFromTransaction(stored({ reviewReasons: ['NOT_ON_STATEMENT', 'DUPLICATE_SUSPECT'] }));
+    expect(values.reviewReasons).toEqual(['DUPLICATE_SUSPECT']);
+  });
+
+  it('stays on the row when another reason is ticked', () => {
+    const values = { ...valuesFromTransaction(stored()), reviewType: 'NEEDS_REVIEW' as const, reviewReasons: ['DUPLICATE_SUSPECT' as const] };
+    const body = buildRequest(values, {
+      isUpdate: true,
+      tagIds: [],
+      supportsCards: false,
+      storedReasons: ['NOT_ON_STATEMENT', 'UNRECONCILED'],
+    });
+    expect(body.reviewReasons).toEqual(['DUPLICATE_SUSPECT', 'NOT_ON_STATEMENT']);
+  });
+});

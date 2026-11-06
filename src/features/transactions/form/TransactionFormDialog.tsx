@@ -197,6 +197,7 @@ export function TransactionFormDialog({
         tagIds: selectedTags.map((c) => c.id),
         category: categoryChanged ? category : null,
         supportsCards,
+        storedReasons: transaction?.reviewReasons,
       });
       if (transaction && optimistic) {
         // Edit: the row and the detail show the new values now and the dialog closes; the save finishes behind it.
@@ -221,6 +222,7 @@ export function TransactionFormDialog({
                 tagIds: chosenTags === openedTags ? (latest.tags ?? []).map((c) => c.id) : selectedTags.map((c) => c.id),
                 category: categoryChanged ? category : null,
                 supportsCards,
+                storedReasons: latest.reviewReasons,
               }),
             });
           });

@@ -24,7 +24,8 @@ export interface MatchRowProps {
 /** One transaction a rule's pattern matches, drawn as a compact TransactionRow: description, date · account · categories, the amount. */
 export function MatchRow({ txn, ruleId, checked = false, onCheckedChange }: MatchRowProps) {
   const credit = txn.type === 'CREDIT';
-  const amount = formatMoney(Math.abs(Number(txn.amount)), { decimals: 'exact', symbol: false });
+  const amount =
+    txn.amount == null ? '—' : formatMoney(Math.abs(Number(txn.amount)), { decimals: 'exact', symbol: false });
   const names = txn.category ? [txn.category.name] : [];
   const selectable = onCheckedChange !== undefined;
   return (
@@ -59,7 +60,7 @@ export function MatchRow({ txn, ruleId, checked = false, onCheckedChange }: Matc
       categoryIcon={txn.category?.icon as IconName | undefined}
       unsetCategoryLabel="Uncategorized"
       provenance={`(${ruleLinkLabel(txn, ruleId)})`}
-      amount={credit ? `+${amount}` : amount}
+      amount={credit && txn.amount != null ? `+${amount}` : amount}
       isCredit={credit}
       selected={selectable ? checked : undefined}
     />

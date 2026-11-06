@@ -52,7 +52,7 @@ export function MatchingCard({ linked, matches, loading, onFind, onLink, onConfi
               <Button
                 variant="link"
                 size="sm"
-                onClick={() => onLink(row.seq, row.tx.date, Math.abs(row.tx.amount), row.tx.id)}
+                onClick={() => onLink(row.seq, row.tx.date, row.amount, row.tx.id)}
               >
                 link
               </Button>

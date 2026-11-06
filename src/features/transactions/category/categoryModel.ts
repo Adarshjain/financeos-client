@@ -35,7 +35,7 @@ export function savedMessage(list: readonly CategoryDef[], pick: CategoryPick): 
 
 /** The picker works on money out for a debit and money in for a credit (a credit has a positive amount). */
 export function directionOf(t: Pick<Transaction, 'amount'>): 'OUT' | 'IN' {
-  return t.amount > 0 ? 'IN' : 'OUT';
+  return t.amount != null && t.amount > 0 ? 'IN' : 'OUT';
 }
 
 /** The line under the Category row of the detail: where the category came from. */

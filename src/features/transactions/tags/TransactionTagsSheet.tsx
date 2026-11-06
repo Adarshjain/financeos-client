@@ -8,6 +8,7 @@ import { formatMoney } from '@/lib/format';
 import { useTags } from '@/lib/query/hooks/useTags';
 import type { Tag } from '@/lib/tags.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { absAmount } from '@/lib/transactionAmount';
 
 import { sameIds, transactionsWord } from './tagsModel';
 import { tagErrorMessage, useTagMutations } from './useTagMutations';
@@ -61,7 +62,7 @@ export function TransactionTagsSheet({ transactions, mode = 'replace', accounts,
 
   const first = single?.description || single?.sourcedDescription || '';
   const subtitle = single
-    ? [first, formatMoney(Math.abs(single.amount), { decimals: 'exact' })].filter(Boolean).join(' · ')
+    ? [first, formatMoney(absAmount(single.amount), { decimals: 'exact' })].filter(Boolean).join(' · ')
     : transactionsWord(transactions.length);
 
   return (

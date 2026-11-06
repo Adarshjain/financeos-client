@@ -54,7 +54,7 @@ export function EpfCreditSection({ entry, mutations, onChanged }: EpfCreditSecti
   const linked = entry.transaction ?? null;
   const suggestion = entry.suggestion ?? null;
   const [picking, setPicking] = React.useState(false);
-  const [picked, setPicked] = React.useState<{ credit: Transaction; gap: number } | null>(null);
+  const [picked, setPicked] = React.useState<{ credit: Transaction; amount: number; gap: number } | null>(null);
   const [recordTds, setRecordTds] = React.useState(true);
 
   const run = async (action: () => Promise<unknown>, done: string, failed: string, undo?: () => Promise<unknown>) => {
@@ -92,9 +92,12 @@ export function EpfCreditSection({ entry, mutations, onChanged }: EpfCreditSecti
     run(() => mutations.link.mutateAsync({ id: entry.id, transactionId, recordTds: withTds }), 'Linked', "Couldn't link the bank credit. Try again.");
 
   const pick = (credit: Transaction) => {
-    const gap = Math.round((expectedNet(entry) - Math.abs(credit.amount)) * 100) / 100;
+    // A credit with no rupee amount cannot be matched against the entry.
+    if (credit.amount == null) return;
+    const amount = Math.abs(credit.amount);
+    const gap = Math.round((expectedNet(entry) - amount) * 100) / 100;
     if (gap > 0 && (entry.tdsAmount ?? 0) === 0) {
-      setPicked({ credit, gap });
+      setPicked({ credit, amount, gap });
       setRecordTds(true);
       return;
     }
@@ -110,7 +113,7 @@ export function EpfCreditSection({ entry, mutations, onChanged }: EpfCreditSecti
         <CreditCard
           credit={{
             id: picked.credit.id,
-            amount: Math.abs(picked.credit.amount),
+            amount: picked.amount,
             date: picked.credit.date,
             description: picked.credit.description,
             accountName: undefined,

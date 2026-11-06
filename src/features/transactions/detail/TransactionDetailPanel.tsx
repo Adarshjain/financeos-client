@@ -29,6 +29,7 @@ import { formatMoney } from '@/lib/format';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { ObligationRef, Transaction } from '@/lib/transaction.types';
+import { foreignAmountText, foreignChargedText, rowAmount } from '@/lib/transactionAmount';
 
 import { isApprovable } from '../bulk/bulkModel';
 import { sourceLine } from '../category/categoryModel';
@@ -43,6 +44,7 @@ import {
   type LinkRow,
   linkRows,
   longDate,
+  notOnStatementText,
   reviewFieldItems,
   rewardsWords,
   sourceWords,
@@ -165,7 +167,10 @@ function DetailContent({
 
   const accountName = (id: string) => accounts?.find((a) => a.id === id)?.name ?? 'Unknown';
   const rows = linkRows(t.id, links, t.obligationRefs ?? [], accountName);
-  const credit = t.amount > 0;
+  const credit = rowAmount(t)?.credit ?? false;
+  const foreignOnly = t.amount == null ? foreignAmountText(t) : null;
+  const charged = foreignChargedText(t);
+  const missing = notOnStatementText(t);
   const status = statusItems(t);
   const card = cardWords(t);
   const rewards = rewardsWords(t);
@@ -254,13 +259,33 @@ function DetailContent({
         <Dialog.Body className="px-0 desk:px-0 pt-0 pb-safe-12 desk:pb-space-24 gap-0 desk:gap-0">
           <div className="flex flex-col gap-space-8 px-space-16 desk:px-space-20 pb-space-12">
             <div className="flex items-baseline gap-space-8">
-              <Amount variant="figure" fraction="small" value={t.amount} direction={credit ? 'credit' : 'debit'} />
+              {t.amount != null ? (
+                <Amount variant="figure" fraction="small" value={t.amount} direction={credit ? 'credit' : 'debit'} />
+              ) : foreignOnly ? (
+                <Text variant="figure" as="span">
+                  {foreignOnly}
+                </Text>
+              ) : (
+                <Text variant="figure" tone="ink-3" as="span">
+                  —
+                </Text>
+              )}
               {balance ? (
                 <Text variant="label" tone="ink-3" as="span">
                   {balance}
                 </Text>
               ) : null}
             </div>
+            {charged ? (
+              <Text variant="label" tone="ink-3" as="span">
+                {charged}
+              </Text>
+            ) : null}
+            {missing ? (
+              <Text variant="label" tone="warning" as="span">
+                {missing}
+              </Text>
+            ) : null}
             {bankBalance ? (
               <Text variant="label" tone="warning" as="span">
                 {bankBalance}
@@ -372,7 +397,7 @@ function DetailContent({
         onOpenChange={(open) => {
           if (!deletePending) setDeleting(open);
         }}
-        title={`Delete ${title} · ${formatMoney(Math.abs(t.amount), { decimals: 'exact' })}?`}
+        title={`Delete ${title}${t.amount != null ? ` · ${formatMoney(Math.abs(t.amount), { decimals: 'exact' })}` : ''}?`}
         impact={deleteImpact(t)}
         confirmLabel="Delete"
         confirmLoading={deletePending}

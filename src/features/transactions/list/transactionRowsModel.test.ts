@@ -172,3 +172,19 @@ describe("Doesn't match bank", () => {
     expect(reviewWords(t({ bankBalance: 144.86, isTransactionExcluded: true }))).toBeUndefined();
   });
 });
+
+describe('transactionRow with a foreign charge', () => {
+  it('shows the original amount when the rupee amount is null', () => {
+    const row = transactionRow(t({ amount: null, originalAmount: -20, originalCurrency: 'USD' }), ctx);
+    expect(row.formattedAmount).toBe('USD 20.00');
+    expect(row.isCredit).toBe(false);
+  });
+
+  it('shows a dash, never ₹0, when neither amount is known', () => {
+    expect(transactionRow(t({ amount: null }), ctx).formattedAmount).toBe('—');
+  });
+
+  it('words the Not on statement reason', () => {
+    expect(reviewWords(t({ reviewType: 'NEEDS_REVIEW', reviewReasons: ['NOT_ON_STATEMENT'] }))).toBe('Not on statement');
+  });
+});

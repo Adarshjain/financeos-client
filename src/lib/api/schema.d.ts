@@ -5437,7 +5437,7 @@ export interface components {
             items: components["schemas"]["BatchLoanPaymentItem"][];
         };
         BatchReviewRequest: {
-            reviewReasons?: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
+            reviewReasons?: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED" | "NOT_ON_STATEMENT")[];
             /** @enum {string} */
             reviewType: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA";
             transactionIds: string[];
@@ -5647,7 +5647,7 @@ export interface components {
         };
         Candidate: {
             accountName?: string | null;
-            amount: number;
+            amount?: number | null;
             /** Format: date */
             date: string;
             description?: string | null;
@@ -5897,7 +5897,7 @@ export interface components {
             cleared: number;
         };
         ClearedTransaction: {
-            previousReviewReasons: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
+            previousReviewReasons: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED" | "NOT_ON_STATEMENT")[];
             /** @enum {string} */
             previousReviewType: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA";
             /** Format: date-time */
@@ -6649,7 +6649,7 @@ export interface components {
             description?: string | null;
             /** Format: uuid */
             id: string;
-            signedAmount: number;
+            signedAmount?: number | null;
         };
         DraftResultRequest: {
             draftResult?: unknown;
@@ -7835,7 +7835,7 @@ export interface components {
             winnerOnly: boolean;
         };
         LastAlert: {
-            amount: number;
+            amount?: number | null;
             /** Format: date */
             date: string;
             description: string;
@@ -7927,7 +7927,7 @@ export interface components {
             description?: string | null;
             /** Format: uuid */
             id: string;
-            signedAmount: number;
+            signedAmount?: number | null;
         };
         LinkDividendTransactionRequest: {
             /** Format: uuid */
@@ -8187,7 +8187,7 @@ export interface components {
             description?: string | null;
             isAnchor: boolean;
             roleLabel: string;
-            signedAmount: number;
+            signedAmount?: number | null;
             /** Format: uuid */
             transactionId: string;
         };
@@ -8200,7 +8200,7 @@ export interface components {
         MergeTransactionsResponse: {
             /** Format: uuid */
             keptId: string;
-            remainingReasons: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
+            remainingReasons: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED" | "NOT_ON_STATEMENT")[];
             /** @enum {string|null} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA" | null;
         };
@@ -8302,6 +8302,14 @@ export interface components {
             threshold: number;
             /** Format: date */
             windowEnd: string;
+        };
+        NotOnStatement: {
+            /** Format: date */
+            periodEnd?: string | null;
+            /** Format: date */
+            periodStart?: string | null;
+            /** Format: uuid */
+            statementId: string;
         };
         NotificationEvaluateResponse: {
             /** Format: int32 */
@@ -10050,7 +10058,7 @@ export interface components {
             /** Format: uuid */
             accountId: string;
             accountName: string;
-            amount: number;
+            amount?: number | null;
             /** Format: uuid */
             appliedRuleId?: string | null;
             appliedRuleName?: string | null;
@@ -10152,7 +10160,7 @@ export interface components {
             /** Format: uuid */
             accountId: string;
             accountName: string;
-            amount: number;
+            amount?: number | null;
             /** Format: date */
             date: string;
             description: string;
@@ -10624,7 +10632,7 @@ export interface components {
         TransactionResponse: {
             /** Format: uuid */
             accountId: string;
-            amount: number;
+            amount?: number | null;
             /** Format: uuid */
             appliedRuleId?: string | null;
             balance?: number | null;
@@ -10657,8 +10665,11 @@ export interface components {
             links: components["schemas"]["TransactionLinkSummary"][];
             mcc?: string | null;
             monitoringReason?: string | null;
+            notOnStatement?: components["schemas"]["NotOnStatement"];
             obligationRefs: components["schemas"]["ObligationRef"][];
-            reviewReasons: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
+            originalAmount?: number | null;
+            originalCurrency?: string | null;
+            reviewReasons: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED" | "NOT_ON_STATEMENT")[];
             /** @enum {string|null} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA" | null;
             /** Format: date-time */
@@ -10688,7 +10699,7 @@ export interface components {
         };
         TransactionSummary: {
             accountName: string;
-            amount: number;
+            amount?: number | null;
             /** Format: date */
             date: string;
             description?: string | null;
@@ -10726,7 +10737,7 @@ export interface components {
             accountId: string;
             accountLast4?: string | null;
             accountName: string;
-            amount: number;
+            amount?: number | null;
             cardLabel?: string | null;
             cardLast4?: string | null;
             /** @enum {string|null} */
@@ -10981,7 +10992,7 @@ export interface components {
         UpdateTransactionRequest: {
             /** Format: uuid */
             accountId?: string;
-            amount: number;
+            amount?: number;
             /** Format: uuid */
             cardId?: string;
             categoryKey?: string;
@@ -10992,7 +11003,7 @@ export interface components {
             isTransactionUnderMonitoring?: boolean;
             mcc?: string;
             monitoringReason?: string;
-            reviewReasons?: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
+            reviewReasons?: ("UNRECONCILED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED" | "NOT_ON_STATEMENT")[];
             /** @enum {string} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA";
             rewardDetails?: components["schemas"]["RewardDetailsRequest"];

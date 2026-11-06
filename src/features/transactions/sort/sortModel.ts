@@ -1,6 +1,7 @@
 import { categoryLabel, findCategory, findSub } from '@/lib/categoryList';
 import type { CategoryDef, CategoryPick } from '@/lib/categoryList.types';
 import { formatCount, formatDate, formatMoney } from '@/lib/format';
+import { rowAmount } from '@/lib/transactionAmount';
 import type { UncategorizedGroup, UncategorizedTransaction } from '@/lib/uncategorized.types';
 
 /** Groups and their transactions are read this many at a time. */
@@ -90,8 +91,9 @@ export function groupRow(t: UncategorizedTransaction) {
   const channel = t.channel ? CHANNEL_WORDS[t.channel] : undefined;
   const name = t.cardLabel && t.cardLabel !== 'You' ? t.cardLabel : t.accountName;
   const last4 = t.cardLast4 ?? t.accountLast4;
-  const credit = t.amount > 0;
-  const amount = formatMoney(Math.abs(t.amount), { decimals: 'exact', symbol: false });
+  const shown = rowAmount(t);
+  const credit = shown?.credit ?? false;
+  const amount = shown?.text ?? '—';
   return {
     id: t.id,
     description: t.description || t.sourcedDescription || '—',

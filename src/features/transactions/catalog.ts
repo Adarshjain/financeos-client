@@ -16,6 +16,7 @@ export const REVIEW_REASON_META: Record<
   UNRECONCILED: { label: 'Unreconciled', shortLabel: 'Unreconciled', variant: 'warning' },
   DUPLICATE_SUSPECT: { label: 'Possible duplicate', shortLabel: 'Duplicate', variant: 'warning' },
   DATE_CORRECTED: { label: 'Date corrected', shortLabel: 'Date', variant: 'warning' },
+  NOT_ON_STATEMENT: { label: 'Not on statement', shortLabel: 'Not on statement', variant: 'warning' },
 };
 
 export const REVIEW_REASONS = Object.keys(REVIEW_REASON_META) as ReviewReason[];

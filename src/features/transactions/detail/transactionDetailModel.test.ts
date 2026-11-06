@@ -10,6 +10,7 @@ import {
   deleteImpact,
   linkRows,
   longDate,
+  notOnStatementText,
   reviewFieldItems,
   rewardsWords,
   sourceWords,
@@ -198,5 +199,30 @@ describe('bankBalanceWords', () => {
 
   it('keeps the ledger sign on a card (owed is negative)', () => {
     expect(bankBalanceWords(txn({ balance: -5000, bankBalance: -4500.25 }))).toBe('Bank says −₹4,500.25 · differs by ₹499.75');
+  });
+});
+
+describe('notOnStatementText', () => {
+  it('names the statement period as dd/mm', () => {
+    expect(
+      notOnStatementText(
+        txn({
+          reviewReasons: ['NOT_ON_STATEMENT'],
+          notOnStatement: { statementId: 's1', periodStart: '2026-03-17', periodEnd: '2026-04-16' },
+        }),
+      ),
+    ).toBe('Missing from your 17/03–16/04 statement. It may have failed or been reversed.');
+  });
+
+  it('drops the period when the endpoint sent the id only', () => {
+    const generic = 'Missing from your statement. It may have failed or been reversed.';
+    expect(notOnStatementText(txn({ reviewReasons: ['NOT_ON_STATEMENT'], notOnStatement: null }))).toBe(generic);
+    expect(
+      notOnStatementText(txn({ reviewReasons: ['NOT_ON_STATEMENT'], notOnStatement: { statementId: 's1' } })),
+    ).toBe(generic);
+  });
+
+  it('is null without the reason', () => {
+    expect(notOnStatementText(txn({ reviewReasons: ['UNRECONCILED'] }))).toBeNull();
   });
 });
