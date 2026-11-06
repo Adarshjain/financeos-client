@@ -6,6 +6,7 @@ import { resetLlm, setLlmMode } from '../fixtures/control';
 import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import { uploadAndIngest } from '../fixtures/seed/statements';
+import { searchAll } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
 
 test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
@@ -25,8 +26,8 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
     ],
   };
 
-  // Overlaps the April statement and repeats its utility bill row: rows of one statement are never
-  // compared with each other, so the repeat across statements is what gets flagged.
+  // Overlaps the April statement and repeats its utility bill row: the repeat attaches to the April row,
+  // so only the two new lines are created and nothing is flagged as a duplicate.
   const duplicateBankSpec: BankSpec = {
     bank: 'HDFC Bank',
     accountLast10: '5566778899',
@@ -54,7 +55,7 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
     await setLlmMode(api, 'SCHEMA_DEFAULT');
   });
 
-  test('/transactions/import: upload statement, progress polling, summary display, duplicate detection, and skipped re-upload', async ({
+  test('/transactions/import: upload statement, progress polling, summary display, overlap attaches, and skipped re-upload', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -98,14 +99,18 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
     await expect(page.getByText('Lines read').first()).toBeVisible();
     await expect(page.getByText('Created').first()).toBeVisible();
 
-    // 5. Upload an overlapping statement -> the duplicate is found and reported
+    // 5. Upload an overlapping statement -> the repeated line attaches to the existing row: 2 created, no duplicate
     await page.goto('/transactions/import');
     await upload('hdfc-may-2026.pdf', await genBankPdf(duplicateBankSpec), 1);
     await expect(page.getByRole('link', { name: 'View' })).toHaveCount(2, { timeout: 25000 });
     await expect(page.getByRole('button', { name: 'Choose files' })).toBeEnabled({ timeout: 25000 });
     await page.getByRole('link', { name: 'View' }).first().click();
     await expect(page).toHaveURL(/\/transactions\/import\/[0-9a-f-]+/);
-    await expect(page.getByText(/1 duplicate found\./i)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('import-file')).toContainText(/Created\s*2/, { timeout: 15000 });
+    await expect(page.getByText(/duplicates? found\./i)).toHaveCount(0);
+    const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: account.id }]);
+    expect(txns).toHaveLength(5);
+    expect(txns.filter((t) => t.sourcedDescription === 'UTILITY BILL PAYMENT')).toHaveLength(1);
 
     // 6. Re-upload the identical statement -> the file is Skipped
     await page.goto('/transactions/import');
