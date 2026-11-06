@@ -1,3 +1,4 @@
+import type { AccountFocusField } from '@/features/accounts/form/ds/AccountFormFields';
 import { appHref } from '@/features/shell/routes';
 import type { Schemas } from '@/lib/api/types';
 import { formatDate } from '@/lib/utils';
@@ -145,7 +146,15 @@ export function attentionHintLink(item: Pick<AttentionItem, 'reason' | 'accountI
   }
 }
 
-/** The account whose Edit dialog opens in place for this item's next step (a locked statement); null when it links elsewhere. */
-export function attentionEditAccountId(item: Pick<AttentionItem, 'reason' | 'accountId'>): string | null {
-  return item.reason === 'LOCKED_STATEMENT' && item.accountId ? item.accountId : null;
+export interface AttentionEditTarget {
+  accountId: string;
+  focusField: AccountFocusField;
+}
+
+/** The account whose Edit dialog opens in place for this item's next step, and the field it opens on; null when the hint links elsewhere. */
+export function attentionEditTarget(item: Pick<AttentionItem, 'reason' | 'accountId'>): AttentionEditTarget | null {
+  if (!item.accountId) return null;
+  if (item.reason === 'LOCKED_STATEMENT') return { accountId: item.accountId, focusField: 'statementPassword' };
+  if (item.reason === 'IMPORT_OFF') return { accountId: item.accountId, focusField: 'ingestFromDate' };
+  return null;
 }

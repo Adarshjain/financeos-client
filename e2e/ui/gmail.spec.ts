@@ -172,6 +172,16 @@ test.describe('Gmail settings UI (@ui)', () => {
     await expect(page.getByText('Matched UI Late Account, but Gmail import is not turned on for it.')).toBeVisible();
     expect((await attentionItems(api))[0].status).toBe('ACCOUNT_NOT_OPTED_IN');
 
+    // Set import date opens the account's Edit dialog in place, on the import date; the page stays put.
+    const attentionUrl = page.url();
+    await page.getByRole('button', { name: 'Set import date' }).click();
+    const editDialog = page.getByRole('dialog', { name: 'Edit account' });
+    await expect(editDialog).toBeVisible();
+    await expect(editDialog.getByLabel(/^Import emails from/)).toBeFocused();
+    expect(page.url()).toBe(attentionUrl);
+    await editDialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(editDialog).toBeHidden();
+
     // Archive tucks the item away behind its own collapsed section; Unarchive brings it back.
     await page.getByRole('button', { name: 'Archive', exact: true }).click();
     await expectToast(page, 'Item archived');

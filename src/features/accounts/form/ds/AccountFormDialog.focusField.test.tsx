@@ -85,6 +85,15 @@ describe('AccountFormDialog focusField', () => {
     }
   );
 
+  it.each([
+    ['credit card', card],
+    ['bank account', bank],
+  ])('focuses the import date in edit mode (%s)', async (_n, account) => {
+    renderDialog({ account, focusField: 'ingestFromDate' });
+    const input = screen.getByLabelText(/^Import emails from/);
+    await waitFor(() => expect(input).toHaveFocus());
+  });
+
   it('does not steal focus without focusField', async () => {
     renderDialog({ account: card });
     const input = screen.getByLabelText(/^Statement PDF password/);

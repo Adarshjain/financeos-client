@@ -23,7 +23,7 @@ import { formatDate } from '@/lib/format';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
 
-import { AccountFormFields } from './AccountFormFields';
+import { type AccountFocusField, AccountFormFields } from './AccountFormFields';
 import {
   ACCOUNT_TYPE_OPTIONS,
   type AccountFormValues,
@@ -71,7 +71,7 @@ export interface AccountFormDialogProps {
   /** Add mode: the last 4 digits to start with. */
   prefillLast4?: string;
   /** Edit mode: the field to scroll to and focus once the dialog opens. */
-  focusField?: 'statementPassword';
+  focusField?: AccountFocusField;
 }
 
 /** Add account and Edit account: one dialog, the fields follow the picked type. */
