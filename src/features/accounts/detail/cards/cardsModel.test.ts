@@ -134,22 +134,22 @@ describe('deletable plastics', () => {
 describe('holderMenu', () => {
   const ids = (h: Cardholder) => holderMenu(h, TODAY).map((i) => i.id);
 
-  it('gives the primary Edit and Reassign only', () => {
-    expect(ids(primary)).toEqual(['edit', 'reassign']);
+  it('gives the primary Edit, Reassign and Add a past card only', () => {
+    expect(ids(primary)).toEqual(['edit', 'reassign', 'addPastCard']);
   });
 
   it('adds Close for an add-on with an active card, and Delete only once it has no transactions', () => {
-    expect(ids(addon)).toEqual(['edit', 'reassign', 'close']);
+    expect(ids(addon)).toEqual(['edit', 'reassign', 'addPastCard', 'close']);
     const fresh = { ...addon, transactionCount: 0 };
     const menu = holderMenu(fresh, TODAY);
-    expect(menu.map((i) => i.id)).toEqual(['edit', 'reassign', 'close', 'delete']);
-    expect(menu[3]).toMatchObject({ tone: 'danger', separatorBefore: true });
+    expect(menu.map((i) => i.id)).toEqual(['edit', 'reassign', 'addPastCard', 'close', 'delete']);
+    expect(menu[4]).toMatchObject({ tone: 'danger', separatorBefore: true });
   });
 
   it('offers Add a card only when the holder has no active card', () => {
     const noCard = { ...addon, cards: [card({ id: 'k', last4: '1', closedOn: '2025-01-01' })] };
-    expect(ids(noCard)).toEqual(['edit', 'reassign', 'addCard', 'close']);
-    expect(ids({ ...primary, cards: [] })).toEqual(['edit', 'reassign', 'addCard']);
+    expect(ids(noCard)).toEqual(['edit', 'reassign', 'addCard', 'addPastCard', 'close']);
+    expect(ids({ ...primary, cards: [] })).toEqual(['edit', 'reassign', 'addCard', 'addPastCard']);
   });
 
   it('offers Reopen first on a closed add-on, with no Add a card or Close', () => {

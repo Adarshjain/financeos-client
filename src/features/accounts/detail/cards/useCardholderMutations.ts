@@ -30,6 +30,7 @@ export interface CardholderActions {
   reopenHolder: (holder: Cardholder) => ActionResult;
   deleteHolder: (holder: Cardholder) => ActionResult;
   addCard: (holder: Cardholder, body: CreateCardRequest) => ActionResult;
+  addPastCard: (holder: Cardholder, body: CreateCardRequest) => ActionResult;
   replaceCard: (holder: Cardholder, card: Card, body: ReplaceCardRequest) => ActionResult;
   closeCard: (holder: Cardholder, card: Card, body: { closedOn?: string }) => ActionResult;
   deleteCard: (holder: Cardholder, card: Card) => ActionResult;
@@ -103,6 +104,12 @@ export function useCardholderMutations(accountId: string, isBank: boolean): Card
         () => m.addCardMutation.mutateAsync({ cardholderId: holder.id, body }),
         'Card issued',
         "Couldn't issue the card. Try again."
+      ),
+    addPastCard: (holder, body) =>
+      run(
+        () => m.addCardMutation.mutateAsync({ cardholderId: holder.id, body }),
+        'Past card added',
+        "Couldn't add the past card. Try again."
       ),
     replaceCard: (holder, card, body) =>
       run(

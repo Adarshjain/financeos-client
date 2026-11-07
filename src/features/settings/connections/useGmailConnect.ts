@@ -16,7 +16,7 @@ import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { SyncSummary } from '@/lib/types';
 
-import type { AttentionReason } from './attentionItemModel';
+import { type AttentionReason, numberTitle } from './attentionItemModel';
 import { useGmailMutations } from './useGmailMutations';
 import { useGmailQueries } from './useGmailQueries';
 
@@ -29,7 +29,7 @@ import { useGmailQueries } from './useGmailQueries';
 export function useGmailConnect() {
   const qc = useQueryClient();
   const [archivedPage, setArchivedPage] = useState(0);
-  const { connections, senders, attentionSummary, archivedData, loading: readsLoading } = useGmailQueries({ archivedPage });
+  const { connections, senders, attentionGroups, ungroupedSummary, archivedData, loading: readsLoading } = useGmailQueries({ archivedPage });
 
   // Unarchiving the last row of a later page leaves that page empty; step back to the new last page.
   const archivedPages = archivedData?.totalPages;
@@ -47,6 +47,8 @@ export function useGmailConnect() {
     unarchiveAttentionMutation,
     retryAllMutation,
     archiveAllMutation,
+    ignoreNumberMutation,
+    unignoreNumberMutation,
     createSenderMutation,
     updateSenderMutation,
     deleteSenderMutation,
@@ -143,9 +145,10 @@ export function useGmailConnect() {
     }
   };
 
+  // Only the emails in no group: mail that belongs to an unknown number or an import-off account is acted on there.
   const handleRetryAll = async (reason: AttentionReason) => {
     try {
-      const res = await retryAllMutation.mutateAsync({ reason });
+      const res = await retryAllMutation.mutateAsync({ reason, ungroupedOnly: true });
       notify.success(`${res?.affected ?? 0} items queued for retry`);
     } catch (err) {
       toastError(err, "Couldn't retry the items. Try again.");
@@ -154,10 +157,30 @@ export function useGmailConnect() {
 
   const handleArchiveAll = async (reason: AttentionReason) => {
     try {
-      const res = await archiveAllMutation.mutateAsync({ reason });
+      const res = await archiveAllMutation.mutateAsync({ reason, ungroupedOnly: true });
       notify.success(`${res?.affected ?? 0} items archived`);
     } catch (err) {
       toastError(err, "Couldn't archive the items. Try again.");
+    }
+  };
+
+  const handleIgnoreNumber = async (group: { bank?: string | null; last4: string }) => {
+    try {
+      const res = await ignoreNumberMutation.mutateAsync({ bank: group.bank ?? undefined, last4: group.last4 });
+      const n = res?.count ?? 0;
+      notify.success(`Ignoring ${numberTitle(group)} · ${n} ${n === 1 ? 'email' : 'emails'} moved to Archived`);
+    } catch (err) {
+      toastError(err, "Couldn't ignore the number. Try again.");
+    }
+  };
+
+  const handleUnignoreNumber = async (row: { id: string; bank?: string | null; last4: string }) => {
+    try {
+      const res = await unignoreNumberMutation.mutateAsync(row.id);
+      const n = res?.count ?? 0;
+      notify.success(`Stopped ignoring ${numberTitle(row)} · ${n} ${n === 1 ? 'email' : 'emails'} back in Needs attention`);
+    } catch (err) {
+      toastError(err, "Couldn't stop ignoring the number. Try again.");
     }
   };
 
@@ -237,7 +260,8 @@ export function useGmailConnect() {
     loading,
     connections,
     senders,
-    attentionSummary,
+    attentionGroups,
+    ungroupedSummary,
     archivedData,
     archivedPage,
     setArchivedPage,
@@ -262,6 +286,8 @@ export function useGmailConnect() {
     handleUnarchiveAttentionItem,
     handleRetryAll,
     handleArchiveAll,
+    handleIgnoreNumber,
+    handleUnignoreNumber,
     openAddSenderDialog,
     openEditSenderDialog,
     handleSenderSubmit,

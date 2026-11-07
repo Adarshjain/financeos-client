@@ -43,12 +43,14 @@ const page = (content: unknown[], over: Record<string, unknown> = {}): Paged =>
 
 const ACCOUNTS = [{ id: 'acc-1', name: 'HDFC Bank' }, { id: 'acc-2', name: 'ICICI' }];
 
-/** Active rows (all in one reason, NO_ACCOUNT unless the row says otherwise) come from the per-reason list call. */
+const NO_GROUPS = { unknownNumbers: [], importOff: [], ignored: [], total: 0 };
+
+/** Active rows (all in one reason, NO_ACCOUNT unless the row says otherwise) come from the per-reason ungrouped list call. */
 function setup(over: Partial<React.ComponentProps<typeof AttentionCard>> & { rows?: unknown[]; total?: number } = {}) {
   const { rows = [item({})], total, ...rest } = over;
   const reasonOf = (r: unknown) => (r as { reason?: string }).reason ?? 'NO_ACCOUNT';
   vi.mocked(api.GET).mockImplementation((async (url: string, opts?: { params?: { query?: { reason?: string; size?: number } } }) => {
-    if (url === '/api/v1/gmail/attention') {
+    if (url === '/api/v1/gmail/attention/ungrouped') {
       const q = opts?.params?.query;
       const mine = rows.filter((r) => reasonOf(r) === q?.reason).slice(0, q?.size ?? 10);
       return { data: page(mine, { totalElements: total ?? mine.length }) };
@@ -58,7 +60,8 @@ function setup(over: Partial<React.ComponentProps<typeof AttentionCard>> & { row
   const counts = new Map<string, number>();
   for (const r of rows) counts.set(reasonOf(r), (counts.get(reasonOf(r)) ?? 0) + 1);
   const props = {
-    summary: [...counts].map(([reason, count]) => ({ reason, count: total ?? count })),
+    groups: NO_GROUPS,
+    ungroupedSummary: [...counts].map(([reason, count]) => ({ reason, count: total ?? count })),
     archivedData: null,
     archivedPage: 0,
     onArchivedPageChange: vi.fn(),
@@ -67,6 +70,8 @@ function setup(over: Partial<React.ComponentProps<typeof AttentionCard>> & { row
     onUnarchive: vi.fn(),
     onRetryAll: vi.fn(),
     onArchiveAll: vi.fn(),
+    onIgnoreNumber: vi.fn(),
+    onUnignoreNumber: vi.fn(),
     ...rest,
   } as React.ComponentProps<typeof AttentionCard>;
   renderWithQuery(<AttentionCard {...props} />);
@@ -176,9 +181,12 @@ describe('AttentionCard', () => {
   it('does not jump into the Archived view when something is archived after it was emptied', () => {
     const arch = (n: number) => page([item({ id: 'z', archivedAt: '2026-10-03T10:00:00Z', subject: 'Old SBI alert' })], { totalElements: n });
     const props = {
-      summary: [{ reason: 'NO_ACCOUNT' as const, count: 1 }],
+      groups: NO_GROUPS,
+      ungroupedSummary: [{ reason: 'NO_ACCOUNT' as const, count: 1 }],
       onRetryAll: vi.fn(),
       onArchiveAll: vi.fn(),
+      onIgnoreNumber: vi.fn(),
+      onUnignoreNumber: vi.fn(),
       archivedPage: 0,
       onArchivedPageChange: vi.fn(),
       retryItem: vi.fn(),

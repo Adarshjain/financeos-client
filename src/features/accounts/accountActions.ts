@@ -224,6 +224,13 @@ export const addCard = createDomainAction(
   },
 );
 
+/** When this card number was seen in the account's mail and transactions (prefills a past card's dates). */
+export const loadCardSeenDates = createDomainAction(
+  { fallbackError: "Couldn't look up when the card was seen. Try again." },
+  async (accountId: string, last4: string) =>
+    (await serverApi.GET('/api/v1/accounts/{accountId}/cards/seen-dates', { params: { path: { accountId }, query: { last4 } } })).data ?? null,
+);
+
 export const replaceCard = createDomainAction(
   { fallbackError: "Couldn't replace the card. Try again." },
   async (accountId: string, cardholderId: string, cardId: string, body: ReplaceCardRequest) => {

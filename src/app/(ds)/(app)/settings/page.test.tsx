@@ -4,12 +4,12 @@ const auth = vi.hoisted(() => ({ requireAuth: vi.fn(), redirectToSignIn: vi.fn()
 vi.mock('@/lib/auth', () => auth);
 const api = vi.hoisted(() => ({
   status: vi.fn(),
-  getAttentionItems: vi.fn(),
+  getAttentionTotal: vi.fn(),
   list: vi.fn(),
 }));
 vi.mock('@/lib/apiClient', () => ({
   appLockApi: { status: api.status },
-  gmailApi: { getAttentionItems: api.getAttentionItems },
+  gmailApi: { getAttentionTotal: api.getAttentionTotal },
   llmKeysApi: { list: api.list },
 }));
 vi.mock('@/features/settings/SettingsMain', () => ({ SettingsMain: () => null }));
@@ -24,7 +24,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   auth.requireAuth.mockResolvedValue(user);
   api.status.mockResolvedValue({ armed: false });
-  api.getAttentionItems.mockResolvedValue({ totalElements: 4 });
+  api.getAttentionTotal.mockResolvedValue(4);
   api.list.mockResolvedValue([{}, {}]);
 });
 
@@ -38,7 +38,7 @@ describe('Settings main page', () => {
   });
 
   it('hides a count whose request failed instead of failing the page', async () => {
-    api.getAttentionItems.mockRejectedValue(new Error('x'));
+    api.getAttentionTotal.mockRejectedValue(new Error('x'));
     api.list.mockRejectedValue(new ApiError(500, { code: 'X', message: 'no', timestamp: 'x' }));
     const element = await DsSettingsPage();
     await expect(element.props.values.attentionCount).resolves.toBeUndefined();

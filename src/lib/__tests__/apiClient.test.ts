@@ -390,6 +390,7 @@ describe('apiClient (Server API Client Modernization & Coverage)', () => {
       await gmailApi.listConnections();
       await gmailApi.disconnectConnection('c1');
       await gmailApi.getAttentionItems();
+      await gmailApi.getAttentionTotal();
       await gmailApi.retryAttentionItem('ledger-1');
       await gmailApi.rescan('2026-01-01');
 

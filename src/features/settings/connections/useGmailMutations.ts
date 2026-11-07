@@ -6,19 +6,22 @@ import {
   archiveAllGmailAttention,
   archiveGmailAttention,
   assignGmailAttention,
+  assignGmailNumber,
   createGmailSender,
   deleteGmailSender,
   disconnectGmail,
+  ignoreGmailNumber,
   retryAllGmailAttention,
   retryGmailAttention,
   startGmailOAuth,
   syncGmail,
   unarchiveGmailAttention,
+  unignoreGmailNumber,
   updateGmailSender,
 } from '@/features/settings/connections/gmailActions';
 import { useRouterRefresh } from '@/features/settings/useRouterRefresh';
 import { unwrapAction } from '@/lib/actionResult';
-import type { AssignAttentionRequest, AttentionBulkRequest, GmailSenderRequest } from '@/lib/api/types';
+import type { AssignAttentionRequest, AssignNumberGroupRequest, AttentionBulkRequest, GmailSenderRequest, NumberGroupRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 
 /** Every write GmailConnect needs, grouped so the orchestrator hook stays thin. */
@@ -91,6 +94,21 @@ export function useGmailMutations() {
     },
   });
 
+  const assignNumberMutation = useMutation({
+    mutationFn: (body: AssignNumberGroupRequest) => unwrapAction(assignGmailNumber(body)),
+    onSuccess: invalidateAttentionAndInbox,
+  });
+
+  const ignoreNumberMutation = useMutation({
+    mutationFn: (body: NumberGroupRequest) => unwrapAction(ignoreGmailNumber(body)),
+    onSuccess: invalidateAttentionAndInbox,
+  });
+
+  const unignoreNumberMutation = useMutation({
+    mutationFn: (id: string) => unwrapAction(unignoreGmailNumber(id)),
+    onSuccess: invalidateAttentionAndInbox,
+  });
+
   const retryAllMutation = useMutation({
     mutationFn: (body: AttentionBulkRequest) => unwrapAction(retryAllGmailAttention(body)),
     onSuccess: async () => {
@@ -127,6 +145,9 @@ export function useGmailMutations() {
     archiveAttentionMutation,
     unarchiveAttentionMutation,
     assignAttentionMutation,
+    assignNumberMutation,
+    ignoreNumberMutation,
+    unignoreNumberMutation,
     retryAllMutation,
     archiveAllMutation,
     createSenderMutation,
