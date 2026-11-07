@@ -107,6 +107,14 @@ describe('plastic status and caption', () => {
     });
   });
 
+  it('calls a card added as a past card beside a newer one Closed, not Replaced', () => {
+    const both = [
+      card({ id: 'a', last4: '7741', issuedOn: '2025-06-02' }),
+      card({ id: 'p', last4: '3003', issuedOn: '2021-05-01', closedOn: '2023-04-30' }),
+    ];
+    expect(plasticStatus(both[1], both)).toBe('Closed');
+  });
+
   it('says 1 transaction in the singular', () => {
     const lone = [card({ id: 'k9', last4: '1111', issuedOn: '2024-01-05', closedOn: '2025-02-01' })];
     const s: HolderStats = { ...stats[0], cards: [{ cardId: 'k9', transactionCount: 1 }] };
@@ -152,14 +160,14 @@ describe('holderMenu', () => {
     expect(ids({ ...primary, cards: [] })).toEqual(['edit', 'reassign', 'addCard', 'addPastCard']);
   });
 
-  it('offers Reopen first on a closed add-on, with no Add a card or Close', () => {
+  it('offers Reopen first on a closed add-on, with Add a past card but no Add a card or Close', () => {
     const closed = { ...addon, cards: [], closedOn: '2026-06-30' };
-    expect(ids(closed)).toEqual(['reopen', 'edit', 'reassign']);
-    expect(ids({ ...closed, transactionCount: 0 })).toEqual(['reopen', 'edit', 'reassign', 'delete']);
+    expect(ids(closed)).toEqual(['reopen', 'edit', 'reassign', 'addPastCard']);
+    expect(ids({ ...closed, transactionCount: 0 })).toEqual(['reopen', 'edit', 'reassign', 'addPastCard', 'delete']);
   });
 
-  it('never offers close, reopen or delete on a primary', () => {
-    expect(ids({ ...primary, closedOn: '2026-06-30', transactionCount: 0 })).toEqual(['edit', 'reassign']);
+  it('never offers close, reopen or delete on a primary, even a closed one (a past card can still be added)', () => {
+    expect(ids({ ...primary, closedOn: '2026-06-30', transactionCount: 0 })).toEqual(['edit', 'reassign', 'addPastCard']);
   });
 });
 

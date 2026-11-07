@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { GRID_GAP } from '@/components/ds/gridGap';
 import { Text } from '@/components/ds/Text/Text';
 import { showToast } from '@/components/ds/Toast/Toast';
-import { loadCardSeenDates } from '@/features/accounts/accountActions';
+import { loadAccountIdentifiers, loadCardSeenDates } from '@/features/accounts/accountActions';
 import { LoadError } from '@/features/shell/LoadError';
 import type { Card, Cardholder } from '@/lib/account.types';
 import { unwrapAction } from '@/lib/actionResult';
@@ -218,8 +218,11 @@ export function CardsTab({
         <dialogs.AddPastCardDialog
           description={`${name} · ${accountName}`}
           today={today}
+          holderId={holder.id}
           loadSeenDates={(last4) => unwrapAction(loadCardSeenDates(accountId, last4))}
+          loadIdentifiers={() => unwrapAction(loadAccountIdentifiers(accountId))}
           onSubmit={(body) => actions.addPastCard(holder, body)}
+          onConvert={actions.convertToPastCard}
           onClose={closeDialog}
         />
       ) : null}

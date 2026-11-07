@@ -7,6 +7,7 @@ import { Button } from '@/components/ds/Button/Button';
 import { Dialog } from '@/components/ds/Dialog/Dialog';
 import { Text } from '@/components/ds/Text/Text';
 import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
+import { NumberKindChoice } from '@/features/accounts/cards/NumberKindChoice';
 import { loadAccountForm } from '@/features/accounts/form/ds/AccountDialogs';
 import { ACCOUNT_GROUP_ORDER } from '@/lib/accounts/accountGroups';
 import type { UnknownNumberGroup } from '@/lib/api/types';
@@ -63,6 +64,16 @@ export function AssignNumberDialog({ group, onClose }: { group: UnknownNumberGro
               placeholder={a.loadingAccounts ? 'Loading accounts…' : 'Select an account'}
               disabled={a.loadingAccounts || a.isPending}
             />
+            {a.canOldCard ? (
+              <NumberKindChoice
+                kind={a.kind}
+                onKindChange={a.chooseKind}
+                state={a.oldCard}
+                today={a.today}
+                errors={a.oldCardErrors}
+                disabled={a.isPending}
+              />
+            ) : null}
             <div>
               <Text variant="label" as="span">
                 <Button

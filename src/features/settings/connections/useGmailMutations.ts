@@ -88,15 +88,18 @@ export function useGmailMutations() {
   const assignAttentionMutation = useMutation({
     mutationFn: ({ ledgerId, body }: { ledgerId: string; body: AssignAttentionRequest }) =>
       unwrapAction(assignGmailAttention(ledgerId, body)),
-    onSuccess: async () => {
-      await invalidateAttention();
+    onSuccess: async (_data, { body }) => {
+      // An old card is a new card on the account: its Cards tab and card lists reload.
+      await Promise.all([invalidateAttention(), body.pastCard ? qc.invalidateQueries({ queryKey: keys.accounts.all }) : undefined]);
       refreshLayout();
     },
   });
 
   const assignNumberMutation = useMutation({
     mutationFn: (body: AssignNumberGroupRequest) => unwrapAction(assignGmailNumber(body)),
-    onSuccess: invalidateAttentionAndInbox,
+    onSuccess: async (_data, body) => {
+      await Promise.all([invalidateAttentionAndInbox(), body.pastCard ? qc.invalidateQueries({ queryKey: keys.accounts.all }) : undefined]);
+    },
   });
 
   const ignoreNumberMutation = useMutation({

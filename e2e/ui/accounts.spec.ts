@@ -4,7 +4,7 @@ import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
-import { createCreditCard } from '../fixtures/seed/accounts';
+import { createCreditCard, ensurePrimaryCardholder } from '../fixtures/seed/accounts';
 import { expect, test } from '../fixtures/test';
 import { expectToast } from '../fixtures/ui';
 
@@ -115,6 +115,48 @@ test.describe('Accounts UI (@ui)', () => {
     await expect(page.getByText('••5566').first()).toBeVisible();
   });
 
+  test('a saved number typed into Add a past card becomes that card; a closed account still adds a past card', async ({ page }) => {
+    test.slow();
+    const api = makeApi(currentUser.cookie);
+    const card = await createCreditCard(api, { name: 'Old Card Gold', last4: '5555', creditLimit: 300000, anniversaryDate: '2024-05-01', bank: 'hdfc' });
+    await ensurePrimaryCardholder(api, card.id, '5555', '2024-01-01');
+    await api.POST('/api/v1/accounts/{id}/identifiers', { params: { path: { id: card.id } }, body: { value: '3003' } });
+
+    // A saved other number typed into Add a past card becomes that card (the identifier goes).
+    await page.goto(`/accounts/${card.id}/cards`);
+    await page.getByRole('button', { name: 'Cardholder actions' }).first().click();
+    await page.getByRole('menuitem', { name: 'Add a past card' }).click();
+    const oldCard = dialogOf(page, 'Add a past card');
+    await oldCard.getByRole('textbox', { name: /^Last 4 digits/ }).fill('3003');
+    await expect(oldCard.getByText(/saved as another number on this account; it will become this card/i)).toBeVisible();
+    await oldCard.getByRole('textbox', { name: 'Opened on' }).fill('04052021');
+    await oldCard.getByRole('textbox', { name: 'Closed on' }).fill('20042025');
+    await oldCard.getByRole('button', { name: 'Add past card' }).click();
+    await expectToast(page, 'Past card added');
+    await expect(oldCard).toBeHidden();
+
+    await page.goto(`/accounts/${card.id}/cards`);
+    await expect(page.getByText('••3003').first()).toBeVisible();
+    await expect(page.getByText('Closed', { exact: true }).first()).toBeVisible();
+    const identifiers = await api.GET('/api/v1/accounts/{id}/identifiers', { params: { path: { id: card.id } } });
+    expect(identifiers.data).toEqual([]);
+
+    // Closed account: its cardholder still offers Add a past card (an active card would be refused).
+    await api.POST('/api/v1/accounts/{id}/close', { params: { path: { id: card.id } }, body: { closedOn: '2025-12-31' } });
+    await page.reload();
+    await page.getByRole('button', { name: 'Cardholder actions' }).first().click();
+    await page.getByRole('menuitem', { name: 'Add a past card' }).click();
+    const past = dialogOf(page, 'Add a past card');
+    await past.getByRole('textbox', { name: /^Last 4 digits/ }).fill('4040');
+    await past.getByRole('textbox', { name: 'Opened on' }).fill('01012020');
+    await past.getByRole('textbox', { name: 'Closed on' }).fill('01012021');
+    await past.getByRole('button', { name: 'Add past card' }).click();
+    await expectToast(page, 'Past card added');
+    // A closed holder's row lists no plastics; the card is on it all the same.
+    const holders = await api.GET('/api/v1/accounts/{accountId}/cardholders', { params: { path: { accountId: card.id } } });
+    expect(holders.data![0].cards.find((c) => c.last4 === '4040')).toMatchObject({ isOpen: false, issuedOn: '2020-01-01', closedOn: '2021-01-01' });
+  });
+
   test('edit account name and identifiers, cards (add, replace, close), close and reopen account, delete empty account', async ({
     page,
   }) => {
@@ -185,7 +227,8 @@ test.describe('Accounts UI (@ui)', () => {
     const closeCard = dialogOf(page, /Close card/);
     await closeCard.getByRole('button', { name: 'Close card' }).click();
     await expect(closeCard).not.toBeVisible();
-    // Sam has no active plastic left: both his cards read as history and only the primary keeps Replace / Close
+    // Sam has no active plastic left: both his cards read as history and only the primary keeps Replace / Close.
+    // The 2 counted are Sam's two plastics: both were issued and closed today, so each has another plastic issued on its closing day (Replaced, not Closed).
     await expect(page.getByText('Replaced', { exact: true })).toHaveCount(2);
     await expect(page.getByRole('button', { name: 'Replace', exact: true })).toHaveCount(1);
 

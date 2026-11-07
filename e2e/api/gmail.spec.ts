@@ -973,6 +973,22 @@ test.describe('Gmail attention groups', () => {
     expect(restored.unknownNumbers.map((n) => n.last4).sort()).toEqual(['5550', '5551']);
   });
 
+  test('a group lists its own emails newest first, paged, and the count matches the group', async () => {
+    const g = (await groups()).unknownNumbers.find((n) => n.last4 === '5550')!;
+    const page0 = await api.GET('/api/v1/gmail/attention/numbers/emails', { params: { query: { last4: '5550', page: 0, size: 1 } } });
+    expectStatus(page0, 200);
+    expect(page0.data?.totalElements).toBe(g.count);
+    expect(page0.data?.content).toHaveLength(1);
+    const page1 = await api.GET('/api/v1/gmail/attention/numbers/emails', { params: { query: { last4: '5550', page: 1, size: 1 } } });
+    expect(page1.data?.content).toHaveLength(1);
+    expect(page1.data!.content[0].item.id).not.toBe(page0.data!.content[0].item.id);
+    // Newest first by the email's own date: the first page never holds an earlier mail (the stub gives both mails the same internalDate; strict order is covered by the service test).
+    expect(Date.parse(page0.data!.content[0].item.internalDate!)).toBeGreaterThanOrEqual(Date.parse(page1.data!.content[0].item.internalDate!));
+    expect(page0.data!.content[0].kind).toBe('ALERT');
+    const bad = await api.GET('/api/v1/gmail/attention/numbers/emails', { params: { query: { last4: '55', page: 0, size: 10 } } });
+    expect(bad.response.status).toBe(400);
+  });
+
   test('assigning a number settles all of its mail into the account and clears the group', async () => {
     test.slow();
     const assign = await api.POST('/api/v1/gmail/attention/numbers/assign', { body: { last4: '5550', accountId } });
@@ -995,6 +1011,24 @@ test.describe('Gmail attention groups', () => {
     const unknown = await api.DELETE('/api/v1/gmail/attention/numbers/ignored/{id}', { params: { path: { id: randomUUID() } } });
     expect([400, 404]).toContain(unknown.response.status);
     expect((await (await apiB.GET('/api/v1/gmail/attention/groups')).data)!.unknownNumbers).toEqual([]);
+  });
+
+  test('assigning a number as an old card creates a closed card and clears the group like an identifier does', async () => {
+    test.slow();
+    const assign = await api.POST('/api/v1/gmail/attention/numbers/assign', {
+      body: { last4: '5551', accountId, pastCard: { issuedOn: '2021-05-04', closedOn: '2024-12-20' } },
+    });
+    expectStatus(assign, 200);
+    expect(assign.data?.identifierId ?? null).toBeNull();
+    expect(assign.data?.cardId).toBeTruthy();
+    for (const jobId of assign.data!.jobIds) expect((await waitForJob(api, jobId)).status).toBe('SUCCEEDED');
+    await waitForGmailJobsIdle(api);
+
+    expect((await groups()).unknownNumbers).toEqual([]);
+    const holders = await api.GET('/api/v1/accounts/{accountId}/cardholders', { params: { path: { accountId } } });
+    expect(holders.data![0].cards.find((c) => c.last4 === '5551')).toMatchObject({ isOpen: false, issuedOn: '2021-05-04', closedOn: '2024-12-20' });
+    const ids = await api.GET('/api/v1/accounts/{id}/identifiers', { params: { path: { id: accountId } } });
+    expect(ids.data?.map((i) => i.value)).not.toContain('5551');
   });
 });
 

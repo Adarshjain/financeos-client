@@ -121,11 +121,14 @@ export function activePlastic(holder: Cardholder): Card | undefined {
   return (holder.cards ?? []).find((c) => !c.closedOn);
 }
 
-/** A closed plastic is "Replaced" when the holder has a plastic issued on or after the day it closed. */
+/**
+ * A closed plastic is "Replaced" when the holder has a plastic issued the day it closed (what Replace does); one that was
+ * closed on its own, or added as a past card beside a newer one, is "Closed".
+ */
 export function plasticStatus(card: Card, all: readonly Card[]): PlasticStatus {
   if (!card.closedOn) return 'Active';
   const closedOn = card.closedOn;
-  const replaced = all.some((c) => c.id !== card.id && c.issuedOn && c.issuedOn >= closedOn);
+  const replaced = all.some((c) => c.id !== card.id && c.issuedOn === closedOn);
   return replaced ? 'Replaced' : 'Closed';
 }
 
@@ -161,7 +164,7 @@ export function plasticModel(
 /**
  * The ⋯ menu of one holder (owner 28): close, reopen and delete are for add-ons and joint holders only;
  * Add a card only while the holder has no active card; delete only when no transaction is left on the holder.
- * The primary holder and a closed holder never offer Add a card or Close.
+ * The primary holder and a closed holder never offer Add a card or Close; Add a past card is always there (closed accounts and holders too).
  */
 export function holderMenu(holder: Cardholder, today: string): HolderMenuItem[] {
   const closed = isCardholderClosed(holder, today);
@@ -171,7 +174,7 @@ export function holderMenu(holder: Cardholder, today: string): HolderMenuItem[] 
   items.push({ id: 'edit', label: 'Edit details' });
   items.push({ id: 'reassign', label: 'Reassign transactions' });
   if (!closed && !activePlastic(holder)) items.push({ id: 'addCard', label: 'Add a card' });
-  if (!closed) items.push({ id: 'addPastCard', label: 'Add a past card' });
+  items.push({ id: 'addPastCard', label: 'Add a past card' });
   if (!closed && addon) items.push({ id: 'close', label: 'Close cardholder' });
   if (addon && !holder.transactionCount) {
     items.push({ id: 'delete', label: 'Delete cardholder', tone: 'danger', separatorBefore: true });

@@ -612,6 +612,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{id}/identifiers/{identifierId}/to-past-card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["identifierToPastCard"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/{id}/payments-from": {
         parameters: {
             query?: never;
@@ -1850,6 +1866,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/gmail/attention/numbers/emails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["numberEmails"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/gmail/attention/numbers/ignore": {
         parameters: {
             query?: never;
@@ -2037,6 +2069,22 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["disconnectConnection"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gmail/messages/{ledgerId}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getGmailMessageContent"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -5411,10 +5459,13 @@ export interface components {
             accountId: string;
             /** @enum {string|null} */
             kind?: "CUSTOMER_ID" | "ACCOUNT_NUMBER" | "CRN" | "OTHER" | null;
+            pastCard?: components["schemas"]["PastCardRequest"];
         };
         AssignAttentionResponse: {
             /** Format: uuid */
-            identifierId: string;
+            cardId?: string | null;
+            /** Format: uuid */
+            identifierId?: string | null;
             jobIds: string[];
             /** Format: int32 */
             reactivatedCount: number;
@@ -5431,10 +5482,13 @@ export interface components {
             /** @enum {string|null} */
             kind?: "CUSTOMER_ID" | "ACCOUNT_NUMBER" | "CRN" | "OTHER" | null;
             last4: string;
+            pastCard?: components["schemas"]["PastCardRequest"];
         };
         AssignNumberGroupResponse: {
             /** Format: uuid */
-            identifierId: string;
+            cardId?: string | null;
+            /** Format: uuid */
+            identifierId?: string | null;
             jobIds: string[];
             /** Format: int32 */
             reactivatedCount: number;
@@ -6290,6 +6344,8 @@ export interface components {
             last4: string;
         };
         CreateCardholderRequest: {
+            /** Format: date */
+            closedOn?: string;
             /** Format: uuid */
             fromSuggestionId?: string;
             /** Format: date */
@@ -7424,6 +7480,23 @@ export interface components {
             monthsDone: number;
             /** Format: int32 */
             monthsTotal: number;
+        };
+        GmailMessageContentAttachment: {
+            filename: string;
+            mimeType: string;
+            /** Format: int64 */
+            size: number;
+        };
+        GmailMessageContentResponse: {
+            attachments: components["schemas"]["GmailMessageContentAttachment"][];
+            /** Format: date-time */
+            date?: string | null;
+            from: string;
+            html?: string | null;
+            subject: string;
+            text?: string | null;
+            to: string;
+            tooLarge: boolean;
         };
         GmailSenderRequest: {
             enabled?: boolean;
@@ -8884,6 +8957,12 @@ export interface components {
             /** @enum {string} */
             tier: "I" | "II";
         };
+        NumberGroupEmailResponse: {
+            amount?: number | null;
+            direction?: string | null;
+            item: components["schemas"]["GmailAttentionItemResponse"];
+            kind: string;
+        };
         NumberGroupRequest: {
             bank?: string | null;
             last4: string;
@@ -9229,6 +9308,24 @@ export interface components {
             /** Format: int32 */
             totalPages: number;
         };
+        PageNumberGroupEmailResponse: {
+            content: components["schemas"]["NumberGroupEmailResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
         PageRewardLineResponse: {
             content: components["schemas"]["RewardLineResponse"][];
             empty: boolean;
@@ -9404,6 +9501,21 @@ export interface components {
         PasswordRetryRequest: {
             password: string;
             saveToAccount?: boolean;
+        };
+        PastCardRequest: {
+            /** Format: uuid */
+            cardholderId?: string | null;
+            /** Format: date */
+            closedOn: string;
+            /** Format: date */
+            issuedOn: string;
+        };
+        PastCardResponse: {
+            /** Format: uuid */
+            cardId: string;
+            jobIds: string[];
+            /** Format: int32 */
+            reactivatedCount: number;
         };
         PaymentInfo: {
             amount: number;
@@ -12744,6 +12856,42 @@ export interface operations {
             };
         };
     };
+    identifierToPastCard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                identifierId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PastCardRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PastCardResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getPaymentsFrom: {
         parameters: {
             query?: never;
@@ -15666,6 +15814,40 @@ export interface operations {
             };
         };
     };
+    numberEmails: {
+        parameters: {
+            query: {
+                bank?: string;
+                last4: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageNumberGroupEmailResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     ignore: {
         parameters: {
             query?: never;
@@ -16029,6 +16211,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getGmailMessageContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ledgerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GmailMessageContentResponse"];
+                };
             };
             /** @description Error response */
             default: {

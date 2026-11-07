@@ -10,6 +10,7 @@ import { Icon } from '@/components/ds/Icon/Icon';
 import { ListField } from '@/components/ds/ListField/ListField';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { Text } from '@/components/ds/Text/Text';
+import { ViewEmailDialog } from '@/features/settings/connections/ViewEmailDialog';
 import { unwrapAction } from '@/lib/actionResult';
 import { copyText } from '@/lib/copyText';
 import { notify } from '@/lib/notify';
@@ -91,7 +92,10 @@ function Shell({
 }
 
 /** Every field of one failed email, ids with copy buttons, the full error and the stack. */
-export function EmailDetailsDialog({ item, ...rest }: DetailsProps & { item: FailedEmail }) {
+export function EmailDetailsDialog({ item, currentUserId, ...rest }: DetailsProps & { item: FailedEmail; currentUserId?: string }) {
+  const [viewing, setViewing] = React.useState(false);
+  // The failures list covers every user's mail; the live read is current-user only, so it shows for the admin's own mailbox.
+  const canView = currentUserId !== undefined && item.userId === currentUserId;
   const { data, isError } = useQuery({
     queryKey: [...failureKeys.all, 'email-detail', item.ledgerId],
     queryFn: () => unwrapAction(loadEmailDetail(item.ledgerId)),
@@ -125,13 +129,21 @@ export function EmailDetailsDialog({ item, ...rest }: DetailsProps & { item: Fai
       <ListField
         label="Gmail"
         value={
-          <Button asChild variant="link" size="sm">
-            <a href={openInGmailUrl(row)} target="_blank" rel="noreferrer">
-              Open in Gmail
-            </a>
-          </Button>
+          <span className="inline-flex flex-wrap items-center gap-x-space-12 gap-y-space-4">
+            {canView ? (
+              <Button variant="link" size="sm" onClick={() => setViewing(true)}>
+                View email
+              </Button>
+            ) : null}
+            <Button asChild variant="link" size="sm">
+              <a href={openInGmailUrl(row)} target="_blank" rel="noreferrer">
+                Open in Gmail
+              </a>
+            </Button>
+          </span>
         }
       />
+      {viewing ? <ViewEmailDialog ledgerId={item.ledgerId} subject={item.subject} onClose={() => setViewing(false)} /> : null}
       <div className="flex flex-col gap-space-8 pt-space-12">
         <Text variant="label" tone="ink-3">Error</Text>
         <Text variant="body" className="break-words whitespace-pre-wrap">{row.error ?? ''}</Text>

@@ -40,10 +40,22 @@ describe('buildPastCard', () => {
 });
 
 describe('AddPastCardDialog', () => {
-  const setup = (loadSeenDates = vi.fn().mockResolvedValue(seen)) => {
+  const setup = (loadSeenDates = vi.fn().mockResolvedValue(seen), saved: { id: string; value: string }[] = []) => {
     const onSubmit = vi.fn().mockResolvedValue(null);
-    render(<AddPastCardDialog description="Arjun" today={today} loadSeenDates={loadSeenDates} onSubmit={onSubmit} onClose={vi.fn()} />);
-    return { onSubmit, loadSeenDates };
+    const onConvert = vi.fn().mockResolvedValue(null);
+    render(
+      <AddPastCardDialog
+        description="Arjun"
+        today={today}
+        holderId="h1"
+        loadSeenDates={loadSeenDates}
+        loadIdentifiers={vi.fn().mockResolvedValue(saved)}
+        onSubmit={onSubmit}
+        onConvert={onConvert}
+        onClose={vi.fn()}
+      />,
+    );
+    return { onSubmit, onConvert, loadSeenDates };
   };
 
   it('looks up the number once it has 4 digits, prefills both dates and shows the hint', async () => {
@@ -70,10 +82,41 @@ describe('AddPastCardDialog', () => {
 
   it('shows the server message and stays open when adding fails', async () => {
     const onSubmit = vi.fn().mockResolvedValue("Couldn't add the past card. Try again.");
-    render(<AddPastCardDialog description="Arjun" today={today} loadSeenDates={vi.fn().mockResolvedValue(seen)} onSubmit={onSubmit} onClose={vi.fn()} />);
+    render(
+      <AddPastCardDialog
+        description="Arjun"
+        today={today}
+        holderId="h1"
+        loadSeenDates={vi.fn().mockResolvedValue(seen)}
+        loadIdentifiers={vi.fn().mockResolvedValue([])}
+        onSubmit={onSubmit}
+        onConvert={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
     await user.type(screen.getByRole('textbox', { name: /^Last 4 digits/ }), '1234');
     await waitFor(() => expect(screen.getByLabelText('Closed on')).toHaveValue('20/04/2025'));
     await user.click(screen.getByRole('button', { name: 'Add past card' }));
     expect(await screen.findByText("Couldn't add the past card. Try again.")).toBeInTheDocument();
+  });
+
+  it('creates the card plainly when the digits are not a saved number', async () => {
+    const { onSubmit, onConvert } = setup(undefined, [{ id: 'i1', value: '9999' }]);
+    await user.type(screen.getByRole('textbox', { name: /^Last 4 digits/ }), '1234');
+    await waitFor(() => expect(screen.getByLabelText('Closed on')).toHaveValue('20/04/2025'));
+    expect(screen.queryByText(/Saved as another number/)).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Add past card' }));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({ last4: '1234', issuedOn: '2021-05-04', closedOn: '2025-04-20' }));
+    expect(onConvert).not.toHaveBeenCalled();
+  });
+
+  it('converts the saved number into the card when the digits match one, and says so', async () => {
+    const { onSubmit, onConvert } = setup(undefined, [{ id: 'i1', value: '3003' }]);
+    await user.type(screen.getByRole('textbox', { name: /^Last 4 digits/ }), '3003');
+    expect(await screen.findByText(/saved as another number on this account; it will become this card/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText('Closed on')).toHaveValue('20/04/2025'));
+    await user.click(screen.getByRole('button', { name: 'Add past card' }));
+    await waitFor(() => expect(onConvert).toHaveBeenCalledWith('i1', { cardholderId: 'h1', issuedOn: '2021-05-04', closedOn: '2025-04-20' }));
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 });

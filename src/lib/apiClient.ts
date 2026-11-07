@@ -22,6 +22,7 @@ import type {
   BuiltinWidgetResponse,
   CardBillResponse,
   ErrorResponse,
+  GmailMessageContent,
   InboxResponse,
   InboxSummaryResponse,
   NotificationFeedPage,
@@ -1777,6 +1778,11 @@ export const gmailApi = {
   rescan: async (fromDate: string): Promise<EnqueueResponse> => {
     const { data } = await serverApi.POST('/api/v1/gmail/rescan', { body: { fromDate } });
     return data! as EnqueueResponse;
+  },
+  /** One mail of the current user, read live from Gmail (never stored): "View email". */
+  getMessageContent: async (ledgerId: string): Promise<GmailMessageContent> => {
+    const { data } = await serverApi.GET('/api/v1/gmail/messages/{ledgerId}/content', { params: { path: { ledgerId } } });
+    return data! as GmailMessageContent;
   },
 };
 

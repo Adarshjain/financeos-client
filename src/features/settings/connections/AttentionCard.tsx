@@ -15,6 +15,7 @@ import { AttentionGroup } from './AttentionGroup';
 import { IgnoredNumberRow, ImportOffRow, UnknownNumberRow } from './AttentionGroupRows';
 import { type AttentionItem, type AttentionReason, type AttentionReasonCount, groupAttention, REASON_LABELS } from './attentionItemModel';
 import { AttentionItemRow } from './AttentionItemRow';
+import { NumberEmailsDialog } from './NumberEmailsDialog';
 
 type PagedAttention = Schemas['PageGmailAttentionItemResponse'];
 
@@ -83,6 +84,7 @@ export function AttentionCard({
 }: AttentionCardProps) {
   const [assigning, setAssigning] = useState<AttentionItem | null>(null);
   const [addingNumber, setAddingNumber] = useState<UnknownNumberGroup | null>(null);
+  const [detailsNumber, setDetailsNumber] = useState<UnknownNumberGroup | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
 
@@ -159,7 +161,7 @@ export function AttentionCard({
               <section data-testid="attention-numbers">
                 <Card.Section>Unknown numbers · {groups.unknownNumbers.length}</Card.Section>
                 {groups.unknownNumbers.map((g) => (
-                  <UnknownNumberRow key={`${g.bank ?? ''}:${g.last4}`} group={g} onAdd={setAddingNumber} onIgnore={onIgnoreNumber} />
+                  <UnknownNumberRow key={`${g.bank ?? ''}:${g.last4}`} group={g} onAdd={setAddingNumber} onIgnore={onIgnoreNumber} onDetails={setDetailsNumber} />
                 ))}
               </section>
             ) : null}
@@ -199,6 +201,7 @@ export function AttentionCard({
 
       <AssignDialog item={assigning} onClose={() => setAssigning(null)} />
       <AssignNumberDialog group={addingNumber} onClose={() => setAddingNumber(null)} />
+      <NumberEmailsDialog group={detailsNumber} onClose={() => setDetailsNumber(null)} />
     </>
   );
 }

@@ -14,7 +14,7 @@ import type {
 } from '@/lib/account.types';
 import type { components } from '@/lib/api/schema';
 import { serverApi } from '@/lib/api/server';
-import type { AccountIdentifierResponse, CreateAccountIdentifierRequest, Schemas } from '@/lib/api/types';
+import type { AccountIdentifierResponse, CreateAccountIdentifierRequest, PastCardRequest, PastCardResponse, Schemas } from '@/lib/api/types';
 import { createDomainAction } from '@/lib/domainApi';
 import type { CardCycleSummary, StatementDetail, StatementSummary } from '@/lib/statement.types';
 import type { BulkReattributeCardRequest, BulkReattributeResponse } from '@/lib/transaction.types';
@@ -50,6 +50,18 @@ export const removeAccountIdentifier = createDomainAction(
     await serverApi.DELETE('/api/v1/accounts/{id}/identifiers/{identifierId}', {
       params: { path: { id: accountId, identifierId } },
     });
+  },
+);
+
+/** The identifier becomes an old (closed) card of the account in one step. */
+export const convertIdentifierToPastCard = createDomainAction(
+  { fallbackError: "Couldn't save the number as an old card. Try again." },
+  async (accountId: string, identifierId: string, body: PastCardRequest): Promise<PastCardResponse | null> => {
+    const { data } = await serverApi.POST('/api/v1/accounts/{id}/identifiers/{identifierId}/to-past-card', {
+      params: { path: { id: accountId, identifierId } },
+      body,
+    });
+    return data ?? null;
   },
 );
 

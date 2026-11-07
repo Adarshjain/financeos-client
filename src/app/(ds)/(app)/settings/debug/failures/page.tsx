@@ -17,5 +17,5 @@ export default async function DsSettingsFailuresPage() {
     guardSession(failuresApi.summary()),
     guardSession(failuresApi.listGmail({ page: 0, size: FAILURES_PAGE_SIZE })),
   ]);
-  return <FailuresScreen summary={summary} emails={emails} />;
+  return <FailuresScreen summary={summary} emails={emails} currentUserId={user.id} />;
 }

@@ -59,6 +59,8 @@ export interface MailMessage {
   /** Sent time; must fall inside the first-backfill window (last 30 days) to be realistic. */
   sentAt: Date;
   text: string;
+  /** An HTML alternative of the body; the plain `text` stays what the ingest reads. */
+  html?: string;
   attachments?: MailAttachment[];
 }
 
@@ -296,14 +298,34 @@ function base64url(buf: Buffer): string {
 
 function toGmailMessage(identity: GoogleIdentity, m: MailMessage): Record<string, unknown> {
   const text = Buffer.from(m.text, 'utf8');
+  const plainPart = {
+    partId: '0',
+    mimeType: 'text/plain',
+    filename: '',
+    headers: [{ name: 'Content-Type', value: 'text/plain; charset="UTF-8"' }],
+    body: { size: text.length, data: base64url(text) },
+  };
+  const html = m.html === undefined ? null : Buffer.from(m.html, 'utf8');
   const parts: Record<string, unknown>[] = [
-    {
-      partId: '0',
-      mimeType: 'text/plain',
-      filename: '',
-      headers: [{ name: 'Content-Type', value: 'text/plain; charset="UTF-8"' }],
-      body: { size: text.length, data: base64url(text) },
-    },
+    html
+      ? {
+          partId: '0',
+          mimeType: 'multipart/alternative',
+          filename: '',
+          headers: [{ name: 'Content-Type', value: 'multipart/alternative; boundary="alt"' }],
+          body: { size: 0 },
+          parts: [
+            plainPart,
+            {
+              partId: '0.1',
+              mimeType: 'text/html',
+              filename: '',
+              headers: [{ name: 'Content-Type', value: 'text/html; charset="UTF-8"' }],
+              body: { size: html.length, data: base64url(html) },
+            },
+          ],
+        }
+      : plainPart,
   ];
   (m.attachments ?? []).forEach((att, i) => {
     parts.push({
@@ -395,6 +417,22 @@ export async function registerMailbox(identity: GoogleIdentity, messages: MailMe
   }
   identity.mappingIds.push(...mailbox.mappingIds);
   return mailbox;
+}
+
+/** Gmail answers 404 for this message from now on (deleted in the mailbox); the list stub is left as it was. */
+export async function registerMessageGone(identity: GoogleIdentity, messageId: string): Promise<void> {
+  identity.mappingIds.push(
+    await addMapping({
+      name: `gmail-gone-${messageId}`,
+      priority: 0,
+      request: { method: 'GET', urlPath: `${GMAIL_API_PREFIX}/messages/${messageId}`, headers: bearer(identity) },
+      response: {
+        status: 404,
+        headers: JSON_HEADERS,
+        jsonBody: { error: { code: 404, message: 'Requested entity was not found.', status: 'NOT_FOUND' } },
+      },
+    })
+  );
 }
 
 /** The `q` of every `messages.list` call made with this identity's token, oldest first. */

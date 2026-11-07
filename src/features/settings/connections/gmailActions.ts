@@ -2,6 +2,7 @@
 
 import { serverApi } from '@/lib/api/server';
 import type { AssignAttentionRequest, AssignNumberGroupRequest, AttentionBulkRequest, GmailSenderRequest, NumberGroupRequest } from '@/lib/api/types';
+import { gmailApi } from '@/lib/apiClient';
 import { createDomainAction } from '@/lib/domainApi';
 
 export interface GmailAttentionQuery {
@@ -55,6 +56,13 @@ export const loadGmailUngrouped = createDomainAction(
 export const loadGmailAttentionGroups = createDomainAction(
   { fallbackError: "Couldn't load the emails that need attention. Try again." },
   async () => (await serverApi.GET('/api/v1/gmail/attention/groups')).data ?? null,
+);
+
+/** One page of the emails in an unknown-number group, newest first. */
+export const loadNumberEmails = createDomainAction(
+  { fallbackError: "Couldn't load the emails of this number. Try again." },
+  async (query: { bank?: string; last4: string; page: number; size: number }) =>
+    (await serverApi.GET('/api/v1/gmail/attention/numbers/emails', { params: { query } })).data ?? null,
 );
 
 export const assignGmailNumber = createDomainAction(
@@ -150,4 +158,10 @@ export const deleteGmailSender = createDomainAction(
   async (id: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/gmail/senders/{id}', { params: { path: { id } } });
   },
+);
+
+/** One mail, read live from the user's Gmail for "View email" (the server stores nothing). */
+export const loadEmailContent = createDomainAction(
+  { fallbackError: "Couldn't load this email. Try again." },
+  async (ledgerId: string) => gmailApi.getMessageContent(ledgerId),
 );

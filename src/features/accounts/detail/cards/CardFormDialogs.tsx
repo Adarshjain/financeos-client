@@ -7,7 +7,7 @@ import { Text } from '@/components/ds/Text/Text';
 import { TextField } from '@/components/ds/TextField/TextField';
 import { FROM_EMAIL_CAPTION } from '@/features/accounts/form/ds/suggestionPrefill';
 import type { Card, CreateCardRequest, ReplaceCardRequest } from '@/lib/account.types';
-import type { CardSeenDates } from '@/lib/api/types';
+import type { CardSeenDates, PastCardRequest } from '@/lib/api/types';
 
 import { buildAddCard, buildClose, buildPastCard, buildReplaceCard, digitsOnly, futureDateError, seenHint } from './cardsFormsModel';
 import { DialogFrame, useDialogSubmit } from './DialogFrame';
@@ -89,27 +89,51 @@ export function AddCardDialog({
   );
 }
 
+const SAVED_NUMBER_HELPER = 'Saved as another number on this account; it will become this card';
+
 /** Add a card that is already closed (an earlier number): when its 4 digits are typed, the dates it was seen fill the opened and closed dates. */
 export function AddPastCardDialog({
   description,
   today,
+  holderId,
   loadSeenDates,
+  loadIdentifiers,
   onSubmit,
+  onConvert,
   onClose,
 }: {
   description: string;
   today: string;
+  /** The holder the card goes on (sent with a converted number). */
+  holderId: string;
   /** Looks up when this number was seen in the account's mail and transactions; null when nothing is known. */
   loadSeenDates: (last4: string) => Promise<CardSeenDates | null>;
+  /** The account's saved other numbers; a typed number that is one of them becomes this card instead of being created. */
+  loadIdentifiers: () => Promise<{ id: string; value: string }[]>;
   onSubmit: (body: CreateCardRequest) => ActionResult;
+  onConvert: (identifierId: string, body: PastCardRequest) => ActionResult;
   onClose: () => void;
 }) {
   const [last4, setLast4] = React.useState('');
   const [issuedOn, setIssuedOn] = React.useState('');
   const [closedOn, setClosedOn] = React.useState('');
   const [hint, setHint] = React.useState<string | null>(null);
+  const [saved, setSaved] = React.useState<{ id: string; value: string }[]>([]);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const { pending, error, submit } = useDialogSubmit(onClose);
+  const savedNumber = last4.length === 4 ? saved.find((i) => i.value === last4) : undefined;
+
+  React.useEffect(() => {
+    let current = true;
+    loadIdentifiers()
+      .then((list) => current && setSaved(list))
+      .catch(() => {});
+    return () => {
+      current = false;
+    };
+    // The list is read once when the dialog opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // A date the user typed is theirs: a later lookup never overwrites it.
   const touched = React.useRef({ issuedOn: false, closedOn: false });
 
@@ -139,6 +163,10 @@ export function AddPastCardDialog({
       return;
     }
     setErrors({});
+    if (savedNumber) {
+      void submit(() => onConvert(savedNumber.id, { cardholderId: holderId, issuedOn: built.body.issuedOn as string, closedOn: built.body.closedOn as string }));
+      return;
+    }
     void submit(() => onSubmit(built.body));
   };
 
@@ -151,7 +179,7 @@ export function AddPastCardDialog({
         maxLength={4}
         value={last4}
         onValueChange={(v) => setLast4(digitsOnly(v))}
-        helper={hint ?? undefined}
+        helper={savedNumber ? (hint ? `${hint} · ${SAVED_NUMBER_HELPER.charAt(0).toLowerCase()}${SAVED_NUMBER_HELPER.slice(1)}` : SAVED_NUMBER_HELPER) : (hint ?? undefined)}
         error={errors.last4}
       />
       <DateField

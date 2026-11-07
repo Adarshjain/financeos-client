@@ -214,3 +214,10 @@ export function assignToast(last4: string, accountName: string, res: Pick<Assign
   const skipped = res?.skippedCount ?? 0;
   return `Added ••${last4} to ${accountName} · ${plural(settled, 'email', 'emails')} settled${skipped > 0 ? ` · ${skipped} skipped` : ''}`;
 }
+
+/** "Added ••3003 to HDFC Savings as an old card · 63 emails settled" (with how many were skipped, when any). */
+export function assignCardToast(last4: string, accountName: string, res: Pick<AssignNumberGroupResponse, 'reactivatedCount' | 'skippedCount'> | null): string {
+  const settled = res?.reactivatedCount ?? 0;
+  const skipped = res?.skippedCount ?? 0;
+  return `Added ••${last4} to ${accountName} as an old card · ${plural(settled, 'email', 'emails')} settled${skipped > 0 ? ` · ${skipped} skipped` : ''}`;
+}

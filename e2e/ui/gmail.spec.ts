@@ -141,6 +141,17 @@ test.describe('Gmail settings UI (@ui)', () => {
     await expect(page.getByText('2 needs attention')).toBeVisible();
     await page.goto('/settings/connections');
 
+    // Details on a group lists its emails (newest first) with the same per-email details and the Gmail link.
+    await uberNumber.getByRole('button', { name: 'Details' }).click();
+    const numberEmails = page.getByRole('dialog', { name: 'Emails for this number' });
+    await expect(numberEmails).toBeVisible();
+    await expect(numberEmails.getByTestId('number-email')).toHaveCount(1);
+    await expect(numberEmails.getByTestId('number-email')).toContainText('Alert');
+    await numberEmails.getByRole('button', { name: 'Details' }).click();
+    await expect(numberEmails.getByRole('link', { name: 'Open in Gmail' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(numberEmails).toBeHidden();
+
     // Add to account: the customer-ID alert's number is mapped to the bank account and its mail is settled.
     await customerIdNumber.getByRole('button', { name: 'Add to account' }).click();
     const assignDialog = page.getByRole('dialog', { name: 'Add number to account' });
@@ -215,8 +226,8 @@ test.describe('Gmail settings UI (@ui)', () => {
     await expectToast(page, 'Past card added');
     await expect(dialog).not.toBeVisible();
     await expect(page.getByText('••7741').first()).toBeVisible();
-    // A closed card beside the active one reads as history (Replaced); the dates come from the mail.
-    await expect(page.getByText('Replaced', { exact: true })).toBeVisible();
+    // A past card beside the active one reads as Closed (Replaced is only for the Replace flow); the dates come from the mail.
+    await expect(page.getByText('Closed', { exact: true })).toBeVisible();
     // The active card is untouched.
     await expect(page.getByText('Active', { exact: true }).first()).toBeVisible();
   });
@@ -302,6 +313,9 @@ test.describe('Gmail settings UI (@ui)', () => {
     // Bank account 1234 only ever received the alert assigned to it via the alias.
     expect(await searchAll(api, [{ field: 'accountId', operator: 'is', value: bankAccountId }])).toHaveLength(1);
     const identifiers = await api.GET('/api/v1/accounts/{id}/identifiers', { params: { path: { id: bankAccountId } } });
-    expect(identifiers.data?.map((i) => i.value)).toEqual(['7741']);
+    // The past-card test above turned the saved number ••7741 into a closed card on this account.
+    expect(identifiers.data?.map((i) => i.value)).toEqual([]);
+    const holders = await api.GET('/api/v1/accounts/{accountId}/cardholders', { params: { path: { accountId: bankAccountId } } });
+    expect(holders.data?.flatMap((h) => h.cards).find((c) => c.last4 === '7741')).toMatchObject({ isOpen: false });
   });
 });

@@ -4,6 +4,7 @@ import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
+import { Text } from '@/components/ds/Text/Text';
 import { appHref } from '@/features/shell/routes';
 import type { IgnoredNumber, ImportOffGroup, UnknownNumberGroup } from '@/lib/api/types';
 
@@ -15,10 +16,12 @@ export function UnknownNumberRow({
   group,
   onAdd,
   onIgnore,
+  onDetails,
 }: {
   group: UnknownNumberGroup;
   onAdd: (group: UnknownNumberGroup) => void;
   onIgnore: (group: UnknownNumberGroup) => void;
+  onDetails: (group: UnknownNumberGroup) => void;
 }) {
   const match = suggestionLine(group);
   return (
@@ -30,6 +33,13 @@ export function UnknownNumberRow({
         <>
           <div>{numberDetail(group)}</div>
           {match ? <div>{match}</div> : null}
+          <div>
+            <Text variant="label" as="span">
+              <Button variant="link" size="sm" onClick={() => onDetails(group)}>
+                Details
+              </Button>
+            </Text>
+          </div>
         </>
       }
       trailing={

@@ -402,6 +402,7 @@
       "disconnectConnection",
       "getAttentionItems",
       "getAttentionTotal",
+      "getMessageContent",
       "listConnections",
       "listSenders",
       "rescan",
