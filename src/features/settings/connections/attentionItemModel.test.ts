@@ -11,7 +11,7 @@ import {
   formatDateTime,
   gmailMessageUrl,
   groupAttention,
-  lockedStatementTarget,
+  statementPasswordAccounts,
 } from './attentionItemModel';
 
 function item(overrides: Partial<AttentionItem>): AttentionItem {
@@ -168,45 +168,18 @@ describe('attentionEditTarget', () => {
   });
 });
 
-describe('lockedStatementTarget', () => {
-  const acct = (id: string, bank: string | null, last4: string, over: Record<string, unknown> = {}) => ({ id, name: id, type: AccountType.CREDIT_CARD, bank, last4, ...over }) as unknown as Account;
-  const sug = (suggestedBankId: string | null, suggestedLast4: string | null) => ({ suggestedBankId, suggestedLast4 });
+describe('statementPasswordAccounts', () => {
+  const acct = (id: string, over: Record<string, unknown> = {}) => ({ id, name: id, type: AccountType.CREDIT_CARD, bank: 'hdfc', last4: '1111', ...over }) as unknown as Account;
 
-  it('opens the unique last4 match (same bank when known)', () => {
-    const accounts = [acct('a', 'hdfc', '1111'), acct('b', 'icici', '1111'), acct('c', 'hdfc', '2222')];
-    expect(lockedStatementTarget(sug('hdfc', '1111'), accounts)).toEqual({ kind: 'open', accountId: 'a' });
-    expect(lockedStatementTarget(sug(null, '2222'), accounts)).toEqual({ kind: 'open', accountId: 'c' });
+  it('keeps open bank accounts and cards, in order', () => {
+    const accounts = [acct('a'), acct('b', { type: AccountType.BANK_ACCOUNT })];
+    expect(statementPasswordAccounts(accounts)).toEqual(accounts);
   });
-  it('falls back to the bank when last4 is ambiguous', () => {
-    const accounts = [acct('a', 'hdfc', '1111'), acct('b', 'hdfc', '1111'), acct('c', 'icici', '3333')];
-    expect(lockedStatementTarget(sug(null, '1111'), accounts)).toEqual({ kind: 'pick', accounts: accounts });
-    const withOne = [acct('a', 'hdfc', '1111', { closedOn: '2020-01-01' }), acct('b', 'hdfc', '1111'), acct('c', 'hdfc', '1111')];
-    expect(lockedStatementTarget(sug('hdfc', '1111'), [withOne[0], withOne[1], acct('c', 'icici', '1111')])).toEqual({ kind: 'open', accountId: 'b' });
+  it('drops closed accounts and other types', () => {
+    const accounts = [acct('a', { closedOn: '2020-01-01' }), acct('b', { type: AccountType.BROKER }), acct('c', { type: AccountType.GENERIC }), acct('d')];
+    expect(statementPasswordAccounts(accounts).map((a) => a.id)).toEqual(['d']);
   });
-  it('opens the only account of the bank', () => {
-    const accounts = [acct('a', 'hdfc', '1111'), acct('c', 'icici', '3333')];
-    expect(lockedStatementTarget(sug('icici', null), accounts)).toEqual({ kind: 'open', accountId: 'c' });
-  });
-  it('picks from only that bank when two or more match', () => {
-    const accounts = [acct('a', 'hdfc', '1111'), acct('b', 'hdfc', '2222'), acct('c', 'icici', '3333')];
-    expect(lockedStatementTarget(sug('hdfc', null), accounts)).toEqual({ kind: 'pick', accounts: [accounts[0], accounts[1]] });
-  });
-  it('picks from all when the bank is known but matches none', () => {
-    const accounts = [acct('a', 'hdfc', '1111'), acct('c', 'icici', '3333')];
-    expect(lockedStatementTarget(sug('axis', null), accounts)).toEqual({ kind: 'pick', accounts });
-  });
-  it('opens the single candidate when no bank is known', () => {
-    expect(lockedStatementTarget(sug(null, null), [acct('a', null, '1111')])).toEqual({ kind: 'open', accountId: 'a' });
-  });
-  it('picks from all when no bank is known and there are several', () => {
-    const accounts = [acct('a', 'hdfc', '1111'), acct('c', 'icici', '3333')];
-    expect(lockedStatementTarget(sug(null, null), accounts)).toEqual({ kind: 'pick', accounts });
-  });
-  it('is none without candidates; closed accounts and other types are excluded', () => {
-    expect(lockedStatementTarget(sug('hdfc', null), [])).toEqual({ kind: 'none' });
-    const accounts = [acct('a', 'hdfc', '1111', { closedOn: '2020-01-01' }), acct('b', 'hdfc', '2222', { type: AccountType.BROKER }), acct('c', 'hdfc', '3333', { type: AccountType.GENERIC })];
-    expect(lockedStatementTarget(sug('hdfc', null), accounts)).toEqual({ kind: 'none' });
-    const mixed = [...accounts, acct('d', 'hdfc', '4444')];
-    expect(lockedStatementTarget(sug(null, null), mixed)).toEqual({ kind: 'open', accountId: 'd' });
+  it('is empty without accounts', () => {
+    expect(statementPasswordAccounts([])).toEqual([]);
   });
 });
