@@ -32,7 +32,7 @@ const epf = item({
   severity: 'info',
   title: 'EPF withdrawal ₹40,000 may match a bank credit',
   subtitle: 'NEFT CR EPFO MUMBAI · HDFC Bank ••4521 · 24 Feb 25 · +₹40,000',
-  href: '/investments/epf',
+  href: '/investments/retirement/epf',
   refs: { epfEntryId: 'e1', transactionId: 't1' },
   actions: [action({ type: 'epf_link', label: 'Link' }), SNOOZE, action({ ...DISMISS, label: 'Not this one' })],
 });

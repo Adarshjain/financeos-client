@@ -118,7 +118,7 @@ describe('ImportTradebookScreen: step 1', () => {
   it('is a page with a back link, the Stepper and the Zerodha form', async () => {
     renderWithQuery(<ImportTradebookScreen brokers={brokers} />);
     expect(screen.getByRole('heading', { name: 'Import tradebook' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back to tradebook' })).toHaveAttribute('href', '/investments/tradebook');
+    expect(screen.getByRole('link', { name: 'Back to tradebook' })).toHaveAttribute('href', '/investments/activity');
     expect(screen.getByText('Investment bulk import')).toBeInTheDocument();
     expect(screen.getAllByText('Upload files').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Review').length).toBeGreaterThan(0);
@@ -129,7 +129,7 @@ describe('ImportTradebookScreen: step 1', () => {
     expect(screen.getByText('2. Zerodha Tradebook')).toBeInTheDocument();
     expect(screen.getByText('3. Holdings snapshot anchor (optional)')).toBeInTheDocument();
     expect(screen.getByText('Authoritative intraday & clean FIFO:')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Cancel' })).toHaveAttribute('href', '/investments/tradebook');
+    expect(screen.getByRole('link', { name: 'Cancel' })).toHaveAttribute('href', '/investments/activity');
   });
 
   it('asks for a target account, then a tradebook, then a tax P&L, and stays on step 1', async () => {

@@ -42,11 +42,13 @@ for (const viewport of VIEWPORTS) {
       api = makeApi(currentUser.cookie);
     });
 
-    test('the NPS tab follows EPF; with nothing yet it offers an upload and Add by hand', async ({ page }) => {
+    test('NPS sits under the Retirement tab; with nothing yet it offers an upload and Add by hand', async ({ page }) => {
       await page.goto('/investments');
-      await expect(page.getByRole('tab').nth(2)).toHaveText(/^NPS/);
-      await page.getByRole('tab', { name: /^NPS/ }).click();
-      await page.waitForURL('**/investments/nps');
+      await page.getByRole('tab', { name: /^Retirement/ }).click();
+      await page.waitForURL('**/investments/retirement');
+      await expect(page.getByRole('link', { name: 'Upload statement' }).first()).toHaveAttribute('href', /\/investments\/import\?type=nps/);
+      await page.goto('/investments/retirement/nps');
+      await expect(page.getByRole('tab', { name: /^Retirement/ })).toHaveAttribute('data-state', 'active');
       await expect(page.getByText('Track your NPS')).toBeVisible();
       await expect(page.getByRole('link', { name: 'Upload statement' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Add by hand' })).toBeVisible();
@@ -54,7 +56,7 @@ for (const viewport of VIEWPORTS) {
 
     test('adds an account with an opening balance: the hero and the schemes show it', async ({ page }) => {
       test.slow();
-      await page.goto('/investments/nps');
+      await page.goto('/investments/retirement/nps');
       await page.getByRole('button', { name: 'Add by hand' }).click();
       const dialog = page.getByRole('dialog', { name: 'Add NPS account' });
       await expect(dialog).toBeVisible();
@@ -80,7 +82,7 @@ for (const viewport of VIEWPORTS) {
     test('records a contribution and opens the scheme sheet', async ({ page }) => {
       test.slow();
       await createNpsAccount(api, await equityScheme(api));
-      await page.goto('/investments/nps');
+      await page.goto('/investments/retirement/nps');
       await expect(shown(page.getByText('NPS value', { exact: true }))).toBeVisible();
 
       await page.getByRole('button', { name: 'Record entry' }).click();
@@ -116,7 +118,7 @@ for (const viewport of VIEWPORTS) {
       await expect(toast(page, 'Recorded as an NPS contribution')).toBeVisible();
       await expect(row).toHaveCount(0);
 
-      await page.goto('/investments/nps');
+      await page.goto('/investments/retirement/nps');
       await expect(shown(page.getByText('Contribution · You'))).toBeVisible({ timeout: 45_000 });
       // Desktop shows it in the Source column, phone on the context line under the title.
       await expect(shown(entriesTable(page).getByRole('link', { name: 'Linked', exact: true }))).toBeVisible();
@@ -155,7 +157,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText(/entries? added/)).toBeVisible({ timeout: 45_000 });
 
       await page.getByRole('link', { name: 'Open NPS' }).click();
-      await page.waitForURL('**/investments/nps');
+      await page.waitForURL('**/investments/retirement/nps');
       await expect(shown(page.getByText('NPS value', { exact: true }))).toBeVisible({ timeout: 45_000 });
       await expect(shown(page.getByText('Contribution · You'))).toBeVisible({ timeout: 45_000 });
       await expect(shown(entriesTable(page).getByText('Statement'))).toBeVisible();

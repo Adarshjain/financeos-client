@@ -33,10 +33,11 @@ for (const viewport of VIEWPORTS) {
       seeded = await seedInstruments(makeApi(currentUser.cookie));
     });
 
-    test('lists the catalog with every row state, under the Investments tabs', async ({ page }) => {
+    test('lists the catalog with every row state, as a sub-page of Investments', async ({ page }) => {
       await page.goto(`/investments/instruments?q=${seeded.tag}`);
 
-      await expect(page.getByRole('tab', { name: /^Instruments/ })).toBeVisible();
+      // A sub-page: no Investments tab strip.
+      await expect(page.getByRole('tab')).toHaveCount(0);
       await expect(page.getByText('Prices from Yahoo (stocks, ETFs) and AMFI (funds)')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Refresh prices' })).toHaveCount(0);
 

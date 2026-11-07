@@ -19,7 +19,7 @@ const redirect = vi.hoisted(() =>
 vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined,
   redirect,
   useRouter: () => router,
-  usePathname: () => '/investments/tradebook',
+  usePathname: () => '/investments/activity',
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -72,7 +72,7 @@ beforeEach(() => {
   api.DELETE.mockResolvedValue({});
 });
 
-describe('/investments/tradebook: data', () => {
+describe('/investments/activity: data', () => {
   it('asks the server for the newest 25 trades with no filter', async () => {
     await renderPage();
     expect(tradebook.fetchTradebookPage).toHaveBeenCalledWith({
@@ -101,7 +101,7 @@ describe('/investments/tradebook: data', () => {
 
   it('shows the last page when the address is past the end', async () => {
     tradebook.fetchTradebookPage.mockResolvedValue(tradesPage([], { totalElements: 38, totalPages: 2 }));
-    await expect(renderPage({ page: '10', q: 'a' })).rejects.toThrow('REDIRECT /investments/tradebook?q=a&page=2');
+    await expect(renderPage({ page: '10', q: 'a' })).rejects.toThrow('REDIRECT /investments/activity?q=a&page=2');
   });
 
   it('says so when the trades cannot load', async () => {
@@ -121,7 +121,7 @@ describe('/investments/tradebook: data', () => {
   });
 });
 
-describe('/investments/tradebook: rows', () => {
+describe('/investments/activity: rows', () => {
   it('draws the desktop columns', async () => {
     await renderPage();
     for (const h of ['Date', 'Instrument', 'Type', 'Settlement', 'Qty', 'Price', 'Value', 'Charges']) {
@@ -167,7 +167,7 @@ describe('/investments/tradebook: rows', () => {
     unmount();
     await renderPage({ type: 'buy' });
     expect(screen.getByText('No trades match')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Clear filters' })).toHaveAttribute('href', '/investments/tradebook');
+    expect(screen.getByRole('link', { name: 'Clear filters' })).toHaveAttribute('href', '/investments/activity');
   });
 
   it('draws the skeleton while loading', () => {
@@ -176,7 +176,7 @@ describe('/investments/tradebook: rows', () => {
   });
 });
 
-describe('/investments/tradebook: the jobs line', () => {
+describe('/investments/activity: the jobs line', () => {
   it('links each View job to that exact job in Settings → Activity', async () => {
     await renderPage();
     expect(screen.getByText(/Last import 13 Oct, 11:02 am · 14 trades/)).toBeTruthy();
@@ -193,7 +193,7 @@ describe('/investments/tradebook: the jobs line', () => {
   });
 });
 
-describe('/investments/tradebook: filters', () => {
+describe('/investments/activity: filters', () => {
   it('searches after typing pauses, from the first page', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     await renderPage({ page: '2' });
@@ -202,7 +202,7 @@ describe('/investments/tradebook: filters', () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(400);
     });
-    expect(router.push).toHaveBeenCalledWith('/investments/tradebook?q=tcs', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/investments/activity?q=tcs', { scroll: false });
   });
 
   it('picks a broker from one dropdown chip, and the x of the changed chip clears it', async () => {
@@ -210,14 +210,14 @@ describe('/investments/tradebook: filters', () => {
     await renderPage();
     await user.click(screen.getByRole('button', { name: 'Broker' }));
     await user.click(await screen.findByRole('option', { name: 'Zerodha' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook?broker=b-zerodha', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity?broker=b-zerodha', { scroll: false });
   });
 
   it('shows a chosen broker as just its name, darker, with a x that resets it', async () => {
     await renderPage({ broker: 'b-groww' });
     expect(screen.getByRole('button', { name: 'Groww' }).className).not.toContain('bg-brand-tint');
     fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity', { scroll: false });
   });
 
   it('picks Buy or Sell from one Type dropdown chip', async () => {
@@ -225,7 +225,7 @@ describe('/investments/tradebook: filters', () => {
     await renderPage({ type: 'buy' });
     await user.click(screen.getByRole('button', { name: 'Buy' }));
     await user.click(await screen.findByRole('option', { name: 'Sell' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook?type=sell', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity?type=sell', { scroll: false });
   });
 
   it('resets everything with Reset filters, which shows only while a filter is changed', async () => {
@@ -234,7 +234,7 @@ describe('/investments/tradebook: filters', () => {
     unmount();
     await renderPage({ type: 'sell', q: 'tata' });
     fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity', { scroll: false });
   });
 
   it('picks a financial year', async () => {
@@ -242,7 +242,7 @@ describe('/investments/tradebook: filters', () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: fyLabel(currentFy()) }));
     await user.click(await screen.findByRole('option', { name: 'FY 25-26' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook?fy=2025', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity?fy=2025', { scroll: false });
   });
 
   it('defaults to the current FY and All years is chosen explicitly', async () => {
@@ -250,7 +250,7 @@ describe('/investments/tradebook: filters', () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: fyLabel(currentFy()) }));
     await user.click(await screen.findByRole('option', { name: 'All years' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook?fy=all', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity?fy=all', { scroll: false });
   });
 
   it('asks the server for every year when the address says fy=all', async () => {
@@ -262,11 +262,11 @@ describe('/investments/tradebook: filters', () => {
   it('pages through the server: next page and page size', async () => {
     await renderPage();
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook?page=2', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity?page=2', { scroll: false });
   });
 });
 
-describe('/investments/tradebook: edit and delete', () => {
+describe('/investments/activity: edit and delete', () => {
   async function openEdit() {
     await renderPage();
     fireEvent.click(screen.getAllByText('TATAMOTORS')[0]);
@@ -371,7 +371,7 @@ describe('/investments/tradebook: edit and delete', () => {
   });
 });
 
-describe('/investments/tradebook: filter row', () => {
+describe('/investments/activity: filter row', () => {
   it('is a FilterBar: search first with the default placeholder, then the chips, carrying their own bleed', async () => {
     await renderPage();
     const row = screen.getByPlaceholderText('Search').closest('div.overflow-x-auto') as HTMLElement;

@@ -47,7 +47,7 @@ test.describe('Corporate Actions UI (@ui)', () => {
       tradeDate: '2026-01-01',
     });
 
-    await page.goto('/investments/corporate-actions');
+    await page.goto('/investments/activity/corporate-actions');
 
     // 1. The top-bar + opens the record dialog.
     await page.getByRole('button', { name: 'Record corporate action', exact: true }).first().click();

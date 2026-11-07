@@ -35,14 +35,14 @@ for (const viewport of VIEWPORTS) {
       seeded = await seedHoldings(makeApi(currentUser.cookie));
     });
 
-    test('Holdings: the seven tabs, the figures and every row state', async ({ page }) => {
+    test('Holdings: the four tabs, the figures and every row state', async ({ page }) => {
       await page.goto('/investments');
       await expect(page).toHaveTitle('Investments · FinanceOS');
 
       await expect(page.getByRole('tab', { name: 'Holdings' })).toHaveAttribute('data-state', 'active');
       // The tab order, and no counts on any tab.
-      await expect(page.getByRole('main').getByRole('tab')).toHaveText(['Holdings', 'EPF', 'NPS', 'Dividends', 'Tradebook', 'F&O', 'Corporate actions', 'Instruments']);
-      await expect(page.getByRole('tab', { name: 'Tradebook' })).toHaveAttribute('href', '/investments/tradebook');
+      await expect(page.getByRole('main').getByRole('tab')).toHaveText(['Holdings', 'Retirement', 'Activity', 'F&O']);
+      await expect(page.getByRole('tab', { name: 'Activity' })).toHaveAttribute('href', '/investments/activity');
 
       // The hero names its headline figure at both sizes.
       await expect(page.getByText('Current value', { exact: true }).filter({ visible: true })).toHaveCount(1);

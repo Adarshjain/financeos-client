@@ -24,6 +24,11 @@ const PATH_ALIASES: Record<string, string> = {
   '/rewards/recommend': '/rewards/which-card',
   '/settings/ingest': '/transactions/import',
   '/loans/calendar': '/upcoming',
+  '/investments/epf': '/investments/retirement/epf',
+  '/investments/nps': '/investments/retirement/nps',
+  '/investments/tradebook': '/investments/activity',
+  '/investments/dividends': '/investments/activity/dividends',
+  '/investments/corporate-actions': '/investments/activity/corporate-actions',
 };
 
 /** Old path prefixes that moved with their sub-pages: `/loans/lendings` and `/loans/lendings/{id}` live at `/lending`. */

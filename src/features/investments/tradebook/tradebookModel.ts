@@ -10,7 +10,7 @@ import type { JobResponse } from '@/lib/jobs.types';
 import type { ImportCommitResult, InvestmentTransactionResponse } from '@/lib/types';
 
 /** The Tradebook page's own address (always the Dinero route, whatever the tab links point at). */
-export const TRADEBOOK_HREF = `${DS_PREFIX}/investments/tradebook`;
+export const TRADEBOOK_HREF = `${DS_PREFIX}/investments/activity`;
 
 // ---- URL state ---------------------------------------------------------------
 

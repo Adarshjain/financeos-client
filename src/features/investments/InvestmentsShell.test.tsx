@@ -44,48 +44,32 @@ beforeEach(() => {
 });
 
 describe('InvestmentsShell', () => {
-  it('shows the eight tabs with Holdings active and the page below them', () => {
+  it('shows the four tabs with Holdings active and the page below them', () => {
     renderShell();
-    expect(tabTexts()).toEqual([
-      'Holdings',
-      'EPF',
-      'NPS',
-      'Dividends',
-      'Tradebook',
-      'F&O',
-      'Corporate actions',
-      'Instruments',
-    ]);
+    expect(tabTexts()).toEqual(['Holdings', 'Retirement', 'Activity', 'F&O']);
     expect(screen.getByRole('tab', { name: 'Holdings' })).toHaveAttribute('data-state', 'active');
     expect(screen.getByText('tab body')).toBeInTheDocument();
-  });
-
-  it('shows no counts on any tab', () => {
-    renderShell();
-    expect(tabTexts()).toEqual(['Holdings', 'EPF', 'NPS', 'Dividends', 'Tradebook', 'F&O', 'Corporate actions', 'Instruments']);
   });
 
   it('links every tab to its Dinero page', () => {
     renderShell();
     const href = (label: RegExp) => screen.getByRole('tab', { name: label }).getAttribute('href');
     expect(href(/^Holdings/)).toBe('/investments');
-    expect(href(/^EPF/)).toBe('/investments/epf');
-    expect(href(/^NPS/)).toBe('/investments/nps');
-    expect(href(/^Tradebook/)).toBe('/investments/tradebook');
-    expect(href(/^Dividends/)).toBe('/investments/dividends');
+    expect(href(/^Retirement/)).toBe('/investments/retirement');
+    expect(href(/^Activity/)).toBe('/investments/activity');
     expect(href(/^F&O/)).toBe('/investments/fno');
-    expect(href(/^Corporate actions/)).toBe('/investments/corporate-actions');
-    expect(href(/^Instruments/)).toBe('/investments/instruments');
   });
 
-  it('marks the tab the pathname is on', () => {
+  it('marks the tab the pathname is on, nested screens included', () => {
     const cases: [string, string][] = [
       ['/investments', 'Holdings'],
-      ['/investments/tradebook', 'Tradebook'],
-      ['/investments/dividends', 'Dividends'],
+      ['/investments/retirement', 'Retirement'],
+      ['/investments/retirement/epf', 'Retirement'],
+      ['/investments/retirement/nps', 'Retirement'],
+      ['/investments/activity', 'Activity'],
+      ['/investments/activity/dividends', 'Activity'],
+      ['/investments/activity/corporate-actions', 'Activity'],
       ['/investments/fno', 'F&O'],
-      ['/investments/corporate-actions', 'Corporate actions'],
-      ['/investments/instruments', 'Instruments'],
     ];
     for (const [path, label] of cases) {
       pathname = path;
@@ -109,11 +93,10 @@ describe('InvestmentsShell', () => {
 
   it.each([
     ['/investments', 'trade', 'Record trade'],
-    ['/investments/epf', 'epf', 'Record EPF entry'],
-    ['/investments/nps', 'nps', 'Add NPS account'],
-    ['/investments/dividends', 'dividend', 'Record dividend'],
-    ['/investments/corporate-actions', 'action', 'Record corporate action'],
-    ['/investments/instruments', 'instrument', 'Add instrument'],
+    ['/investments/retirement/epf', 'epf', 'Record EPF entry'],
+    ['/investments/retirement/nps', 'nps', 'Add NPS account'],
+    ['/investments/activity/dividends', 'dividend', 'Record dividend'],
+    ['/investments/activity/corporate-actions', 'action', 'Record corporate action'],
   ])('opens the dialog of %s with the top bar + (labelled verb and object)', async (path, dialog, label) => {
     pathname = path;
     renderShell();
@@ -125,7 +108,7 @@ describe('InvestmentsShell', () => {
   });
 
   it.each([
-    ['/investments/tradebook', 'trade', 'Add trade', 'Record trade', 'Import tradebook'],
+    ['/investments/activity', 'trade', 'Add trade', 'Record trade', 'Import tradebook'],
     ['/investments/fno', 'fno', 'Add F&O trade', 'Record F&O trade', 'Import statement'],
   ])('makes the + on %s a menu with the add and the import', async (path, dialog, buttonLabel, addLabel, importLabel) => {
     pathname = path;
@@ -137,12 +120,19 @@ describe('InvestmentsShell', () => {
     expect(await screen.findByTestId(`dialog-${dialog}`)).toBeInTheDocument();
   });
 
-  it('keeps the + a plain button on Holdings, Dividends, Corporate actions and Instruments', () => {
+  it('makes the + on Retirement a menu of the two uploads, to the same import flows', () => {
+    pathname = '/investments/retirement';
+    renderShell();
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Upload statement' })[0], { button: 0 });
+    expect(screen.getByRole('menuitem', { name: 'EPF passbook' })).toHaveAttribute('href', '/investments/import?type=epf');
+    expect(screen.getByRole('menuitem', { name: 'NPS statement' })).toHaveAttribute('href', '/investments/import?type=nps');
+  });
+
+  it('keeps the + a plain button on Holdings, Dividends and Corporate actions', () => {
     for (const [path, label] of [
       ['/investments', 'Record trade'],
-      ['/investments/dividends', 'Record dividend'],
-      ['/investments/corporate-actions', 'Record corporate action'],
-      ['/investments/instruments', 'Add instrument'],
+      ['/investments/activity/dividends', 'Record dividend'],
+      ['/investments/activity/corporate-actions', 'Record corporate action'],
     ]) {
       pathname = path;
       const { unmount } = renderShell();

@@ -46,14 +46,14 @@ describe('tradebook URL state', () => {
 
   it('writes All years as fy=all and keeps the current FY out of the URL', () => {
     expect(parseTradebookUrl({ fy: 'all' }).fy).toBeNull();
-    expect(tradebookUrl(parseTradebookUrl({ fy: 'all' }))).toBe('/investments/tradebook?fy=all');
-    expect(tradebookUrl(parseTradebookUrl({ fy: String(currentFy()) }))).toBe('/investments/tradebook');
+    expect(tradebookUrl(parseTradebookUrl({ fy: 'all' }))).toBe('/investments/activity?fy=all');
+    expect(tradebookUrl(parseTradebookUrl({ fy: String(currentFy()) }))).toBe('/investments/activity');
   });
 
   it('keeps defaults out of the URL and round-trips the rest', () => {
-    expect(tradebookUrl(parseTradebookUrl({}))).toBe('/investments/tradebook');
+    expect(tradebookUrl(parseTradebookUrl({}))).toBe('/investments/activity');
     const state = parseTradebookUrl({ q: 'tcs', broker: 'b1', type: 'buy', fy: '2025', page: '2', size: '100' });
-    expect(tradebookUrl(state)).toBe('/investments/tradebook?q=tcs&broker=b1&type=buy&fy=2025&page=2&size=100');
+    expect(tradebookUrl(state)).toBe('/investments/activity?q=tcs&broker=b1&type=buy&fy=2025&page=2&size=100');
     expect(parseTradebookUrl(Object.fromEntries(new URL(tradebookUrl(state), 'http://x').searchParams))).toEqual(state);
   });
 

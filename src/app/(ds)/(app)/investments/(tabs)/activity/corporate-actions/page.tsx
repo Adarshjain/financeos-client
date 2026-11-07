@@ -13,7 +13,7 @@ import { loaded } from '@/features/shell/loadHelpers';
 import { clampPage } from '@/features/shell/pagination';
 import type { SearchParams } from '@/features/shell/searchParams';
 
-/** /investments/corporate-actions: the recorded actions. The filters, sort and page are in the URL and answered by the server. */
+/** /investments/activity/corporate-actions: the recorded actions. The filters, sort and page are in the URL and answered by the server. */
 export default async function DsCorporateActionsPage({ searchParams }: { searchParams: SearchParams }) {
   const state = parseCorporateActionsUrl(await searchParams);
   const list = await loaded(fetchCorporateActionsPage(corporateActionsQuery(state)));

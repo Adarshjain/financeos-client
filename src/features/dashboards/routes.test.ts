@@ -9,7 +9,7 @@ describe('dashboard routes', () => {
     expect(dashboardHref('d1')).toBe('/dashboards/d1');
     expect(NEW_DASHBOARD_HREF).toBe('/dashboards/new');
     expect(DASHBOARDS_HREF).toBe('/dashboards');
-    expect(HOME_HREF).toBe('/dashboard');
+    expect(HOME_HREF).toBe('/home');
     expect(editDashboardHref('d1')).toBe('/dashboards/d1?edit=1');
     expect(appHref('/dashboards/d1?edit=1')).toBe('/dashboards/d1?edit=1');
   });

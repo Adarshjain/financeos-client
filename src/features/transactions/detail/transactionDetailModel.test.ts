@@ -141,10 +141,10 @@ describe('linkRows', () => {
     );
     expect(rows.map((r) => (r.kind === 'record' ? [r.href, r.unlink] : null))).toEqual([
       ['/lending/p1', 'now'],
-      ['/investments/dividends?instrumentId=i1', 'now'],
+      ['/investments/activity/dividends?instrumentId=i1', 'now'],
       ['/loans/loan1', 'confirm'],
       ['/loans/loan1', null],
-      ['/investments/epf', 'now'],
+      ['/investments/retirement/epf', 'now'],
     ]);
     expect(rows[1]).toMatchObject({ subtitle: '₹1,200.00' });
   });
@@ -158,7 +158,7 @@ describe('linkRows, NPS contribution', () => {
       [{ kind: 'NPS_CONTRIBUTION', id: 'n1', parentId: 'acc1', label: 'NPS · Tier I · Contribution' }],
       () => '',
     );
-    expect(rows[0]).toMatchObject({ kind: 'record', href: '/investments/nps', unlink: 'now', title: 'NPS · Tier I · Contribution' });
+    expect(rows[0]).toMatchObject({ kind: 'record', href: '/investments/retirement/nps', unlink: 'now', title: 'NPS · Tier I · Contribution' });
   });
 });
 

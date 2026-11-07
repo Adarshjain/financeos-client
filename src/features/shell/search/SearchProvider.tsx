@@ -28,7 +28,11 @@ export function useSearch(): SearchValue {
   return React.useContext(SearchContext);
 }
 
-const PAGES: SearchPage[] = [...shellRailGroups.flatMap((g) => g.items), ...shellFooterItems].map(({ id, label, icon, href }) => ({ id, label, icon, href }));
+const PAGES: SearchPage[] = [
+  ...[...shellRailGroups.flatMap((g) => g.items), ...shellFooterItems].map(({ id, label, icon, href }) => ({ id, label, icon, href })),
+  // Instruments left the Investments tab strip: it stays findable here.
+  { id: 'instruments', label: 'Instruments', icon: 'chart-line-up', href: '/investments/instruments' },
+];
 
 /** Owns the search palette (open state and text) for the signed-in Dinero shell and renders it once; ⌘K / Ctrl+K toggles it. */
 export function SearchProvider({ children }: { children: React.ReactNode }) {

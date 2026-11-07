@@ -12,7 +12,7 @@ const redirect = vi.hoisted(() =>
     throw new Error(`REDIRECT ${to}`);
   }),
 );
-vi.mock('next/navigation', () => ({ redirect, useRouter: () => router, usePathname: () => '/investments/epf' }));
+vi.mock('next/navigation', () => ({ redirect, useRouter: () => router, usePathname: () => '/investments/retirement/epf' }));
 vi.mock('@/lib/date-range', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/date-range')>()), todayInAppZone: () => '2026-10-27' }));
 vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: [] }) }));
 vi.mock('@/features/transactions/TransactionPickerField', () => ({ TransactionPickerField: () => <div /> }));
@@ -38,7 +38,7 @@ beforeEach(() => {
   server.fetchEpfEntries.mockResolvedValue(page());
 });
 
-describe('/investments/epf: data', () => {
+describe('/investments/retirement/epf: data', () => {
   it('asks for the current employer and the newest FY with entries, one request each', async () => {
     await renderPage();
     expect(server.fetchEpfSummary).toHaveBeenCalledTimes(1);
@@ -104,6 +104,6 @@ describe('/investments/epf: data', () => {
 
   it('sends a page past the end to the last page', async () => {
     server.fetchEpfEntries.mockResolvedValue(page(entries, { totalElements: 60, totalPages: 3 }));
-    await expect(renderPage({ page: '8' })).rejects.toThrow('REDIRECT /investments/epf?page=3');
+    await expect(renderPage({ page: '8' })).rejects.toThrow('REDIRECT /investments/retirement/epf?page=3');
   });
 });

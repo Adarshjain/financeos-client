@@ -1,19 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { activeInvestmentsTab, holdingHref, investmentsTabHref, investmentsTabs } from './investmentsTabs';
+import { activeActivityChoice, activeInvestmentsTab, activeInvestmentsView, holdingHref, investmentsTabHref, investmentsTabs } from './investmentsTabs';
 
 describe('investments tabs', () => {
-  it('lists the eight tabs in owner order', () => {
-    expect(investmentsTabs.map((t) => t.label)).toEqual([
-      'Holdings',
-      'EPF',
-      'NPS',
-      'Dividends',
-      'Tradebook',
-      'F&O',
-      'Corporate actions',
-      'Instruments',
-    ]);
+  it('lists the four tabs in order', () => {
+    expect(investmentsTabs.map((t) => t.label)).toEqual(['Holdings', 'Retirement', 'Activity', 'F&O']);
   });
 
   it('carries no counts', () => {
@@ -23,22 +14,41 @@ describe('investments tabs', () => {
   it('sends every tab to its Dinero page', () => {
     const hrefs = Object.fromEntries(investmentsTabs.map((t) => [t.id, investmentsTabHref(t)]));
     expect(hrefs.holdings).toBe('/investments');
-    expect(hrefs.epf).toBe('/investments/epf');
-    expect(hrefs.nps).toBe('/investments/nps');
-    expect(hrefs.tradebook).toBe('/investments/tradebook');
+    expect(hrefs.retirement).toBe('/investments/retirement');
+    expect(hrefs.activity).toBe('/investments/activity');
     expect(hrefs.fno).toBe('/investments/fno');
-    expect(hrefs['corporate-actions']).toBe('/investments/corporate-actions');
   });
 
   it('finds the active tab from the pathname, Holdings for anything else', () => {
     expect(activeInvestmentsTab('/investments')).toBe('holdings');
-    expect(activeInvestmentsTab('/investments/epf')).toBe('epf');
-    expect(activeInvestmentsTab('/investments/nps')).toBe('nps');
     expect(activeInvestmentsTab('/investments/')).toBe('holdings');
-    expect(activeInvestmentsTab('/investments/dividends')).toBe('dividends');
-    expect(activeInvestmentsTab('/investments/corporate-actions/')).toBe('corporate-actions');
     expect(activeInvestmentsTab('/investments/i1')).toBe('holdings');
+    expect(activeInvestmentsTab('/investments/instruments')).toBe('holdings');
+    expect(activeInvestmentsTab('/investments/import')).toBe('holdings');
+    expect(activeInvestmentsTab('/investments/fno')).toBe('fno');
     expect(activeInvestmentsTab(null)).toBe('holdings');
+  });
+
+  it('lights Retirement on every path under /investments/retirement and Activity under /investments/activity', () => {
+    expect(activeInvestmentsTab('/investments/retirement')).toBe('retirement');
+    expect(activeInvestmentsTab('/investments/retirement/')).toBe('retirement');
+    expect(activeInvestmentsTab('/investments/retirement/epf')).toBe('retirement');
+    expect(activeInvestmentsTab('/investments/retirement/nps')).toBe('retirement');
+    expect(activeInvestmentsTab('/investments/activity')).toBe('activity');
+    expect(activeInvestmentsTab('/investments/activity/dividends')).toBe('activity');
+    expect(activeInvestmentsTab('/investments/activity/corporate-actions/')).toBe('activity');
+  });
+
+  it('names the Activity choice and the screen of a pathname', () => {
+    expect(activeActivityChoice('/investments/activity')).toBe('trades');
+    expect(activeActivityChoice('/investments/activity/dividends')).toBe('dividends');
+    expect(activeActivityChoice('/investments/activity/corporate-actions')).toBe('corporate-actions');
+    expect(activeInvestmentsView('/investments/activity/dividends')).toBe('dividends');
+    expect(activeInvestmentsView('/investments/activity')).toBe('trades');
+    expect(activeInvestmentsView('/investments/retirement')).toBe('retirement');
+    expect(activeInvestmentsView('/investments/retirement/epf')).toBe('epf');
+    expect(activeInvestmentsView('/investments/retirement/nps')).toBe('nps');
+    expect(activeInvestmentsView('/investments')).toBe('holdings');
   });
 
   it("builds a holding's own page address", () => {

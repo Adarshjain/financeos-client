@@ -15,7 +15,7 @@ const VIEWPORTS = [
   { name: 'phone 390px', width: 390, height: 844 },
 ];
 
-const PAGE = '/investments/dividends';
+const PAGE = '/investments/activity/dividends';
 
 /** The copy of a figure drawn once for the phone and once for the desktop: the one on screen. */
 const shown = (locator: Locator) => locator.locator('visible=true').first();
@@ -49,7 +49,8 @@ for (const viewport of VIEWPORTS) {
     test('the figures, the filters, every receipt word and the cards', async ({ page }) => {
       await page.goto(PAGE);
 
-      await expect(page.getByRole('tab', { name: 'Dividends' })).toBeVisible();
+      await expect(page.getByRole('tab', { name: 'Activity' })).toHaveAttribute('data-state', 'active');
+      await expect(page.getByRole('radio', { name: 'Dividends' })).toBeChecked();
       await expect(shown(page.getByText(/^Received( this FY)?$/))).toBeVisible();
       await expect(shown(page.getByText('TDS', { exact: true }))).toBeVisible();
       await expect(shown(page.getByText('Not received', { exact: true }))).toBeVisible();

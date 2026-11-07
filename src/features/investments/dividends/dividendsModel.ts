@@ -13,7 +13,7 @@ import type { MatchReason, UnrecordedCredit } from './receiptTypes';
 // ---- URL state ---------------------------------------------------------------
 
 /** The Dividends tab address. It carries the Dinero prefix itself so it stays right once the prefix is dropped. */
-export const DIVIDENDS_HREF = `${DS_PREFIX}/investments/dividends`;
+export const DIVIDENDS_HREF = `${DS_PREFIX}/investments/activity/dividends`;
 
 export const DIVIDENDS_SIZE_OPTIONS = [25, 50, 100];
 /** The by-instrument card pages in tens. */

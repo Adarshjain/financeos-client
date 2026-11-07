@@ -10,29 +10,29 @@ import { areaCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
-import { activeInvestmentsTab, INVESTMENTS_IMPORT_HREF, investmentsTabHref, type InvestmentsTabId, investmentsTabs } from './investmentsTabs';
+import { activeInvestmentsTab, activeInvestmentsView, INVESTMENTS_IMPORT_HREF, investmentsTabHref, investmentsTabs,type InvestmentsViewId } from './investmentsTabs';
 import {
   loadCorporateActionDialog,
   loadDividendAddDialog,
   loadEpfAddDialog,
   loadFnoAddDialog,
-  loadInstrumentAddDialog,
   loadNpsAccountDialog,
   loadRecordTradeDialog,
 } from './lazyDialogs';
+import { NPS_UPLOAD_HREF } from './nps/npsImportModel';
+import { EPF_UPLOAD_HREF } from './retirement/retirementModel';
 
 // The add dialogs are not in the page: the open tab's loads when its + is pressed (see useLazyDialog).
 
-/** The lazy add dialog of the open tab. */
-function useAddDialog(tab: InvestmentsTabId) {
+/** The lazy add dialog of the open screen. */
+function useAddDialog(view: InvestmentsViewId) {
   const dividends = useLazyDialog(loadDividendAddDialog);
   const epf = useLazyDialog(loadEpfAddDialog);
   const nps = useLazyDialog(loadNpsAccountDialog);
   const fno = useLazyDialog(loadFnoAddDialog);
   const corporateActions = useLazyDialog(loadCorporateActionDialog);
-  const instruments = useLazyDialog(loadInstrumentAddDialog);
   const trade = useLazyDialog(loadRecordTradeDialog);
-  switch (tab) {
+  switch (view) {
     case 'dividends':
       return dividends;
     case 'epf':
@@ -43,23 +43,21 @@ function useAddDialog(tab: InvestmentsTabId) {
       return fno;
     case 'corporate-actions':
       return corporateActions;
-    case 'instruments':
-      return instruments;
     default:
       return trade;
   }
 }
 
-/** The top bar's + wording per tab: verb plus object. Tradebook and F&O open a menu whose rows say it. */
-const ADD_LABELS: Record<InvestmentsTabId, string | undefined> = {
+/** The top bar's + wording per screen: verb plus object. Trades, F&O and Retirement open a menu whose rows say it. */
+const ADD_LABELS: Record<InvestmentsViewId, string | undefined> = {
   holdings: 'Record trade',
+  retirement: 'Upload statement',
   epf: 'Record EPF entry',
   nps: 'Add NPS account',
   dividends: 'Record dividend',
-  tradebook: 'Add trade',
+  trades: 'Add trade',
   fno: 'Add F&O trade',
   'corporate-actions': 'Record corporate action',
-  instruments: 'Add instrument',
 };
 
 /**
@@ -69,25 +67,32 @@ const ADD_LABELS: Record<InvestmentsTabId, string | undefined> = {
  * `(tabs)` route group, so they render on their own, without the strip.
  */
 export function InvestmentsShell({ children }: { children: React.ReactNode }) {
-  const tab = activeInvestmentsTab(usePathname());
+  const pathname = usePathname();
+  const tab = activeInvestmentsTab(pathname);
+  const view = activeInvestmentsView(pathname);
   const [adding, setAdding] = React.useState(false);
-  const addDialog = useAddDialog(tab);
+  const addDialog = useAddDialog(view);
   const openAdd = () => void addDialog.run(() => setAdding(true));
   const close = () => setAdding(false);
 
-  // Tradebook and F&O: the + is a menu of the add and the import; the other tabs add directly.
+  // Trades and F&O: the + is a menu of the add and the import; Retirement's is a menu of the two uploads; the other screens add directly.
   const addMenu: TopBarMenuItem[] | undefined =
-    tab === 'tradebook'
+    view === 'trades'
       ? [
           { id: 'add', label: 'Record trade', onSelect: openAdd },
           { id: 'import', label: 'Import tradebook', asChild: true, children: <Link href={INVESTMENTS_IMPORT_HREF} /> },
         ]
-      : tab === 'fno'
+      : view === 'fno'
         ? [
             { id: 'add', label: 'Record F&O trade', onSelect: openAdd },
             { id: 'import', label: 'Import statement', asChild: true, children: <Link href={INVESTMENTS_IMPORT_HREF} /> },
           ]
-        : undefined;
+        : view === 'retirement'
+          ? [
+              { id: 'epf', label: 'EPF passbook', asChild: true, children: <Link href={EPF_UPLOAD_HREF} /> },
+              { id: 'nps', label: 'NPS statement', asChild: true, children: <Link href={NPS_UPLOAD_HREF} /> },
+            ]
+          : undefined;
 
   const items: TabItem[] = investmentsTabs.map((t) => ({
     value: t.id,
@@ -98,7 +103,7 @@ export function InvestmentsShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <ShellPage crumb={areaCrumb('investments')} title="Investments" flushTop onAdd={openAdd} addLoading={addDialog.loading} addMenu={addMenu} addLabel={ADD_LABELS[tab]}>
+      <ShellPage crumb={areaCrumb('investments')} title="Investments" flushTop onAdd={openAdd} addLoading={addDialog.loading} addMenu={addMenu} addLabel={ADD_LABELS[view]}>
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
           <Tabs items={items} value={tab} />
           {children}

@@ -15,19 +15,19 @@ const VIEWPORTS = [
 /** Each tab, and the dialog its top-bar + opens. Holdings and Tradebook both record a trade. */
 const TABS = [
   { path: '/investments', dialog: 'Record trade' },
-  { path: '/investments/tradebook', dialog: 'Record trade' },
-  { path: '/investments/dividends', dialog: 'Record dividend' },
+  { path: '/investments/activity', dialog: 'Record trade' },
+  { path: '/investments/activity/dividends', dialog: 'Record dividend' },
   { path: '/investments/fno', dialog: 'Record F&O trade' },
-  { path: '/investments/corporate-actions', dialog: 'Record corporate action' },
+  { path: '/investments/activity/corporate-actions', dialog: 'Record corporate action' },
   { path: '/investments/instruments', dialog: 'Add instrument' },
 ];
 
-const MENU_TABS = new Set(['/investments/tradebook', '/investments/fno']);
+const MENU_TABS = new Set(['/investments/activity', '/investments/fno']);
 
 /** The top-bar + names its verb and object; on Tradebook and F&O it opens a menu and says "Add trade" / "Add F&O trade". */
 const plus = (page: Page, name: string) => page.getByRole('button', { name, exact: true }).first();
 const plusName = (tab: { path: string; dialog: string }) =>
-  tab.path === '/investments/tradebook' ? 'Add trade' : tab.path === '/investments/fno' ? 'Add F&O trade' : tab.dialog;
+  tab.path === '/investments/activity' ? 'Add trade' : tab.path === '/investments/fno' ? 'Add F&O trade' : tab.dialog;
 
 for (const viewport of VIEWPORTS) {
   test.describe(`/ds Investments top-bar +, ${viewport.name} (@ui)`, () => {
@@ -66,7 +66,7 @@ for (const viewport of VIEWPORTS) {
       await dialog.getByRole('button', { name: 'Record buy' }).click();
       await expect(dialog).toHaveCount(0);
 
-      await page.goto('/investments/tradebook');
+      await page.goto('/investments/activity');
       await expect(page.getByText(seeded.tcs.symbol, { exact: true }).locator('visible=true').first()).toBeVisible();
       await expect(page.getByText(/2,247/).locator('visible=true').first()).toBeVisible();
     });

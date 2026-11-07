@@ -22,7 +22,7 @@ const newAccount = item({
   kind: 'nps_new_account',
   section: 'needs_look',
   title: 'New NPS account found in Gmail',
-  href: '/investments/nps',
+  href: '/investments/retirement/nps',
   refs: { npsPendingId: 'p1' },
   actions: [
     action({ type: 'nps_add_self', label: 'Add as mine' }),
@@ -35,7 +35,7 @@ const password = item({
   kind: 'nps_password',
   section: 'needs_look',
   title: 'NPS statement needs its password',
-  href: '/investments/nps',
+  href: '/investments/retirement/nps',
   refs: { npsPendingId: 'p2' },
   actions: [action({ type: 'nps_password', label: 'Enter password' }), action({ type: 'dismiss', label: 'Dismiss' })],
 });
@@ -66,7 +66,7 @@ describe('InboxScreen, NPS Gmail rows', () => {
 
   it('Enter password is a link to the NPS tab', async () => {
     renderWithQuery(<InboxScreen />);
-    expect(await screen.findByRole('link', { name: 'Enter password' })).toHaveAttribute('href', '/investments/nps');
+    expect(await screen.findByRole('link', { name: 'Enter password' })).toHaveAttribute('href', '/investments/retirement/nps');
   });
 });
 
@@ -99,9 +99,9 @@ describe('InboxScreen, nps_setup row', () => {
           kind: 'nps_setup',
           section: 'needs_look',
           title: 'Looks like you invest in NPS',
-          href: '/investments/nps',
+          href: '/investments/retirement/nps',
           actions: [
-            action({ type: 'open', label: 'Open', href: '/investments/nps' }),
+            action({ type: 'open', label: 'Open', href: '/investments/retirement/nps' }),
             action({ type: 'nps_setup_not_nps', label: 'Not NPS' }),
             action({ type: 'dismiss', label: 'Dismiss' }),
           ],
@@ -110,7 +110,7 @@ describe('InboxScreen, nps_setup row', () => {
     } as never);
     vi.mocked(api.POST).mockResolvedValue({ data: {} } as never);
     renderWithQuery(<InboxScreen />);
-    expect(await screen.findByRole('link', { name: 'Set up' })).toHaveAttribute('href', '/investments/nps');
+    expect(await screen.findByRole('link', { name: 'Set up' })).toHaveAttribute('href', '/investments/retirement/nps');
     await userEvent.click(await screen.findByRole('button', { name: 'More options' }));
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Not NPS' }));
     await waitFor(() => expect(api.POST).toHaveBeenCalledWith('/api/v1/nps/setup/not-nps'));

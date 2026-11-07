@@ -91,7 +91,7 @@ test.describe('Dividend receipt reconciliation UI (@ui)', () => {
     // A dividend-like credit nobody recorded is what puts the Reconcile banner on the page.
     await createTransaction(api, bank.id, { amount: 500, date: todayString(-5), description: narr(old.name) });
 
-    await page.goto('/investments/dividends');
+    await page.goto('/investments/activity/dividends');
     await page.getByRole('button', { name: 'Reconcile', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Find matches' }).click();

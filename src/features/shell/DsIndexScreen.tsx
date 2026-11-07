@@ -83,17 +83,17 @@ export function DsIndexScreen() {
           <ListRow asChild title="Holding detail" subtitle="/investments/[id]" chevron>
             <Link href="/investments" />
           </ListRow>
-          <ListRow asChild title="Tradebook" subtitle="/investments/tradebook" chevron>
-            <Link href="/investments/tradebook" />
+          <ListRow asChild title="Tradebook" subtitle="/investments/activity" chevron>
+            <Link href="/investments/activity" />
           </ListRow>
-          <ListRow asChild title="Dividends" subtitle="/investments/dividends" chevron>
-            <Link href="/investments/dividends" />
+          <ListRow asChild title="Dividends" subtitle="/investments/activity/dividends" chevron>
+            <Link href="/investments/activity/dividends" />
           </ListRow>
           <ListRow asChild title="F&O" subtitle="/investments/fno" chevron>
             <Link href="/investments/fno" />
           </ListRow>
-          <ListRow asChild title="Corporate actions" subtitle="/investments/corporate-actions" chevron>
-            <Link href="/investments/corporate-actions" />
+          <ListRow asChild title="Corporate actions" subtitle="/investments/activity/corporate-actions" chevron>
+            <Link href="/investments/activity/corporate-actions" />
           </ListRow>
           <ListRow asChild title="Instruments" subtitle="/investments/instruments" chevron>
             <Link href="/investments/instruments" />

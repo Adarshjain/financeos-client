@@ -224,14 +224,14 @@ describe('EpfScreen: the FY and employer choices and the pager', () => {
     renderWithQuery(<EpfScreen {...props({}, base, [employer()], parseEpfUrl({ page: '1' }))} />);
     fireEvent.click(screen.getByRole('button', { name: 'FY 26-27' }));
     fireEvent.click(await screen.findByRole('option', { name: 'FY 25-26' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/epf?fy=2025', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/investments/retirement/epf?fy=2025', { scroll: false });
   });
 
   it('offers every year', async () => {
     renderWithQuery(<EpfScreen {...props()} />);
     fireEvent.click(screen.getByRole('button', { name: 'FY 26-27' }));
     fireEvent.click(await screen.findByRole('option', { name: 'All years' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/epf?fy=all', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/investments/retirement/epf?fy=all', { scroll: false });
   });
 
   it('has no employer select with a single employer', () => {
@@ -258,7 +258,7 @@ describe('EpfScreen: the FY and employer choices and the pager', () => {
     expect(screen.getByRole('button', { name: 'FY 26-27' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: employers[0].name }));
     fireEvent.click(await screen.findByRole('option', { name: 'Contoso Systems' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/epf?fy=2026&employer=e2', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/investments/retirement/epf?fy=2026&employer=e2', { scroll: false });
   });
 
   it('a new employer keeps All years', async () => {
@@ -279,13 +279,13 @@ describe('EpfScreen: the FY and employer choices and the pager', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: employers[0].name }));
     fireEvent.click(await screen.findByRole('option', { name: 'All employers' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/epf?fy=all&employer=all', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/investments/retirement/epf?fy=all&employer=all', { scroll: false });
   });
 
   it('pages in the address', () => {
     renderWithQuery(<EpfScreen {...props({ totalElements: 60, totalPages: 3 }, base, [employer()], parseEpfUrl({ page: '1' }))} />);
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/investments/epf?page=2', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/investments/retirement/epf?page=2', { scroll: false });
   });
 });
 

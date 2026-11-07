@@ -122,12 +122,12 @@ describe('rowButtons, NPS Gmail rows', () => {
     const row = item({
       key: 'nps_password:p1',
       kind: 'nps_password',
-      href: '/investments/nps',
+      href: '/investments/retirement/nps',
       refs: { npsPendingId: 'p1' },
       actions: [action({ type: 'nps_password', label: 'Enter password' }), action({ type: 'dismiss', label: 'Dismiss' })],
     });
     expect(rowButtons(row)).toEqual([
-      { id: 'nps_password', label: 'Enter password', variant: 'secondary', href: '/investments/nps' },
+      { id: 'nps_password', label: 'Enter password', variant: 'secondary', href: '/investments/retirement/nps' },
     ]);
   });
 
@@ -159,15 +159,15 @@ describe('rowButtons, nps_setup row', () => {
   const row = item({
     key: 'nps_setup',
     kind: 'nps_setup',
-    href: '/investments/nps',
+    href: '/investments/retirement/nps',
     actions: [
-      action({ type: 'open', label: 'Open', href: '/investments/nps' }),
+      action({ type: 'open', label: 'Open', href: '/investments/retirement/nps' }),
       action({ type: 'nps_setup_not_nps', label: 'Not NPS' }),
       action({ type: 'dismiss', label: 'Dismiss' }),
     ],
   });
   it('has one inline Set up link and Not NPS in the menu', () => {
-    expect(rowButtons(row)).toEqual([{ id: 'nps_setup', label: 'Set up', variant: 'secondary', href: '/investments/nps' }]);
+    expect(rowButtons(row)).toEqual([{ id: 'nps_setup', label: 'Set up', variant: 'secondary', href: '/investments/retirement/nps' }]);
     expect(rowMenuActions(row)).toEqual([{ id: 'nps_setup_not_nps', label: 'Not NPS', nps: 'setup_not_nps' }]);
   });
 });

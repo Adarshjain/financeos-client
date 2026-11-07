@@ -16,7 +16,7 @@ const redirect = vi.hoisted(() =>
 vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined,
   redirect,
   useRouter: () => router,
-  usePathname: () => '/investments/dividends',
+  usePathname: () => '/investments/activity/dividends',
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -127,7 +127,7 @@ beforeEach(() => {
   http.DELETE.mockResolvedValue({});
 });
 
-describe('/investments/dividends: data', () => {
+describe('/investments/activity/dividends: data', () => {
   it('asks for the current FY by default, with every FY in the summary and the by-instrument card over three years', async () => {
     await renderPage();
     expect(server.fetchDividends).toHaveBeenCalledWith({ ...FILTERS, fy: 2026 }, 0, 25);
@@ -158,7 +158,7 @@ describe('/investments/dividends: data', () => {
 
   it('shows the last page when the address is past the end', async () => {
     server.fetchDividends.mockResolvedValue(list([], { totalElements: 60, totalPages: 3 }));
-    await expect(renderPage({ page: '6' })).rejects.toThrow('REDIRECT /investments/dividends?page=3');
+    await expect(renderPage({ page: '6' })).rejects.toThrow('REDIRECT /investments/activity/dividends?page=3');
   });
 
   it('says the list failed and offers Retry', async () => {
@@ -190,7 +190,7 @@ describe('/investments/dividends: data', () => {
   });
 });
 
-describe('/investments/dividends: figures', () => {
+describe('/investments/activity/dividends: figures', () => {
   it('draws the hero: received, then TDS and not received, with a caption only where it adds a fact', async () => {
     await renderPage();
     for (const text of ['₹1,980', '₹370', '₹1,460']) expect(screen.getAllByText(text).length).toBeGreaterThanOrEqual(1);
@@ -210,7 +210,7 @@ describe('/investments/dividends: figures', () => {
   });
 });
 
-describe('/investments/dividends: the list', () => {
+describe('/investments/activity/dividends: the list', () => {
   it('draws a row per payout with plain figures, the receipt word and the total', async () => {
     await renderPage();
     const row = screen.getAllByText('HDFCBANK')[0].closest('[role="button"], tr, div[class*="grid"]') as HTMLElement;
@@ -233,36 +233,36 @@ describe('/investments/dividends: the list', () => {
     await renderPage({ fy: 'all' });
     expect(screen.getAllByText('/ 60').length).toBeGreaterThanOrEqual(2);
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/investments/dividends?fy=all&page=2', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/investments/activity/dividends?fy=all&page=2', { scroll: false });
   });
 
   it('narrows by receipt status, type and broker, each one URL change back to page 1', async () => {
     await renderPage({ page: '1' });
     fireEvent.click(screen.getByRole('button', { name: 'Receipt status' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Overdue' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?receipt=overdue', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity/dividends?receipt=overdue', { scroll: false });
 
     fireEvent.click(screen.getByRole('button', { name: 'Type' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Interest' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?type=interest', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity/dividends?type=interest', { scroll: false });
 
     fireEvent.click(screen.getByRole('button', { name: 'Broker' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Groww' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?broker=b2', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity/dividends?broker=b2', { scroll: false });
   });
 
   it('changes the FY: another year is in the address, the current one is not, All FYs is "all"', async () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: 'FY 26-27' }));
     fireEvent.click(await screen.findByRole('option', { name: 'FY 25-26' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?fy=2025', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity/dividends?fy=2025', { scroll: false });
   });
 
   it('shows the instrument the holding page linked to, and the x clears it', async () => {
     await renderPage({ instrumentId: IID });
     expect(screen.queryByText('Showing HDFCBANK')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/dividends', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/investments/activity/dividends', { scroll: false });
   });
 
   it('says what the empty list means: nothing yet, nothing in the FY, nothing matches', async () => {
@@ -274,13 +274,13 @@ describe('/investments/dividends: the list', () => {
     const second = await renderPage();
     expect(screen.getByText('No dividends in FY 26-27')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Show all FYs' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?fy=all', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity/dividends?fy=all', { scroll: false });
     second.unmount();
 
     await renderPage({ receipt: 'overdue' });
     expect(screen.getByText('No dividends match')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/dividends', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity/dividends', { scroll: false });
   });
 
   it('exports the filtered list as CSV', async () => {
@@ -299,7 +299,7 @@ describe('/investments/dividends: the list', () => {
   });
 });
 
-describe('/investments/dividends: editing', () => {
+describe('/investments/activity/dividends: editing', () => {
   it('opens the edit dialog from the row, and from "link a bank credit" on a phone row', async () => {
     await renderPage();
     fireEvent.click(screen.getAllByText('HDFCBANK')[0]);
@@ -321,7 +321,7 @@ describe('/investments/dividends: editing', () => {
   });
 });
 
-describe('/investments/dividends: unrecorded credits', () => {
+describe('/investments/activity/dividends: unrecorded credits', () => {
   it('shows nothing when there are none', async () => {
     await renderPage();
     expect(screen.queryByText(/look like dividends/)).toBeNull();
@@ -343,7 +343,7 @@ describe('/investments/dividends: unrecorded credits', () => {
   });
 });
 
-describe('/investments/dividends: by instrument', () => {
+describe('/investments/activity/dividends: by instrument', () => {
   it('lists the biggest payers of the last three financial years', async () => {
     await renderPage();
     expect(screen.getByText('By instrument')).toBeInTheDocument();
@@ -357,7 +357,7 @@ describe('/investments/dividends: by instrument', () => {
     await renderPage();
     const card = screen.getByText('By instrument').closest('div[class*="border"]') as HTMLElement;
     fireEvent.click(within(card.parentElement as HTMLElement).getAllByRole('button', { name: /next/i }).at(-1)!);
-    expect(router.push).toHaveBeenCalledWith('/investments/dividends?ip=2', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/investments/activity/dividends?ip=2', { scroll: false });
   });
 });
 
@@ -365,7 +365,7 @@ async function pressRescan() {
   fireEvent.click(screen.getByRole('button', { name: 'Rescan' }));
 }
 
-describe('/investments/dividends: suggestions', () => {
+describe('/investments/activity/dividends: suggestions', () => {
   it('does not scan on open: the card waits for Rescan', async () => {
     await renderPage();
     expect(screen.getByText('Suggestions')).toBeInTheDocument();
@@ -465,7 +465,7 @@ describe('/investments/dividends: suggestions', () => {
   });
 });
 
-describe('/investments/dividends: filter row', () => {
+describe('/investments/activity/dividends: filter row', () => {
   it('is a chips-only FilterBar carrying its own bleed, with no search field', async () => {
     await renderPage();
     const row = screen.getByRole('button', { name: 'Receipt status' }).closest('div.overflow-x-auto') as HTMLElement;

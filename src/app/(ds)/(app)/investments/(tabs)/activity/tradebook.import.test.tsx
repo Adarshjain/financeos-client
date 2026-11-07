@@ -9,7 +9,7 @@ import DsTradebookPage from './page';
 vi.mock('next/navigation', () => ({
   redirect: vi.fn(),
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }),
-  usePathname: () => '/investments/tradebook',
+  usePathname: () => '/investments/activity',
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('@/features/investments/investmentsServerApi', () => ({ fetchBrokers: vi.fn().mockResolvedValue([]) }));
@@ -22,7 +22,7 @@ beforeEach(() => {
   tradebook.fetchLastReconcileJob.mockResolvedValue(null);
 });
 
-describe('/investments/tradebook: Import tradebook', () => {
+describe('/investments/activity: Import tradebook', () => {
   it('has no Import tradebook button in the tab (the top bar + menu holds it)', async () => {
     renderWithQuery(await DsTradebookPage({ searchParams: Promise.resolve({}) }));
     expect(screen.queryByRole('link', { name: 'Import tradebook' })).toBeNull();

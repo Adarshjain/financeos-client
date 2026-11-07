@@ -13,7 +13,7 @@ const redirect = vi.hoisted(() =>
     throw new Error(`REDIRECT ${to}`);
   }),
 );
-vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, redirect, useRouter: () => router, usePathname: () => '/investments/corporate-actions' }));
+vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, redirect, useRouter: () => router, usePathname: () => '/investments/activity/corporate-actions' }));
 
 const server = vi.hoisted(() => ({ fetchCorporateActionsPage: vi.fn(), fetchCorporateActionPreview: vi.fn() }));
 vi.mock('@/features/investments/corporate-actions/corporateActionsServerApi', () => server);
@@ -38,7 +38,7 @@ beforeEach(() => {
   server.fetchCorporateActionsPage.mockResolvedValue(pageOf([bonus, split]));
 });
 
-describe('/investments/corporate-actions', () => {
+describe('/investments/activity/corporate-actions', () => {
   it('asks the server for the page the address names', async () => {
     server.fetchCorporateActionsPage.mockResolvedValue(pageOf([bonus], { page: 1, size: 50, totalElements: 80, totalPages: 2 }));
     await renderPage({ q: 'infy', type: 'bonus', sort: 'name', page: '2', size: '50' });
@@ -65,7 +65,7 @@ describe('/investments/corporate-actions', () => {
     await renderPage({ page: '2' });
     fireEvent.click(screen.getByRole('button', { name: 'Type' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Demerger' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/corporate-actions?type=demerger', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/investments/activity/corporate-actions?type=demerger', { scroll: false });
   });
 
   it('shows a changed type as just its value with a x that resets it, and a Reset filters link', async () => {
@@ -73,27 +73,27 @@ describe('/investments/corporate-actions', () => {
     await renderPage({ type: 'demerger' });
     expect(screen.queryByText('Type: Demerger')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/corporate-actions', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity/corporate-actions', { scroll: false });
     fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/corporate-actions', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/investments/activity/corporate-actions', { scroll: false });
   });
 
   it('puts a sort choice in the address', async () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: /Newest/ }));
     fireEvent.click(await screen.findByRole('option', { name: 'Oldest' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/corporate-actions?sort=oldest', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/investments/activity/corporate-actions?sort=oldest', { scroll: false });
   });
 
   it('puts the search in the address once typing has paused', async () => {
     await renderPage();
     fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'itc' } });
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/investments/corporate-actions?q=itc', { scroll: false }));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/investments/activity/corporate-actions?q=itc', { scroll: false }));
   });
 
   it('shows a page past the end as the last page', async () => {
     server.fetchCorporateActionsPage.mockResolvedValue(pageOf([], { page: 5, totalElements: 30, totalPages: 2 }));
-    await expect(renderPage({ page: '6' })).rejects.toThrow('REDIRECT /investments/corporate-actions?page=2');
+    await expect(renderPage({ page: '6' })).rejects.toThrow('REDIRECT /investments/activity/corporate-actions?page=2');
   });
 
   it('says nothing is recorded yet', async () => {
@@ -107,7 +107,7 @@ describe('/investments/corporate-actions', () => {
     server.fetchCorporateActionsPage.mockResolvedValue(pageOf([]));
     await renderPage({ type: 'merger', q: 'zzz' });
     expect(screen.getByText('No corporate actions match')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Clear filters' })).toHaveAttribute('href', '/investments/corporate-actions');
+    expect(screen.getByRole('link', { name: 'Clear filters' })).toHaveAttribute('href', '/investments/activity/corporate-actions');
   });
 
   it('shows the load error instead of the list', async () => {
@@ -129,7 +129,7 @@ describe('/investments/corporate-actions', () => {
   });
 });
 
-describe('/investments/corporate-actions: filter row', () => {
+describe('/investments/activity/corporate-actions: filter row', () => {
   it('is a FilterBar: search first with the default placeholder, then the chips, carrying their own bleed', async () => {
     await renderPage();
     const row = screen.getByPlaceholderText('Search').closest('div.overflow-x-auto') as HTMLElement;

@@ -1,0 +1,134 @@
+'use client';
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React from 'react';
+
+import { Button } from '@/components/ds/Button/Button';
+import { Card } from '@/components/ds/Card/Card';
+import { Conceal } from '@/components/ds/Conceal/Conceal';
+import { DataTable } from '@/components/ds/DataTable/DataTable';
+import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
+import { Hero } from '@/components/ds/Hero/Hero';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
+import { Text } from '@/components/ds/Text/Text';
+import { formatMoney } from '@/lib/format';
+
+import { type RetirementModel, type RetirementTableRow, retirementTableRows } from './retirementModel';
+
+const ch = createDataTableColumnHelper<RetirementTableRow>();
+
+function UploadLink({ upload }: { upload: NonNullable<RetirementTableRow['upload']> }) {
+  return (
+    <Text variant="label" as="span">
+      <Button variant="link" size="sm" asChild>
+        <Link href={upload.href}>{upload.label}</Link>
+      </Button>
+    </Text>
+  );
+}
+
+function Status({ status }: { status: NonNullable<RetirementTableRow['status']> }) {
+  return <StatusWord tone={status.tone}>{status.label}</StatusWord>;
+}
+
+const columns = [
+  ch.display({
+    id: 'account',
+    header: 'Account',
+    meta: { size: 'fill', grow: 2, phone: 'main' },
+    cell: ({ row }) => (
+      <div className="flex flex-col min-w-0">
+        <div className="flex items-baseline gap-space-6 min-w-0">
+          <Text variant="body-strong" truncate>
+            {row.original.name}
+          </Text>
+          {row.original.idLabel ? (
+            <Text variant="caption" tone="ink-3">
+              {row.original.idLabel}
+            </Text>
+          ) : null}
+        </div>
+        {row.original.sub ? (
+          <Text variant="caption" tone="ink-3" truncate>
+            {row.original.sub}
+          </Text>
+        ) : null}
+      </div>
+    ),
+  }),
+  ch.display({
+    id: 'value',
+    header: 'Value',
+    meta: { size: 'md', align: 'end', phone: 'amount', wrap: true },
+    cell: ({ row }) => {
+      const r = row.original;
+      if (r.upload) return <UploadLink upload={r.upload} />;
+      return (
+        <div className="flex flex-col items-end">
+          <Text variant="body-strong">
+            <Conceal whole>{r.valueText}</Conceal>
+          </Text>
+          {/* Phone: the date and status sit under the value; desktop has their own column. */}
+          <div className="desk:hidden flex flex-col items-end">
+            {r.updated ? (
+              <Text variant="caption" tone="ink-3">
+                {r.updated}
+              </Text>
+            ) : null}
+            {r.status ? <Status status={r.status} /> : null}
+          </div>
+        </div>
+      );
+    },
+  }),
+  ch.display({
+    id: 'updated',
+    header: 'Updated',
+    meta: { size: 'md', align: 'end', phone: 'hidden', wrap: true },
+    cell: ({ row }) => (
+      <div className="flex flex-col items-end">
+        {row.original.updated ? (
+          <Text variant="caption" tone="ink-3">
+            {row.original.updated}
+          </Text>
+        ) : null}
+        {row.original.status ? <Status status={row.original.status} /> : null}
+      </div>
+    ),
+  }),
+];
+
+/** The Retirement tab: the total on phone and desktop, then one row per EPF and NPS account. A row opens its screen. */
+export function RetirementScreen({ model }: { model: RetirementModel }) {
+  const router = useRouter();
+  const rows = retirementTableRows(model);
+  return (
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      {model.rows.length > 0 ? <Hero label="Retirement value" value={<Conceal>{formatMoney(model.total)}</Conceal>} /> : null}
+      <Card title="Retirement" subtitle="EPF passbook + NPS statements">
+        <DataTable
+          columns={columns}
+          data={rows}
+          getRowId={(row) => row.id}
+          hideHeader={model.rows.length === 0}
+          onRowSelect={(row) => {
+            if (!row.upload) router.push(row.href);
+          }}
+        />
+      </Card>
+    </div>
+  );
+}
+
+/** The overview while it loads. */
+export function RetirementSkeleton() {
+  return (
+    <div className="flex flex-col gap-space-8 desk:gap-space-16">
+      <Hero.Skeleton label />
+      <Card title="Retirement" subtitle="EPF passbook + NPS statements">
+        <DataTable columns={columns} data={[]} getRowId={(row) => row.id} loading skeletonRows={2} />
+      </Card>
+    </div>
+  );
+}
