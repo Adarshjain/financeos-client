@@ -98,7 +98,7 @@ describe('InvestmentsShell', () => {
   it('has the title Investments with its crumb and its add button', () => {
     renderShell();
     expect(screen.getAllByText('Investments').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Grow').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Wealth').length).toBeGreaterThan(0);
     expect(screen.getAllByRole('button', { name: 'Record trade' }).length).toBeGreaterThan(0);
   });
 

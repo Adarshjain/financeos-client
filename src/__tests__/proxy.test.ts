@@ -13,10 +13,10 @@ function requestWithoutSession(pathname: string) {
 
 describe('proxy', () => {
   it('redirects an unauthenticated request for a protected page to the login page', () => {
-    const response = proxy(requestWithoutSession('/dashboard'));
+    const response = proxy(requestWithoutSession('/accounts'));
 
     expect(response.headers.get('location')).toBe(
-      'https://financeos.local/login?from=%2Fdashboard'
+      'https://financeos.local/login?from=%2Faccounts'
     );
   });
 
@@ -95,7 +95,7 @@ describe('proxy', () => {
     });
 
     it('sends an old path to the page that replaced it, keeping the query', () => {
-      expect(to('/rules')).toBe('https://financeos.local/transactions/rules');
+      expect(to('/rules')).toBe('https://financeos.local/transactions/tags');
       expect(to('/settings/gmail?focus=attention')).toBe('https://financeos.local/settings/connections?focus=attention');
       expect(to('/debug')).toBe('https://financeos.local/settings/debug');
       expect(to('/rewards/recommend')).toBe('https://financeos.local/rewards/which-card');
@@ -116,10 +116,10 @@ describe('proxy', () => {
       const request = new NextRequest(new URL('/rules', 'https://financeos.local'), {
         headers: { cookie: 'FINANCEOS_SESSION=abc' },
       });
-      expect(proxy(request).headers.get('location')).toBe('https://financeos.local/transactions/rules');
+      expect(proxy(request).headers.get('location')).toBe('https://financeos.local/transactions/tags');
     });
 
-    it.each(['/accounts', '/legacy/rules', '/legacy', '/api/v1/x', '/transactions/rules'])('leaves %s alone', (pathname) => {
+    it.each(['/accounts', '/legacy/rules', '/legacy', '/api/v1/x', '/transactions/tags'])('leaves %s alone', (pathname) => {
       const request = new NextRequest(new URL(pathname, 'https://financeos.local'), {
         headers: { cookie: 'FINANCEOS_SESSION=abc' },
       });

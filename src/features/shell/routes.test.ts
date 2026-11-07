@@ -10,7 +10,7 @@ describe('appHref', () => {
     ['/inbox', '/inbox'],
     ['/upcoming', '/upcoming'],
     ['/upcoming/calendar', '/upcoming/calendar'],
-    ['/notifications', '/notifications'],
+    ['/inbox/updates', '/inbox/updates'],
     ['/accounts', '/accounts'],
     ['/transactions', '/transactions'],
     ['/transactions?account=a1', '/transactions?account=a1'],
@@ -32,7 +32,7 @@ describe('appHref', () => {
     ['/reports', '/reports'],
     ['/reports/new', '/reports/new'],
     ['/reports/abc-123', '/reports/abc-123'],
-    ['/dashboard', '/dashboard'],
+    ['/home', '/home'],
     ['/dashboards', '/dashboards'],
     ['/dashboards/new', '/dashboards/new'],
     ['/dashboards/abc-123?edit=1', '/dashboards/abc-123?edit=1'],
@@ -47,8 +47,13 @@ describe('appHref', () => {
     ['/settings/gmail', '/settings/connections'],
     ['/settings/jobs', '/settings/activity'],
     ['/debug', '/settings/debug'],
-    ['/rules', '/transactions/rules'],
-    ['/rules/categories', '/transactions/rules'],
+    ['/rules', '/transactions/tags'],
+    ['/rules/categories', '/transactions/tags'],
+    ['/transactions/rules', '/transactions/tags'],
+    ['/dashboard', '/home'],
+    ['/notifications', '/inbox/updates'],
+    ['/loans/lendings', '/lending'],
+    ['/loans/lendings/p-1', '/lending/p-1'],
     ['/rewards/recommend', '/rewards/which-card'],
     ['/settings/ingest', '/transactions/import'],
     ['/loans/calendar', '/upcoming'],
@@ -107,7 +112,11 @@ describe('appHref', () => {
 
 describe('rootRedirectFor', () => {
   it('sends an alias to its Dinero page with the query', () => {
-    expect(rootRedirectFor('/rules', '')).toBe('/transactions/rules');
+    expect(rootRedirectFor('/rules', '')).toBe('/transactions/tags');
+    expect(rootRedirectFor('/dashboard', '?x=1')).toBe('/home?x=1');
+    expect(rootRedirectFor('/notifications', '?page=2')).toBe('/inbox/updates?page=2');
+    expect(rootRedirectFor('/loans/lendings', '?q=a')).toBe('/lending?q=a');
+    expect(rootRedirectFor('/loans/lendings/p-1', '?tab=x')).toBe('/lending/p-1?tab=x');
     expect(rootRedirectFor('/settings/gmail', '?focus=attention')).toBe('/settings/connections?focus=attention');
   });
 
@@ -121,15 +130,15 @@ describe('rootRedirectFor', () => {
   });
 
   it('leaves pages and non-pages alone, /legacy included (it is a 404)', () => {
-    for (const p of ['/accounts', '/transactions', '/legacy/rules', '/api/rules', '/nope']) {
+    for (const p of ['/accounts', '/transactions', '/loans', '/loans/abc', '/dashboards', '/legacy/rules', '/api/rules', '/nope']) {
       expect(rootRedirectFor(p, '')).toBeNull();
     }
   });
 });
 
 describe('DS_HOME_HREF', () => {
-  it('is the dashboard', () => {
-    expect(DS_HOME_HREF).toBe('/dashboard');
+  it('is the home page', () => {
+    expect(DS_HOME_HREF).toBe('/home');
   });
 });
 

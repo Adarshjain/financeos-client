@@ -55,10 +55,10 @@ describe('DsIndexPage', () => {
     expect(hrefs).toContain('/upcoming');
   });
 
-  it('links to /notifications from the Signed in section', () => {
+  it('links to /inbox/updates from the Signed in section', () => {
     render(<DsIndexPage />);
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
-    expect(hrefs).toContain('/notifications');
+    expect(hrefs).toContain('/inbox/updates');
   });
 
   it('links every top-level /ds page, so a new page is never left off the index', () => {
@@ -76,7 +76,7 @@ describe('DsIndexPage', () => {
     for (const route of routes) expect(hrefs, `${route} is missing from the index`).toContain(route);
   });
 
-  it('links Ask the data and has no to-build list left', () => {
+  it('links Ask and has no to-build list left', () => {
     render(<DsIndexPage />);
 
     expect(screen.queryByText('To build')).toBeNull();

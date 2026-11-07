@@ -3,6 +3,7 @@ import React from 'react';
 import { logoutToDinero } from '@/actions/auth';
 import { Card } from '@/components/ds/Card/Card';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
+import type { TabSlot } from '@/features/shell/tabSlotName';
 import type { AppLockStatus } from '@/lib/api/types';
 import type { UserResponse } from '@/lib/types';
 
@@ -18,15 +19,18 @@ export function SettingsMain({
   user,
   appLock,
   values,
+  tabSlot,
 }: {
   user: UserResponse;
   appLock: AppLockStatus;
   values: SettingsDataValues;
+  /** The device's choice for the phone bottom bar's second tab (the cookie, read by the server). */
+  tabSlot?: TabSlot;
 }) {
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
       <ProfileCard user={user} />
-      <GeneralCard />
+      <GeneralCard tabSlot={tabSlot} />
       <SecurityCard appLock={appLock} />
       <DataCard values={values} />
       <HelpCard />

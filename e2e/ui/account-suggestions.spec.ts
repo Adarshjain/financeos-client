@@ -255,7 +255,7 @@ test.describe('Account suggestions (@ui)', () => {
       await expect(page.getByText('Accounts we find in your email show up at the top of this page.')).toBeVisible();
       await expect(page.getByText('Cards we find in your email show up at the top of this page.')).toBeVisible();
 
-      await page.goto('/dashboard');
+      await page.goto('/home');
       await expect(page.getByText('Finding your accounts')).toBeVisible({ timeout: 15_000 });
       await expect(page.getByText('Read 4,020 of 10,600 emails', { exact: false })).toBeVisible();
     });

@@ -93,7 +93,7 @@ test.describe('/ds app lock (@ui)', () => {
     await turnOn(page);
     await lockNow(page);
     await authenticator.setUserVerified(false); // keep the screen so it can be inspected
-    await page.getByRole('link', { name: 'Loans & lendings' }).first().click();
+    await page.getByRole('link', { name: 'Lending', exact: true }).first().click();
     await page.waitForURL('**/locked?from=*');
     await expect(page.getByRole('button', { name: 'Unlock' })).toBeVisible();
     // Staying on the lock screen keeps where they were going: a late event or focus must not reload it bare.

@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { Text } from '@/components/ds/Text/Text';
 import { LoadError } from '@/features/shell/LoadError';
+import { UPCOMING_HREF } from '@/features/upcoming/upcomingTabs';
 import { unwrapAction } from '@/lib/actionResult';
 import type { InboxItemResponse } from '@/lib/api/types';
 import { useInbox } from '@/lib/query/hooks/useInbox';
@@ -25,7 +26,6 @@ import { dsInboxNotifier } from './inboxNotifier';
 import { InboxRow } from './InboxRow';
 import { INBOX_SECTION_TITLES, type NpsRowAction, pendingFor, type RowButton, type RowMenuAction } from './inboxRowsModel';
 import { InboxSkeleton } from './InboxSkeleton';
-import { UPCOMING_HREF } from './inboxUpcomingTabs';
 import { useInboxDeepLink } from './useInboxDeepLink';
 import { useInboxMutations } from './useInboxMutations';
 

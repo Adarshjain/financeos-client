@@ -1,6 +1,5 @@
 import type { HeroModel } from '@/features/loans/loanFormatModel';
 import { paymentItemFor } from '@/features/loans/loanPaymentsBatchModel';
-import { LOANS_HREF } from '@/features/loans/loansLendingsTabs';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
@@ -8,6 +7,8 @@ import { formatCount, formatDate, formatMoney, formatPercent, MONTH_LONG } from 
 import type { BatchLoanPaymentItem, LoanMatchSuggestions, LoanResponse, LoansSummaryDetail } from '@/lib/loan.types';
 
 // ---- URL state -------------------------------------------------------------
+
+const LOANS_HREF = appHref('/loans');
 
 export const LOANS_SIZE_OPTIONS = [25, 50, 100];
 

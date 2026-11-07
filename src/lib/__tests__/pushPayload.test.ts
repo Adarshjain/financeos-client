@@ -31,9 +31,9 @@ describe('resolveNotificationUrl', () => {
 
   it('keeps same-origin absolute URLs and rejects foreign ones', () => {
     expect(resolveNotificationUrl('https://app.example.com/accounts', origin)).toBe('https://app.example.com/accounts');
-    expect(resolveNotificationUrl('https://evil.example.com/x', origin)).toBe('https://app.example.com/dashboard');
-    expect(resolveNotificationUrl('javascript:alert(1)', origin)).toBe('https://app.example.com/dashboard');
-    expect(resolveNotificationUrl(undefined, origin)).toBe('https://app.example.com/dashboard');
+    expect(resolveNotificationUrl('https://evil.example.com/x', origin)).toBe('https://app.example.com/home');
+    expect(resolveNotificationUrl('javascript:alert(1)', origin)).toBe('https://app.example.com/home');
+    expect(resolveNotificationUrl(undefined, origin)).toBe('https://app.example.com/home');
   });
 });
 

@@ -4,8 +4,8 @@ import { appHref } from './routes';
 
 describe('Rules tab route', () => {
   it('sends the old rules path to its Dinero page, keeping the query', () => {
-    expect(appHref('/rules')).toBe('/transactions/rules');
-    expect(appHref('/rules?status=verified&page=2')).toBe('/transactions/rules?status=verified&page=2');
+    expect(appHref('/rules')).toBe('/transactions/tags');
+    expect(appHref('/rules?status=verified&page=2')).toBe('/transactions/tags?status=verified&page=2');
   });
 
   it('sends the rewards rules page to its Dinero page', () => {

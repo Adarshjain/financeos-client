@@ -16,7 +16,7 @@ test.describe('Hello and profile (@ui)', () => {
     await loginContext(context, user.cookie);
 
     // The app gate sends a user without a finished Hello to /welcome.
-    await page.goto('/dashboard');
+    await page.goto('/home');
     await page.waitForURL('**/welcome');
     await expect(page.getByRole('heading', { name: "Hi there. Let's find all your money." })).toBeVisible();
     await expect(page.getByText('1 of 2')).toBeVisible();
@@ -50,7 +50,7 @@ test.describe('Hello and profile (@ui)', () => {
     expect(mid.data).toMatchObject({ helloDone: false, helloProfileSaved: true });
     await page.reload();
     await expect(page.getByText('2 of 2')).toBeVisible();
-    await page.goto('/dashboard');
+    await page.goto('/home');
     await page.waitForURL('**/welcome');
     await expect(page.getByText('2 of 2')).toBeVisible();
 
@@ -63,13 +63,13 @@ test.describe('Hello and profile (@ui)', () => {
     await page.getByRole('button', { name: 'Skip' }).click();
     await expect(page.getByRole('dialog', { name: 'Continue without Gmail?' })).toBeVisible();
     await page.getByRole('button', { name: 'Skip for now' }).click();
-    await page.waitForURL('**/dashboard');
+    await page.waitForURL('**/home');
 
     // Hello is done for good.
     await page.reload();
-    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page).toHaveURL(/\/home/);
     await page.goto('/welcome');
-    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page).toHaveURL(/\/home/);
 
     const me = await makeApi(user.cookie).GET('/api/v1/auth/me');
     expect(me.data).toMatchObject({ displayName: 'Asha Rao', birthDate: '1990-04-05', helloDone: true });
@@ -92,7 +92,7 @@ test.describe('Hello and profile (@ui)', () => {
 
     await page.getByRole('button', { name: 'Skip' }).click();
     await page.getByRole('button', { name: 'Skip for now' }).click();
-    await page.waitForURL('**/dashboard');
+    await page.waitForURL('**/home');
     const done = await makeApi(user.cookie).GET('/api/v1/auth/me');
     expect(done.data).toMatchObject({ helloDone: true });
   });

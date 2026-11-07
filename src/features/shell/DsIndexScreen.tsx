@@ -45,8 +45,8 @@ export function DsIndexScreen() {
         {/* Signed in section */}
         <Card>
           <SectionHeader borderTop={false}>Signed in</SectionHeader>
-          <ListRow asChild title="Home" subtitle="/dashboard" chevron>
-            <Link href="/dashboard" />
+          <ListRow asChild title="Home" subtitle="/home" chevron>
+            <Link href="/home" />
           </ListRow>
           <ListRow asChild title="Dashboards" subtitle="/dashboards" chevron>
             <Link href="/dashboards" />
@@ -67,11 +67,11 @@ export function DsIndexScreen() {
           <ListRow asChild title="Import" subtitle="/transactions/import" chevron>
             <Link href="/transactions/import" />
           </ListRow>
-          <ListRow asChild title="Tags" subtitle="/transactions/rules" chevron>
-            <Link href="/transactions/rules" />
+          <ListRow asChild title="Tags" subtitle="/transactions/tags" chevron>
+            <Link href="/transactions/tags" />
           </ListRow>
-          <ListRow asChild title="Lendings" subtitle="/loans/lendings" chevron>
-            <Link href="/loans/lendings" />
+          <ListRow asChild title="Lendings" subtitle="/lending" chevron>
+            <Link href="/lending" />
           </ListRow>
           <ListRow asChild title="Loans" subtitle="/loans" chevron>
             <Link href="/loans" />
@@ -117,7 +117,7 @@ export function DsIndexScreen() {
           <ListRow asChild title="Report" subtitle="/reports/[id]" chevron>
             <Link href="/reports" />
           </ListRow>
-          <ListRow asChild title="Ask the data" subtitle="/chat" chevron>
+          <ListRow asChild title="Ask" subtitle="/chat" chevron>
             <Link href="/chat" />
           </ListRow>
           <ListRow asChild title="Settings" subtitle="/settings" chevron>
@@ -129,8 +129,8 @@ export function DsIndexScreen() {
           <ListRow asChild title="Upcoming" subtitle="/upcoming" chevron>
             <Link href="/upcoming" />
           </ListRow>
-          <ListRow asChild title="Notifications" subtitle="/notifications" chevron>
-            <Link href="/notifications" />
+          <ListRow asChild title="Notifications" subtitle="/inbox/updates" chevron>
+            <Link href="/inbox/updates" />
           </ListRow>
         </Card>
       </div>

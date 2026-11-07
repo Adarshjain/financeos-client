@@ -90,10 +90,10 @@ describe('ImportScreen', () => {
     expect(screen.getByRole('button', { name: /Uploading files/ })).toBeDisabled();
   });
 
-  it('links the tabs, Activity filtered to imports, and each import', () => {
+  it('has no tab strip, links Activity filtered to imports, and each import', () => {
     jobs = [{ ...running, status: 'SUCCEEDED', result: { filesProcessed: 1, totalCreated: 1, totalDuplicatesFound: 0, fileDetails: [{ filename: 'a.pdf', status: 'SUCCESS', linesParsed: 1, created: 1, duplicates: 0, errorMessage: null }] } }];
     render(<ImportScreen initialAccounts={accounts} since="2026-09-22T18:30:00.000Z" />);
-    expect(screen.getByRole('tab', { name: 'Import' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByRole('tab')).toBeNull();
     expect(screen.getByRole('link', { name: 'Activity' })).toHaveAttribute('href', '/settings/activity?type=STATEMENT_INGEST');
     expect(screen.getAllByRole('link', { name: 'View' })[0]).toHaveAttribute('href', '/transactions/import/j9');
   });

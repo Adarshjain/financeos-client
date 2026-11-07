@@ -2,9 +2,6 @@ import React from 'react';
 
 import { Card } from '@/components/ds/Card/Card';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
-import { areaCrumb } from '@/features/shell/navigation';
-import { appHref } from '@/features/shell/routes';
-import { ShellPage } from '@/features/shell/ShellPage';
 
 /** A day header, then rows of two text lines and a time, while the feed loads. */
 export function NotificationsSkeleton() {
@@ -26,11 +23,7 @@ export function NotificationsSkeleton() {
   );
 }
 
-/** The Notifications page while the first page of the feed loads: the app bar and the skeleton. */
+/** The Updates tab while the first page of the feed loads (the Inbox shell draws the bar and tabs). */
 export function NotificationsPageSkeleton() {
-  return (
-    <ShellPage crumb={areaCrumb('notifications')} title="Notifications" backHref={appHref('/inbox')}>
-      <NotificationsSkeleton />
-    </ShellPage>
-  );
+  return <NotificationsSkeleton />;
 }

@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 /**
- * /loans/lendings/[id]: one person's ledger. The page and size are in the URL and answered by the server.
+ * /lending/[id]: one person's ledger. The page and size are in the URL and answered by the server.
  * `?export=1` (from the "money due back" push) opens Export ledger on load.
  */
 export default async function DsPersonPage({ params, searchParams }: Params & { searchParams: SearchParams }) {

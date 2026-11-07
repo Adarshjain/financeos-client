@@ -140,7 +140,7 @@ describe('linkRows', () => {
       () => '',
     );
     expect(rows.map((r) => (r.kind === 'record' ? [r.href, r.unlink] : null))).toEqual([
-      ['/loans/lendings/p1', 'now'],
+      ['/lending/p1', 'now'],
       ['/investments/dividends?instrumentId=i1', 'now'],
       ['/loans/loan1', 'confirm'],
       ['/loans/loan1', null],

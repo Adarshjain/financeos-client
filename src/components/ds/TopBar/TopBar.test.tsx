@@ -319,6 +319,20 @@ describe('TopBar phoneOnly actions', () => {
     expect(screen.getByRole('button', { name: 'Ask' })).not.toHaveClass('desk:hidden');
   });
 
+  it('hides a deskOnly action from the phone layout with CSS and keeps others', () => {
+    render(
+      <TopBar
+        title="Home"
+        actions={[
+          { id: 'b', icon: 'notifications', label: 'Notifications', deskOnly: true },
+          { id: 'c', icon: 'chat', label: 'Ask' },
+        ]}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Notifications' })).toHaveClass('max-desk:hidden');
+    expect(screen.getByRole('button', { name: 'Ask' })).not.toHaveClass('max-desk:hidden');
+  });
+
   it('a loading action shows the busy state and ignores presses', () => {
     const onSelect = vi.fn();
     render(<TopBar title="Home" actions={[{ id: 'add', icon: 'add', label: 'Add', loading: true, onSelect }]} />);

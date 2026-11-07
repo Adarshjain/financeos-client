@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: 'Welcome' };
 export default async function HelloPage() {
   const user = await requireAuth();
   // Hello is once: a finished user (or a reload after submitting) goes straight to Home.
-  if (user.helloDone) redirect(appHref('/dashboard'));
+  if (user.helloDone) redirect(appHref('/home'));
 
   const connections = await gmailApi.listConnections();
   const hasGmail = connections.some((c) => c.isConnected);

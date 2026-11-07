@@ -283,7 +283,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     // 11300 + (5000 + 10 × 999.99) − 500; wait for the trade's price fetch to land.
     await expect.poll(async () => (await underlyingBuiltin(api, 'net_worth')).value).toBe(25799.9);
 
-    await page.goto('/dashboard');
+    await page.goto('/home');
     await page.getByTestId('net-worth-value').getByRole('button').first().click({ timeout: 45_000 });
 
     const vud = page.getByRole('dialog', { name: 'Underlying data · Net worth' });

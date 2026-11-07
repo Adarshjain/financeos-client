@@ -32,7 +32,7 @@ async function addFeedRow(api: ApiClient, key: string): Promise<void> {
   pwExpect((await waitForJob(api, res.data!.jobId)).status).toBe('SUCCEEDED');
 }
 
-test.describe('/notifications (@ui)', () => {
+test.describe('/inbox/updates (@ui)', () => {
   let currentUser: CreatedUser;
 
   test.beforeEach(async ({ context, request, page }) => {
@@ -42,7 +42,7 @@ test.describe('/notifications (@ui)', () => {
   });
 
   test('a new user sees the empty state', async ({ page }) => {
-    await page.goto('/notifications');
+    await page.goto('/inbox/updates');
     await expect(page.getByText('No notifications yet')).toBeVisible({ timeout: 45_000 });
     await expect(page.getByRole('button', { name: 'Clear all' })).toHaveCount(0);
   });
@@ -52,7 +52,7 @@ test.describe('/notifications (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     await addFeedRow(api, 'FEEDSHOP');
 
-    await page.goto('/notifications');
+    await page.goto('/inbox/updates');
     const row = page.getByTestId('notification-row');
     await expect(row).toHaveCount(1, { timeout: 45_000 });
     await expect(row).toContainText("Rule 'Feed shop' applied");
@@ -68,7 +68,7 @@ test.describe('/notifications (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     await addFeedRow(api, 'FEEDSHOPTWO');
 
-    await page.goto('/notifications');
+    await page.goto('/inbox/updates');
     await expect(page.getByTestId('notification-row')).toHaveCount(1, { timeout: 45_000 });
     await page.getByRole('button', { name: 'Clear all' }).click();
     const dialog = page.getByRole('dialog', { name: 'Clear all notifications?' });

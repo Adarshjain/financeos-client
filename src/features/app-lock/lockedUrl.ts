@@ -7,5 +7,5 @@ export function parseLockedUrl(params: SearchParamsRecord): { from: string } {
   // A repeated key (an array) is not a path: ignored.
   const requested = typeof params.from === 'string' ? params.from : undefined;
   const ok = requested && isSafeLocalPath(requested) && !isLockRoute(requested.split(/[?#]/)[0]);
-  return { from: ok ? requested : appHref('/dashboard') };
+  return { from: ok ? requested : appHref('/home') };
 }

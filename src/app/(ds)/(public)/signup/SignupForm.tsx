@@ -32,7 +32,7 @@ export function SignupForm() {
 
   useEffect(() => {
     if (isSuccess) {
-      router.push(appHref('/dashboard'));
+      router.push(appHref('/home'));
     }
   }, [isSuccess, router]);
 

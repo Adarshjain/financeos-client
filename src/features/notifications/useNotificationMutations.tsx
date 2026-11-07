@@ -114,6 +114,7 @@ export function useNotificationsAction(): TopBarAction {
     icon: 'notifications',
     label: 'Notifications',
     dot: unread > 0,
+    deskOnly: true,
     popover: { content: <NotificationsDropdown highlightedIds={highlighted} />, onOpenChange, onWarm: warm },
   };
 }

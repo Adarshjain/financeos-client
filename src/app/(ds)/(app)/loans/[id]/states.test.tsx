@@ -19,7 +19,7 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
 describe('loan page states', () => {
   it('loading keeps the top bar with its way back to the loans', () => {
     render(<DsLoanLoading />);
-    expect(screen.getByText('Owe & lend / Loans')).toBeInTheDocument();
+    expect(screen.getByText('Money / Loans')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/loans');
   });
 

@@ -152,11 +152,11 @@ describe('SearchProvider', () => {
     expect(palette()).toBeNull();
   });
 
-  it('opens the Ask the data page from the Ask row', async () => {
+  it('opens the Ask page from the Ask row', async () => {
     renderShell();
     fireEvent.keyDown(document, { key: 'k', metaKey: true });
     fireEvent.change(field(), { target: { value: 'regalia spend' } });
-    fireEvent.click(await screen.findByRole('option', { name: 'Ask the data: regalia spend' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Ask: regalia spend' }));
     expect(router.push).toHaveBeenCalledWith('/chat?q=regalia%20spend');
   });
 

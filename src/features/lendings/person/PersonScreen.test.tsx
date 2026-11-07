@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
 vi.mock('next/navigation', () => ({
   useRouter: () => router,
-  usePathname: () => '/loans/lendings/p1',
+  usePathname: () => '/lending/p1',
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
@@ -114,8 +114,8 @@ describe('header', () => {
   it('shows who they are, who owes whom and the actions, on the top bar page', () => {
     renderView();
     expect(screen.getAllByText('Rahul Sharma').length).toBeGreaterThan(0);
-    expect(screen.getByText('Owe & lend / Lendings')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/loans/lendings');
+    expect(screen.getByText('Wealth / Lending')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/lending');
     expect(screen.getAllByText('College friend').length).toBeGreaterThan(0);
     expect(screen.getByText('Owed to you')).toBeInTheDocument();
     expect(screen.getAllByText('₹15,000').length).toBeGreaterThan(0);
@@ -179,7 +179,7 @@ describe('ledger', () => {
     renderView({ ledger: { ...ledgerFixture(all, 3), entries: { ...ledgerFixture(all, 3).entries, totalElements: 60 } } });
     expect(screen.getAllByRole('button', { name: /next/i })).toHaveLength(2);
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/loans/lendings/p1?page=2', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/lending/p1?page=2', { scroll: false });
   });
 
   it('says so when the person has no entries', () => {
@@ -325,7 +325,7 @@ describe('delete person', () => {
     await user.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(m.deleteCp.mutateAsync).toHaveBeenCalled());
     expect(toast).toHaveBeenCalledWith('Person deleted');
-    expect(router.push).toHaveBeenCalledWith('/loans/lendings');
+    expect(router.push).toHaveBeenCalledWith('/lending');
   });
 
   it('can be cancelled', async () => {

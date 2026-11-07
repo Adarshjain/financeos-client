@@ -1,5 +1,5 @@
+import { LENDINGS_HREF } from '@/features/lendings/lendingsHref';
 import { daysBetween, type HeroModel } from '@/features/loans/loanFormatModel';
-import { LENDINGS_HREF } from '@/features/loans/loansLendingsTabs';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
@@ -202,7 +202,7 @@ export function lendingRow(person: CounterpartyListItem, today: string): Lending
     hasExpected: Boolean(person.expectedReturnDate),
     lastEntry: lastEntryText(person),
     phoneSub: phoneSubText(person),
-    href: appHref(`/loans/lendings/${person.id}`),
+    href: appHref(`/lending/${person.id}`),
   };
 }
 

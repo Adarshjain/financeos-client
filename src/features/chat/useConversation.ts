@@ -8,7 +8,7 @@ import { notifyChatComplete } from './chatNotifications';
 import type { ChatRecord, ChatStep, Conversation } from './conversation.types';
 import { createSseParser } from './sseParser';
 
-export const CHAT_BUSY_MESSAGE = 'Ask the data is busy with another answer. Try again in a moment.';
+export const CHAT_BUSY_MESSAGE = 'Ask is busy with another answer. Try again in a moment.';
 export const CHAT_FAILED_MESSAGE = 'The answer did not finish. Your question is kept.';
 
 type AssistantRecord = Extract<ChatRecord, { kind: 'assistant' }>;
@@ -77,7 +77,7 @@ async function httpFailureMessage(res: Response): Promise<string> {
   return code === 'CHAT_BUSY' || res.status === 429 ? CHAT_BUSY_MESSAGE : CHAT_FAILED_MESSAGE;
 }
 
-/** State and streaming for one Ask the data conversation. No UI. */
+/** State and streaming for one Ask conversation. No UI. */
 export function useConversation(options: UseConversationOptions = {}): UseConversation {
   const [records, setRecords] = useState<ChatRecord[]>(() => recordsFrom(options.initial));
   const [busy, setBusy] = useState(false);

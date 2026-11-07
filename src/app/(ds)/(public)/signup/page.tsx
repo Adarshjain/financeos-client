@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: 'Create account' };
 export default async function DsSignupPage() {
   const session = await getOptionalSession();
   if (session) {
-    redirect(appHref('/dashboard'));
+    redirect(appHref('/home'));
   }
 
   return (

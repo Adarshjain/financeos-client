@@ -1,5 +1,5 @@
 /**
- * The one place that knows where app pages live. Pages live at their plain paths (`/accounts`, `/dashboard`, ...).
+ * The one place that knows where app pages live. Pages live at their plain paths (`/accounts`, `/home`, ...).
  * Old addresses that moved (bookmarks, push links, the server's Gmail redirect to `/settings/gmail`) are aliases of
  * the page that replaced them. Code that links to an app page writes the path and calls `appHref(path)`.
  *
@@ -8,7 +8,7 @@
 export const DS_PREFIX = '';
 
 /** The Dinero home (the logo link). */
-export const DS_HOME_HREF = '/dashboard';
+export const DS_HOME_HREF = '/home';
 
 /** Old paths that moved: the old path to the plain path of the page that replaces it. */
 const PATH_ALIASES: Record<string, string> = {
@@ -16,12 +16,18 @@ const PATH_ALIASES: Record<string, string> = {
   '/settings/gmail': '/settings/connections',
   '/settings/jobs': '/settings/activity',
   '/debug': '/settings/debug',
-  '/rules/categories': '/transactions/rules',
-  '/rules': '/transactions/rules',
+  '/rules/categories': '/transactions/tags',
+  '/rules': '/transactions/tags',
+  '/transactions/rules': '/transactions/tags',
+  '/dashboard': '/home',
+  '/notifications': '/inbox/updates',
   '/rewards/recommend': '/rewards/which-card',
   '/settings/ingest': '/transactions/import',
   '/loans/calendar': '/upcoming',
 };
+
+/** Old path prefixes that moved with their sub-pages: `/loans/lendings` and `/loans/lendings/{id}` live at `/lending`. */
+const PREFIX_ALIASES: [from: string, to: string][] = [['/loans/lendings', '/lending']];
 
 /** The old Needs-review page; Transactions has it as a filter (see `reviewQuery`). */
 const REVIEW_PATH = '/transactions/review';
@@ -78,7 +84,11 @@ function reviewQuery(rest: string): string {
 function aliasTarget(path: string, rest: string): { path: string; rest: string } | null {
   if (path === REVIEW_PATH) return { path: '/transactions', rest: reviewQuery(rest) };
   const to = PATH_ALIASES[path];
-  return to ? { path: to, rest } : null;
+  if (to) return { path: to, rest };
+  for (const [from, target] of PREFIX_ALIASES) {
+    if (path === from || path.startsWith(`${from}/`)) return { path: target + path.slice(from.length), rest };
+  }
+  return null;
 }
 
 /**

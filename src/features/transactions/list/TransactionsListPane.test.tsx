@@ -75,7 +75,8 @@ describe('TransactionsListPane', () => {
   it('shows the tabs, the search, the chips and the rows', () => {
     setup();
     expect(screen.getByRole('tab', { name: 'All' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Import' })).toHaveAttribute('href', '/transactions/import');
+    expect(screen.queryByRole('tab', { name: 'Import' })).toBeNull();
+    expect(screen.getByRole('tab', { name: 'Tags' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();
     expect(screen.getAllByText('Period').length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: 'Status' })).toBeInTheDocument();

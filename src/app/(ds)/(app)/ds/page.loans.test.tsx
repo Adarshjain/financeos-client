@@ -13,10 +13,10 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
 describe('DsIndexPage Loans & lendings links', () => {
   it('links both tabs', () => {
     render(<DsIndexPage />);
-    expect(screen.getByText('/loans/lendings')).toBeDefined();
+    expect(screen.getByText('/lending')).toBeDefined();
     expect(screen.getByText('/loans')).toBeDefined();
     const hrefs = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
-    expect(hrefs).toContain('/loans/lendings');
+    expect(hrefs).toContain('/lending');
     expect(hrefs).toContain('/loans');
   });
 });

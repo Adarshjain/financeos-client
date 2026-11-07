@@ -40,24 +40,24 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('menuitem', { name: action }).click();
     };
 
-    test('the tabs are All, Tags and Import; the old Categories address lands on Tags', async ({ page }) => {
+    test('the tabs are All and Tags; the old Categories address lands on Tags', async ({ page }) => {
       await page.goto('/transactions');
       const tabs = page.getByRole('tab');
-      await expect(tabs.filter({ hasText: /^(All|Tags|Import)$/ })).toHaveCount(3);
+      await expect(tabs.filter({ hasText: /^(All|Tags)$/ })).toHaveCount(2);
       await expect(page.getByRole('tab', { name: 'Categories' })).toHaveCount(0);
       await expect(page.getByRole('tab', { name: 'Rules' })).toHaveCount(0);
       await page.getByRole('tab', { name: 'Tags' }).click();
-      await expect(page).toHaveURL(/\/transactions\/rules/);
+      await expect(page).toHaveURL(/\/transactions\/tags/);
 
       await page.goto('/rules/categories');
-      await expect(page).toHaveURL(/\/transactions\/rules/);
+      await expect(page).toHaveURL(/\/transactions\/tags/);
       await expect(page.getByRole('tab', { name: 'Tags', selected: true })).toBeVisible();
     });
 
     test('create, rename (a taken name is refused) and delete a tag from the Tags tab', async ({ page }) => {
       const api = makeApi(user.cookie);
       await createCategory(api, 'Work');
-      await page.goto('/transactions/rules');
+      await page.goto('/transactions/tags');
       await expect(page.getByText('Work', { exact: true })).toBeVisible();
 
       // New tag: the top bar's Add is a menu.

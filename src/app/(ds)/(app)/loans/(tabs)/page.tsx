@@ -5,7 +5,7 @@ import { LoansScreen } from '@/features/loans/list/LoansScreen';
 import { loadLoansScreen } from '@/features/loans/list/loansScreenData';
 import type { SearchParams } from '@/features/shell/searchParams';
 
-export const metadata = { title: 'Loans & lendings' };
+export const metadata = { title: 'Loans' };
 
 /** /loans: the active loans. Search and page are in the URL and answered by the server. */
 export default async function DsLoansPage({ searchParams }: { searchParams: SearchParams }) {

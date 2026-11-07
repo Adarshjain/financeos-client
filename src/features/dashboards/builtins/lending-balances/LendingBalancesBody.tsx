@@ -50,7 +50,7 @@ export function LendingBalancesBody() {
       <EmptyState
         compact
         description="Nobody owes you and you owe nobody."
-        action={{ label: 'Go to lendings', variant: 'link', href: appHref('/loans/lendings') }}
+        action={{ label: 'Go to lendings', variant: 'link', href: appHref('/lending') }}
       />
     );
   }
@@ -77,7 +77,7 @@ export function LendingBalancesBody() {
       {more && (
         <div className="px-space-16 py-space-8">
           <Button asChild variant="link" size="sm">
-            <Link href={appHref('/loans/lendings')}>View all</Link>
+            <Link href={appHref('/lending')}>View all</Link>
           </Button>
         </div>
       )}

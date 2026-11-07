@@ -85,10 +85,10 @@ describe('ChatScreen, a new chat', () => {
     expect(convo.send).toHaveBeenCalledWith('How much on fuel?');
   });
 
-  it('has the Ask the data title, Insights crumb, a back to Reports and a + that starts a new chat', () => {
+  it('has the Ask title, Insights crumb, a back to Reports and a + that starts a new chat', () => {
     render(<ChatScreen {...props} />);
     expect(screen.getByText('Insights')).toBeInTheDocument();
-    expect(screen.getAllByText('Ask the data').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Ask').length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: 'New chat' })).toHaveAttribute('href', '/chat');
   });
 

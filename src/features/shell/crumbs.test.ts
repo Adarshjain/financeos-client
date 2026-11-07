@@ -5,8 +5,11 @@ import { areaCrumb, crumbMap, subCrumb } from './navigation';
 describe('crumb map', () => {
   it('an area own pages show its rail group', () => {
     expect(areaCrumb('accounts')).toBe('Money');
-    expect(areaCrumb('investments')).toBe('Grow');
-    expect(areaCrumb('loans')).toBe('Owe & lend');
+    expect(areaCrumb('investments')).toBe('Wealth');
+    expect(areaCrumb('loans')).toBe('Money');
+    expect(areaCrumb('lendings')).toBe('Wealth');
+    expect(areaCrumb('upcoming')).toBe('Money');
+    expect(areaCrumb('rewards')).toBe('Money');
     expect(areaCrumb('reports')).toBe('Insights');
   });
 
@@ -15,7 +18,7 @@ describe('crumb map', () => {
     expect(subCrumb('transactions', 'Import')).toBe('Money / Transactions / Import');
   });
 
-  it('Home, Notifications and Settings have crumbs like the rest', () => {
+  it('Home, Inbox updates and Settings have crumbs like the rest', () => {
     expect(areaCrumb('home')).toBeTruthy();
     expect(areaCrumb('notifications')).toBeTruthy();
     expect(areaCrumb('settings')).toBe('Settings');

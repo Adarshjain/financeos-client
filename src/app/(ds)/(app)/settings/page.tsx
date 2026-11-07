@@ -2,6 +2,7 @@ import React from 'react';
 
 import { SettingsMain } from '@/features/settings/SettingsMain';
 import { guardSession } from '@/features/shell/loadHelpers';
+import { readTabSlot } from '@/features/shell/tabSlotCookie';
 import { appLockApi, gmailApi, llmKeysApi } from '@/lib/apiClient';
 import { requireAuth } from '@/lib/auth';
 
@@ -20,6 +21,7 @@ export default async function DsSettingsPage() {
     <SettingsMain
       user={user}
       appLock={appLock}
+      tabSlot={await readTabSlot()}
       values={{
         attentionCount: optional(gmailApi.getAttentionItems(0, 1, false).then((a) => a.totalElements)),
         aiKeyCount: optional(llmKeysApi.list().then((k) => k.length)),

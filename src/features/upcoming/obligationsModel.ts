@@ -114,7 +114,7 @@ export function obligationHref(item: ObligationItem): string | null {
     return `/loans/${item.loanId}${item.installmentSeq != null ? `?installment=${item.installmentSeq}` : ''}`;
   }
   if (item.type === 'lending_due' && item.counterpartyId) {
-    return `/loans/lendings/${item.counterpartyId}`;
+    return `/lending/${item.counterpartyId}`;
   }
   return item.href ?? null;
 }

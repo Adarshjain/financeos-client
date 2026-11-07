@@ -40,7 +40,7 @@ for (const viewport of VIEWPORTS) {
       await expect(row(page, 'Uber Ride')).toBeVisible({ timeout: 45_000 });
     };
 
-    /** The top bar has no eye any more: the choice is the Settings switch (and the More sheet's, on phone). */
+    /** The top bar has no eye any more: the choice is the Settings switch (Settings only). */
     const eye = (page: Page) => page.getByRole('banner').getByRole('button', { name: /^(Hide|Show) amounts$/ });
 
     /** Sets the Hide amounts switch in Settings (it persists in the cookie). */
@@ -130,14 +130,13 @@ for (const viewport of VIEWPORTS) {
     });
 
     if (phone) {
-      test('the More sheet has the switch too', async ({ page }) => {
+      test('the More sheet has no switch: the choice lives in Settings only', async ({ page }) => {
         await openTransactions(page);
         await page.getByRole('navigation', { name: 'Primary' }).getByRole('tab', { name: 'Menu' }).click();
-        const toggle = hideSwitch(page, '[role="dialog"]', 'instead of amounts');
-        await toggle.click();
-        await expect(toggle).toHaveAttribute('aria-checked', 'true');
-        await page.keyboard.press('Escape');
-        await expect(row(page, 'Uber Ride')).toContainText(SHOWN);
+        const sheet = page.getByRole('dialog', { name: 'Menu' });
+        await expect(sheet).toBeVisible();
+        await expect(sheet.getByText('Hide amounts')).toHaveCount(0);
+        await expect(sheet.getByRole('switch')).toHaveCount(0);
       });
     }
   });

@@ -13,7 +13,7 @@ const VIEWPORTS = [
 ];
 
 for (const viewport of VIEWPORTS) {
-  test.describe(`/ds Loans & lendings, ${viewport.name} (@ui)`, () => {
+  test.describe(`/ds Lending and Loans, ${viewport.name} (@ui)`, () => {
     let currentUser: CreatedUser;
 
     test.beforeEach(async ({ context, request, page }) => {
@@ -35,32 +35,28 @@ for (const viewport of VIEWPORTS) {
       return { rahul, priya, meera };
     }
 
-    test('the nav item opens Lendings first, selected, and the tab switches to Loans', async ({ page }) => {
+    test('the nav item opens Lending, selected, with no tab strip, and Loans is its own page', async ({ page }) => {
       await seedPeople();
       await page.goto('/ds');
       if (viewport.width >= 1024) {
-        await page.locator('nav.w-container-xs').getByRole('link', { name: 'Loans & lendings' }).click();
+        await page.locator('nav.w-container-xs').getByRole('link', { name: 'Lending' }).click();
       } else {
         await page.locator('nav.desk\\:hidden').getByRole('tab', { name: 'Menu' }).click();
-        await page.getByRole('dialog', { name: 'Menu' }).getByRole('link', { name: 'Loans & lendings' }).click();
+        await page.getByRole('dialog', { name: 'Menu' }).getByRole('link', { name: 'Lending' }).click();
       }
-      await page.waitForURL('**/loans/lendings');
+      await page.waitForURL('**/lending');
 
-      const tabs = page.getByRole('tab');
-      await expect(tabs.first()).toContainText('Lendings');
-      await expect(tabs.first()).toHaveAttribute('data-state', 'active');
-      await expect(tabs.nth(1)).toContainText('Loans');
-      await expect(page.locator('main').getByRole('tab', { name: 'Lendings', exact: true })).toBeVisible();
+      await expect(page.locator('main').getByRole('tab')).toHaveCount(0);
 
-      await page.getByRole('tab', { name: /^Loans/ }).click();
-      await page.waitForURL(/\/loans$/);
-      await expect(page.getByRole('tab', { name: /^Loans/ })).toHaveAttribute('data-state', 'active');
+      await page.goto('/loans');
+      await expect(page).toHaveTitle('Loans · FinanceOS');
+      await expect(page.locator('main').getByRole('tab')).toHaveCount(0);
     });
 
     test('Lendings: the hero shows the seeded totals, the Direction chip filters on the server and search narrows', async ({ page }) => {
       await seedPeople();
-      await page.goto('/loans/lendings');
-      await expect(page).toHaveTitle('Lendings · FinanceOS');
+      await page.goto('/lending');
+      await expect(page).toHaveTitle('Lending · FinanceOS');
 
       await expect(page.getByText('Owed to you (net)')).toBeVisible();
       await expect(page.getByText('₹3,000').first()).toBeVisible(); // 15,000 owed to you less 12,000 you owe
@@ -100,10 +96,10 @@ for (const viewport of VIEWPORTS) {
 
     test('Lendings: a person row links to the Dinero person page', async ({ page }) => {
       const { rahul } = await seedPeople();
-      await page.goto('/loans/lendings');
+      await page.goto('/lending');
       // The whole row opens the person; there is no chevron link.
       await page.getByText('Rahul Sharma').first().click();
-      await page.waitForURL(`**/loans/lendings/${rahul.id}`);
+      await page.waitForURL(`**/lending/${rahul.id}`);
     });
 
     /** Rahul lent 25,000 and was repaid 10,000: he owes 15,000. */
@@ -115,11 +111,11 @@ for (const viewport of VIEWPORTS) {
       return { api, rahul };
     }
 
-    const personPath = (id: string) => `/loans/lendings/${id}`;
+    const personPath = (id: string) => `/lending/${id}`;
 
     test('Person: opening a person from the list shows the ledger with the running balance, outside the tabs', async ({ page }) => {
       const { rahul } = await seedPeople();
-      await page.goto('/loans/lendings');
+      await page.goto('/lending');
       await page.getByText('Rahul Sharma').first().click();
       await page.waitForURL(`**${personPath(rahul.id)}`);
 
@@ -127,9 +123,9 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('₹15,000', { exact: true }).first()).toBeVisible();
       await expect(page.getByText('Running balance · positive means Rahul owes you')).toBeVisible();
       await expect(page.getByText('Opening ₹0 · lent ₹15,000 · received ₹0 · closing ₹15,000')).toBeVisible();
-      // The Lendings · Loans tabs belong to the two lists, not to a person's page.
-      await expect(page.locator('main').getByRole('tab', { name: /^(Lendings|Loans)$/ })).toHaveCount(0);
-      await expect(page.getByRole('link', { name: 'Back' }).first()).toHaveAttribute('href', '/loans/lendings');
+      // A person's page has no tab strip.
+      await expect(page.locator('main').getByRole('tab')).toHaveCount(0);
+      await expect(page.getByRole('link', { name: 'Back' }).first()).toHaveAttribute('href', '/lending');
     });
 
     test('Person: entries show Lent, Received and the balance after each', async ({ page }) => {
@@ -248,13 +244,13 @@ for (const viewport of VIEWPORTS) {
       await expect(confirm.getByText('Their whole ledger goes (2 entries).')).toBeVisible();
       await confirm.getByRole('button', { name: 'Delete' }).click();
 
-      await page.waitForURL((u) => u.pathname === '/loans/lendings');
+      await page.waitForURL((u) => u.pathname === '/lending');
       await expect(page.getByText('Rahul Sharma')).toHaveCount(0);
     });
 
     test('the + opens Record ledger entry; saving a new person adds a row', async ({ page }) => {
       await seedPeople();
-      await page.goto('/loans/lendings');
+      await page.goto('/lending');
       await page.getByRole('button', { name: 'Add lending', exact: true }).first().click();
 
       const dialog = page.getByRole('dialog', { name: 'Record ledger entry' });
@@ -269,7 +265,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog).not.toBeVisible();
       await expect(page.getByText(name).first()).toBeVisible();
       await expect(page.getByText('+40,000').first()).toBeVisible();
-      expect(new URL(page.url()).pathname).toBe('/loans/lendings');
+      expect(new URL(page.url()).pathname).toBe('/lending');
     });
 
     test('Loans: hero, search by lender, Closed · n · Show, and row opens the loan', async ({ page }) => {
@@ -313,7 +309,7 @@ for (const viewport of VIEWPORTS) {
       const bank = await createBankAccount(api, { name: 'Settle Bank' });
       await createTransaction(api, bank.id, { amount: 2000, date: todayString(-1), description: 'UPI from Asha Verma' });
 
-      await page.goto('/loans/lendings');
+      await page.goto('/lending');
       const row = page.getByText('Received from Asha Verma · ₹2,000');
       await expect(row).toBeVisible();
       await expect(page.getByText('+2,000')).toBeVisible();

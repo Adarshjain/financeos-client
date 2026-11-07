@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds/Toast/Toast';
+import { LENDINGS_HREF } from '@/features/lendings/lendingsHref';
 import { useCounterpartyMutations } from '@/features/lendings/useCounterpartyMutations';
-import { LENDINGS_HREF } from '@/features/loans/loansLendingsTabs';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { UpdateLendingRequest } from '@/lib/lending.types';
 

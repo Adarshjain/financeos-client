@@ -7,7 +7,7 @@ vi.mock('@/features/dashboards/home/homeData', () => ({ loadHome }));
 vi.mock('@/features/dashboards/home/HomeScreen', () => ({
   HomeScreen: () => <div data-testid="home" />,
 }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }), usePathname: () => '/dashboard', useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }), usePathname: () => '/home', useSearchParams: () => new URLSearchParams() }));
 vi.mock('@/features/notifications/useNotificationMutations', () => ({ useNotificationsAction: () => ({ id: 'notifications', icon: 'notifications', label: 'Notifications' }) }));
 
 import { dehydrate, QueryClient } from '@tanstack/react-query';
@@ -19,7 +19,7 @@ import DsHomePage from './page';
 
 beforeEach(() => vi.clearAllMocks());
 
-describe('/dashboard (Home)', () => {
+describe('/home (Home)', () => {
   it('loads the dashboards once on the server and renders the screen with no greeting props', async () => {
     loadHome.mockResolvedValue({ ok: true, data: { state: dehydrate(new QueryClient()) } });
     renderWithQuery(await DsHomePage());

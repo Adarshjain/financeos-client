@@ -27,7 +27,7 @@ export function parseOpenExport(params: SearchParamsRecord): boolean {
 
 /** The person page's own path (Dinero when built). */
 export function personHref(id: string): string {
-  return appHref(`/loans/lendings/${id}`);
+  return appHref(`/lending/${id}`);
 }
 
 /** The person page URL for a state: defaults stay out of the query string. */

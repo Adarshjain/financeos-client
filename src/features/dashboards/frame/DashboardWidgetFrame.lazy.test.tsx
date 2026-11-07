@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
-  usePathname: () => '/dashboard',
+  usePathname: () => '/home',
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('@/lib/api/client', async () => {

@@ -8,17 +8,18 @@ import AccountTabNotFound from './accounts/[id]/not-found';
 import AccountNotFound from './accounts/not-found';
 import ChatNotFound from './chat/[id]/not-found';
 import ChatError from './chat/error';
-import HomeError from './dashboard/error';
 import DashboardsListError from './dashboards/(list)/error';
 import DsAppError from './error';
+import HomeError from './home/error';
 import InboxError from './inbox/error';
+import UpdatesError from './inbox/updates/error';
 import InvestmentsError from './investments/(tabs)/error';
 import HoldingNotFound from './investments/[id]/not-found';
+import LendingError from './lending/(list)/error';
+import PersonError from './lending/[id]/error';
 import LoansError from './loans/(tabs)/error';
 import LoanError from './loans/[id]/error';
-import PersonError from './loans/lendings/[id]/error';
 import DsAppNotFound from './not-found';
-import NotificationsError from './notifications/error';
 import ReportsListError from './reports/(list)/error';
 import RewardsError from './rewards/(tabs)/error';
 import SettingsError from './settings/error';
@@ -43,12 +44,13 @@ describe('route error and not-found pages', () => {
     ['settings', SettingsError, "Couldn't load this page"],
     ['upcoming', UpcomingError, "Couldn't load upcoming"],
     ['inbox', InboxError, "Couldn't load your inbox"],
-    ['notifications', NotificationsError, "Couldn't load notifications"],
+    ['inbox updates', UpdatesError, "Couldn't load notifications"],
     ['rewards', RewardsError, "Couldn't load rewards"],
     ['investments', InvestmentsError, "Couldn't load investments"],
     ['home', HomeError, "Couldn't load Home"],
     ['accounts list', AccountsListError, "Couldn't load accounts"],
     ['loans', LoansError, "Couldn't load loans"],
+    ['lending', LendingError, "Couldn't load lending"],
     ['dashboards list', DashboardsListError, "Couldn't load dashboards"],
     ['reports list', ReportsListError, "Couldn't load reports"],
   ])('%s error says what failed and Retry resets', (_n, Page, title) => {
@@ -73,7 +75,7 @@ describe('route error and not-found pages', () => {
 
 describe('area boundaries and the app bar', () => {
   it('a page that mounts its own bar keeps it when it fails', () => {
-    render(<NotificationsError error={new Error('x')} reset={vi.fn()} />);
+    render(<HomeError error={new Error('x')} reset={vi.fn()} />);
     expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
   });
 
@@ -85,7 +87,7 @@ describe('area boundaries and the app bar', () => {
   it('every [id] not-found offers its area as the way back', () => {
     const { unmount } = render(<ChatNotFound />);
     expect(screen.getByText('Chat not found')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back to Ask the data' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to Ask' })).toBeInTheDocument();
     unmount();
     render(<HoldingNotFound />);
     expect(screen.getByText('Holding not found')).toBeInTheDocument();

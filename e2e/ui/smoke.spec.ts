@@ -8,19 +8,19 @@ test.describe('UI Smokes', () => {
     await expect(page).toHaveURL(/\/login\?from=%2Faccounts/);
   });
 
-  test('2. @mobile Form login: fill Email/Password, click Sign in, lands on /dashboard', async ({ page, user }) => {
+  test('2. @mobile Form login: fill Email/Password, click Sign in, lands on /home', async ({ page, user }) => {
     await page.goto('/login');
     await page.getByLabel('Email').fill(user.email);
     await page.getByLabel('Password', { exact: true }).fill(user.password);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page).toHaveURL(/\/home/);
     // Home is the seeded dashboard; its switcher sits in the top bar
     await expect(page.getByTestId('home-switch')).toBeVisible({ timeout: 45_000 });
   });
 
-  test('4. @mobile Sign out -> lands on /login; goto /dashboard redirects to login', async ({ page, context, user }) => {
+  test('4. @mobile Sign out -> lands on /login; goto /home redirects to login', async ({ page, context, user }) => {
     await loginContext(context, user.cookie);
-    await page.goto('/dashboard');
+    await page.goto('/home');
     await expect(page.getByTestId('home-switch')).toBeVisible({ timeout: 45_000 });
 
     // Sign out is a row on the main Settings page, above Delete account
@@ -28,11 +28,11 @@ test.describe('UI Smokes', () => {
     await page.getByRole('button', { name: 'Sign out' }).click();
 
     await expect(page).toHaveURL(/\/login/);
-    await page.goto('/dashboard');
+    await page.goto('/home');
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test('5. @mobile goto("/") lands on /login when signed out, /dashboard when signed in', async ({ page, context }) => {
+  test('5. @mobile goto("/") lands on /login when signed out, /home when signed in', async ({ page, context }) => {
     await context.clearCookies();
     await page.goto('/');
     await expect(page).toHaveURL(/\/login/);
@@ -40,6 +40,6 @@ test.describe('UI Smokes', () => {
     const fresh = await createUser(page.request, 'smoke-5');
     await loginContext(context, fresh.cookie);
     await page.goto('/');
-    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page).toHaveURL(/\/home/);
   });
 });

@@ -18,7 +18,7 @@ export const metadata = { title: 'Tags' };
 const TAGS_SIZE = 200;
 
 /**
- * /transactions/rules (the Tags tab): the user's tags and one page of rules, filtered by the address, with the
+ * /transactions/tags (the Tags tab): the user's tags and one page of rules, filtered by the address, with the
  * category list the filter and the form need. The server reads the address once and fetches them together.
  */
 export default async function DsRulesPage({

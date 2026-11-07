@@ -21,7 +21,7 @@ test.describe('Lendings UI (@ui)', () => {
     const cp = await createCounterparty(api, { name: cpName });
     await addLending(api, { counterpartyId: cp.id, direction: 'lent', amount: 40000, entryDate: monthsAgo(1) });
 
-    await page.goto(`/loans/lendings/${cp.id}`);
+    await page.goto(`/lending/${cp.id}`);
     await expect(page.getByText(cpName).first()).toBeVisible();
     await expect(page.getByText('Opening ₹0 · lent ₹40,000 · received ₹0 · closing ₹40,000')).toBeVisible();
 
@@ -64,7 +64,7 @@ test.describe('Lendings UI (@ui)', () => {
   });
 
   test('Lendings: the hero totals refresh after saving an entry, without a reload', async ({ page }) => {
-    await page.goto('/loans/lendings');
+    await page.goto('/lending');
     await expect(page.getByText('Owed to you (net)')).toBeVisible();
     await expect(page.getByText('₹0', { exact: true })).toHaveCount(2); // the net and You owe
 
@@ -97,7 +97,7 @@ test.describe('Lendings UI (@ui)', () => {
     await addLending(api, { counterpartyId: cp.id, direction: 'borrowed', amount: 2000, entryDate: monthsAgo(2) });
     await addLending(api, { counterpartyId: cp.id, direction: 'lent', amount: 1000, entryDate: monthsAgo(1) });
 
-    await page.goto(`/loans/lendings/${cp.id}`);
+    await page.goto(`/lending/${cp.id}`);
     await expect(page.getByText('Rahul Export').first()).toBeVisible();
 
     // Add entry and Settle up sit on the page; Edit person, Export ledger and Delete in its menu.

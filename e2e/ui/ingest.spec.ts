@@ -69,7 +69,7 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
     await page.goto('/transactions/import');
 
     // 1. Verify the page and its components
-    await expect(page.getByRole('tab', { name: 'Import' })).toHaveAttribute('data-state', 'active', { timeout: 60000 });
+    await expect(page.getByRole('tab', { name: 'Import' })).toHaveCount(0);
     await expect(page.getByText('Recent imports', { exact: true })).toBeVisible();
 
     const upload = async (filename: string, buffer: Buffer, files: number) => {
@@ -129,7 +129,7 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
     await createBankAccount(api, { name: 'Rejection Bank' });
 
     await page.goto('/transactions/import');
-    await expect(page.getByRole('tab', { name: 'Import' })).toHaveAttribute('data-state', 'active', { timeout: 60000 });
+    await expect(page.getByRole('tab', { name: 'Import' })).toHaveCount(0);
 
     let requestCount = 0;
     page.on('request', (req) => {

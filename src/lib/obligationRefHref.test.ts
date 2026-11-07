@@ -10,7 +10,7 @@ describe('obligationRefHref', () => {
     expect(obligationRefHref('NPS_CONTRIBUTION', 'acc-1')).toBe('/investments/nps');
   });
   it('keeps the other kinds', () => {
-    expect(obligationRefHref('LENDING', 'p1')).toBe('/loans/lendings/p1');
+    expect(obligationRefHref('LENDING', 'p1')).toBe('/lending/p1');
     expect(obligationRefHref('DIVIDEND', 'i1')).toBe('/investments/dividends?instrumentId=i1');
     expect(obligationRefHref('LOAN_PAYMENT', 'l1')).toBe('/loans/l1');
   });

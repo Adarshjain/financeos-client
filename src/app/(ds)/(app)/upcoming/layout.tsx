@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { InboxUpcomingShell } from '@/features/inbox/InboxUpcomingShell';
+import { UpcomingShell } from '@/features/upcoming/UpcomingShell';
 
 export default function DsUpcomingLayout({ children }: { children: React.ReactNode }) {
-  return <InboxUpcomingShell>{children}</InboxUpcomingShell>;
+  return <UpcomingShell>{children}</UpcomingShell>;
 }

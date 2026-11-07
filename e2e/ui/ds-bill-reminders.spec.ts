@@ -31,7 +31,7 @@ test.describe('Bill reminders (@ui)', () => {
     const late = await seedCardBill(api, { name: 'Reminder Late Card', last4: '8102', dueInDays: -5 });
     await evaluateFromMidnight(api);
 
-    await page.goto('/notifications');
+    await page.goto('/inbox/updates');
     const rows = page.getByTestId('notification-row');
     const soonRow = rows.filter({ hasText: 'Reminder Soon Card bill due in 2 days' });
     const lateRow = rows.filter({ hasText: 'Reminder Late Card bill overdue by 5 days' });
@@ -49,7 +49,7 @@ test.describe('Bill reminders (@ui)', () => {
     await expect(page.getByText('Due date').first()).toBeVisible();
 
     // The overdue one opens its own card's statement.
-    await page.goto('/notifications');
+    await page.goto('/inbox/updates');
     await expect(async () => {
       await rows.filter({ hasText: 'Reminder Late Card' }).click();
       await expect(page).toHaveURL(new RegExp(`/accounts/${late.cardId}/statements\\?statement=${late.statementId}`), { timeout: 5000 });
@@ -62,7 +62,7 @@ test.describe('Bill reminders (@ui)', () => {
     await evaluateFromMidnight(api);
     expectStatus(await api.POST('/api/v1/notifications/evaluate'), 200);
 
-    await page.goto('/notifications');
+    await page.goto('/inbox/updates');
     const row = page.getByTestId('notification-row').filter({ hasText: 'Reminder Pay Card bill due tomorrow' });
     await expect(row).toHaveCount(1, { timeout: 45000 });
 
@@ -96,7 +96,7 @@ test.describe('Bill reminders (@ui)', () => {
     await expect.poll(async () => (await api.GET('/api/v1/notifications/settings')).data?.reminderStyle, { timeout: 15000 }).toBe('STANDARD');
 
     // Style only changes push; the in-app row stays one row either way.
-    await page.goto('/notifications');
+    await page.goto('/inbox/updates');
     await expect(page.getByTestId('notification-row').filter({ hasText: 'Reminder Quiet Card bill due in 2 days' })).toHaveCount(1, { timeout: 45000 });
   });
 });

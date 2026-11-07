@@ -267,7 +267,7 @@ for (const viewport of VIEWPORTS) {
       await expect(name).toHaveValue('Ds renamed');
 
       // Leaving by a link asks too.
-      // (Detail pages no longer carry Ask the data: leave by a visible Dashboards link, the back link on phone.)
+      // (Detail pages no longer carry Ask: leave by a visible Dashboards link, the back link on phone.)
       await page.locator('a[href="/dashboards"]').filter({ visible: true }).first().click();
       await expect(page.getByRole('dialog', { name: 'Discard changes?' })).toBeVisible();
       await page.getByRole('dialog', { name: 'Discard changes?' }).getByRole('button', { name: 'Keep editing' }).click();

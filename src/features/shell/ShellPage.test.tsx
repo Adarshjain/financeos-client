@@ -15,9 +15,9 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
 }));
 
 describe('ShellPage top-bar actions', () => {
-  it('has no Ask the data shortcut (it lives in the rail and the phone Menu) and no Notifications link', () => {
+  it('has no Ask shortcut (it lives in the rail and the phone Menu) and no Notifications link', () => {
     render(<ShellPage title="Accounts">content</ShellPage>);
-    expect(screen.queryByRole('link', { name: 'Ask the data' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Ask' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'Notifications' })).toBeNull();
   });
 
@@ -110,7 +110,7 @@ describe('ShellPage back', () => {
     render(<ShellPage title="Detail" backHref="/accounts" addHref="/x/new" addLabel="Add thing">content</ShellPage>);
     expect(screen.queryByRole('button', { name: 'Search' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Notifications' })).toBeNull();
-    expect(screen.queryByRole('link', { name: 'Ask the data' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Ask' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Back' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Add thing/ })).toBeInTheDocument();
   });
@@ -131,7 +131,7 @@ describe('ShellPage crumb depth', () => {
   });
 
   it('an explicit backHref wins over the crumb', () => {
-    render(<ShellPage title="Loan" crumb="Owe & lend / Loans" backHref="/elsewhere">content</ShellPage>);
+    render(<ShellPage title="Loan" crumb="Money / Loans" backHref="/elsewhere">content</ShellPage>);
     expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/elsewhere');
   });
 

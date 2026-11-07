@@ -56,9 +56,9 @@ describe('URL state', () => {
   });
 
   it('builds the tab URL with only non-default parts', () => {
-    expect(lendingsUrl({ q: '', filter: 'all', page: 0, size: 25 })).toBe('/loans/lendings');
+    expect(lendingsUrl({ q: '', filter: 'all', page: 0, size: 25 })).toBe('/lending');
     expect(lendingsUrl({ q: 'pri', filter: 'settled', page: 1, size: 50 })).toBe(
-      '/loans/lendings?q=pri&filter=settled&page=2&size=50',
+      '/lending?q=pri&filter=settled&page=2&size=50',
     );
   });
 
@@ -167,7 +167,7 @@ describe('lendingRow', () => {
       hasExpected: true,
       lastEntry: '10 Oct · repaid ₹10,000.00',
       phoneSub: 'expected 28 Oct · last entry 10 Oct',
-      href: '/loans/lendings/p1',
+      href: '/lending/p1',
     });
   });
 

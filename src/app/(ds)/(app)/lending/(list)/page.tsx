@@ -5,9 +5,9 @@ import { LendingsScreen } from '@/features/lendings/list/LendingsScreen';
 import { loadLendingsScreen } from '@/features/lendings/list/lendingsScreenData';
 import type { SearchParams } from '@/features/shell/searchParams';
 
-export const metadata = { title: 'Lendings' };
+export const metadata = { title: 'Lending' };
 
-/** /loans/lendings: the people ledger. Search, filter and page are in the URL and answered by the server. */
+/** /lending: the people ledger. Search, filter and page are in the URL and answered by the server. */
 export default async function DsLendingsPage({ searchParams }: { searchParams: SearchParams }) {
   const props = await loadLendingsScreen(parseLendingsUrl(await searchParams));
   return <LendingsScreen {...props} />;

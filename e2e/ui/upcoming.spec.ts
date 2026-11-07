@@ -96,7 +96,7 @@ test.describe('Upcoming UI (@ui)', () => {
     await page.getByText('Upcoming Car Loan EMI #1').click();
     await page.waitForURL(`**/loans/${loan.id}?installment=1`);
     await page.goBack();
-    await page.getByRole('tab', { name: 'Upcoming' }).click();
+    await page.getByRole('tab', { name: 'List' }).click();
     await page.waitForURL('**/upcoming');
 
     // Mark the card bill paid without leaving the page.

@@ -78,7 +78,7 @@ export function NotificationsDropdown({ highlightedIds }: NotificationsDropdownP
         <Text variant="label" as="span">
           <Popover.Close asChild>
             <Button variant="link" size="sm" asChild>
-              <Link href={appHref('/notifications')}>See all</Link>
+              <Link href={appHref('/inbox/updates')}>See all</Link>
             </Button>
           </Popover.Close>
         </Text>

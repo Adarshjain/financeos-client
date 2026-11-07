@@ -9,11 +9,11 @@ import {
   shellMoreGroups,
   shellQuickAddItems,
   shellRailGroups,
-  shellTabBarItems,
+  shellTabBarItemsFor,
 } from './navigation';
 import { ShellRail, ShellTabBar } from './ShellNav';
 
-let mockPathname = '/dashboard';
+let mockPathname = '/home';
 const mockPush = vi.fn();
 
 vi.mock('next/navigation', () => ({
@@ -30,62 +30,74 @@ vi.mock('@/lib/query/hooks/useInbox', () => ({
 
 describe('shell navigation', () => {
   beforeEach(() => {
-    mockPathname = '/dashboard';
+    mockPathname = '/home';
     mockInboxBadge = 0;
   });
 
-  it('matches Rail board D-home structure', () => {
-    // 5 groups: Unlabeled (Home, Inbox), Money, Grow, Owe & lend, Insights
-    expect(shellRailGroups).toHaveLength(5);
+  it('matches the rail structure', () => {
+    // 4 groups: Unlabeled (Home, Inbox), Money, Wealth, Insights
+    expect(shellRailGroups).toHaveLength(4);
     expect(shellRailGroups[0].label).toBeUndefined();
     expect(shellRailGroups[0].items.map((i) => i.id)).toEqual(['home', 'inbox']);
 
     expect(shellRailGroups[1].label).toBe('Money');
-    expect(shellRailGroups[1].items.map((i) => i.id)).toEqual(['accounts', 'transactions']);
+    expect(shellRailGroups[1].items.map((i) => i.id)).toEqual(['accounts', 'transactions', 'upcoming', 'rewards']);
 
-    expect(shellRailGroups[2].label).toBe('Grow');
-    expect(shellRailGroups[2].items.map((i) => i.id)).toEqual(['investments', 'rewards']);
+    expect(shellRailGroups[2].label).toBe('Wealth');
+    expect(shellRailGroups[2].items.map((i) => i.id)).toEqual(['investments', 'lending']);
 
-    expect(shellRailGroups[3].label).toBe('Owe & lend');
-    expect(shellRailGroups[3].items.map((i) => i.id)).toEqual(['loans']);
-
-    expect(shellRailGroups[4].label).toBe('Insights');
-    expect(shellRailGroups[4].items.map((i) => i.id)).toEqual(['dashboards', 'reports', 'chat']);
+    expect(shellRailGroups[3].label).toBe('Insights');
+    expect(shellRailGroups[3].items.map((i) => [i.id, i.label])).toEqual([
+      ['dashboards', 'Dashboards'],
+      ['reports', 'Reports'],
+      ['chat', 'Ask'],
+    ]);
 
     expect(shellFooterItems).toHaveLength(1);
     expect(shellFooterItems[0].id).toBe('settings');
   });
 
   it('matches TabBar items with menu icon and no href on More', () => {
-    expect(shellTabBarItems.map((i) => i.id)).toEqual([
-      'home',
-      'transactions',
-      'loans',
-      'inbox',
-      'more',
-    ]);
-    expect(shellTabBarItems.map((i) => i.label)).toEqual(['Home', 'Transactions', 'Lendings', 'Inbox', 'Menu']);
-    const moreItem = shellTabBarItems.find((i) => i.id === 'more')!;
+    const items = shellTabBarItemsFor();
+    expect(items.map((i) => i.id)).toEqual(['home', 'accounts', 'transactions', 'inbox', 'more']);
+    expect(items.map((i) => i.label)).toEqual(['Home', 'Accounts', 'Transactions', 'Inbox', 'Menu']);
+    const moreItem = items.find((i) => i.id === 'more')!;
     expect(moreItem.icon).toBe('menu');
     expect(moreItem.href).toBeUndefined();
   });
 
-  it('Lendings tab is active on the loans pages', () => {
-    for (const p of ['/loans', '/loans/lendings', '/loans/people/1', '/loans/7']) {
-      expect(getActiveNavItem(p)).toBe('loans');
+  it('the second tab follows the slot', () => {
+    expect(shellTabBarItemsFor('lending')[1]).toMatchObject({ id: 'lending', label: 'Lending', href: '/lending' });
+    expect(shellTabBarItemsFor('investments')[1]).toMatchObject({ id: 'investments', href: '/investments' });
+    expect(shellTabBarItemsFor('upcoming')[1]).toMatchObject({ id: 'upcoming', label: 'Upcoming', href: '/upcoming' });
+    expect(shellTabBarItemsFor('accounts')[1]).toMatchObject({ id: 'accounts', href: '/accounts' });
+    for (const slot of ['accounts', 'lending', 'investments', 'upcoming'] as const) {
+      expect(shellTabBarItemsFor(slot)).toHaveLength(5);
+    }
+  });
+
+  it('the Loans pages light Accounts', () => {
+    for (const p of ['/loans', '/loans/7']) {
+      expect(getActiveNavItem(p)).toBe('accounts');
+    }
+  });
+
+  it('the Lending pages light Lending', () => {
+    for (const p of ['/lending', '/lending/p1']) {
+      expect(getActiveNavItem(p)).toBe('lending');
     }
   });
 
   it('getActiveNavItem follows Dinero pages: each page lights its nav item', () => {
     expect(getActiveNavItem('/inbox')).toBe('inbox');
-    expect(getActiveNavItem('/upcoming')).toBe('inbox');
-    expect(getActiveNavItem('/upcoming/calendar')).toBe('inbox');
+    expect(getActiveNavItem('/upcoming')).toBe('upcoming');
+    expect(getActiveNavItem('/upcoming/calendar')).toBe('upcoming');
     expect(getActiveNavItem('/accounts')).toBe('accounts');
     expect(getActiveNavItem('/accounts/a1')).toBe('accounts');
     expect(getActiveNavItem('/accounts/a1/rewards')).toBe('accounts');
     expect(getActiveNavItem('/settings')).toBe('settings');
     expect(getActiveNavItem('/settings/ai')).toBe('settings');
-    expect(getActiveNavItem('/notifications')).toBeUndefined();
+    expect(getActiveNavItem('/inbox/updates')).toBe('inbox');
     expect(getActiveNavItem('/dsx/inbox')).toBeUndefined();
   });
 
@@ -100,16 +112,16 @@ describe('shell navigation', () => {
   it('getActiveNavItem computes current item correctly and returns undefined for /ds', () => {
     expect(getActiveNavItem('/ds')).toBeUndefined();
     expect(getActiveNavItem('/')).toBeUndefined();
-    expect(getActiveNavItem('/dashboard')).toBe('home');
+    expect(getActiveNavItem('/home')).toBe('home');
     expect(getActiveNavItem('/inbox')).toBe('inbox');
-    expect(getActiveNavItem('/upcoming')).toBe('inbox');
-    expect(getActiveNavItem('/upcoming/calendar')).toBe('inbox');
+    expect(getActiveNavItem('/upcoming')).toBe('upcoming');
+    expect(getActiveNavItem('/upcoming/calendar')).toBe('upcoming');
     expect(getActiveNavItem('/upcomingx')).toBeUndefined();
     expect(getActiveNavItem('/accounts')).toBe('accounts');
     expect(getActiveNavItem('/transactions')).toBe('transactions');
     expect(getActiveNavItem('/investments')).toBe('investments');
     expect(getActiveNavItem('/rewards')).toBe('rewards');
-    expect(getActiveNavItem('/loans')).toBe('loans');
+    expect(getActiveNavItem('/lending')).toBe('lending');
     expect(getActiveNavItem('/dashboards')).toBe('dashboards');
     expect(getActiveNavItem('/reports')).toBe('reports');
     expect(getActiveNavItem('/chat')).toBe('chat');
@@ -117,7 +129,7 @@ describe('shell navigation', () => {
     expect(getActiveNavItem('/unknown')).toBeUndefined();
   });
 
-  it('hides the phone tab bar on the Ask the data pages only', () => {
+  it('hides the phone tab bar on the Ask pages only', () => {
     expect(hidesTabBar('/chat')).toBe(true);
     expect(hidesTabBar('/reports/new')).toBe(false);
     expect(hidesTabBar('/reports/r-1')).toBe(false);
@@ -135,32 +147,44 @@ describe('shell navigation', () => {
     expect(screen.queryByRole('tab', { name: /Menu/i })).toBeNull();
   });
 
-  it('keeps the phone tab bar on the Import tab and a dashboard view', () => {
+  it('keeps the phone tab bar on the Import page and a dashboard view', () => {
     mockPathname = '/transactions/import';
     render(<ShellTabBar user={{ email: 'a@example.test' }} />);
     expect(screen.getByRole('tab', { name: /Menu/i })).toBeTruthy();
   });
 
-  it('has no Upcoming entry in the rail or the tab bar; Inbox owns /upcoming', () => {
+  it('Upcoming is its own Money item and Inbox no longer owns /upcoming', () => {
     const rail = shellRailGroups.flatMap((g) => g.items);
-    expect(rail.some((i) => i.id === 'upcoming')).toBe(false);
-    expect(shellTabBarItems.some((i) => i.id === 'upcoming')).toBe(false);
-    expect(rail.find((i) => i.id === 'inbox')?.also).toEqual(['/upcoming']);
-    expect(shellTabBarItems.some((i) => i.id === 'accounts')).toBe(false);
-    expect(shellTabBarItems.find((i) => i.id === 'loans')).toMatchObject({ icon: 'handshake', href: '/loans/lendings' });
+    expect(rail.find((i) => i.id === 'upcoming')).toMatchObject({ label: 'Upcoming', href: '/upcoming' });
+    expect(rail.find((i) => i.id === 'inbox')?.also).toBeUndefined();
+    expect(rail.some((i) => i.id === 'loans')).toBe(false);
   });
 
-  it('Rail and TabBar mark Inbox current on /upcoming', () => {
-    mockPathname = '/upcoming';
+  it('Rail and TabBar mark Inbox current on /inbox/updates, and the slot tab on its pages', () => {
+    mockPathname = '/inbox/updates';
     const { unmount } = render(<ShellRail user={{ email: 'a@example.test' }} />);
     expect(screen.getByRole('link', { name: /Inbox/ }).getAttribute('aria-current')).toBe('page');
     unmount();
-    render(<ShellTabBar user={{ email: 'a@example.test' }} />);
+    const { unmount: unmountBar } = render(<ShellTabBar user={{ email: 'a@example.test' }} />);
     expect(screen.getByRole('tab', { name: /Inbox/ }).getAttribute('aria-current')).toBe('page');
+    unmountBar();
+    mockPathname = '/upcoming/calendar';
+    render(<ShellTabBar user={{ email: 'a@example.test' }} tabSlot="upcoming" />);
+    expect(screen.getByRole('tab', { name: /Upcoming/ }).getAttribute('aria-current')).toBe('page');
   });
 
-  it('ShellTabBar highlights current tab on /dashboard and none on /ds', () => {
-    mockPathname = '/dashboard';
+  it('ShellTabBar draws the slot tab second (Accounts by default)', () => {
+    const { unmount } = render(<ShellTabBar user={{ email: 'a@example.test' }} />);
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Home', 'Accounts', 'Transactions', 'Inbox', 'Menu']);
+    unmount();
+    render(<ShellTabBar user={{ email: 'a@example.test' }} tabSlot="lending" />);
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs.map((t) => t.textContent)).toEqual(['Home', 'Lending', 'Transactions', 'Inbox', 'Menu']);
+    expect(tabs[1]).toHaveAttribute('href', '/lending');
+  });
+
+  it('ShellTabBar highlights current tab on /home and none on /ds', () => {
+    mockPathname = '/home';
     const { unmount } = render(<ShellTabBar user={{ email: 'user@example.test' }} />);
     const homeTab = screen.getByRole('tab', { name: /Home/i });
     expect(homeTab.getAttribute('aria-current')).toBe('page');
@@ -213,9 +237,14 @@ describe('shell navigation', () => {
     expect(shellQuickAddItems.find((i) => i.id === 'import')?.href).toBe('/transactions/import');
 
     expect(shellMoreGroups).toHaveLength(3);
-    expect(shellMoreGroups[0].label).toBe('Money');
-    expect(shellMoreGroups[1].label).toBe('Grow');
-    expect(shellMoreGroups[2].label).toBe('Owe & lend · Insights');
+    expect(shellMoreGroups.map((g) => g.label)).toEqual(['Money', 'Wealth', 'Insights']);
+    expect(shellMoreGroups[0].items.map((i) => i.label)).toEqual(['Accounts', 'Transactions', 'Upcoming', 'Rewards']);
+    expect(shellMoreGroups[1].items.map((i) => i.label)).toEqual(['Investments', 'Lending']);
+    expect(shellMoreGroups[2].items.map((i) => [i.label, i.span])).toEqual([
+      ['Dashboards', undefined],
+      ['Reports', undefined],
+      ['Ask', 'full'],
+    ]);
   });
 
   it('ShellTabBar opens More sheet when More tab is tapped, and closes when an item is chosen', () => {
@@ -243,10 +272,16 @@ describe('shell navigation', () => {
     expect(screen.getByRole('link', { name: /Transactions/i })).toHaveAttribute('href', '/transactions');
     expect(screen.getByRole('link', { name: /Investments/i })).toHaveAttribute('href', '/investments');
     expect(screen.getByRole('link', { name: /Rewards/i })).toHaveAttribute('href', '/rewards');
-    expect(screen.getByRole('link', { name: /Loans & lendings/i })).toHaveAttribute('href', '/loans/lendings');
+    expect(screen.getByRole('link', { name: /Upcoming/i })).toHaveAttribute('href', '/upcoming');
+    expect(screen.getByRole('link', { name: /Lending/i })).toHaveAttribute('href', '/lending');
     expect(screen.getByRole('link', { name: /Dashboards/i })).toHaveAttribute('href', '/dashboards');
     expect(screen.getByRole('link', { name: /Reports/i })).toHaveAttribute('href', '/reports');
-    expect(screen.getByRole('link', { name: /Ask the data/i })).toHaveAttribute('href', '/chat');
+    expect(screen.getByRole('link', { name: /Ask/i })).toHaveAttribute('href', '/chat');
+    expect(screen.getByRole('link', { name: /Ask/i }).className).toContain('col-span-2');
+    expect(screen.getByRole('link', { name: /Reports/i }).className).not.toContain('col-span-2');
+    expect(screen.queryByText('Hide amounts')).toBeNull();
+    expect(screen.queryByRole('switch')).toBeNull();
+    expect(screen.getByText('Settings · security · AI')).toBeInTheDocument();
 
     // Verify Profile row
     const profileLink = screen.getByRole('link', { name: /Arjun Mehta/i });

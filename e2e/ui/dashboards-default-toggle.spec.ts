@@ -14,7 +14,7 @@ test.describe('Dashboards UI: default toggle keeps Home intact (@ui)', () => {
     await loginContext(context, currentUser.cookie);
   });
 
-  test('clearing and re-setting the default on Home keeps its four built-in widgets and /dashboard still renders them', async ({ page }) => {
+  test('clearing and re-setting the default on Home keeps its four built-in widgets and /home still renders them', async ({ page }) => {
     test.slow();
     const api = makeApi(currentUser.cookie);
 
@@ -44,7 +44,7 @@ test.describe('Dashboards UI: default toggle keeps Home intact (@ui)', () => {
     expect(builtins.find((w) => w.builtinKey === 'upcoming')!.params).toEqual({ days: 14 });
     expect(after.data!.widgets).toHaveLength(5);
 
-    await page.goto('/dashboard');
+    await page.goto('/home');
     await expect(page.getByTestId('dashboard-widget').first()).toBeVisible({ timeout: 45_000 });
     await expect(page.getByTestId('dashboard-widget')).toHaveCount(5);
     await expect(page.getByText('Net worth').first()).toBeVisible();

@@ -46,7 +46,7 @@ describe('LendingBalancesBody', () => {
     respond([]);
     renderWithQuery(<LendingBalancesBody />);
     expect(await screen.findByText('Nobody owes you and you owe nobody.')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Go to lendings' })).toHaveAttribute('href', expect.stringContaining('/loans/lendings'));
+    expect(screen.getByRole('link', { name: 'Go to lendings' })).toHaveAttribute('href', expect.stringContaining('/lending'));
   });
 
   it('rows read who owes whom with the amount; the amount opens the person breakdown', async () => {
@@ -71,7 +71,7 @@ describe('LendingBalancesBody', () => {
   it('View all only when more people have balances than are listed', async () => {
     respond([person('p1', 'Rahul', 12000)], 9);
     const { unmount } = renderWithQuery(<LendingBalancesBody />);
-    expect(await screen.findByRole('link', { name: 'View all' })).toHaveAttribute('href', expect.stringContaining('/loans/lendings'));
+    expect(await screen.findByRole('link', { name: 'View all' })).toHaveAttribute('href', expect.stringContaining('/lending'));
     unmount();
     respond([person('p1', 'Rahul', 12000)], 1);
     renderWithQuery(<LendingBalancesBody />);

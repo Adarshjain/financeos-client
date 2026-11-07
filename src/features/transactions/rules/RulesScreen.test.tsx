@@ -11,7 +11,7 @@ import { RulesScreen, type RulesScreenProps } from './RulesScreen';
 const router = { push: vi.fn(), replace: vi.fn(), refresh: vi.fn() };
 vi.mock('next/navigation', () => ({
   useRouter: () => router,
-  usePathname: () => '/transactions/rules',
+  usePathname: () => '/transactions/tags',
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
@@ -117,7 +117,7 @@ describe('RulesScreen', () => {
 
   it('the Tags tab replaces Rules and Categories', () => {
     renderWithQuery(<RulesScreen {...props()} />);
-    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['All', 'Tags', 'Import']);
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['All', 'Tags']);
   });
 
   it('the Category filter lists the fixed categories and writes the key to the address', () => {

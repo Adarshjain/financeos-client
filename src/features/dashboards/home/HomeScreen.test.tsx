@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@/lib/api/server', async () => ({ serverApi: (await import('@/lib/api/client')).api }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/dashboard', useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/home', useSearchParams: () => new URLSearchParams() }));
 vi.mock('@/features/notifications/useNotificationMutations', () => ({ useNotificationsAction: () => ({ id: 'notifications', icon: 'notifications', label: 'Notifications' }) }));
 
 const toast = vi.fn();
@@ -187,13 +187,13 @@ describe('HomeScreen', () => {
   });
 
   describe('with no default dashboard', () => {
-    it('offers Restore default Home, Add dashboard, View dashboards and Ask the data', () => {
+    it('offers Restore default Home, Add dashboard, View dashboards and Ask', () => {
       render([{ ...money }]);
       expect(screen.getByText('No default dashboard')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Restore default Home' })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Add dashboard' })).toHaveAttribute('href', '/dashboards/new');
       expect(screen.getByRole('link', { name: 'View dashboards' })).toHaveAttribute('href', '/dashboards');
-      expect(within(screen.getByRole('main')).getByRole('link', { name: 'Ask the data' })).toHaveAttribute('href', '/chat');
+      expect(within(screen.getByRole('main')).getByRole('link', { name: 'Ask' })).toHaveAttribute('href', '/chat');
     });
 
     it('Restore default Home restores it, says so and reloads the page', async () => {

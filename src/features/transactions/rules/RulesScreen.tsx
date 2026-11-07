@@ -67,7 +67,7 @@ type Dialogs =
   | { kind: 'delete'; rule: CategoryRule }
   | null;
 
-/** /transactions/rules: the Tags tab, tags then category rules. The top bar's Add is a menu (New tag, New rule); Edit, Find matches and Delete are on a rule's ⋮. */
+/** /transactions/tags: the Tags tab, tags then category rules. The top bar's Add is a menu (New tag, New rule); Edit, Find matches and Delete are on a rule's ⋮. */
 export function RulesScreen({
   tags,
   tagsReference,

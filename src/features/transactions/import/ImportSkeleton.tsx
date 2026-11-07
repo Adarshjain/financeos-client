@@ -6,14 +6,12 @@ import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 
-import { TransactionsTabs } from '../TransactionsTabs';
 
-/** The Import tab while it loads: the tabs, the form card and the side card. */
+/** The Import page while it loads: the form card and the side card. */
 export function ImportSkeleton() {
   return (
-    <ShellPage crumb={subCrumb('transactions', 'Import')} title="Import" flushTop>
+    <ShellPage crumb={subCrumb('transactions', 'Import')} title="Import">
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
-        <TransactionsTabs />
         <div className={`grid grid-cols-1 ${GRID_GAP} desk:grid-cols-12`}>
           <Card className="desk:col-span-7">
             <div className="flex flex-col gap-space-8 desk:gap-space-12 p-space-16">

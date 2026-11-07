@@ -182,7 +182,7 @@ for (const viewport of VIEWPORTS) {
 
     test('Home: no greeting or page title; the switcher sits in the top bar with no ⋯ menu and the widgets start the page', async ({ page }) => {
       await board('Ds home', true, ['net_worth', 'upcoming']);
-      await page.goto('/dashboard');
+      await page.goto('/home');
       await expect(page).toHaveTitle('Home · FinanceOS');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
       await expect(page.getByText(/^Good (morning|afternoon|evening)/)).toHaveCount(0);
@@ -197,7 +197,7 @@ for (const viewport of VIEWPORTS) {
 
     test('Home: no widget has an "Open ›" link; the ⋮ menu is the way to its page', async ({ page }) => {
       await board('Ds home', true, ['net_worth', 'upcoming']);
-      await page.goto('/dashboard');
+      await page.goto('/home');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(2, { timeout: 45_000 });
       await expect(page.getByRole('main').getByRole('link', { name: /^Open/ })).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Widget options' }).first()).toBeVisible();
@@ -206,7 +206,7 @@ for (const viewport of VIEWPORTS) {
     test('Home: the widgets stack in one column on a phone', async ({ page }) => {
       test.skip(viewport.width >= 1024, 'phone only');
       await board('Ds home', true, ['net_worth', 'upcoming']);
-      await page.goto('/dashboard');
+      await page.goto('/home');
       const widgets = page.getByTestId('dashboard-widget');
       await expect(widgets).toHaveCount(2, { timeout: 45_000 });
       // Streaming renders them hidden behind loading.tsx first; measure once they are revealed.
@@ -218,7 +218,7 @@ for (const viewport of VIEWPORTS) {
 
     test('Home: the default dashboard’s switcher has no Set as default', async ({ page }) => {
       await board('Ds home', true, ['net_worth']);
-      await page.goto('/dashboard');
+      await page.goto('/home');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
       await page.getByTestId('home-switch').click();
       await expect(switcherActions(page)).toHaveText(['Add widget', 'Edit dashboard', 'Add dashboard', 'View all dashboards']);
@@ -229,7 +229,7 @@ for (const viewport of VIEWPORTS) {
       const bill = await seedCardBill(api, { name: 'Due Card', last4: '7403', dueInDays: 5 });
       const quiet = await createCreditCard(api, { name: 'Quiet Card', last4: '7404' });
       await board('Ds bills', true, ['bills_due']);
-      await page.goto('/dashboard');
+      await page.goto('/home');
       const bills = page.getByTestId('bills-due-widget');
       const [, m, d] = istToday(5).split('-').map(Number);
       const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1];
@@ -245,7 +245,7 @@ for (const viewport of VIEWPORTS) {
     test('Home: the switcher offers Set as default on a dashboard that is not the default, and it becomes the default', async ({ page }) => {
       await board('Ds home', true, ['net_worth']);
       const money = await board('Ds money', false, ['net_worth']);
-      await page.goto('/dashboard');
+      await page.goto('/home');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
 
       await page.getByTestId('home-switch').click();
@@ -262,7 +262,7 @@ for (const viewport of VIEWPORTS) {
     test('Home: the switcher lists the dashboards, shows the one picked, and ends with View all dashboards', async ({ page }) => {
       await board('Ds home', true, ['net_worth']);
       await board('Ds money', false, ['net_worth', 'upcoming', 'bills_due']);
-      await page.goto('/dashboard');
+      await page.goto('/home');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
 
       await page.getByTestId('home-switch').click();
@@ -279,7 +279,7 @@ for (const viewport of VIEWPORTS) {
     test('Home: switcher Add widget saves straight to the dashboard, and Undo takes it off again', async ({ page }) => {
       test.slow();
       const home = await board('Home', true, ['net_worth']);
-      await page.goto('/dashboard');
+      await page.goto('/home');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
 
       await page.getByTestId('home-switch').click();
@@ -310,13 +310,13 @@ for (const viewport of VIEWPORTS) {
           await expect(page).toHaveURL(url, { timeout: 5_000 });
         }).toPass({ timeout: 45_000 });
       };
-      await page.goto('/dashboard');
+      await page.goto('/home');
       await expect(page.getByTestId('dashboard-widget')).toHaveCount(1, { timeout: 45_000 });
 
       await pickFromSwitcher('Edit dashboard', new RegExp(`/dashboards/${home.id}`));
       await expect(page.getByLabel('Dashboard name')).toHaveValue('Ds home', { timeout: 45_000 });
 
-      await page.goto('/dashboard');
+      await page.goto('/home');
       await pickFromSwitcher('Add dashboard', /\/dashboards\/new/);
     });
 
@@ -324,7 +324,7 @@ for (const viewport of VIEWPORTS) {
       test.slow();
       const loan = await seedDueSoonLoan(makeApi(currentUser.cookie), 'Ds Attn Loan');
       await board('Ds home', true, ['attention']);
-      await page.goto('/dashboard');
+      await page.goto('/home');
       const row = page.getByTestId('inbox-widget-row').first();
       await expect(row).toBeVisible({ timeout: 45_000 });
       await expect(row).toHaveAttribute('href', new RegExp(`/inbox\\?item=emi%3A${loan.id}`));
@@ -336,7 +336,7 @@ for (const viewport of VIEWPORTS) {
 
     test('Home: a default dashboard with nothing on it says so and offers Add widget', async ({ page }) => {
       await board('Ds home', true, []);
-      await page.goto('/dashboard');
+      await page.goto('/home');
       await expect(page.getByText('No widgets yet')).toBeVisible({ timeout: 45_000 });
       await page.getByRole('button', { name: 'Add widget' }).click();
       await expect(page.getByRole('dialog', { name: /Add widget/ })).toBeVisible();
@@ -344,12 +344,12 @@ for (const viewport of VIEWPORTS) {
 
     test('Home: with no default dashboard it says so, with four ways on, and Restore default Home brings it back', async ({ page }) => {
       await board('Ds money', false);
-      await page.goto('/dashboard');
+      await page.goto('/home');
       await expect(page.getByText('No default dashboard')).toBeVisible({ timeout: 45_000 });
       const main = page.getByRole('main');
       await expect(main.getByRole('link', { name: 'Add dashboard' })).toHaveAttribute('href', '/dashboards/new');
       await expect(main.getByRole('link', { name: 'View dashboards' })).toHaveAttribute('href', '/dashboards');
-      await expect(main.getByRole('link', { name: 'Ask the data' })).toBeVisible();
+      await expect(main.getByRole('link', { name: 'Ask' })).toBeVisible();
 
       await main.getByRole('button', { name: 'Restore default Home' }).click();
       await expect(page.getByText('Home dashboard restored')).toBeVisible();

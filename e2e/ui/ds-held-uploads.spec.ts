@@ -78,7 +78,7 @@ test.describe('Import without picking an account (@ui)', () => {
     const feed = await api.GET('/api/v1/notifications/feed', { params: { query: { page: 0, size: 10 } } });
     const kinds = (feed.data?.content ?? []).map((n) => n.kind);
     expect(kinds).toContain('upload_held');
-    await page.goto('/notifications');
+    await page.goto('/inbox/updates');
     const row = page.getByTestId('notification-row').filter({ hasText: 'A statement needs an account' });
     await expect(row).toHaveCount(1, { timeout: 45000 });
     await expect(async () => {

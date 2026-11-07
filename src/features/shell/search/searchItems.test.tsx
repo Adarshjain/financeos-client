@@ -102,7 +102,7 @@ describe('buildSearchGroups', () => {
     expect(group(groups, 'loans').items.map((i) => i.title)).toEqual(['Home loan · SBI', 'Car loan']);
     expect(group(groups, 'reports').items.map((i) => i.title)).toEqual(['PhonePe 10%']);
     expect(group(groups, 'dashboards').items.map((i) => i.title)).toEqual(['Home']);
-    expect(group(groups, 'ask').items.map((i) => i.title)).toEqual(['Ask the data: Home']);
+    expect(group(groups, 'ask').items.map((i) => i.title)).toEqual(['Ask: Home']);
   });
 
   describe('categories and rules', () => {
@@ -130,7 +130,7 @@ describe('buildSearchGroups', () => {
       expect(go.mock.calls.map((c) => c[0])).toEqual([
         '/transactions?category=food',
         '/transactions?subcategory=food.groceries',
-        '/transactions/rules',
+        '/transactions/tags',
       ]);
     });
   });
@@ -149,7 +149,7 @@ describe('buildSearchGroups', () => {
     expect(go.mock.calls.map((c) => c[0])).toEqual([
       '/accounts/a1',
       '/investments/i1',
-      '/loans/lendings/p1',
+      '/lending/p1',
       '/loans/l1',
       '/reports/r1',
       '/dashboards/d1',

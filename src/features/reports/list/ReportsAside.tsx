@@ -43,7 +43,7 @@ export function ReportsAside() {
             </Text>
             <Button asChild variant="secondary" className="max-desk:w-full desk:self-start">
               <Link href={ASK_HREF} prefetch={false}>
-                Ask the data
+                Ask
               </Link>
             </Button>
           </div>

@@ -68,7 +68,7 @@ export function HomeScreen({ scan }: { scan?: ScanState | null }) {
             </Button>
             <Button asChild variant="link" size="sm">
               <Link href={appHref('/chat')} prefetch={false}>
-                Ask the data
+                Ask
               </Link>
             </Button>
           </div>

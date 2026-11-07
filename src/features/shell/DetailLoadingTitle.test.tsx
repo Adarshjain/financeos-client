@@ -18,7 +18,7 @@ describe('DetailLoadingTitle', () => {
   });
 
   it('names the person skeleton title after the person in the address', () => {
-    pathname = '/loans/lendings/p1';
+    pathname = '/lending/p1';
     render(<DetailLoadingTitle kind="person">Person</DetailLoadingTitle>);
     expect(screen.getByText('Person').closest('[data-name]')).toHaveAttribute('data-name', 'person-p1');
   });

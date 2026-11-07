@@ -9,7 +9,7 @@ import { ShellPage } from '@/features/shell/ShellPage';
 /** What a chat page shows while it loads: the pane (desktop) beside the thread's first answer. */
 export function ChatSkeleton({ conversation }: { conversation?: boolean }) {
   return (
-    <ShellPage crumb={areaCrumb('chat')} title="Ask the data" addHref={appHref('/chat')} addLabel="New chat" backHref={conversation ? appHref('/chat') : appHref('/reports')}>
+    <ShellPage crumb={areaCrumb('chat')} title="Ask" addHref={appHref('/chat')} addLabel="New chat" backHref={conversation ? appHref('/chat') : appHref('/reports')}>
       <div className="flex flex-col desk:flex-row desk:items-start gap-space-8 desk:gap-space-24">
         <div className={conversation ? 'max-desk:hidden desk:w-72 desk:shrink-0' : 'order-2 desk:order-1 desk:w-72 desk:shrink-0'}>
           <Card>

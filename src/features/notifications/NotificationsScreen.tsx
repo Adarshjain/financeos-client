@@ -14,10 +14,8 @@ import { Pager } from '@/components/ds/Pager/Pager';
 import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { Text } from '@/components/ds/Text/Text';
 import { LoadError } from '@/features/shell/LoadError';
-import { areaCrumb } from '@/features/shell/navigation';
 import { pageHref } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
-import { ShellPage } from '@/features/shell/ShellPage';
 import { useUrlState } from '@/features/upcoming/useUrlState';
 import type { AppNotification } from '@/lib/api/types';
 import { useNotificationFeed, useNotificationMutations as useFeedMutations } from '@/lib/query/hooks/useNotifications';
@@ -27,7 +25,7 @@ import { groupByDay, notificationHref, NOTIFICATIONS_PAGE_SIZE, pageFromSearch, 
 import { NotificationsSkeleton } from './NotificationsSkeleton';
 import { useNotificationMutations } from './useNotificationMutations';
 
-/** /notifications: the full feed by day, newest first, with clear one, clear all and a pager. */
+/** /inbox/updates: the full feed by day, newest first, with clear one, clear all and a pager. */
 export function NotificationsScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -63,7 +61,7 @@ export function NotificationsScreen() {
   const goToPage = React.useCallback(
     (p: number, replace = false) => {
       setPage(p);
-      const url = appHref(pageHref('/notifications', {}, p));
+      const url = appHref(pageHref('/inbox/updates', {}, p));
       if (replace) router.replace(url, { scroll: false });
       else router.push(url, { scroll: false });
     },
@@ -143,7 +141,7 @@ export function NotificationsScreen() {
   }
 
   return (
-    <ShellPage crumb={areaCrumb('notifications')} title="Notifications" backHref={appHref('/inbox')}>
+    <>
       {body}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <Dialog.Content
@@ -166,7 +164,7 @@ export function NotificationsScreen() {
           }}
         />
       </Dialog>
-    </ShellPage>
+    </>
   );
 }
 

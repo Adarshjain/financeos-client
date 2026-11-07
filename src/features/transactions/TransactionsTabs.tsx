@@ -9,7 +9,7 @@ import { appHref } from '@/features/shell/routes';
 
 import { activeTransactionsTab, TRANSACTION_TABS } from './transactionTabs';
 
-/** All · Tags · Import: the tab strip of Transactions. The active tab comes from the address. */
+/** All · Tags: the tab strip of Transactions. The active tab comes from the address. */
 export function TransactionsTabs() {
   const items: TabItem[] = TRANSACTION_TABS.map((t) => ({
     value: t.value,

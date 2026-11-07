@@ -36,7 +36,7 @@ const VIEWPORTS = [
   { name: 'phone 390px', width: 390, height: 844, tag: '@ui @mobile' },
 ];
 
-const BUSY = 'Ask the data is busy with another answer. Try again in a moment.';
+const BUSY = 'Ask is busy with another answer. Try again in a moment.';
 
 /** Waits for `text`. The server answers one chat at a time across users, so a busy banner is retried until the answer lands. */
 async function answer(page: Page, text: string | RegExp) {
@@ -125,7 +125,7 @@ for (const viewport of VIEWPORTS) {
         { delayMs: 2500, action: 'final_answer', answer: 'You are owed **₹12,500** in total.', blocks },
       ]);
       await page.goto('/chat');
-      await expect(page).toHaveTitle('Ask the data · FinanceOS');
+      await expect(page).toHaveTitle('Ask · FinanceOS');
       await expect(page.getByPlaceholder(PLACEHOLDER)).toBeVisible();
 
       await ask(page, STARTER);
@@ -342,7 +342,7 @@ for (const viewport of VIEWPORTS) {
       test('report draft: Add to Home saves the report and puts a widget on the default dashboard; the card Undo takes both away', async ({ page }) => {
         test.slow();
         // Home exists once it has been opened; count its widgets before and after.
-        await page.goto('/dashboard');
+        await page.goto('/home');
         const widgets = page.getByTestId('dashboard-widget');
         await expect(widgets.first()).toBeVisible();
         const before = await widgets.count();
@@ -352,13 +352,13 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByText('Report saved and added to Home').first()).toBeVisible();
 
         const url = page.url();
-        await page.goto('/dashboard');
+        await page.goto('/home');
         await expect(widgets).toHaveCount(before + 1);
 
         await page.goto(url);
         await page.getByRole('button', { name: 'Undo' }).click();
         await expect(page.getByRole('button', { name: 'Add to Home' })).toBeVisible();
-        await page.goto('/dashboard');
+        await page.goto('/home');
         await expect(widgets).toHaveCount(before);
         await page.goto('/reports');
         await expect(reportRow(page, 'Draft home KPI')).toHaveCount(0);
@@ -368,7 +368,7 @@ for (const viewport of VIEWPORTS) {
         test.slow();
         const api = makeApi(currentUser.cookie);
         // Opening Home seeds it; delete every dashboard so the user has no default.
-        await page.goto('/dashboard');
+        await page.goto('/home');
         await expect(page.getByTestId('dashboard-widget').first()).toBeVisible();
         const list = await api.GET('/api/v1/dashboards');
         for (const d of list.data ?? []) await api.DELETE('/api/v1/dashboards/{id}', { params: { path: { id: d.id } } });
@@ -377,7 +377,7 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('button', { name: 'Add to Home' }).click();
         await expect(page.getByText('Report saved and added to Home').first()).toBeVisible();
 
-        await page.goto('/dashboard');
+        await page.goto('/home');
         const widgets = page.getByTestId('dashboard-widget');
         await expect(widgets).toHaveCount(1);
         await expect(widgets.first()).toContainText('Draft first KPI');

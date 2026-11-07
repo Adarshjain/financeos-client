@@ -6,7 +6,7 @@ import { parseChatUrl } from '@/features/chat/chatUrl';
 import type { SearchParams } from '@/features/shell/searchParams';
 import { todayInAppZone } from '@/lib/date-range';
 
-export const metadata = { title: 'Ask the data' };
+export const metadata = { title: 'Ask' };
 
 /** /chat: a new chat. `?q=` is read here, on the server, and the screen sends it once. */
 export default async function DsChatPage({ searchParams }: { searchParams: SearchParams }) {

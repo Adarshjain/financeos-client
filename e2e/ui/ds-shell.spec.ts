@@ -26,31 +26,27 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(rail).toBeVisible();
 
     // Verify Rail groups and items in order
-    // Group 1 (unlabeled): Home, Inbox, Upcoming
+    // Group 1 (unlabeled): Home, Inbox
     await expect(rail.getByRole('link', { name: 'Home' })).toBeVisible();
     await expect(rail.getByRole('link', { name: 'Inbox' })).toBeVisible();
-    // Upcoming is a tab inside Inbox, not a rail item (owner 2026-10-21)
-    await expect(rail.getByRole('link', { name: 'Upcoming' })).toHaveCount(0);
 
-    // Group 2: Money -> Accounts, Transactions
+    // Group 2: Money -> Accounts, Transactions, Upcoming, Rewards
     await expect(rail.getByText('Money')).toBeVisible();
     await expect(rail.getByRole('link', { name: 'Accounts' })).toBeVisible();
     await expect(rail.getByRole('link', { name: 'Transactions' })).toBeVisible();
-
-    // Group 3: Grow -> Investments, Rewards
-    await expect(rail.getByText('Grow')).toBeVisible();
-    await expect(rail.getByRole('link', { name: 'Investments' })).toBeVisible();
+    await expect(rail.getByRole('link', { name: 'Upcoming' })).toBeVisible();
     await expect(rail.getByRole('link', { name: 'Rewards' })).toBeVisible();
 
-    // Group 4: Owe & lend -> Loans & lendings
-    await expect(rail.getByText('Owe & lend')).toBeVisible();
-    await expect(rail.getByRole('link', { name: 'Loans & lendings' })).toBeVisible();
+    // Group 3: Wealth -> Investments, Lending
+    await expect(rail.getByText('Wealth')).toBeVisible();
+    await expect(rail.getByRole('link', { name: 'Investments' })).toBeVisible();
+    await expect(rail.getByRole('link', { name: 'Lending' })).toBeVisible();
 
-    // Group 5: Insights -> Dashboards, Reports, Ask the data
+    // Group 4: Insights -> Dashboards, Reports, Ask
     await expect(rail.getByText('Insights')).toBeVisible();
     await expect(rail.getByRole('link', { name: 'Dashboards' })).toBeVisible();
     await expect(rail.getByRole('link', { name: 'Reports' })).toBeVisible();
-    await expect(rail.getByRole('link', { name: 'Ask the data' })).toBeVisible();
+    await expect(rail.getByRole('link', { name: 'Ask' })).toBeVisible();
 
     // Footer: Settings
     const settingsLink = rail.locator('a[href="/settings"]');
@@ -64,12 +60,13 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
       'Inbox',
       'Accounts',
       'Transactions',
-      'Investments',
+      'Upcoming',
       'Rewards',
-      'Loans & lendings',
+      'Investments',
+      'Lending',
       'Dashboards',
       'Reports',
-      'Ask the data',
+      'Ask',
       currentUser.email,
     ];
 
@@ -100,25 +97,25 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     const railContainer = page.locator('.hidden.desk\\:flex');
     await expect(railContainer).not.toBeVisible();
 
-    // Verify floating TabBar items: Home, Transactions, Lendings, Inbox, Menu
+    // Verify floating TabBar items: Home, Accounts, Transactions, Inbox, Menu
     const tabBar = page.locator('nav.desk\\:hidden');
     await expect(tabBar).toBeVisible();
 
-    const expectedTabs = ['Home', 'Transactions', 'Lendings', 'Inbox', 'Menu'];
+    const expectedTabs = ['Home', 'Accounts', 'Transactions', 'Inbox', 'Menu'];
     for (const tabName of expectedTabs) {
       await expect(tabBar.getByRole('tab', { name: tabName })).toBeVisible();
     }
   });
 
-  test('phone 390px: tab bar order is Home, Transactions, Lendings, Inbox, Menu and Lendings opens /loans/lendings', async ({ page }) => {
+  test('phone 390px: tab bar order is Home, Accounts, Transactions, Inbox, Menu and Accounts opens /accounts', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${E2E_CLIENT_URL}/ds`);
 
     const tabBar = page.locator('nav.desk\\:hidden');
-    await expect(tabBar.getByRole('tab')).toHaveText(['Home', 'Transactions', 'Lendings', 'Inbox', 'Menu']);
+    await expect(tabBar.getByRole('tab')).toHaveText(['Home', 'Accounts', 'Transactions', 'Inbox', 'Menu']);
 
-    await tabBar.getByRole('tab', { name: 'Lendings' }).click();
-    await expect(page).toHaveURL(/\/loans\/lendings/);
+    await tabBar.getByRole('tab', { name: 'Accounts' }).click();
+    await expect(page).toHaveURL(/\/accounts/);
   });
 
   test('phone 390px: Menu tab opens More sheet, links live routes, and closes all 3 ways', async ({ page }) => {
@@ -147,14 +144,15 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(sheet.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/accounts');
     await expect(sheet.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/transactions');
     await expect(sheet.getByRole('link', { name: 'Investments' })).toHaveAttribute('href', '/investments');
+    await expect(sheet.getByRole('link', { name: 'Upcoming' })).toHaveAttribute('href', '/upcoming');
     await expect(sheet.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/rewards');
-    await expect(sheet.getByRole('link', { name: 'Loans & lendings' })).toHaveAttribute('href', '/loans/lendings');
+    await expect(sheet.getByRole('link', { name: 'Lending' })).toHaveAttribute('href', '/lending');
     await expect(sheet.getByRole('link', { name: 'Dashboards' })).toHaveAttribute('href', '/dashboards');
     await expect(sheet.getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
-    await expect(sheet.getByRole('link', { name: 'Ask the data' })).toHaveAttribute('href', '/chat');
+    await expect(sheet.getByRole('link', { name: 'Ask' })).toHaveAttribute('href', '/chat');
 
     // Verify Profile row
-    const profileRow = sheet.getByRole('link', { name: /Settings · connections · notifications/i });
+    const profileRow = sheet.getByRole('link', { name: /Settings · security · AI/i });
     await expect(profileRow).toBeVisible();
     await expect(profileRow).toHaveAttribute('href', '/settings');
 

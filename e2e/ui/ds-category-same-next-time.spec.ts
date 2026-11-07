@@ -54,7 +54,7 @@ test.describe('Category: Do the same next time (@ui)', () => {
     await expect(page.getByText('Rule saved')).toBeVisible({ timeout: 15000 });
 
     // The rule is in Rules ...
-    await page.goto('/transactions/rules');
+    await page.goto('/transactions/tags');
     await expect(page.getByText('SWIGGY', { exact: true }).first()).toBeVisible({ timeout: 45000 });
     await expect(page.getByText('Gifts').first()).toBeVisible();
 

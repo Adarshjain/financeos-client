@@ -33,7 +33,7 @@ describe('/investments/import', () => {
   it('has a loading state framed like the page, with its back link', () => {
     render(<DsInvestmentsImportLoading />);
     expect(screen.getByRole('heading', { name: 'Import tradebook' })).toBeInTheDocument();
-    expect(screen.getByText('Grow / Investments')).toBeInTheDocument();
+    expect(screen.getByText('Wealth / Investments')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/investments/tradebook');
   });
 });

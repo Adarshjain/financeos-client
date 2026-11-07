@@ -108,7 +108,7 @@ function ChatSession({
   const started = records.length > 0;
   const currentId = convo.conversationId;
   const currentRow = list.find((c) => c.id === currentId);
-  const title = !started ? 'Ask the data' : currentRow?.title?.trim() || convo.title?.trim() || UNTITLED_CHAT;
+  const title = !started ? 'Ask' : currentRow?.title?.trim() || convo.title?.trim() || UNTITLED_CHAT;
 
   // A new question scrolls into view.
   const lastUserRef = React.useRef<HTMLDivElement | null>(null);

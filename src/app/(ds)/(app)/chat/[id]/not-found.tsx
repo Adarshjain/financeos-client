@@ -8,5 +8,5 @@ export default areaNotFound({
   crumb: areaCrumb('chat'),
   title: crumbMap.chat.label,
   backHref: crumbMap.chat.href,
-  backLabel: 'Back to Ask the data',
+  backLabel: 'Back to Ask',
 });

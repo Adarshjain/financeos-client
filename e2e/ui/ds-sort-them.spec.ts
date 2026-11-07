@@ -95,7 +95,7 @@ for (const viewport of VIEWPORTS) {
       expect(after.find((x) => x.description === oneOff)?.category ?? null).toBeNull();
 
       // The rule it made is on the Tags tab and sorts the next arrival by itself.
-      await page.goto('/transactions/rules');
+      await page.goto('/transactions/tags');
       await expect(page.getByText(shop.toUpperCase()).first()).toBeVisible({ timeout: 45_000 });
       const later = await createTransaction(api, bank.id, { amount: -120, date: todayString(0), description: shop });
       expect(later.category?.key).toBe('food');

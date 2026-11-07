@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { LoansLendingsShell } from '@/features/loans/LoansLendingsShell';
+import { LoansShell } from '@/features/loans/LoansShell';
 
 export default function DsLoansLayout({ children }: { children: React.ReactNode }) {
-  return <LoansLendingsShell>{children}</LoansLendingsShell>;
+  return <LoansShell>{children}</LoansShell>;
 }

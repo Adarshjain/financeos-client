@@ -11,6 +11,7 @@ import { NewVersionWatcher } from '@/features/shell/NewVersionWatcher';
 import { readRailCollapsed } from '@/features/shell/railCollapsedCookie';
 import { SearchProvider } from '@/features/shell/search/SearchProvider';
 import { ShellRail, ShellTabBar } from '@/features/shell/ShellNav';
+import { readTabSlot } from '@/features/shell/tabSlotCookie';
 import { AddTransactionProvider } from '@/features/transactions/form/AddTransactionProvider';
 import { requireAuth } from '@/lib/auth';
 import { buildVersion } from '@/lib/buildVersion';
@@ -27,6 +28,7 @@ export default async function DsAppLayout({
   if (user.helloDone === false) redirect('/welcome');
   const hideAmounts = await readHideAmounts();
   const railCollapsed = await readRailCollapsed();
+  const tabSlot = await readTabSlot();
 
   return (
     <HideAmountsProvider initialHidden={hideAmounts}>
@@ -59,6 +61,7 @@ export default async function DsAppLayout({
 
         {/* Phone floating TabBar (hidden from desk) */}
         <ShellTabBar
+          tabSlot={tabSlot}
           user={{
             name: user.displayName ?? undefined,
             email: user.email,

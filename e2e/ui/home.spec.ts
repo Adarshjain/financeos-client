@@ -37,7 +37,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     await seedDueSoonLoan(api, 'Home Loan');
     const bill = await seedCardBill(api, { name: 'Home Card', last4: '7401', dueInDays: 2 });
 
-    await page.goto('/dashboard');
+    await page.goto('/home');
     await expect(page.getByTestId('dashboard-widget')).toHaveCount(HOME_WIDGETS.length, { timeout: 45_000 });
     for (const title of HOME_WIDGETS) {
       await expect(widgetCard(page, title)).toBeVisible();
@@ -82,7 +82,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     const bank = await createBankAccount(api, { name: 'Chrome Bank', openingBalance: 1000 });
     await createTransaction(api, bank.id, { amount: -100 });
 
-    await page.goto('/dashboard');
+    await page.goto('/home');
     await expect(widgetCard(page, 'Net worth')).toBeVisible({ timeout: 45_000 });
 
     // A saved report's menu edits the report or opens its rows; it cannot be duplicated from a widget.
@@ -122,7 +122,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
   });
 
   test('Bills due widget with no credit cards says so and links to accounts', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/home');
     const bills = widgetCard(page, 'Bills due');
     await expect(bills.getByText('Add a credit card to track its bills here.')).toBeVisible({ timeout: 45_000 });
     await expect(bills.getByRole('link', { name: 'Go to accounts' })).toHaveAttribute('href', '/accounts');
@@ -143,7 +143,7 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     await deleteAll();
     expect(await spendReports()).toBe(1);
 
-    await page.goto('/dashboard');
+    await page.goto('/home');
     await expect(page.getByText('No default dashboard')).toBeVisible({ timeout: 45_000 });
     await page.getByRole('main').getByRole('button', { name: 'Restore default Home' }).click();
     await expect(page.getByText('Home dashboard restored')).toBeVisible();

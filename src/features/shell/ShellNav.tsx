@@ -13,7 +13,6 @@ import { Icon } from '@/components/ds/Icon/Icon';
 import { Kbd } from '@/components/ds/Kbd/Kbd';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { Rail } from '@/components/ds/Rail/Rail';
-import { Switch } from '@/components/ds/Switch/Switch';
 import { TabBar } from '@/components/ds/TabBar/TabBar';
 import { Text } from '@/components/ds/Text/Text';
 import { Tooltip } from '@/components/ds/Tooltip/Tooltip';
@@ -21,20 +20,20 @@ import { Logo } from '@/components/organisms/Logo/Logo';
 import { useNeedsReviewCount } from '@/features/transactions/useNeedsReviewCount';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 
-import { useHideAmounts } from './hideAmounts';
 import {
   getActiveNavItem,
   hidesTabBar,
   shellMoreGroups,
   shellQuickAddItems,
   shellRailGroups,
-  shellTabBarItems,
+  shellTabBarItemsFor,
 } from './navigation';
 import { usePendingPath } from './navigationStore';
 import { useOpenQuickAddDialog, useQuickAddLoading } from './quickAdd';
 import { RAIL_COLLAPSED_COOKIE } from './railCollapsedName';
 import { appHref, DS_HOME_HREF } from './routes';
 import { useSearch } from './search/SearchProvider';
+import { DEFAULT_TAB_SLOT, type TabSlot } from './tabSlotName';
 import { useHideOnScroll } from './useHideOnScroll';
 
 const subscribeNever = () => () => undefined;
@@ -85,8 +84,11 @@ function getInitials(text: string): string {
 
 export function ShellTabBar({
   user,
+  tabSlot = DEFAULT_TAB_SLOT,
 }: {
   user: ShellUser;
+  /** The device's choice for the second tab (the cookie, read by the server). */
+  tabSlot?: TabSlot;
 }) {
   const pathname = usePathname();
   // A clicked nav item reads as current at once, before the page commits.
@@ -95,7 +97,6 @@ export function ShellTabBar({
   const counts = useNavCounts();
   const openQuickAdd = useOpenQuickAddDialog();
   const quickAddLoading = useQuickAddLoading();
-  const { hidden, setHidden } = useHideAmounts();
   const [moreOpen, setMoreOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
   const scrolledAway = useHideOnScroll();
@@ -117,7 +118,7 @@ export function ShellTabBar({
   const profileText = user.name?.trim() || user.email;
   const initials = getInitials(profileText);
 
-  // The Ask the data pages dock their own composer where the bar floats.
+  // The Ask pages dock their own composer where the bar floats.
   if (hidesTabBar(pathname)) return null;
 
   return (
@@ -197,7 +198,7 @@ export function ShellTabBar({
                       key={item.id}
                       variant="secondary"
                       size="xl"
-                      className="w-full justify-start"
+                      className={cn('w-full justify-start', item.span === 'full' && 'col-span-2')}
                       icon={<Icon name={item.icon} size="lg" />}
                       asChild
                     >
@@ -209,16 +210,6 @@ export function ShellTabBar({
                 </div>
               </div>
             ))}
-
-            {/* Hide amounts */}
-            <Card className="mt-space-8 desk:mt-space-16">
-              <ListRow
-                title="Hide amounts"
-                subtitle="Show ₹ — instead of amounts"
-                trailing={<Switch checked={hidden} onCheckedChange={setHidden} aria-label="Hide amounts" />}
-                borderTop={false}
-              />
-            </Card>
 
             {/* Profile row */}
             <Card className="mt-space-8 desk:mt-space-16">
@@ -235,7 +226,7 @@ export function ShellTabBar({
                   </Avatar>
                 }
                 title={profileText}
-                subtitle="Settings · connections · notifications"
+                subtitle="Settings · security · AI"
                 chevron
                 borderTop={false}
               >
@@ -253,7 +244,7 @@ export function ShellTabBar({
           'transition-transform duration-base motion-reduce:transition-none',
           scrolledAway && !moreOpen && 'translate-y-[calc(100%+var(--ds-space-12)+env(safe-area-inset-bottom))]',
         )}
-        items={shellTabBarItems.map((item) =>
+        items={shellTabBarItemsFor(tabSlot).map((item) =>
           item.href
             ? {
                 ...item,

@@ -31,7 +31,7 @@ test.describe('Dashboard quick actions: Home switcher (@ui)', () => {
       definition: { measure: 'amount', aggregation: 'sum', filters: [] },
     });
 
-    await page.goto('/dashboard');
+    await page.goto('/home');
     await expect(page.getByTestId('dashboard-widget').first()).toBeVisible({ timeout: 45_000 });
     await page.getByTestId('home-switch').click();
     await page.getByRole('button', { name: 'Add widget', exact: true }).click();
@@ -42,7 +42,7 @@ test.describe('Dashboard quick actions: Home switcher (@ui)', () => {
     await expect(page.getByText('Widget added to Home')).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByTestId('dashboard-widget')).toHaveCount(home.widgets.length + 1, { timeout: 30_000 });
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/home$/);
 
     const after = await api.GET('/api/v1/dashboards/{id}', { params: { path: { id: home.id } } });
     expectStatus(after, 200);

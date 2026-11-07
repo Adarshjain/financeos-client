@@ -8,7 +8,7 @@ describe('parseLoginUrl', () => {
   });
 
   it('goes Home for no path or an outside address', () => {
-    expect(parseLoginUrl({})).toEqual({ destination: '/dashboard' });
-    expect(parseLoginUrl({ from: 'https://evil.test' })).toEqual({ destination: '/dashboard' });
+    expect(parseLoginUrl({})).toEqual({ destination: '/home' });
+    expect(parseLoginUrl({ from: 'https://evil.test' })).toEqual({ destination: '/home' });
   });
 });

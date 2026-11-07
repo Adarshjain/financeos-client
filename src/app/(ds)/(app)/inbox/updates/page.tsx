@@ -9,7 +9,7 @@ import type { SearchParams } from '@/features/shell/searchParams';
 import { notificationFeedApi } from '@/lib/apiClient';
 import { getQueryClient, keys } from '@/lib/query';
 
-export const metadata = { title: 'Notifications' };
+export const metadata = { title: 'Inbox' };
 
 export default async function DsNotificationsPage({
   searchParams,

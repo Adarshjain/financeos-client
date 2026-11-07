@@ -46,14 +46,13 @@ for (const viewport of VIEWPORTS) {
       await setLlmMode(api, 'SCHEMA_DEFAULT');
     });
 
-    test('Import tab: upload a statement, it leads Recent imports, then its page shows a section per file', async ({ page }) => {
+    test('Import page: upload a statement, it leads Recent imports, then its page shows a section per file', async ({ page }) => {
       const api = makeApi(currentUser.cookie);
       const account = await createBankAccount(api, { name: 'DS Import Bank', openingBalance: SPEC.opening });
 
-      await page.goto('/transactions');
-      await page.getByRole('tab', { name: 'Import' }).click();
+      await page.goto('/transactions/import');
       await expect(page).toHaveURL(/\/transactions\/import/, { timeout: 60000 });
-      await expect(page.getByRole('tab', { name: 'Import' })).toHaveAttribute('data-state', 'active', { timeout: 30000 });
+      await expect(page.getByRole('tab', { name: 'Import' })).toHaveCount(0);
       await expect(page.getByText('Recent imports')).toBeVisible();
       await expect(page.getByText('Last 30 days')).toBeVisible();
 

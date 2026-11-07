@@ -41,24 +41,24 @@ test.describe('/ds session expiry and version (@ui)', () => {
 
   test('navigating after the session ended lands on the Dinero login and returns to the page after sign-in', async ({ page, context }) => {
     await page.goto(`${E2E_CLIENT_URL}/inbox`);
-    await expect(page.getByRole('link', { name: 'Loans & lendings' }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Lending', exact: true }).first()).toBeVisible();
 
     // The cookie is still sent but the server no longer accepts it.
     await context.addCookies([{ name: 'FINANCEOS_SESSION', value: 'expired-session', url: E2E_CLIENT_URL }]);
-    await page.getByRole('link', { name: 'Loans & lendings' }).first().click();
+    await page.getByRole('link', { name: 'Lending', exact: true }).first().click();
 
     await page.waitForURL('**/login?from=*');
-    expect(new URL(page.url()).searchParams.get('from')).toMatch(/^\/loans/);
+    expect(new URL(page.url()).searchParams.get('from')).toMatch(/^\/lending/);
 
     await page.getByLabel('Email').fill(currentUser.email);
     await page.getByLabel('Password', { exact: true }).fill(currentUser.password);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-    await page.waitForURL('**/loans**');
+    await page.waitForURL('**/lending**');
   });
 
   test('a page that loads its data its own way (Accounts) also goes to sign in and back after the session ended', async ({ page, context }) => {
     await page.goto(`${E2E_CLIENT_URL}/inbox`);
-    await expect(page.getByRole('link', { name: 'Loans & lendings' }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Lending', exact: true }).first()).toBeVisible();
 
     await context.addCookies([{ name: 'FINANCEOS_SESSION', value: 'expired-session', url: E2E_CLIENT_URL }]);
     await page.getByRole('link', { name: 'Accounts', exact: true }).first().click();

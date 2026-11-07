@@ -13,7 +13,7 @@ const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
 vi.mock('next/navigation', () => ({
   unstable_rethrow: () => undefined,
   useRouter: () => router,
-  usePathname: () => '/loans/lendings',
+  usePathname: () => '/lending',
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -127,7 +127,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('/loans/lendings', () => {
+describe('/lending', () => {
   it('asks the server for the first page with no filter by default', async () => {
     await renderPage();
     expect(server.fetchPeople).toHaveBeenCalledWith({ q: '', direction: undefined, page: 0, size: 25 });
@@ -178,7 +178,7 @@ describe('/loans/lendings', () => {
   it('opens a person on the Dinero page when the row is pressed', async () => {
     await renderPage();
     fireEvent.click(screen.getAllByText('Priya Nair')[0]);
-    expect(router.push).toHaveBeenCalledWith('/loans/lendings/p2');
+    expect(router.push).toHaveBeenCalledWith('/lending/p2');
     expect(screen.queryByRole('link', { name: 'Open Priya Nair' })).toBeNull();
   });
 
@@ -193,7 +193,7 @@ describe('/loans/lendings', () => {
     server.fetchPeople.mockResolvedValue(pageOf(people, { totalElements: 60, totalPages: 3 }));
     await renderPage({ filter: 'owed' });
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/loans/lendings?filter=owed&page=2', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/lending?filter=owed&page=2', { scroll: false });
   });
 
   it('shows one Direction dropdown chip: plain on All, the value with a × when changed, and the × resets it', async () => {
@@ -204,7 +204,7 @@ describe('/loans/lendings', () => {
     await renderPage({ filter: 'owe' });
     expect(screen.getByRole('button', { name: 'You owe' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
-    expect(router.push).toHaveBeenLastCalledWith('/loans/lendings', { scroll: false });
+    expect(router.push).toHaveBeenLastCalledWith('/lending', { scroll: false });
   });
 
   it('searches the server once typing pauses, from the first page', async () => {
@@ -216,7 +216,7 @@ describe('/loans/lendings', () => {
       await vi.advanceTimersByTimeAsync(400);
     });
     expect(router.push).toHaveBeenCalledTimes(1);
-    expect(router.push).toHaveBeenCalledWith('/loans/lendings?q=pri&filter=owed', { scroll: false });
+    expect(router.push).toHaveBeenCalledWith('/lending?q=pri&filter=owed', { scroll: false });
   });
 
   it('says nothing matches when a search or chip finds no one, and invites an entry when there is no one at all', async () => {

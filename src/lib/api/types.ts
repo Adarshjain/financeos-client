@@ -215,7 +215,7 @@ export type DiagnosticsLookupResponse = Schemas['DiagnosticsLookupResponse'];
 export type RawLogEntry = Schemas['RawLogEntry'];
 
 
-// Notification feed (the bell and /notifications)
+// Notification feed (the bell and /inbox/updates)
 export type AppNotification = Schemas['AppNotificationResponse'];
 export type NotificationFeedPage = Schemas['PageAppNotificationResponse'];
 export type NotificationFeedSummary = Schemas['AppNotificationSummaryResponse'];

@@ -94,7 +94,7 @@ describe('Notifications bell', () => {
     expect(screen.getByText('Body b · 13 Oct')).toBeInTheDocument();
     expect(pop.closest('a')).toHaveAttribute('href', '/settings/activity?job=j1');
     expect(screen.getByText('Cap reached').closest('a')).toBeNull();
-    expect(screen.getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/notifications');
+    expect(screen.getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/inbox/updates');
     fireEvent.click(screen.getByRole('link', { name: 'See all' }));
     await waitFor(() => expect(screen.queryByText('Import failed')).not.toBeInTheDocument());
   });

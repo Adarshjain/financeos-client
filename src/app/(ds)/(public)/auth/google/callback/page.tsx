@@ -69,7 +69,7 @@ function GoogleCallbackContent() {
         if (result.success) {
           setStatus('success');
           // Force a full page reload to ensure the session cookie is sent with the request
-          window.location.href = '/dashboard';
+          window.location.href = '/home';
         } else {
           setStatus('error');
           setErrorMessage(result.error.message);

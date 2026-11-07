@@ -57,7 +57,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('lists the rules with their category; there is no verification, no usage text; filters live in the address and survive a reload', async ({ page }) => {
-      await page.goto('/transactions/rules');
+      await page.goto('/transactions/tags');
       for (const name of ['Third Wave', 'Ola Cabs', 'Zepto']) await expect(page.getByText(name, { exact: true }).first()).toBeVisible();
       await expect(page.getByText('Food · Cafés').first()).toBeVisible();
       await expect(page.getByText('Groceries').first()).toBeVisible();
@@ -94,7 +94,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('New rule: the form has a pattern, a match, one category (the picker) and no merchant key; a category is required; Add rule saves it', async ({ page }) => {
-      await page.goto('/transactions/rules');
+      await page.goto('/transactions/tags');
       await page.getByRole('button', { name: 'Add', exact: true }).first().click();
       await page.getByRole('menuitem', { name: 'New rule' }).click();
       const add = page.getByRole('dialog', { name: 'Add rule' });
@@ -124,7 +124,7 @@ for (const viewport of VIEWPORTS) {
       const past = (await searchAll(api)).find((t) => (t.sourcedDescription ?? '').includes('PLINTH WORKS'))!;
       expect(past.category ?? null).toBeNull();
 
-      await page.goto('/transactions/rules');
+      await page.goto('/transactions/tags');
       await page.getByRole('button', { name: 'Add', exact: true }).first().click();
       await page.getByRole('menuitem', { name: 'New rule' }).click();
       const add = page.getByRole('dialog', { name: 'Add rule' });
@@ -142,7 +142,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Edit loads the matches with their account and follows the pattern', async ({ page }) => {
-      await page.goto('/transactions/rules');
+      await page.goto('/transactions/tags');
       await menuOf(page, 'Third Wave').click();
       await page.getByRole('menuitem', { name: 'Edit', exact: true }).click();
       const edit = page.getByRole('dialog', { name: /Edit rule · Third Wave/ });
@@ -158,7 +158,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Find matches starts with nothing ticked and applies the rule; Delete confirms first', async ({ page }) => {
-      await page.goto('/transactions/rules');
+      await page.goto('/transactions/tags');
       await menuOf(page, 'Ola Cabs').click();
       await page.getByRole('menuitem', { name: 'Find matches' }).click();
       const dialog = page.getByRole('dialog', { name: /Matching transactions/ });
@@ -181,7 +181,7 @@ for (const viewport of VIEWPORTS) {
         page.on('console', (m) => m.type() === 'error' && console.log('CONSOLE', m.text().replace(/\n/g, ' ').slice(-700)));
         await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
         const tag = `${viewport.width}-${theme}`;
-        await page.goto('/transactions/rules');
+        await page.goto('/transactions/tags');
         await expect(page.getByText('Zepto', { exact: true }).first()).toBeVisible();
         // caret: 'initial' keeps Playwright from rewriting inline styles before React has hydrated (a false hydration warning).
         await page.screenshot({ path: test.info().outputPath(`list-${tag}.png`), caret: 'initial' });
@@ -189,7 +189,7 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('menuitem', { name: 'Edit', exact: true }).click();
         await expect(page.getByText('Matches 1 past transaction')).toBeVisible();
         await page.screenshot({ path: test.info().outputPath(`edit-${tag}.png`) });
-        await page.goto('/transactions/rules');
+        await page.goto('/transactions/tags');
         await menuOf(page, 'Third Wave').click();
         await page.getByRole('menuitem', { name: 'Find matches' }).click();
         await expect(page.getByRole('dialog').getByRole('checkbox').first()).toBeVisible();

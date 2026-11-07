@@ -8,16 +8,16 @@ describe('parseLockedUrl', () => {
   });
 
   it('goes Home for no path, an outside address or protocol-relative path', () => {
-    expect(parseLockedUrl({})).toEqual({ from: '/dashboard' });
-    expect(parseLockedUrl({ from: 'https://evil.test' })).toEqual({ from: '/dashboard' });
-    expect(parseLockedUrl({ from: '//evil.test' })).toEqual({ from: '/dashboard' });
+    expect(parseLockedUrl({})).toEqual({ from: '/home' });
+    expect(parseLockedUrl({ from: 'https://evil.test' })).toEqual({ from: '/home' });
+    expect(parseLockedUrl({ from: '//evil.test' })).toEqual({ from: '/home' });
   });
 
   it('ignores a repeated from key', () => {
-    expect(parseLockedUrl({ from: ['/a', '/b'] })).toEqual({ from: '/dashboard' });
+    expect(parseLockedUrl({ from: ['/a', '/b'] })).toEqual({ from: '/home' });
   });
 
   it('never loops back to the lock page', () => {
-    expect(parseLockedUrl({ from: '/locked' })).toEqual({ from: '/dashboard' });
+    expect(parseLockedUrl({ from: '/locked' })).toEqual({ from: '/home' });
   });
 });

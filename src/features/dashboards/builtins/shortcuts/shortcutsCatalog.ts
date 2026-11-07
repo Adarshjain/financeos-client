@@ -55,7 +55,7 @@ export interface ShortcutItem {
  * Every page a shortcut can point at, with its label, in navigation order. The one list. The tile passes hrefs through appHref.
  */
 export const SHORTCUT_PAGES: ReadonlyArray<{ href: string; label: string }> = [
-  { href: '/dashboard', label: 'Home' },
+  { href: '/home', label: 'Home' },
   { href: '/inbox', label: 'Inbox' },
   { href: '/upcoming', label: 'Upcoming' },
   { href: '/chat', label: 'Chat with Data' },
@@ -77,7 +77,7 @@ export const SHORTCUT_PAGES: ReadonlyArray<{ href: string; label: string }> = [
   { href: '/investments/corporate-actions', label: 'Corporate actions' },
   { href: '/investments/fno', label: 'FnO' },
   { href: '/loans', label: 'Loans' },
-  { href: '/loans/lendings', label: 'Lendings' },
+  { href: '/lending', label: 'Lendings' },
   { href: '/settings', label: 'Settings' },
 ];
 const PAGES = SHORTCUT_PAGES;

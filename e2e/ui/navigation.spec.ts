@@ -20,14 +20,14 @@ test.describe('Navigation and relocated pages (@ui)', () => {
 
     await page.goto(`/settings/ingest?account=${account.id}`);
     await page.waitForURL(`**/transactions/import?account=${account.id}`);
-    await expect(page.getByRole('tab', { name: 'Import' })).toHaveAttribute('data-state', 'active', { timeout: 30000 });
+    await expect(page.getByRole('tab', { name: 'Import' })).toHaveCount(0);
     await expect(page.getByRole('combobox', { name: 'Account' })).toContainText('Redirect Bank');
 
     // Without a query the redirect carries none.
     await page.goto('/settings/ingest');
     await page.waitForURL('**/transactions/import');
     expect(new URL(page.url()).search).toBe('');
-    await expect(page.getByRole('tab', { name: 'Import' })).toHaveAttribute('data-state', 'active', { timeout: 30000 });
+    await expect(page.getByRole('tab', { name: 'Import' })).toHaveCount(0);
     await expect(page.getByText('Recent imports', { exact: true })).toBeVisible();
   });
 
@@ -58,7 +58,7 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     await expect(page.getByRole('button', { name: 'Status', exact: true })).toBeVisible({ timeout: 45000 });
 
     await page.goto('/transactions/import');
-    await expect(page.getByRole('tab', { name: 'Import' })).toHaveAttribute('data-state', 'active', { timeout: 60000 });
+    await expect(page.getByRole('tab', { name: 'Import' })).toHaveCount(0);
     await expect(page.getByText('Recent imports', { exact: true })).toBeVisible();
   });
 
@@ -66,7 +66,7 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     await seedDueSoonLoan(api, 'Sidebar Loan');
 
-    await page.goto('/dashboard');
+    await page.goto('/home');
     const rail = page.locator('nav.w-container-xs');
     await expect(rail).toBeVisible();
 
@@ -81,7 +81,7 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     await seedDueSoonLoan(api, 'Bar Loan');
 
-    await page.goto('/dashboard');
+    await page.goto('/home');
     const bar = page.locator('nav.desk\\:hidden');
     await expect(bar.getByText(/^[1-9]\d*\+?$/)).toBeVisible({ timeout: 25000 });
 

@@ -12,6 +12,7 @@ vi.mock('@/lib/apiClient', () => ({
   gmailApi: { getAttentionItems: api.getAttentionItems },
   llmKeysApi: { list: api.list },
 }));
+vi.mock('@/features/shell/tabSlotCookie', () => ({ readTabSlot: async () => 'accounts' }));
 vi.mock('@/features/settings/SettingsMain', () => ({ SettingsMain: () => null }));
 
 import { ApiError } from '@/lib/api/client';

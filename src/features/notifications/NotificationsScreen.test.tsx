@@ -20,7 +20,7 @@ vi.mock('next/navigation', () => ({
   unstable_rethrow: () => undefined,
   useRouter: () => ({ push, replace, refresh }),
   useSearchParams: () => new URLSearchParams(search),
-  usePathname: () => '/notifications',
+  usePathname: () => '/inbox/updates',
 }));
 
 import { api } from '@/lib/api/client';
@@ -162,7 +162,7 @@ describe('NotificationsScreen', () => {
     await screen.findByText('Sync done');
     serve(mockApi, feedPage([], { totalElements: 20, totalPages: 1 }), 0);
     fireEvent.click(within(screen.getAllByTestId('notification-row')[0]).getByRole('button', { name: 'Clear' }));
-    await waitFor(() => expect(replace).toHaveBeenCalledWith('/notifications', { scroll: false }));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/inbox/updates', { scroll: false }));
   });
 
   it('a failed clear of the last row of a later page stays on that page', async () => {
@@ -187,18 +187,18 @@ describe('NotificationsScreen', () => {
     expect(mockApi.GET).toHaveBeenCalledWith('/api/v1/notifications/feed', { params: { query: { page: 1, size: 25 } } });
     expect(screen.getAllByRole('button', { name: 'Next page' })).toHaveLength(2);
     fireEvent.click(screen.getAllByRole('button', { name: 'Previous page' })[0]);
-    expect(push).toHaveBeenCalledWith('/notifications', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/inbox/updates', { scroll: false });
     push.mockClear();
     fireEvent.click((await screen.findAllByRole('button', { name: 'Next page' }))[1]);
-    expect(push).toHaveBeenCalledWith('/notifications?page=2', { scroll: false });
+    expect(push).toHaveBeenCalledWith('/inbox/updates?page=2', { scroll: false });
   });
 
-  it('has a back arrow to Inbox under the "Inbox" crumb', async () => {
+  it('draws no app bar of its own: the Inbox shell frames it', async () => {
     serve(mockApi, feedPage([today2]), 0);
     renderWithQuery(<NotificationsScreen />);
     await screen.findByText('Sync done');
-    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/inbox');
-    expect(screen.getByText('Inbox')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Back' })).toBeNull();
+    expect(screen.queryByText('Inbox')).toBeNull();
   });
 
   it('no pager for a single page', async () => {

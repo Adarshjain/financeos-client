@@ -12,7 +12,7 @@ export interface PushPayload {
 }
 
 const DEFAULT_TITLE = 'FinanceOS';
-const DEFAULT_URL = '/dashboard';
+const DEFAULT_URL = '/home';
 
 /** Tolerates an empty or malformed push body: the notification still shows something. */
 export function parsePushPayload(raw: string | null | undefined): PushPayload {

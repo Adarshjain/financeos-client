@@ -1,6 +1,7 @@
 import type { IconName } from '@/components/ds/Icon/registry';
 
 import { appHref } from './routes';
+import { DEFAULT_TAB_SLOT, type TabSlot } from './tabSlotName';
 
 export interface ShellNavItem {
   id: string;
@@ -22,53 +23,61 @@ export interface ShellNavGroup {
 }
 
 /**
- * TabBar navigation items (phone bottom navigation, at most 5 items).
- * Items in order: Home, Transactions, Lendings, Inbox, Menu.
- * Lendings shares the rail's 'loans' id, so the shared active-item logic lights it on /loans/*.
- * Menu uses the 'menu' icon and has no href (it triggers the More sheet); Accounts lives in that sheet.
+ * The phone bar's second tab: the device's choice (cookie), Accounts by default. Each slot shares the rail's
+ * item id, so the shared active-item logic lights it on its pages.
  */
-export const shellTabBarItems: ShellTabBarItem[] = [
-  { id: 'home', label: 'Home', icon: 'home', href: '/dashboard' },
-  { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions' },
-  { id: 'loans', label: 'Lendings', icon: 'handshake', href: '/loans/lendings', also: ['/loans'] },
-  { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox' },
-  { id: 'more', label: 'Menu', icon: 'menu' },
-];
+export const shellTabSlotItems: Record<TabSlot, ShellNavItem> = {
+  accounts: { id: 'accounts', label: 'Accounts', icon: 'wallet', href: '/accounts' },
+  lending: { id: 'lending', label: 'Lending', icon: 'handshake', href: '/lending' },
+  investments: { id: 'investments', label: 'Investments', icon: 'chart-line-up', href: '/investments' },
+  upcoming: { id: 'upcoming', label: 'Upcoming', icon: 'calendar', href: '/upcoming' },
+};
 
 /**
- * Rail navigation groups (desktop left navigation matching D-home board):
- * - Home · Inbox (also /upcoming)
- * - Money: Accounts, Transactions
- * - Grow: Investments, Rewards
- * - Owe & lend: Loans & lendings
- * - Insights: Dashboards, Reports, Ask the data
+ * TabBar navigation items (phone bottom navigation, at most 5 items).
+ * Items in order: Home, {slot}, Transactions, Inbox, Menu.
+ * Menu uses the 'menu' icon and has no href (it triggers the More sheet).
+ */
+export function shellTabBarItemsFor(slot: TabSlot = DEFAULT_TAB_SLOT): ShellTabBarItem[] {
+  return [
+    { id: 'home', label: 'Home', icon: 'home', href: '/home' },
+    shellTabSlotItems[slot],
+    { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions' },
+    { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox' },
+    { id: 'more', label: 'Menu', icon: 'menu' },
+  ];
+}
+
+/**
+ * Rail navigation groups (desktop left navigation):
+ * - Home · Inbox
+ * - Money: Accounts, Transactions, Upcoming, Rewards
+ * - Wealth: Investments, Lending
+ * - Insights: Dashboards, Reports, Ask
  * - footer: Settings
+ * Accounts also owns /loans (the Loans page sits under it for now).
  */
 export const shellRailGroups: ShellNavGroup[] = [
   {
     items: [
-      { id: 'home', label: 'Home', icon: 'home', href: '/dashboard' },
-      { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox', also: ['/upcoming'] },
+      { id: 'home', label: 'Home', icon: 'home', href: '/home' },
+      { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox' },
     ],
   },
   {
     label: 'Money',
     items: [
-      { id: 'accounts', label: 'Accounts', icon: 'wallet', href: '/accounts' },
+      { id: 'accounts', label: 'Accounts', icon: 'wallet', href: '/accounts', also: ['/loans'] },
       { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions' },
-    ],
-  },
-  {
-    label: 'Grow',
-    items: [
-      { id: 'investments', label: 'Investments', icon: 'chart-line-up', href: '/investments' },
+      { id: 'upcoming', label: 'Upcoming', icon: 'calendar', href: '/upcoming' },
       { id: 'rewards', label: 'Rewards', icon: 'gift', href: '/rewards' },
     ],
   },
   {
-    label: 'Owe & lend',
+    label: 'Wealth',
     items: [
-      { id: 'loans', label: 'Loans & lendings', icon: 'handshake', href: '/loans/lendings', also: ['/loans'] },
+      { id: 'investments', label: 'Investments', icon: 'chart-line-up', href: '/investments' },
+      { id: 'lending', label: 'Lending', icon: 'handshake', href: '/lending' },
     ],
   },
   {
@@ -76,7 +85,7 @@ export const shellRailGroups: ShellNavGroup[] = [
     items: [
       { id: 'dashboards', label: 'Dashboards', icon: 'squares-four', href: '/dashboards' },
       { id: 'reports', label: 'Reports', icon: 'chart-bar', href: '/reports' },
-      { id: 'chat', label: 'Ask the data', icon: 'chat', href: '/chat' },
+      { id: 'chat', label: 'Ask', icon: 'chat', href: '/chat' },
     ],
   },
 ];
@@ -95,9 +104,12 @@ export interface ShellQuickAddItem {
   dialog?: 'lending' | 'trade' | 'transaction';
 }
 
+/** A More sheet tile: `span: 'full'` stretches it across both columns of its group. */
+export type ShellMoreItem = ShellNavItem & { span?: 'full' };
+
 export interface ShellMoreGroup {
   label: string;
-  items: ShellNavItem[];
+  items: ShellMoreItem[];
 }
 
 /**
@@ -113,10 +125,7 @@ export const shellQuickAddItems: ShellQuickAddItem[] = [
 ];
 
 /**
- * More sheet section groups (P-more):
- * - Money: Accounts, Transactions
- * - Grow: Investments, Rewards
- * - Owe & lend · Insights: Loans & lendings, Dashboards, Reports, Ask the data
+ * More sheet section groups (P-more): Money, Wealth, Insights. The Ask tile spans the full width.
  */
 export const shellMoreGroups: ShellMoreGroup[] = [
   {
@@ -124,29 +133,30 @@ export const shellMoreGroups: ShellMoreGroup[] = [
     items: [
       { id: 'accounts', label: 'Accounts', icon: 'wallet', href: '/accounts' },
       { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions' },
-    ],
-  },
-  {
-    label: 'Grow',
-    items: [
-      { id: 'investments', label: 'Investments', icon: 'chart-line-up', href: '/investments' },
+      { id: 'upcoming', label: 'Upcoming', icon: 'calendar', href: '/upcoming' },
       { id: 'rewards', label: 'Rewards', icon: 'gift', href: '/rewards' },
     ],
   },
   {
-    label: 'Owe & lend · Insights',
+    label: 'Wealth',
     items: [
-      { id: 'loans', label: 'Loans & lendings', icon: 'handshake', href: '/loans/lendings', also: ['/loans'] },
+      { id: 'investments', label: 'Investments', icon: 'chart-line-up', href: '/investments' },
+      { id: 'lending', label: 'Lending', icon: 'handshake', href: '/lending' },
+    ],
+  },
+  {
+    label: 'Insights',
+    items: [
       { id: 'dashboards', label: 'Dashboards', icon: 'squares-four', href: '/dashboards' },
       { id: 'reports', label: 'Reports', icon: 'chart-bar', href: '/reports' },
-      { id: 'chat', label: 'Ask the data', icon: 'chat', href: '/chat' },
+      { id: 'chat', label: 'Ask', icon: 'chat', href: '/chat', span: 'full' },
     ],
   },
 ];
 
 /**
  * Computes current active navigation item ID from pathname (/accounts/1 matches Accounts). Returns
- * undefined for the review index, /notifications and unknown routes (no item selected).
+ * undefined for the review index and unknown routes (no item selected).
  */
 export function getActiveNavItem(pathname: string | null | undefined): string | undefined {
   if (!pathname) return undefined;
@@ -172,13 +182,13 @@ export function getActiveNavItem(pathname: string | null | undefined): string | 
   return undefined;
 }
 
-/** True on the Ask the data pages (a new chat and one conversation). */
+/** True on the Ask pages (a new chat and one conversation). */
 export function isChatPath(pathname: string | null | undefined): boolean {
   if (!pathname) return false;
   return /^\/chat(\/|$)/.test(pathname);
 }
 
-/** Routes with no phone tab bar: the Ask the data pages dock their own composer at the bottom. */
+/** Routes with no phone tab bar: the Ask pages dock their own composer at the bottom. */
 export const hidesTabBar = isChatPath;
 
 export type CrumbArea =
@@ -186,6 +196,7 @@ export type CrumbArea =
   | 'notifications'
   | 'accounts'
   | 'transactions'
+  | 'upcoming'
   | 'lendings'
   | 'loans'
   | 'investments'
@@ -207,20 +218,21 @@ export interface CrumbEntry {
 /**
  * The one crumb map: every area, the rail group it sits in, and its own page. Every ShellPage crumb comes from
  * `areaCrumb` or `subCrumb`, never from a literal. Home sits under Insights (it is the default dashboard) and
- * Notifications under Inbox.
+ * the Inbox updates under Inbox.
  */
 export const crumbMap: Record<CrumbArea, CrumbEntry> = {
-  home: { group: 'Insights', label: 'Home', href: appHref('/dashboard') },
-  notifications: { group: 'Inbox', label: 'Notifications', href: appHref('/notifications') },
+  home: { group: 'Insights', label: 'Home', href: appHref('/home') },
+  notifications: { group: 'Inbox', label: 'Updates', href: appHref('/inbox/updates') },
   accounts: { group: 'Money', label: 'Accounts', href: appHref('/accounts') },
   transactions: { group: 'Money', label: 'Transactions', href: appHref('/transactions') },
-  lendings: { group: 'Owe & lend', label: 'Lendings', href: appHref('/loans/lendings') },
-  loans: { group: 'Owe & lend', label: 'Loans', href: appHref('/loans') },
-  investments: { group: 'Grow', label: 'Investments', href: appHref('/investments') },
-  rewards: { group: 'Grow', label: 'Rewards', href: appHref('/rewards') },
+  upcoming: { group: 'Money', label: 'Upcoming', href: appHref('/upcoming') },
+  lendings: { group: 'Wealth', label: 'Lending', href: appHref('/lending') },
+  loans: { group: 'Money', label: 'Loans', href: appHref('/loans') },
+  investments: { group: 'Wealth', label: 'Investments', href: appHref('/investments') },
+  rewards: { group: 'Money', label: 'Rewards', href: appHref('/rewards') },
   dashboards: { group: 'Insights', label: 'Dashboards', href: appHref('/dashboards') },
   reports: { group: 'Insights', label: 'Reports', href: appHref('/reports') },
-  chat: { group: 'Insights', label: 'Ask the data', href: appHref('/chat') },
+  chat: { group: 'Insights', label: 'Ask', href: appHref('/chat') },
   settings: { group: 'Settings', label: 'Settings', href: appHref('/settings') },
 };
 

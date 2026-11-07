@@ -83,7 +83,7 @@ export function HelloScreen({
     warned,
     onlyScreen: hasGmail,
   });
-  const home = () => router.replace(appHref('/dashboard'));
+  const home = () => router.replace(appHref('/home'));
 
   const submit = async () => {
     setError(null);

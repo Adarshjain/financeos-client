@@ -96,7 +96,7 @@ describe('HelloScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Skip' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Skip for now' }));
-    await waitFor(() => expect(replace).toHaveBeenCalledWith('/dashboard'));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/home'));
     expect(finishHello).toHaveBeenCalledTimes(1);
     unmount();
 
@@ -105,7 +105,7 @@ describe('HelloScreen', () => {
     render(<HelloScreen {...props} birthDate="1990-04-05" hasGmail />);
     tick();
     fireEvent.click(screen.getByRole('button', { name: "Let's go" }));
-    await waitFor(() => expect(replace).toHaveBeenCalledWith('/dashboard'));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/home'));
     // One step: default finish (not sent as false), and no separate finish call.
     expect(submitHello).toHaveBeenCalledWith(expect.not.objectContaining({ finish: false }));
     expect(finishHello).not.toHaveBeenCalled();
@@ -195,7 +195,7 @@ describe('HelloScreen', () => {
     it('Skip for now finishes and goes Home', async () => {
       open();
       fireEvent.click(await screen.findByRole('button', { name: 'Skip for now' }));
-      await waitFor(() => expect(replace).toHaveBeenCalledWith('/dashboard'));
+      await waitFor(() => expect(replace).toHaveBeenCalledWith('/home'));
       expect(finishHello).toHaveBeenCalledTimes(1);
     });
 

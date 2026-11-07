@@ -146,11 +146,11 @@ describe('chip labels', () => {
 });
 
 describe('toolbar', () => {
-  it('has search and the type chips in one row, and Ask the data only in the Ask instead card', () => {
+  it('has search and the type chips in one row, and Ask only in the Ask instead card', () => {
     renderWithQuery(<ReportsScreen {...props()} />);
     const search = screen.getByPlaceholderText('Search');
     expect(search.closest('div[class*="overflow-x-auto"]')).toBe(screen.getByRole('button', { name: 'Type' }).closest('div[class*="overflow-x-auto"]'));
-    const asks = screen.getAllByRole('link', { name: 'Ask the data' });
+    const asks = screen.getAllByRole('link', { name: 'Ask' });
     expect(asks).toHaveLength(1);
     expect(asks[0]).toHaveAttribute('href', ASK_HREF);
     expect(ASK_HREF).toBe('/chat?q=dining%20spend%20per%20month%20on%20Regalia%2C%20this%20year');

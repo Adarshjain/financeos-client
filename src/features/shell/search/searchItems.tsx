@@ -67,7 +67,7 @@ export function categoryHref(c: { key: string; parentName: string | null }): str
 }
 
 /** The Rules page (it has no per-rule link). */
-export const RULES_HREF = '/transactions/rules';
+export const RULES_HREF = '/transactions/tags';
 
 /** The Transactions page for `q` over all time. */
 export function transactionsSearchHref(q: string): string {
@@ -198,7 +198,7 @@ export function buildSearchGroups({ query, result, pages, actions, go, onAddTran
     {
       id: 'lending',
       label: 'Lending',
-      items: (server?.people ?? []).map((p) => link(`lending:${p.id}`, p.name, `/loans/lendings/${p.id}`)),
+      items: (server?.people ?? []).map((p) => link(`lending:${p.id}`, p.name, `/lending/${p.id}`)),
     },
     {
       id: 'loans',
@@ -240,7 +240,7 @@ export function buildSearchGroups({ query, result, pages, actions, go, onAddTran
       id: 'ask',
       label: 'Ask',
       items: text
-        ? [{ ...link('ask', `Ask the data: ${text}`, `/chat?q=${encodeURIComponent(text)}`), leading: <Icon name="chat" /> }]
+        ? [{ ...link('ask', `Ask: ${text}`, `/chat?q=${encodeURIComponent(text)}`), leading: <Icon name="chat" /> }]
         : [],
     },
   ];

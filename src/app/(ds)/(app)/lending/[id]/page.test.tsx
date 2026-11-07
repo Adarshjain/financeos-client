@@ -38,7 +38,7 @@ beforeEach(() => {
   }));
 });
 
-describe('/loans/lendings/[id]', () => {
+describe('/lending/[id]', () => {
   it('loads this person for the page and size in the URL and hands the view its data, today and your name', async () => {
     await renderPage({ page: '3', size: '50' });
     expect(screen.getByText('person view')).toBeInTheDocument();
