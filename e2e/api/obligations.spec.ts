@@ -109,7 +109,7 @@ test.describe('Obligations API (@api)', () => {
     const items = await getObligations(api, { kinds: 'lending_due' });
     expect(items.every((i) => i.type === 'lending_due')).toBe(true);
     const a = items.find((i) => i.counterpartyId === lent.id)!;
-    expect(a).toMatchObject({ title: 'Ob Debtor owes you', direction: 'lent', status: 'upcoming', daysUntil: 10, href: `/loans/lendings/${lent.id}`, accountName: 'Ob Debtor' });
+    expect(a).toMatchObject({ title: 'Ob Debtor owes you', direction: 'lent', status: 'upcoming', daysUntil: 10, href: `/lending/${lent.id}`, accountName: 'Ob Debtor' });
     expect(Number(a.amount)).toBe(3000);
     const b = items.find((i) => i.counterpartyId === owed.id)!;
     expect(b).toMatchObject({ title: 'You owe Ob Creditor', direction: 'borrowed', status: 'due_soon', daysUntil: 5 });

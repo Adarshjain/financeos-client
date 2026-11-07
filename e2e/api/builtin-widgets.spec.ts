@@ -128,13 +128,13 @@ const CATALOG: Record<
   },
   loan_payoff: {
     label: 'Loan payoff', category: 'loans_lending', subtitle: "What's left to repay", requires: 'Needs a loan', view: null,
-    minW: 50, kind: 'component', templateType: null, datasource: null, href: '/loans',
+    minW: 50, kind: 'component', templateType: null, datasource: null, href: '/accounts',
     description:
       "For each loan: what's left, how much principal you've repaid, the expected payoff date and the interest still to pay.",
   },
   lending_balances: {
     label: 'Lending balances', category: 'loans_lending', subtitle: 'Who owes whom', requires: 'Needs a lending entry', view: null,
-    minW: 50, kind: 'component', templateType: null, datasource: null, href: '/loans/lendings',
+    minW: 50, kind: 'component', templateType: null, datasource: null, href: '/lending',
     description: 'Who owes you and whom you owe, biggest first, with Settle up for each person.',
   },
   account_tile: {

@@ -158,10 +158,10 @@ test.describe('Inbox API: reads (@api)', () => {
     const lent = inboxRow(inbox, `lending:${near.id}`);
     expect(lent).toMatchObject({ kind: 'lending', section: 'act_now', severity: 'warning', title: 'Near Friend owes you', date: istToday(2) });
     expect(Number(lent!.amount)).toBe(4000);
-    expect(lent!.href).toBe(`/loans/lendings/${near.id}?export=1`);
+    expect(lent!.href).toBe(`/lending/${near.id}?export=1`);
     const borrowed = inboxRow(inbox, `lending:${owed.id}`);
     expect(borrowed).toMatchObject({ title: 'You owe Lender Pal' });
-    expect(borrowed!.href).toBe(`/loans/lendings/${owed.id}`);
+    expect(borrowed!.href).toBe(`/lending/${owed.id}`);
     expect(inboxRow(inbox, `lending:${far.id}`)).toBeUndefined();
   });
 

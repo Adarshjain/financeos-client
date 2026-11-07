@@ -98,7 +98,7 @@ test.describe('/ds app lock (@ui)', () => {
     await expect(page.getByRole('button', { name: 'Unlock' })).toBeVisible();
     // Staying on the lock screen keeps where they were going: a late event or focus must not reload it bare.
     const landed = page.url();
-    expect(landed).toContain('from=%2Floans');
+    expect(landed).toContain('from=%2Flending');
     await page.waitForTimeout(3000);
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
     await page.waitForTimeout(500);

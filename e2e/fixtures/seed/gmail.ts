@@ -43,7 +43,7 @@ export interface SyncSummary {
 export const GOOGLE_AUTH_URL = `${E2E_WIREMOCK_URL}/google/o/oauth2/v2/auth`;
 export const SSO_REDIRECT_URI = `${E2E_CLIENT_URL}/auth/google/callback`;
 export const GMAIL_REDIRECT_URI = `${E2E_API_URL}/api/v1/gmail/oauth/callback`;
-export const SETTINGS_GMAIL_URL = `${E2E_CLIENT_URL}/settings/gmail`;
+export const SETTINGS_GMAIL_URL = `${E2E_CLIENT_URL}/data-sources/connections`;
 /** The allow-listed bank sender every synthetic mail comes from. */
 export const BANK_SENDER = 'alerts@e2ebank.test';
 export const BANK_SENDER_NAME = 'E2E Bank Alerts';

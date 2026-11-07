@@ -37,7 +37,7 @@ for (const viewport of VIEWPORTS) {
       await page.goto(`/investments/instruments?q=${seeded.tag}`);
 
       // A sub-page: no Investments tab strip.
-      await expect(page.getByRole('tab')).toHaveCount(0);
+      await expect(page.getByRole('tab', { name: /^(Holdings|Retirement|Activity|F&O)/ })).toHaveCount(0);
       await expect(page.getByText('Prices from Yahoo (stocks, ETFs) and AMFI (funds)')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Refresh prices' })).toHaveCount(0);
 

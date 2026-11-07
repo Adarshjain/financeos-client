@@ -80,9 +80,9 @@ test.describe('Gmail settings UI (@ui)', () => {
     await expect(page.getByRole('button', { name: 'Connect your first account' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Add mailbox' }).click();
-    // → WireMock consent (302) → server /api/v1/gmail/oauth/callback (302) → /settings/gmail, which the app
+    // → WireMock consent (302) → server /api/v1/gmail/oauth/callback (302) → /data-sources/connections, which the app
     // redirects to the Dinero Connections page, back here with a banner.
-    await page.waitForURL(/\/settings\/connections/, { timeout: 30_000 });
+    await page.waitForURL(/\/data-sources\/connections/, { timeout: 30_000 });
     await expect(page.getByText('Gmail connected', { exact: true })).toBeVisible();
     await expect(page.getByText(identity.email).first()).toBeVisible();
     // Dinero shows the Primary badge only with several mailboxes; the primary flag is asserted through the API below.

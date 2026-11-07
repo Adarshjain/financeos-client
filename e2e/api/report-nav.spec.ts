@@ -239,9 +239,9 @@ test.describe('attention datasource (@api)', () => {
     let rows = await rawRows(api, 'attention', cols);
     const byKind = Object.fromEntries(rows.map((r) => [String(r.kind), r]));
     expect(Object.keys(byKind).sort()).toEqual(['emi', 'lending']);
-    expect(byKind.emi).toMatchObject({ id: 'emi', label: 'EMIs', severity: 'warning', section: 'act_now', href: '/loans' });
+    expect(byKind.emi).toMatchObject({ id: 'emi', label: 'EMIs', severity: 'warning', section: 'act_now', href: '/accounts' });
     expect(Number(byKind.emi.count)).toBe(2);
-    expect(byKind.lending).toMatchObject({ label: 'Lending returns', href: `/loans/lendings/${cp.id}?export=1` });
+    expect(byKind.lending).toMatchObject({ label: 'Lending returns', href: `/lending/${cp.id}?export=1` });
     expect(Number(byKind.lending.count)).toBe(1);
     expect(await kpi(api, 'attention', 'count', [])).toBe(3);
 
