@@ -52,7 +52,7 @@ export function NameCell({
   accountId?: string;
 }) {
   const nameText = (
-    <Text variant="body-strong" truncate>
+    <Text variant="body-strong">
       {name}
     </Text>
   );
@@ -67,7 +67,7 @@ export function NameCell({
         ) : null}
       </div>
       {sub ? (
-        <Text variant="caption" tone="ink-3" truncate>
+        <Text variant="caption" tone="ink-3">
           {sub}
         </Text>
       ) : null}
@@ -234,7 +234,7 @@ const bankBaseColumns = [
   bankCh.display({
     id: 'account',
     header: 'Account',
-    meta: { size: 'fill', grow: 2, phone: 'main' },
+    meta: { size: 'fill', grow: 2, phone: 'main', wrap: true },
     cell: ({ row }) => (
       <NameCell
         name={row.original.name}
@@ -488,7 +488,7 @@ const brokerColumns = [
   brokerCh.display({
     id: 'broker',
     header: 'Broker',
-    meta: { size: 'fill', phone: 'main' },
+    meta: { size: 'fill', phone: 'main', wrap: true },
     cell: ({ row }) => <NameCell name={row.original.name} accountId={row.original.id} />,
   }),
   brokerCh.display({
