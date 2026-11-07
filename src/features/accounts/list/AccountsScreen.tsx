@@ -2,8 +2,11 @@ import React, { Suspense } from 'react';
 
 import { GRID_GAP } from '@/components/ds/gridGap';
 import { Hero } from '@/components/ds/Hero/Hero';
+import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import type { AccountSuggestions } from '@/features/accounts/list/suggestionsModel';
+import { RetirementCardSkeleton } from '@/features/investments/retirement/RetirementCard';
+import { LoansCardSkeleton } from '@/features/loans/list/LoansCard';
 import { LoadError } from '@/features/shell/LoadError';
 
 import type { AccountsListData, AccountsResult } from './accountsListData';
@@ -28,7 +31,10 @@ import {
 import { AccountsEmpty } from './AccountsStates';
 import {
   InvestmentsDelta,
+  InvestmentsValue,
+  LoansSection,
   NetWorthValue,
+  RetirementSection,
   streamedCardRow,
 } from './AccountsStreamed';
 import { FoundInEmailCard } from './FoundInEmailCard';
@@ -92,7 +98,11 @@ export function AccountsScreen({
             { label: cards.label, value: cards.value, tone: cards.tone, caption: cards.context },
             {
               label: invest.label,
-              value: invest.value,
+              value: (
+                <Suspense fallback={<Skeleton width={96} height={20} />}>
+                  <InvestmentsValue sections={sections} retirement={streams.retirement} />
+                </Suspense>
+              ),
               caption: (
                 <Suspense fallback={null}>
                   <InvestmentsDelta sections={sections} dayChangePct={streams.dayChangePct} />
@@ -104,19 +114,15 @@ export function AccountsScreen({
         ) : null}
         {foundCount > 0 ? <FoundInEmailCard suggestions={mergeSuggestions(found)} /> : null}
 
+        <SectionHeader as="h2" variant="strong" sticky={false} className="px-0">
+          What you have
+        </SectionHeader>
+
         <BankSection
           rows={sections.banks.open.map((a) => bankRow(a, today))}
           closedRows={sections.banks.closed.map((a) => bankRow(a, today))}
           closedLine={closedLineFor(sections.banks.closed)}
           emptyText={scanningEmptyCopy('bank', progressShown)}
-        />
-
-        <CardsSection
-          subtitle={cardsSubtitle(sections.cards.open)}
-          rows={cardRows(sections.cards.open)}
-          closedRows={cardRows(sections.cards.closed)}
-          closedLine={closedLineFor(sections.cards.closed)}
-          emptyText={scanningEmptyCopy('card', progressShown)}
         />
 
         <div className={`grid grid-cols-1 desk:grid-cols-2 items-start ${GRID_GAP}`}>
@@ -132,6 +138,26 @@ export function AccountsScreen({
             closedLine={closedLineFor(sections.wallets.closed)}
           />
         </div>
+
+        <Suspense fallback={<RetirementCardSkeleton />}>
+          <RetirementSection retirement={streams.retirement} />
+        </Suspense>
+
+        <SectionHeader as="h2" variant="strong" sticky={false} className="px-0">
+          What you owe
+        </SectionHeader>
+
+        <CardsSection
+          subtitle={cardsSubtitle(sections.cards.open)}
+          rows={cardRows(sections.cards.open)}
+          closedRows={cardRows(sections.cards.closed)}
+          closedLine={closedLineFor(sections.cards.closed)}
+          emptyText={scanningEmptyCopy('card', progressShown)}
+        />
+
+        <Suspense fallback={<LoansCardSkeleton />}>
+          <LoansSection loans={streams.loans} />
+        </Suspense>
       </div>
     );
   }

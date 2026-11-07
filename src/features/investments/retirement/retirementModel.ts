@@ -23,6 +23,8 @@ export interface RetirementRow {
   /** Passbook month (EPF) or NAV date (NPS), ready to show. */
   updated: string;
   status: { label: string; tone: RetirementStatusTone } | null;
+  /** Counted in net worth: the EPF balance and the account holder's own NPS (a child's Vatsalya account is not). */
+  inNetWorth: boolean;
 }
 
 export interface RetirementModel {
@@ -51,6 +53,7 @@ export function epfRetirementRow(summary: EpfSummary, employers: EpfEmployer[]):
     valueText: formatMoney(summary.balance),
     updated: monthYear(summary.throughMonth),
     status: summary.staleThrough ? { label: 'Update passbook', tone: 'warning' } : null,
+    inNetWorth: true,
   };
 }
 
@@ -82,6 +85,7 @@ export function npsRetirementRows(summary: NpsSummary): RetirementRow[] {
       valueText: formatMoney(value),
       updated: navDate ? formatDate(navDate, 'input') : '',
       status: a.tier1Status === 'FROZEN' ? { label: 'Frozen', tone: 'danger' } : null,
+      inNetWorth: a.relation === 'SELF',
     };
   });
 }
@@ -91,6 +95,11 @@ export function retirementModel(epf: EpfSummary, employers: EpfEmployer[], nps: 
   const npsRows = npsRetirementRows(nps);
   const rows = [...(epfRow ? [epfRow] : []), ...npsRows];
   return { rows, total: rows.reduce((sum, r) => sum + r.value, 0), epfMissing: !epfRow, npsMissing: npsRows.length === 0 };
+}
+
+/** What net worth counts of retirement: EPF plus the holder's own NPS, the same set the server sums. */
+export function retirementNetWorthTotal(model: RetirementModel): number {
+  return model.rows.filter((r) => r.inNetWorth).reduce((sum, r) => sum + r.value, 0);
 }
 
 export const EPF_UPLOAD_HREF = `${INVESTMENTS_IMPORT_HREF}?type=${EPF_IMPORT_TYPE}`;

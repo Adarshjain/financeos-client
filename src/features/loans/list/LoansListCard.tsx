@@ -94,6 +94,9 @@ const columns = [
   }),
 ];
 
+/** The loan table's columns: shared with the Loans card on Accounts. */
+export const loanColumns = columns;
+
 export interface LoansListCardProps {
   state: LoansUrlState;
   rows: LoanRow[];

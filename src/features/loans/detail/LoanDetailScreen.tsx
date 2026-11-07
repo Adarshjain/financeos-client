@@ -91,14 +91,14 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
   return (
     <>
       <ShellPage
-        crumb={subCrumb('loans')}
+        crumb={subCrumb('accounts', 'Loans')}
         title={
           // The loans row's name grows into this title.
           <SharedName name={transitionName.loan(loan.id)}>
             <span>{loan.name}</span>
           </SharedName>
         }
-        backHref={appHref('/loans')}
+        backHref={appHref('/accounts')}
         addLabel="Add event"
         onAdd={() => void runEvent(() => setEventType('rate_change'))}
       >

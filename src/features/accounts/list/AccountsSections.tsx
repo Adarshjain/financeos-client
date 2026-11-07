@@ -609,6 +609,9 @@ export function WalletsSection(props: SectionProps<WalletRow>) {
 export function AccountsTablesSkeleton() {
   return (
     <>
+      <SectionHeader as="h2" variant="strong" sticky={false} className="px-0">
+        What you have
+      </SectionHeader>
       <Card>
         <DataTable
           columns={bankColumns}
@@ -618,6 +621,9 @@ export function AccountsTablesSkeleton() {
           skeletonRows={3}
         />
       </Card>
+      <SectionHeader as="h2" variant="strong" sticky={false} className="px-0">
+        What you owe
+      </SectionHeader>
       <Card>
         <DataTable
           columns={cardColumns}

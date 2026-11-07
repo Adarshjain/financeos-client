@@ -68,6 +68,8 @@ describe('/accounts streaming', () => {
       netWorth: never(),
       dayChangePct: never(),
       suggestions: Promise.resolve(null),
+      retirement: never(),
+      loans: never(),
     });
     const ui = await DsAccountsPage();
     const html = await renderShellHtml(ui as React.ReactElement);
@@ -80,7 +82,10 @@ describe('/accounts streaming', () => {
     expect(screen.getByText('Cash & wallets')).toBeDefined();
     // The pending pieces show no data yet.
     expect(screen.getAllByText('Investments').length).toBeGreaterThan(0);
-    expect(screen.getByText('₹5,000')).toBeDefined();
+    // The Investments figure waits for retirement: no brokers-only number flashes first.
+    expect(screen.queryByText('₹5,000')).toBeNull();
+    expect(screen.getByText('Retirement')).toBeDefined();
+    expect(screen.getByText('Loans')).toBeDefined();
     expect(screen.queryByText('₹11,98,842')).toBeNull();
     expect(screen.queryByText("Couldn't load net worth. Try again.")).toBeNull();
     expect(screen.queryByText('+0.59%')).toBeNull();

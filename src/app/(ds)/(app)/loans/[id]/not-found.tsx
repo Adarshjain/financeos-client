@@ -5,8 +5,8 @@ import { crumbMap, subCrumb } from '@/features/shell/navigation';
 
 export default areaNotFound({
   what: 'Loan',
-  crumb: subCrumb('loans'),
+  crumb: subCrumb('accounts', 'Loans'),
   title: 'Loan',
-  backHref: crumbMap.loans.href,
-  backLabel: 'Back to loans',
+  backHref: crumbMap.accounts.href,
+  backLabel: 'Back to accounts',
 });

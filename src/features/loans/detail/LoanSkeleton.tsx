@@ -27,7 +27,7 @@ function SkeletonCard({ rows }: { rows: number }) {
 /** The loan page's shape: the particulars line, the hero, then the schedule beside two cards. */
 export function LoanSkeleton() {
   return (
-    <ShellPage crumb={subCrumb('loans')} title={<DetailLoadingTitle kind="loan">Loan</DetailLoadingTitle>} backHref={appHref('/loans')}>
+    <ShellPage crumb={subCrumb('accounts', 'Loans')} title={<DetailLoadingTitle kind="loan">Loan</DetailLoadingTitle>} backHref={appHref('/accounts')}>
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <Skeleton width="60%" height={20} />
         <Hero.Skeleton label change figures={3} />

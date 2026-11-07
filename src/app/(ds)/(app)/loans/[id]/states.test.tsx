@@ -17,10 +17,10 @@ vi.mock('@/lib/query/hooks/useNotifications', () => ({
 }));
 
 describe('loan page states', () => {
-  it('loading keeps the top bar with its way back to the loans', () => {
+  it('loading keeps the top bar with its way back to Accounts', () => {
     render(<DsLoanLoading />);
-    expect(screen.getByText('Money / Loans')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/loans');
+    expect(screen.getByText('Money / Accounts / Loans')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/accounts');
   });
 
   it('an error says what failed, offers Retry and quotes the reference', () => {
@@ -30,6 +30,6 @@ describe('loan page states', () => {
     expect(screen.getByText(/ref-9/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(reset).toHaveBeenCalled();
-    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/loans');
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/accounts');
   });
 });

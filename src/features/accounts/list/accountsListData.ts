@@ -1,5 +1,8 @@
 import type { AccountSuggestions } from '@/features/accounts/list/suggestionsModel';
-import { signInIfSessionEnded } from '@/features/shell/loadHelpers';
+import { type RetirementModel } from '@/features/investments/retirement/retirementModel';
+import { loadRetirementScreen } from '@/features/investments/retirement/retirementScreenData';
+import { loadLoansCard,type LoansCardData } from '@/features/loans/list/loansCardData';
+import { type Loaded, signInIfSessionEnded } from '@/features/shell/loadHelpers';
 import type { Account } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
 import { serverApi } from '@/lib/api/server';
@@ -46,10 +49,14 @@ export interface AccountsListData {
   dayChangePct: Promise<number | null>;
   /** The accounts found in the user's email and the scan's progress; null when the request failed. */
   suggestions: Promise<AccountSuggestions | null>;
+  /** The EPF and NPS rows: the Retirement card, and what the Investments figure adds to the brokers. */
+  retirement: Promise<Loaded<RetirementModel>>;
+  /** The open loans of the Loans card; null when they could not be read. */
+  loans: Promise<LoansCardData | null>;
 }
 
 /**
- * Starts all six requests at once and returns their promises without awaiting the optional
+ * Starts all eight requests at once and returns their promises without awaiting the optional
  * ones, so the page can render as soon as the accounts arrive and stream the rest in.
  */
 export function loadAccountsListData(): AccountsListData {
@@ -66,5 +73,7 @@ export function loadAccountsListData(): AccountsListData {
     netWorth: orNull(netWorth()),
     dayChangePct: orNull(dayChangePct()),
     suggestions: orNull(accountSuggestionsApi.list()),
+    retirement: loadRetirementScreen(),
+    loans: loadLoansCard(),
   };
 }

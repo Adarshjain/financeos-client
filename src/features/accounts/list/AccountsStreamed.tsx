@@ -4,6 +4,10 @@ import { Conceal } from '@/components/ds/Conceal/Conceal';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
+import { RetirementCard } from '@/features/investments/retirement/RetirementCard';
+import { retirementNetWorthTotal } from '@/features/investments/retirement/retirementModel';
+import { LoansCard } from '@/features/loans/list/LoansCard';
+import { LoadError } from '@/features/shell/LoadError';
 import type { CardBillResponse } from '@/lib/api/types';
 
 import type { AccountsListData } from './accountsListData';
@@ -39,6 +43,29 @@ export async function NetWorthValue({ netWorth }: Pick<AccountsListData, 'netWor
   ) : (
     <Conceal>{text}</Conceal>
   );
+}
+
+/** The Investments figure: the brokers plus EPF and the holder's own NPS. If retirement could not be read it shows the brokers alone. */
+export async function InvestmentsValue({
+  sections,
+  retirement,
+}: Pick<AccountsListData, 'retirement'> & { sections: AccountSections }) {
+  const result = await retirement;
+  return <Conceal>{investmentsKpi(sections, null, result.ok ? retirementNetWorthTotal(result.data) : 0).value}</Conceal>;
+}
+
+/** The Retirement card, the same one Investments › Retirement shows. */
+export async function RetirementSection({ retirement }: Pick<AccountsListData, 'retirement'>) {
+  const result = await retirement;
+  if (!result.ok) return <LoadError what="retirement" reference={result.reference} />;
+  return <RetirementCard model={result.data} />;
+}
+
+/** The Loans card. */
+export async function LoansSection({ loans }: Pick<AccountsListData, 'loans'>) {
+  const data = await loans;
+  if (!data) return <LoadError what="loans" />;
+  return <LoansCard rows={data.rows} closedLine={data.closedLine} />;
 }
 
 export async function InvestmentsDelta({

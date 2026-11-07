@@ -36,10 +36,10 @@ function renderShell() {
 }
 
 describe('LoansShell', () => {
-  it('titles the bar "Loans" under the Money crumb, with no tab strip', () => {
+  it('titles the bar "Loans" under the Money / Accounts crumb, with no tab strip', () => {
     renderShell();
     expect(screen.getAllByText('Loans').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Money').length).toBeGreaterThan(0);
+    expect(screen.getByText('Money / Accounts')).toBeInTheDocument();
     expect(screen.queryByRole('tab')).toBeNull();
     expect(screen.getByText('page body')).toBeInTheDocument();
   });

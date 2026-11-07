@@ -126,9 +126,11 @@ export function cardsKpi(sections: AccountSections): KpiModel {
   };
 }
 
+/** Investments: the brokers plus `retirementTotal` (EPF and the holder's own NPS, as net worth counts them). */
 export function investmentsKpi(
   sections: AccountSections,
-  dayChangePct: number | null | undefined
+  dayChangePct: number | null | undefined,
+  retirementTotal = 0
 ) {
   const kpi: KpiModel & {
     delta?: {
@@ -138,7 +140,7 @@ export function investmentsKpi(
     };
   } = {
     label: 'Investments',
-    value: formatMoney(sumBalances(sections.brokers.open)),
+    value: formatMoney(sumBalances(sections.brokers.open) + retirementTotal),
   };
   if (dayChangePct != null && Number.isFinite(dayChangePct)) {
     kpi.delta = {

@@ -7,6 +7,10 @@ import type {
   AccountsListData,
   AccountsResult,
 } from '@/features/accounts/list/accountsListData';
+import { employer, summary as epfSummary } from '@/features/investments/epf/epf.fixtures';
+import { npsAccount, npsSummary } from '@/features/investments/retirement/retirement.fixtures';
+import { retirementModel } from '@/features/investments/retirement/retirementModel';
+import type { LoansCardData } from '@/features/loans/list/loansCardData';
 
 /** The accounts list data as plain values; `toStreams` wraps it in the promises the page takes. */
 export type PlainListData = AccountsResult & {
@@ -14,6 +18,10 @@ export type PlainListData = AccountsResult & {
   rewards: AccountsListData['rewards'] extends Promise<infer T> ? T : never;
   netWorth: number | null;
   dayChangePct: number | null;
+  /** Defaults to EPF and one own NPS account (so the card shows no upload lines). */
+  retirement?: AccountsListData['retirement'] extends Promise<infer T> ? T : never;
+  /** Defaults to no loans. */
+  loans?: LoansCardData | null;
 };
 
 export function toStreams(data: PlainListData): AccountsListData {
@@ -27,6 +35,10 @@ export function toStreams(data: PlainListData): AccountsListData {
     netWorth: Promise.resolve(data.netWorth),
     dayChangePct: Promise.resolve(data.dayChangePct),
     suggestions: Promise.resolve(null),
+    retirement: Promise.resolve(
+      data.retirement ?? { ok: true, data: retirementModel(epfSummary(), [employer()], npsSummary([npsAccount()])) }
+    ),
+    loans: Promise.resolve(data.loans === undefined ? { rows: [], closedLine: null } : data.loans),
   };
 }
 

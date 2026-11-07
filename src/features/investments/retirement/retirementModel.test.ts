@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { employer, settled, summary as epfSummary, transferred } from '../epf/epf.fixtures';
 import { npsAccount, npsSummary } from './retirement.fixtures';
-import { EPF_UPLOAD_HREF, retirementModel, retirementTableRows } from './retirementModel';
+import { EPF_UPLOAD_HREF, retirementModel, retirementNetWorthTotal, retirementTableRows } from './retirementModel';
 
 describe('retirementModel', () => {
   it('has an EPF row with the UAN tail, employer line, balance and passbook month', () => {
@@ -63,5 +63,13 @@ describe('retirementModel', () => {
       ['EPF', null],
       ['NPS', 'Upload statement'],
     ]);
+  });
+
+  it('counts EPF and your own NPS in net worth, never a child Vatsalya account', () => {
+    const child = npsAccount({ id: 'a2', relation: 'CHILD', sector: 'VATSALYA', holderName: 'Aarav', pranMasked: 'XXXXXXX5208', tier1Status: null, tiers: [{ tier: 'I', value: 95260, invested: 1, gain: 1, schemes: [] }] });
+    const model = retirementModel(epfSummary(), [employer()], npsSummary([npsAccount(), child]));
+    expect(model.rows.map((r) => [r.name, r.inNetWorth])).toEqual([['EPF', true], ['NPS', true], ['NPS Vatsalya', false]]);
+    expect(model.total).toBe(1533350);
+    expect(retirementNetWorthTotal(model)).toBe(843210 + 594880);
   });
 });
