@@ -161,24 +161,7 @@ export function attentionEditTarget(item: Pick<AttentionItem, 'reason' | 'accoun
   return null;
 }
 
-export type LockedStatementTarget = { kind: 'open'; accountId: string } | { kind: 'pick'; accounts: Account[] } | { kind: 'none' };
-
-/** Which account a locked statement without a known account belongs to: opens it when the sender's last four or bank single one out, else asks among the likeliest accounts; 'none' when there is no open bank or card account at all. */
-export function lockedStatementTarget(item: Pick<AttentionItem, 'suggestedBankId' | 'suggestedLast4'>, accounts: readonly Account[]): LockedStatementTarget {
-  const candidates = accounts.filter((a) => (a.type === AccountType.BANK_ACCOUNT || a.type === AccountType.CREDIT_CARD) && !isAccountClosed(a));
-  if (candidates.length === 0) return { kind: 'none' };
-  const bankId = item.suggestedBankId ?? null;
-  const last4 = item.suggestedLast4 ?? null;
-  const bankOf = (a: Account) => (a as { bank?: string | null }).bank;
-  const sameBank = bankId ? candidates.filter((a) => bankOf(a) === bankId) : [];
-  if (last4) {
-    const byLast4 = candidates.filter((a) => (a as { last4?: string }).last4 === last4 && (!bankId || bankOf(a) === bankId));
-    if (byLast4.length === 1) return { kind: 'open', accountId: byLast4[0].id };
-  }
-  if (bankId) {
-    if (sameBank.length === 1) return { kind: 'open', accountId: sameBank[0].id };
-    return { kind: 'pick', accounts: sameBank.length >= 2 ? sameBank : candidates };
-  }
-  if (candidates.length === 1) return { kind: 'open', accountId: candidates[0].id };
-  return { kind: 'pick', accounts: candidates };
+/** The accounts a locked statement's password can belong to: open bank accounts and cards. The user picks one; nothing is guessed. */
+export function statementPasswordAccounts(accounts: readonly Account[]): Account[] {
+  return accounts.filter((a) => (a.type === AccountType.BANK_ACCOUNT || a.type === AccountType.CREDIT_CARD) && !isAccountClosed(a));
 }

@@ -87,7 +87,7 @@ export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarc
         {hintLink && editTarget ? (
           <EditAccountHint accountId={editTarget.accountId} focusField={editTarget.focusField} label={hintLink.label} href={hintLink.href} />
         ) : hintLink && item.reason === 'LOCKED_STATEMENT' ? (
-          <LockedStatementHint item={item} label={hintLink.label} href={hintLink.href} />
+          <LockedStatementHint label={hintLink.label} href={hintLink.href} />
         ) : hintLink ? (
           <Text variant="label" as="span">
             <Button asChild variant="link">

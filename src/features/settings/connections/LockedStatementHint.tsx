@@ -13,15 +13,15 @@ import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
 
-import { type AttentionItem, lockedStatementTarget } from './attentionItemModel';
+import { statementPasswordAccounts } from './attentionItemModel';
 import { EditAccountLoader } from './EditAccountHint';
 
 const PICKER_TYPES = [AccountType.BANK_ACCOUNT, AccountType.CREDIT_CARD];
 
 type Phase = { name: 'idle' } | { name: 'picking'; accounts: Account[] } | { name: 'editing'; accountId: string };
 
-/** The hint for a locked statement with no known account: on press works out the account (or asks which), then opens its Edit dialog on the statement password; with no bank or card account it goes to the accounts page. */
-export function LockedStatementHint({ item, label, href }: { item: AttentionItem; label: string; href: string }) {
+/** The hint for a locked statement with no known account: on press asks which bank account or card it is for (never guessed), then opens its Edit dialog on the statement password; with no bank or card account it goes to the accounts page. */
+export function LockedStatementHint({ label, href }: { label: string; href: string }) {
   const router = useRouter();
   const [pressed, setPressed] = useState(false);
   const [phase, setPhase] = useState<Phase>({ name: 'idle' });
@@ -45,12 +45,11 @@ export function LockedStatementHint({ item, label, href }: { item: AttentionItem
       return;
     }
     if (!accounts) return;
-    const target = lockedStatementTarget(item, accounts);
-    if (target.kind === 'none') {
+    const candidates = statementPasswordAccounts(accounts);
+    if (candidates.length === 0) {
       reset();
       router.push(href);
-    } else if (target.kind === 'open') setPhase({ name: 'editing', accountId: target.accountId });
-    else setPhase({ name: 'picking', accounts: target.accounts });
+    } else setPhase({ name: 'picking', accounts: candidates });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pressed, phase.name, accounts, accountsFailed]);
 

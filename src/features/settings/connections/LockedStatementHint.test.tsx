@@ -6,7 +6,6 @@ import type { Account, CreditCard } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import type { AttentionItem } from './attentionItemModel';
 import { LockedStatementHint } from './LockedStatementHint';
 
 const router = vi.hoisted(() => ({
@@ -67,10 +66,9 @@ const card: CreditCard = {
 const hdfc2 = { ...card, id: 'a2', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT, last4: '1234' } as unknown as Account;
 const icici = { ...card, id: 'a3', name: 'ICICI Amazon', bank: 'icici', last4: '9999' } as unknown as Account;
 
-const item = (over: Partial<AttentionItem>) => ({ id: 'i1', reason: 'LOCKED_STATEMENT', suggestedBankId: null, suggestedLast4: null, ...over }) as AttentionItem;
 
-function renderHint(i: AttentionItem) {
-  return renderWithQuery(<LockedStatementHint item={i} label="Add the statement password" href="/accounts" />);
+function renderHint() {
+  return renderWithQuery(<LockedStatementHint label="Add the statement password" href="/accounts" />);
 }
 
 beforeEach(() => {
@@ -81,25 +79,26 @@ beforeEach(() => {
 });
 
 describe('LockedStatementHint', () => {
-  it('a single bank match opens the Edit dialog on the password without navigating', async () => {
-    accounts.data = [card, icici];
-    renderHint(item({ suggestedBankId: 'hdfc' }));
+  it('never guesses: even a single account at the sender\'s bank shows the picker with nothing picked', async () => {
+    accounts.data = [card];
+    renderHint();
     fireEvent.click(screen.getByRole('button', { name: 'Add the statement password' }));
-    const input = await screen.findByLabelText(/^Statement PDF password/, undefined, { timeout: 5000 });
-    await waitFor(() => expect(input).toHaveFocus());
-    expect(screen.queryByText('Which account is this statement for?')).toBeNull();
-    expect(router.push).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog', undefined, { timeout: 5000 });
+    expect(within(dialog).getByText('Which account is this statement for?')).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Continue' })).toBeDisabled();
+    expect(screen.queryByLabelText(/^Statement PDF password/)).toBeNull();
   });
 
-  it('an ambiguous match shows the picker; Continue opens the dialog on the password', async () => {
+  it('the picker lists all open bank accounts and cards; Continue opens the dialog on the password', async () => {
     accounts.data = [card, hdfc2, icici];
-    renderHint(item({ suggestedBankId: 'hdfc' }));
+    renderHint();
     fireEvent.click(screen.getByRole('button', { name: 'Add the statement password' }));
     const dialog = await screen.findByRole('dialog', undefined, { timeout: 5000 });
     expect(within(dialog).getByText('Which account is this statement for?')).toBeInTheDocument();
     const cont = within(dialog).getByRole('button', { name: 'Continue' });
     expect(cont).toBeDisabled();
     fireEvent.click(within(dialog).getByRole('combobox', { name: /Account/ }));
+    expect(await screen.findByRole('option', { name: /ICICI Amazon/ })).toBeInTheDocument();
     fireEvent.click(await screen.findByRole('option', { name: /HDFC Savings/ }));
     await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Continue' })).toBeEnabled());
     fireEvent.click(within(dialog).getByRole('button', { name: 'Continue' }));
@@ -110,7 +109,7 @@ describe('LockedStatementHint', () => {
 
   it('Cancel closes the picker', async () => {
     accounts.data = [card, hdfc2];
-    renderHint(item({}));
+    renderHint();
     fireEvent.click(screen.getByRole('button', { name: 'Add the statement password' }));
     const dialog = await screen.findByRole('dialog', undefined, { timeout: 5000 });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
@@ -120,14 +119,14 @@ describe('LockedStatementHint', () => {
 
   it('with no candidates it goes to /accounts', async () => {
     accounts.data = [{ ...card, closedOn: '2020-01-01' }];
-    renderHint(item({}));
+    renderHint();
     fireEvent.click(screen.getByRole('button', { name: 'Add the statement password' }));
     await waitFor(() => expect(router.push).toHaveBeenCalledWith('/accounts'));
   });
   it('falls back to the accounts page when the accounts cannot be loaded', async () => {
     accounts.data = undefined;
     accounts.isError = true;
-    renderHint(item({ suggestedBankId: 'hdfc' }));
+    renderHint();
     fireEvent.click(screen.getByRole('button', { name: 'Add the statement password' }));
     await waitFor(() => expect(router.push).toHaveBeenCalledWith('/accounts'));
   });
