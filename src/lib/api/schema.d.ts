@@ -276,6 +276,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{accountId}/cards/seen-dates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["seenDates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/{accountId}/ingest": {
         parameters: {
             query?: never;
@@ -1802,6 +1818,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/gmail/attention/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["groups_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gmail/attention/numbers/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["assign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gmail/attention/numbers/ignore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ignore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gmail/attention/numbers/ignored/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["unignore"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/gmail/attention/retry-all": {
         parameters: {
             query?: never;
@@ -1826,6 +1906,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["summary_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gmail/attention/ungrouped": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ungrouped"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5328,13 +5424,46 @@ export interface components {
             accountId: string;
             password?: string | null;
         };
+        AssignNumberGroupRequest: {
+            /** Format: uuid */
+            accountId: string;
+            bank?: string | null;
+            /** @enum {string|null} */
+            kind?: "CUSTOMER_ID" | "ACCOUNT_NUMBER" | "CRN" | "OTHER" | null;
+            last4: string;
+        };
+        AssignNumberGroupResponse: {
+            /** Format: uuid */
+            identifierId: string;
+            jobIds: string[];
+            /** Format: int32 */
+            reactivatedCount: number;
+            /** Format: int32 */
+            remainingCount: number;
+            /** Format: int32 */
+            skippedCount: number;
+        };
         AttentionBulkRequest: {
             /** @enum {string} */
             reason: "NO_ACCOUNT" | "IMPORT_OFF" | "NO_AI_KEY" | "LOCKED_STATEMENT" | "UNREADABLE_STATEMENT" | "FAILED";
+            ungroupedOnly?: boolean;
         };
         AttentionBulkResponse: {
             /** Format: int32 */
             affected: number;
+        };
+        AttentionCountResponse: {
+            /** Format: int32 */
+            count: number;
+            /** Format: uuid */
+            id: string;
+        };
+        AttentionGroupsResponse: {
+            ignored: components["schemas"]["IgnoredNumberResponse"][];
+            importOff: components["schemas"]["ImportOffGroup"][];
+            /** Format: int32 */
+            total: number;
+            unknownNumbers: components["schemas"]["UnknownNumberGroup"][];
         };
         AttentionReasonCount: {
             /** Format: int64 */
@@ -5767,6 +5896,16 @@ export interface components {
             issuedOn?: string | null;
             last4: string;
         };
+        CardSeenDatesResponse: {
+            /** Format: date */
+            firstSeen?: string | null;
+            /** Format: date */
+            lastSeen?: string | null;
+            /** Format: int32 */
+            mailCount: number;
+            /** Format: int32 */
+            transactionCount: number;
+        };
         CardStats: {
             /** Format: uuid */
             cardId: string;
@@ -6142,6 +6281,8 @@ export interface components {
         };
         CreateAccountRequest: components["schemas"]["BankAccountRequest"] | components["schemas"]["CreditCardRequest"] | components["schemas"]["BrokerRequest"] | components["schemas"]["GenericAccountRequest"];
         CreateCardRequest: {
+            /** Format: date */
+            closedOn?: string;
             /** Format: uuid */
             fromSuggestionId?: string;
             /** Format: date */
@@ -7484,12 +7625,33 @@ export interface components {
             /** Format: int32 */
             totalPages: number;
         };
+        IgnoredNumberResponse: {
+            bank?: string | null;
+            /** Format: int32 */
+            count: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            id: string;
+            last4: string;
+        };
         ImportCommitRequest: {
             /** Format: uuid */
             brokerAccountId: string;
             rows: components["schemas"]["CommitRowDto"][];
             /** @enum {string} */
             source: "zerodha_tradebook" | "mf_cas" | "groww";
+        };
+        ImportOffGroup: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            /** Format: int32 */
+            count: number;
+            /** Format: date-time */
+            firstMail: string;
+            /** Format: date-time */
+            lastMail: string;
         };
         ImportPreviewResponse: {
             rows: components["schemas"]["ImportRowPreviewDto"][];
@@ -8721,6 +8883,20 @@ export interface components {
             self: number;
             /** @enum {string} */
             tier: "I" | "II";
+        };
+        NumberGroupRequest: {
+            bank?: string | null;
+            last4: string;
+        };
+        NumberSuggestion: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            example: components["schemas"]["SuggestionExample"];
+            /** Format: int32 */
+            matched: number;
+            /** Format: int32 */
+            total: number;
         };
         OAuthStartResponse: {
             authorizationUrl: string;
@@ -10460,6 +10636,12 @@ export interface components {
             qtyHeld: number;
             symbol: string;
         };
+        SuggestionExample: {
+            amount: number;
+            /** Format: date */
+            date: string;
+            description?: string | null;
+        };
         Summary: {
             basisSpend: number;
             cashbackInr: number;
@@ -10817,6 +10999,18 @@ export interface components {
             ruleRestored: boolean;
             /** Format: int32 */
             skipped: number;
+        };
+        UnknownNumberGroup: {
+            bank?: string | null;
+            /** Format: int32 */
+            count: number;
+            /** Format: date-time */
+            firstMail: string;
+            kinds: string[];
+            last4: string;
+            /** Format: date-time */
+            lastMail: string;
+            suggestion?: components["schemas"]["NumberSuggestion"];
         };
         UnlockVerifyRequest: {
             credential: unknown;
@@ -11700,6 +11894,39 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CardholderResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    seenDates: {
+        parameters: {
+            query: {
+                last4: string;
+            };
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CardSeenDatesResponse"];
                 };
             };
             /** @description Error response */
@@ -15377,6 +15604,132 @@ export interface operations {
             };
         };
     };
+    groups_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AttentionGroupsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    assign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignNumberGroupRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AssignNumberGroupResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ignore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NumberGroupRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AttentionCountResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unignore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AttentionCountResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     retryAll: {
         parameters: {
             query?: never;
@@ -15414,6 +15767,7 @@ export interface operations {
         parameters: {
             query?: {
                 includeRetryable?: boolean;
+                ungroupedOnly?: boolean;
             };
             header?: never;
             path?: never;
@@ -15428,6 +15782,41 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["AttentionReasonCount"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ungrouped: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+                includeRetryable?: boolean;
+                archived?: boolean;
+                reason?: "NO_ACCOUNT" | "IMPORT_OFF" | "NO_AI_KEY" | "LOCKED_STATEMENT" | "UNREADABLE_STATEMENT" | "FAILED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageGmailAttentionItemResponse"];
                 };
             };
             /** @description Error response */

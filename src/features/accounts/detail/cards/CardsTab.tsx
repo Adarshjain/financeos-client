@@ -8,8 +8,10 @@ import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { GRID_GAP } from '@/components/ds/gridGap';
 import { Text } from '@/components/ds/Text/Text';
 import { showToast } from '@/components/ds/Toast/Toast';
+import { loadCardSeenDates } from '@/features/accounts/accountActions';
 import { LoadError } from '@/features/shell/LoadError';
 import type { Card, Cardholder } from '@/lib/account.types';
+import { unwrapAction } from '@/lib/actionResult';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { replaceUrl } from '@/lib/urlState';
 
@@ -28,6 +30,7 @@ type DialogState =
   | { kind: 'addPrimaryCard' }
   | { kind: 'edit'; holderId: string }
   | { kind: 'addCard'; holderId: string }
+  | { kind: 'addPastCard'; holderId: string }
   | { kind: 'replace'; holderId: string; cardId: string }
   | { kind: 'closeCard'; holderId: string; cardId: string }
   | { kind: 'closeHolder'; holderId: string }
@@ -100,6 +103,8 @@ export function CardsTab({
         return setDialog({ kind: 'reassign', holderId });
       case 'addCard':
         return setDialog({ kind: 'addCard', holderId });
+      case 'addPastCard':
+        return setDialog({ kind: 'addPastCard', holderId });
       case 'close':
         return setDialog({ kind: 'closeHolder', holderId });
       case 'delete':
@@ -206,6 +211,15 @@ export function CardsTab({
           submitLabel="Add card"
           today={today}
           onSubmit={(body) => actions.addCard(holder, body)}
+          onClose={closeDialog}
+        />
+      ) : null}
+      {dialog?.kind === 'addPastCard' && holder ? (
+        <dialogs.AddPastCardDialog
+          description={`${name} · ${accountName}`}
+          today={today}
+          loadSeenDates={(last4) => unwrapAction(loadCardSeenDates(accountId, last4))}
+          onSubmit={(body) => actions.addPastCard(holder, body)}
           onClose={closeDialog}
         />
       ) : null}

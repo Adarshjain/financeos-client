@@ -229,6 +229,39 @@ test.describe('Cards and Cardholders API (@api)', () => {
     expect(genericCardRes.response.status).toBe(400);
   });
 
+  test('past card: a closed card with its dates sits beside the active card; seen-dates is empty for an unseen number', async ({ api }) => {
+    const cc = await createCreditCard(api, { name: 'Past Card CC' });
+    const primary = await ensurePrimaryCardholder(api, cc.id, '1111', '2025-01-01');
+
+    const past = await api.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards', {
+      params: { path: { accountId: cc.id, cardholderId: primary.id } },
+      body: { last4: '2020', issuedOn: '2021-05-04', closedOn: '2024-12-20' },
+    });
+    expect(past.response.status).toBe(201);
+    const cards = past.data!.cards;
+    expect(cards.find((c) => c.last4 === '2020')).toMatchObject({ isOpen: false, issuedOn: '2021-05-04', closedOn: '2024-12-20' });
+    expect(cards.filter((c) => c.isOpen)).toHaveLength(1);
+
+    // A past card still follows the date rules: closed before opened is refused.
+    const backwards = await api.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards', {
+      params: { path: { accountId: cc.id, cardholderId: primary.id } },
+      body: { last4: '2021', issuedOn: '2024-05-04', closedOn: '2021-12-20' },
+    });
+    expect(backwards.response.status).toBe(400);
+
+    const unseen = await api.GET('/api/v1/accounts/{accountId}/cards/seen-dates', {
+      params: { path: { accountId: cc.id }, query: { last4: '8080' } },
+    });
+    expect(unseen.response.status).toBe(200);
+    expect(unseen.data).toMatchObject({ mailCount: 0, transactionCount: 0 });
+    expect(unseen.data?.firstSeen ?? null).toBeNull();
+
+    const bad = await api.GET('/api/v1/accounts/{accountId}/cards/seen-dates', {
+      params: { path: { accountId: cc.id }, query: { last4: '80' } },
+    });
+    expect(bad.response.status).toBe(400);
+  });
+
   test('delete card: only a closed card can go, an open card or the only card is refused, an unknown card is 404', async ({
     api,
   }) => {

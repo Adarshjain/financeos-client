@@ -222,6 +222,8 @@ export interface UpdateCardholderRequest {
 export interface CreateCardRequest {
   last4: string;
   issuedOn?: string;
+  /** Set for a past card: it was already closed, and is allowed beside an active card. */
+  closedOn?: string;
   fromSuggestionId?: string;
 }
 

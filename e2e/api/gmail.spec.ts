@@ -413,7 +413,11 @@ test.describe('Gmail sync journey', () => {
     const late = await createBankAccount(api, { name: 'E2E Late Account', last4: '9999' });
     lateAccountId = late.id;
     await waitForGmailJobsIdle(api);
-    expect((await attentionItems(api)).map((i) => i.id)).toEqual([unresolvedLedgerId]);
+    // The alert's number now matches the new (not opted in) account: its mail is counted in the grouped
+    // "import off" row for that account and no longer listed one by one.
+    const importOffGroups = async () => (await api.GET('/api/v1/gmail/attention/groups')).data!.importOff;
+    expect(await attentionItems(api)).toHaveLength(0);
+    expect(await importOffGroups()).toEqual([expect.objectContaining({ accountId: late.id, accountName: 'E2E Late Account', count: 1 })]);
 
     // A retry re-extracts the mail, and so does the re-activation below: script both answers now
     // (keyed entries wait in the queue until a matching prompt arrives).
@@ -428,7 +432,10 @@ test.describe('Gmail sync journey', () => {
     expect(job.status).toBe('SUCCEEDED');
     expect(job.result).toMatchObject({ discovered: 0, processed: 1, parked: 1 });
 
-    const parked = await attentionItems(api);
+    // Import-off mail is archived on arrival: the per-email list stays empty and the grouped row counts it.
+    expect(await attentionItems(api)).toHaveLength(0);
+    expect(await importOffGroups()).toEqual([expect.objectContaining({ accountId: late.id, count: 1 })]);
+    const parked = await archivedAttentionItems(api);
     expect(parked).toHaveLength(1);
     expect(parked[0]).toMatchObject({ id: unresolvedLedgerId, status: 'ACCOUNT_NOT_OPTED_IN', extractedLast4: '9999' });
     expect(parked[0].error).toContain('not opted in');
@@ -447,6 +454,7 @@ test.describe('Gmail sync journey', () => {
     await waitForGmailJobsIdle(api);
 
     expect(await attentionItems(api)).toHaveLength(0);
+    expect(await importOffGroups()).toEqual([]);
     const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: late.id }]);
     expect(txns).toHaveLength(1);
     expect(txns[0]).toMatchObject({ amount: -640, sourcedDescription: 'UBER', source: 'gmail_transaction_alert', reviewType: 'AUTO_REVIEWED' });
@@ -889,6 +897,183 @@ test.describe('Gmail account identifier aliases', () => {
       body: { accountId },
     });
     expectStatus(unknown, 404);
+  });
+});
+
+test.describe('Gmail attention groups', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  let api: ReturnType<typeof makeApi>;
+  let identity: GoogleIdentity;
+  let accountId: string;
+
+  // Two alerts name ••5550 and one names ••5551; no account carries either number.
+  const first = alertMail({ last4: '5550', amount: 120, merchant: 'GROUP ONE', date: isoDaysAgo(4) });
+  const second = alertMail({ last4: '5550', amount: 80, merchant: 'GROUP TWO', date: isoDaysAgo(3) });
+  const other = alertMail({ last4: '5551', amount: 45, merchant: 'GROUP OTHER', date: isoDaysAgo(2) });
+  const answerFor = (m: ReturnType<typeof alertMail>, amount: number, last4: string, merchant: string, daysAgo: number) =>
+    extractionFor(m, { json: extractedTxn({ amount, date: isoDaysAgo(daysAgo), last4, merchant }) });
+
+  const groups = async () => (await api.GET('/api/v1/gmail/attention/groups')).data!;
+
+  test.beforeAll(async ({ request }) => {
+    const user = await createUser(request, 'gmail-groups');
+    api = makeApi(user.cookie);
+    identity = await registerIdentity();
+    const account = await createBankAccount(api, { name: 'Group Target Bank', last4: '1234', ingestFromDate: isoDaysAgo(60) });
+    accountId = account.id;
+    await createSender(api);
+    await connectGmail(api, identity);
+    await waitForGmailJobsIdle(api);
+    await registerMailbox(identity, [first, second, other]);
+    // Once for the first sync, once for the re-extraction after the number is assigned.
+    const one = answerFor(first, 120, '5550', 'GROUP ONE', 4);
+    const two = answerFor(second, 80, '5550', 'GROUP TWO', 3);
+    const three = answerFor(other, 45, '5551', 'GROUP OTHER', 2);
+    await scriptExtractions(api, [one, two, three, one, two, three]);
+  });
+
+  test.afterAll(async () => {
+    await resetLlm(api);
+    await cleanupIdentity(identity);
+  });
+
+  test('unresolved mail with a number is one group per number, and is not listed one by one', async () => {
+    test.slow();
+    const { summary } = await runSync(api);
+    expect(summary).toMatchObject({ discovered: 3, processed: 3, parked: 3, created: 0 });
+
+    const g = await groups();
+    expect(g.unknownNumbers.map((n) => [n.last4, n.count]).sort()).toEqual([['5550', 2], ['5551', 1]]);
+    expect(g.unknownNumbers.every((n) => n.kinds.includes('ALERT'))).toBe(true);
+    expect(g.importOff).toEqual([]);
+    expect(g.ignored).toEqual([]);
+
+    const ungrouped = await api.GET('/api/v1/gmail/attention/ungrouped', { params: { query: { page: 0, size: 20, includeRetryable: false } } });
+    expectStatus(ungrouped, 200);
+    expect(ungrouped.data?.content).toHaveLength(0);
+  });
+
+  test('ignore moves the number to archived and ignored; stop ignoring brings it back', async () => {
+    const ignore = await api.POST('/api/v1/gmail/attention/numbers/ignore', { body: { last4: '5551' } });
+    expectStatus(ignore, 200);
+    expect(ignore.data?.count).toBe(1);
+    const afterIgnore = await groups();
+    expect(afterIgnore.unknownNumbers.map((n) => n.last4)).toEqual(['5550']);
+    expect(afterIgnore.ignored).toEqual([expect.objectContaining({ id: ignore.data!.id, last4: '5551', count: 1 })]);
+
+    const archived = await api.GET('/api/v1/gmail/attention/ungrouped', { params: { query: { page: 0, size: 20, includeRetryable: false, archived: true } } });
+    expect(archived.data?.content.map((i) => i.extractedLast4)).toEqual(['5551']);
+
+    const stop = await api.DELETE('/api/v1/gmail/attention/numbers/ignored/{id}', { params: { path: { id: ignore.data!.id } } });
+    expectStatus(stop, 200);
+    expect(stop.data?.count).toBe(1);
+    const restored = await groups();
+    expect(restored.ignored).toEqual([]);
+    expect(restored.unknownNumbers.map((n) => n.last4).sort()).toEqual(['5550', '5551']);
+  });
+
+  test('assigning a number settles all of its mail into the account and clears the group', async () => {
+    test.slow();
+    const assign = await api.POST('/api/v1/gmail/attention/numbers/assign', { body: { last4: '5550', accountId } });
+    expectStatus(assign, 200);
+    expect(assign.data?.reactivatedCount).toBe(2);
+    for (const jobId of assign.data!.jobIds) expect((await waitForJob(api, jobId)).status).toBe('SUCCEEDED');
+    await waitForGmailJobsIdle(api);
+
+    const after = await groups();
+    expect(after.unknownNumbers.map((n) => n.last4)).toEqual(['5551']);
+    const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: accountId }]);
+    expect(txns.map((t) => t.sourcedDescription).sort()).toEqual(['GROUP ONE', 'GROUP TWO']);
+  });
+
+  test('foreign accounts and unknown ignored ids are refused, never a 500', async ({ request }) => {
+    const { api: apiB } = await secondUser(request, 'gmail-groups-b');
+    const accountB = await createBankAccount(apiB, { name: 'Group B Bank', last4: '4321' });
+    const foreign = await api.POST('/api/v1/gmail/attention/numbers/assign', { body: { last4: '5551', accountId: accountB.id } });
+    expect([400, 404]).toContain(foreign.response.status);
+    const unknown = await api.DELETE('/api/v1/gmail/attention/numbers/ignored/{id}', { params: { path: { id: randomUUID() } } });
+    expect([400, 404]).toContain(unknown.response.status);
+    expect((await (await apiB.GET('/api/v1/gmail/attention/groups')).data)!.unknownNumbers).toEqual([]);
+  });
+});
+
+test.describe('Gmail attention ungrouped bulk actions and counts', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  let api: ReturnType<typeof makeApi>;
+  let identity: GoogleIdentity;
+
+  // One alert names an unknown number (a group); one names no number at all (stays an individual email).
+  const numbered = alertMail({ last4: '5560', amount: 120, merchant: 'BULK GROUPED', date: isoDaysAgo(4) });
+  const loose = alertMail({ last4: '', amount: 80, merchant: 'BULK LOOSE', date: isoDaysAgo(3) });
+
+  const groups = async () => (await api.GET('/api/v1/gmail/attention/groups')).data!;
+  const inboxCount = async () => inboxRow(await getInbox(api), 'gmail-attention')?.count ?? 0;
+  const summaryOf = async (ungroupedOnly: boolean) => {
+    const res = await api.GET('/api/v1/gmail/attention/summary', { params: { query: { includeRetryable: false, ungroupedOnly } } });
+    expectStatus(res, 200);
+    return Object.fromEntries(res.data!.map((r) => [r.reason, r.count]));
+  };
+
+  test.beforeAll(async ({ request }) => {
+    const user = await createUser(request, 'gmail-bulk');
+    api = makeApi(user.cookie);
+    identity = await registerIdentity();
+    // Two accounts, so a mail with no number matches neither and stays unresolved.
+    await createBankAccount(api, { name: 'Bulk Bank One', last4: '1234', ingestFromDate: isoDaysAgo(60) });
+    await createBankAccount(api, { name: 'Bulk Bank Two', last4: '4321', ingestFromDate: isoDaysAgo(60) });
+    await createSender(api);
+    await connectGmail(api, identity);
+    await waitForGmailJobsIdle(api);
+    await registerMailbox(identity, [numbered, loose]);
+    await scriptExtractions(api, [
+      extractionFor(numbered, { json: extractedTxn({ amount: 120, date: isoDaysAgo(4), last4: '5560', merchant: 'BULK GROUPED' }) }),
+      extractionFor(loose, {
+        json: { isTransaction: true, amount: 80, currency: 'INR', direction: 'DEBIT', date: isoDaysAgo(3), description: 'BULK LOOSE', confidence: 0.92 },
+      }),
+    ]);
+  });
+
+  test.afterAll(async () => {
+    await resetLlm(api);
+    await cleanupIdentity(identity);
+  });
+
+  test('the Settings badge, the Inbox row and the card header share one total; the summary can be limited to individual emails', async () => {
+    test.slow();
+    await runSync(api);
+    const g = await groups();
+    expect(g.unknownNumbers.map((n) => n.last4)).toEqual(['5560']);
+    // 1 unknown-number group + 1 individual email.
+    expect(g.total).toBe(2);
+    expect(await inboxCount()).toBe(g.total);
+
+    expect(await summaryOf(false)).toEqual({ NO_ACCOUNT: 2 });
+    expect(await summaryOf(true)).toEqual({ NO_ACCOUNT: 1 });
+    const byReason = await api.GET('/api/v1/gmail/attention/ungrouped', { params: { query: { page: 0, size: 20, includeRetryable: false, reason: 'NO_ACCOUNT' } } });
+    expect(byReason.data?.content.map((i) => i.extractedLast4)).toEqual([null]);
+    const other = await api.GET('/api/v1/gmail/attention/ungrouped', { params: { query: { page: 0, size: 20, includeRetryable: false, reason: 'NO_AI_KEY' } } });
+    expect(other.data?.content).toHaveLength(0);
+  });
+
+  test('Archive all on a reason (ungrouped only) leaves the unknown-number group untouched', async () => {
+    const res = await api.POST('/api/v1/gmail/attention/archive-all', { body: { reason: 'NO_ACCOUNT', ungroupedOnly: true } });
+    expectStatus(res, 200);
+    expect(res.data?.affected).toBe(1);
+
+    const g = await groups();
+    expect(g.unknownNumbers.map((n) => [n.last4, n.count])).toEqual([['5560', 1]]);
+    expect(g.total).toBe(1);
+    expect(await inboxCount()).toBe(1);
+    expect(await summaryOf(true)).toEqual({});
+    const archived = await archivedAttentionItems(api);
+    expect(archived.map((i) => i.extractedLast4)).toEqual([null]);
+
+    // Nothing individual is left, so a second Retry all / Archive all on the reason does nothing.
+    const again = await api.POST('/api/v1/gmail/attention/retry-all', { body: { reason: 'NO_ACCOUNT', ungroupedOnly: true } });
+    expect(again.data?.affected).toBe(0);
+    expect((await groups()).unknownNumbers).toHaveLength(1);
   });
 });
 

@@ -11,7 +11,7 @@ import { keys } from '@/lib/query/keys';
 
 import type { AttentionGroupModel, AttentionItem } from './attentionItemModel';
 import { AttentionItemRow } from './AttentionItemRow';
-import { loadGmailAttention } from './gmailActions';
+import { loadGmailUngrouped } from './gmailActions';
 
 const PAGE_SIZE = 10;
 
@@ -25,13 +25,13 @@ interface AttentionGroupProps {
   onArchiveAll: () => void;
 }
 
-/** One reason's heading with its bulk actions, and its rows (first page, then "Show more"). */
+/** One reason's heading (emails in no group only) with its bulk actions, and its rows (first page, then "Show more"). */
 export function AttentionGroup({ group, onRetryAll, onArchiveAll, ...rowHandlers }: AttentionGroupProps) {
   const [size, setSize] = useState(PAGE_SIZE);
   const params = { page: 0, size, includeRetryable: false, reason: group.reason };
   const { data } = useQuery({
-    queryKey: keys.settings.gmailAttention(params),
-    queryFn: () => unwrapAction(loadGmailAttention(params)),
+    queryKey: keys.settings.gmailAttention({ ungrouped: true, ...params }),
+    queryFn: () => unwrapAction(loadGmailUngrouped(params)),
     placeholderData: keepPreviousData,
   });
   const rows = data?.content ?? [];

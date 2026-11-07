@@ -26,7 +26,7 @@ export interface HolderStats {
   cards?: CardStat[];
 }
 
-export type HolderMenuId = 'edit' | 'reassign' | 'addCard' | 'close' | 'reopen' | 'delete';
+export type HolderMenuId = 'edit' | 'reassign' | 'addCard' | 'addPastCard' | 'close' | 'reopen' | 'delete';
 
 export interface HolderMenuItem {
   id: HolderMenuId;
@@ -171,6 +171,7 @@ export function holderMenu(holder: Cardholder, today: string): HolderMenuItem[] 
   items.push({ id: 'edit', label: 'Edit details' });
   items.push({ id: 'reassign', label: 'Reassign transactions' });
   if (!closed && !activePlastic(holder)) items.push({ id: 'addCard', label: 'Add a card' });
+  if (!closed) items.push({ id: 'addPastCard', label: 'Add a past card' });
   if (!closed && addon) items.push({ id: 'close', label: 'Close cardholder' });
   if (addon && !holder.transactionCount) {
     items.push({ id: 'delete', label: 'Delete cardholder', tone: 'danger', separatorBefore: true });

@@ -183,3 +183,17 @@ describe('statementPasswordAccounts', () => {
     expect(statementPasswordAccounts([])).toEqual([]);
   });
 });
+
+describe('attention number groups', () => {
+  it('reports the outcome of adding a number', async () => {
+    const { assignToast } = await import('./attentionItemModel');
+    expect(assignToast('3003', 'HDFC Savings', { reactivatedCount: 63, skippedCount: 0 })).toBe('Added ••3003 to HDFC Savings · 63 emails settled');
+    expect(assignToast('3003', 'HDFC Savings', { reactivatedCount: 1, skippedCount: 2 })).toBe('Added ••3003 to HDFC Savings · 1 email settled · 2 skipped');
+  });
+
+  it('titles a number with its bank name, or Unknown bank', async () => {
+    const { numberTitle } = await import('./attentionItemModel');
+    expect(numberTitle({ bank: 'hdfc', last4: '3003' })).toBe('HDFC Bank ••3003');
+    expect(numberTitle({ bank: null, last4: '3003' })).toBe('Unknown bank ••3003');
+  });
+});

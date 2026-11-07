@@ -2,7 +2,13 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { loadGmailAttention, loadGmailAttentionSummary, loadGmailConnections, loadGmailSenders } from '@/features/settings/connections/gmailActions';
+import {
+  loadGmailAttentionGroups,
+  loadGmailAttentionSummary,
+  loadGmailConnections,
+  loadGmailSenders,
+  loadGmailUngrouped,
+} from '@/features/settings/connections/gmailActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 
@@ -10,7 +16,7 @@ interface UseGmailQueriesOptions {
   archivedPage?: number;
 }
 
-/** The reads GmailConnect needs: connections, sender allowlist, attention counts per reason, and the archived items. */
+/** The reads GmailConnect needs: connections, sender allowlist, the attention groups, the ungrouped count per reason and the archived emails. */
 export function useGmailQueries({ archivedPage = 0 }: UseGmailQueriesOptions) {
   const connectionsQuery = useQuery({
     queryKey: keys.settings.gmailConnection(),
@@ -22,28 +28,33 @@ export function useGmailQueries({ archivedPage = 0 }: UseGmailQueriesOptions) {
     queryFn: () => unwrapAction(loadGmailSenders()),
   });
 
-  // Active items load per reason group (see AttentionGroup); this is the count per reason.
-  const attentionQuery = useQuery({
-    queryKey: keys.settings.gmailAttention({ summary: true, includeRetryable: false }),
-    queryFn: () => unwrapAction(loadGmailAttentionSummary(false)),
+  // Unknown numbers, accounts with import off, and the ignored numbers.
+  const groupsQuery = useQuery({
+    queryKey: keys.settings.gmailAttention({ groups: true }),
+    queryFn: () => unwrapAction(loadGmailAttentionGroups()),
+  });
+
+  // Count per reason of the emails in no group; their rows load per reason (see AttentionGroup).
+  const ungroupedSummaryQuery = useQuery({
+    queryKey: keys.settings.gmailAttention({ summary: true, ungroupedOnly: true, includeRetryable: false }),
+    queryFn: () => unwrapAction(loadGmailAttentionSummary(false, true)),
   });
 
   // Archived items only feed the collapsed "Archived" section, so they stay out of `loading`.
   const archivedParams = { page: archivedPage, size: 10, includeRetryable: false, archived: true };
   const archivedQuery = useQuery({
-    queryKey: keys.settings.gmailAttention(archivedParams),
-    queryFn: () => unwrapAction(loadGmailAttention(archivedParams)),
+    queryKey: keys.settings.gmailAttention({ ungrouped: true, ...archivedParams }),
+    queryFn: () => unwrapAction(loadGmailUngrouped(archivedParams)),
   });
 
-  // Mirrors the original single `Promise.all` initial load: all three reads
-  // gate the same "loading" state (used to disable the Connect/Sync buttons
-  // until the page has something to show).
-  const loading = connectionsQuery.isLoading || sendersQuery.isLoading || attentionQuery.isLoading;
+  // The reads the page needs to show something gate "loading" (used to disable Connect/Sync).
+  const loading = connectionsQuery.isLoading || sendersQuery.isLoading || groupsQuery.isLoading || ungroupedSummaryQuery.isLoading;
 
   return {
     connections: connectionsQuery.data ?? [],
     senders: sendersQuery.data ?? [],
-    attentionSummary: attentionQuery.data ?? null,
+    attentionGroups: groupsQuery.data ?? null,
+    ungroupedSummary: ungroupedSummaryQuery.data ?? null,
     archivedData: archivedQuery.data ?? null,
     loading,
   };

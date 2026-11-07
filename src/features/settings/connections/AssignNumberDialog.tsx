@@ -1,0 +1,103 @@
+'use client';
+
+import React, { useRef, useState } from 'react';
+
+import { Banner } from '@/components/ds/Banner/Banner';
+import { Button } from '@/components/ds/Button/Button';
+import { Dialog } from '@/components/ds/Dialog/Dialog';
+import { Text } from '@/components/ds/Text/Text';
+import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
+import { loadAccountForm } from '@/features/accounts/form/ds/AccountDialogs';
+import { ACCOUNT_GROUP_ORDER } from '@/lib/accounts/accountGroups';
+import type { UnknownNumberGroup } from '@/lib/api/types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+
+import { numberTitle } from './attentionItemModel';
+import { useAssignNumber } from './useAssignNumber';
+
+const FORM_ID = 'assign-number-form';
+
+/** Pick the account an unknown number belongs to; its mail is settled and later mail with it lands there. */
+export function AssignNumberDialog({ group, onClose }: { group: UnknownNumberGroup | null; onClose: () => void }) {
+  const [creating, setCreating] = useState(false);
+  const created = useRef(false);
+  const done = () => {
+    setCreating(false);
+    onClose();
+  };
+  const a = useAssignNumber(group, done);
+  const { Component: AccountFormDialog, run, loading: loadingForm } = useLazyDialog(loadAccountForm);
+
+  return (
+    <>
+    <Dialog
+      open={group !== null && !creating}
+      onOpenChange={(open) => {
+        if (!open && !a.isPending) onClose();
+      }}
+    >
+      <Dialog.Content
+        size="sm"
+        dismissible={!a.isPending}
+        title="Add number to account"
+        secondary={{ label: 'Cancel', disabled: a.isPending, onSelect: onClose }}
+        primary={{
+          label: a.isPending ? 'Adding…' : 'Add to account',
+          type: 'submit',
+          form: FORM_ID,
+          disabled: a.isPending || !a.accountId,
+        }}
+      >
+        <Dialog.Body>
+          <form id={FORM_ID} noValidate className="flex flex-col gap-space-8 desk:gap-space-12" onSubmit={a.submit}>
+            <Text variant="body" tone="ink-2" as="p">
+              Emails for <strong>{group ? numberTitle(group) : ''}</strong> will be settled into this account, and later ones go there too.
+            </Text>
+            {a.errorMessage ? <Banner tone="danger">{a.errorMessage}</Banner> : null}
+            <AccountPicker
+              label="Target account"
+              value={a.accountId || null}
+              onValueChange={(v) => a.selectAccount(v ?? '')}
+              accounts={a.accounts}
+              types={ACCOUNT_GROUP_ORDER}
+              placeholder={a.loadingAccounts ? 'Loading accounts…' : 'Select an account'}
+              disabled={a.loadingAccounts || a.isPending}
+            />
+            <div>
+              <Text variant="label" as="span">
+                <Button
+                  variant="link"
+                  size="sm"
+                  type="button"
+                  disabled={a.isPending || loadingForm}
+                  onClick={() => {
+                    created.current = false;
+                    void run(() => setCreating(true));
+                  }}
+                >
+                  Create account
+                </Button>
+              </Text>
+            </div>
+          </form>
+        </Dialog.Body>
+      </Dialog.Content>
+    </Dialog>
+    {creating && AccountFormDialog && group ? (
+      <AccountFormDialog
+        prefillBank={group.bank ?? undefined}
+        prefillLast4={group.last4}
+        onCreated={(account) => {
+          created.current = true;
+          a.selectAccount(account.id);
+          void a.assignTo(account.id);
+        }}
+        onClose={() => {
+          // After a create the assign call finishes the flow; a cancel returns to the picker.
+          if (!created.current) setCreating(false);
+        }}
+      />
+    ) : null}
+    </>
+  );
+}

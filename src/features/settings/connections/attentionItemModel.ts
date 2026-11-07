@@ -1,7 +1,8 @@
 import type { AccountFocusField } from '@/features/accounts/form/ds/AccountFormFields';
+import { bankById } from '@/features/banks/banks';
 import { appHref } from '@/features/shell/routes';
 import { type Account, isAccountClosed } from '@/lib/account.types';
-import type { Schemas } from '@/lib/api/types';
+import type { AssignNumberGroupResponse, IgnoredNumber, ImportOffGroup, Schemas, UnknownNumberGroup } from '@/lib/api/types';
 import { AccountType } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
@@ -164,4 +165,52 @@ export function attentionEditTarget(item: Pick<AttentionItem, 'reason' | 'accoun
 /** The accounts a locked statement's password can belong to: open bank accounts and cards. The user picks one; nothing is guessed. */
 export function statementPasswordAccounts(accounts: readonly Account[]): Account[] {
   return accounts.filter((a) => (a.type === AccountType.BANK_ACCOUNT || a.type === AccountType.CREDIT_CARD) && !isAccountClosed(a));
+}
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/** "May 2021" for a timestamp. */
+export function monthYear(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+}
+
+/** "May 2021 – Apr 2025", or one month when both ends fall in it. */
+function monthSpan(first: string, last: string): string {
+  const a = monthYear(first);
+  const b = monthYear(last);
+  return a === b ? a : `${a} – ${b}`;
+}
+
+/** "HDFC Bank ••3003": the bank's name from the catalog, "Unknown bank" when the mail named none. */
+export function numberTitle(group: { bank?: string | null; last4: string }): string {
+  const bank = group.bank ? (bankById(group.bank)?.name ?? group.bank) : 'Unknown bank';
+  return `${bank} ••${group.last4}`;
+}
+
+/** "63 emails · May 2021 – Apr 2025", plus "statements" when some are statements. */
+export function numberDetail(group: Pick<UnknownNumberGroup, 'count' | 'firstMail' | 'lastMail' | 'kinds'>): string {
+  const parts = [plural(group.count, 'email', 'emails'), monthSpan(group.firstMail, group.lastMail)];
+  if (group.kinds.includes('STATEMENT')) parts.push('statements');
+  return parts.join(' · ');
+}
+
+export function suggestionLine(group: Pick<UnknownNumberGroup, 'suggestion'>): string | null {
+  const s = group.suggestion;
+  return s ? `Matches ${s.accountName} (${s.matched} of ${s.total})` : null;
+}
+
+export function importOffDetail(group: Pick<ImportOffGroup, 'count' | 'firstMail' | 'lastMail'>): string {
+  return `${plural(group.count, 'email', 'emails')} waiting · ${monthSpan(group.firstMail, group.lastMail)}`;
+}
+
+export function ignoredDetail(row: Pick<IgnoredNumber, 'count'>): string {
+  return `${plural(row.count, 'email', 'emails')} kept out of Needs attention`;
+}
+
+/** "Added ••3003 to HDFC Savings · 63 emails settled" (with how many were skipped, when any). */
+export function assignToast(last4: string, accountName: string, res: Pick<AssignNumberGroupResponse, 'reactivatedCount' | 'skippedCount'> | null): string {
+  const settled = res?.reactivatedCount ?? 0;
+  const skipped = res?.skippedCount ?? 0;
+  return `Added ••${last4} to ${accountName} · ${plural(settled, 'email', 'emails')} settled${skipped > 0 ? ` · ${skipped} skipped` : ''}`;
 }

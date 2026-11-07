@@ -7,10 +7,12 @@ import { Card } from '@/components/ds/Card/Card';
 import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
 import { Pager } from '@/components/ds/Pager/Pager';
 import { Text } from '@/components/ds/Text/Text';
-import type { Schemas } from '@/lib/api/types';
+import type { AttentionGroupsResponse, IgnoredNumber, Schemas, UnknownNumberGroup } from '@/lib/api/types';
 
 import { AssignDialog } from './AssignDialog';
+import { AssignNumberDialog } from './AssignNumberDialog';
 import { AttentionGroup } from './AttentionGroup';
+import { IgnoredNumberRow, ImportOffRow, UnknownNumberRow } from './AttentionGroupRows';
 import { type AttentionItem, type AttentionReason, type AttentionReasonCount, groupAttention, REASON_LABELS } from './attentionItemModel';
 import { AttentionItemRow } from './AttentionItemRow';
 
@@ -20,8 +22,10 @@ type PagedAttention = Schemas['PageGmailAttentionItemResponse'];
 export const ATTENTION_ANCHOR = 'attention';
 
 interface AttentionCardProps {
-  /** Count per reason (zero-count reasons omitted); the active list is grouped by it. */
-  summary: AttentionReasonCount[];
+  /** Unknown numbers, accounts with import off, and ignored numbers. */
+  groups: AttentionGroupsResponse;
+  /** Count per reason of the emails in no group (zero-count reasons omitted); they are listed per reason. */
+  ungroupedSummary: AttentionReasonCount[];
   archivedData: PagedAttention | null;
   archivedPage: number;
   onArchivedPageChange: (page: number) => void;
@@ -30,6 +34,8 @@ interface AttentionCardProps {
   onUnarchive: (ledgerId: string) => void;
   onRetryAll: (reason: AttentionReason) => void;
   onArchiveAll: (reason: AttentionReason) => void;
+  onIgnoreNumber: (group: UnknownNumberGroup) => void;
+  onUnignoreNumber: (row: IgnoredNumber) => void;
   /** Opened from the "needs attention" push: scroll the card into view. */
   autoScroll?: boolean;
 }
@@ -61,7 +67,8 @@ function ListPager({
 
 /** Gmail emails that could not become transactions, with an Archived view in the same card. */
 export function AttentionCard({
-  summary,
+  groups,
+  ungroupedSummary,
   archivedData,
   archivedPage,
   onArchivedPageChange,
@@ -70,20 +77,28 @@ export function AttentionCard({
   onUnarchive,
   onRetryAll,
   onArchiveAll,
+  onIgnoreNumber,
+  onUnignoreNumber,
   autoScroll = false,
 }: AttentionCardProps) {
   const [assigning, setAssigning] = useState<AttentionItem | null>(null);
+  const [addingNumber, setAddingNumber] = useState<UnknownNumberGroup | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
 
-  const groups = groupAttention(summary);
-  const activeCount = groups.reduce((n, g) => n + g.count, 0);
+  const reasonGroups = groupAttention(ungroupedSummary);
+  const ungroupedCount = reasonGroups.reduce((n, g) => n + g.count, 0);
+  const activeCount = groups.unknownNumbers.length + groups.importOff.length + ungroupedCount;
   const [confirmArchive, setConfirmArchive] = useState<AttentionReason | null>(null);
   const archivedCount = archivedData?.totalElements ?? 0;
+  const ignoredCount = groups.ignored.length;
+  const hasArchive = archivedCount > 0 || ignoredCount > 0;
   // An emptied archive resets the view, so a later archive does not open it unasked.
-  if (showArchived && archivedCount === 0) setShowArchived(false);
+  if (showArchived && !hasArchive) setShowArchived(false);
   // Unarchiving the last item empties the archive: fall back to the active list.
-  const archivedView = showArchived && archivedCount > 0 && archivedData !== null;
+  const archivedView = showArchived && hasArchive;
+  // Ignored numbers' mail is in the archived list too, so the label counts those emails once.
+  const archiveTotal = archivedCount || ignoredCount;
 
   useEffect(() => {
     if (autoScroll) cardRef.current?.scrollIntoView({ block: 'start' });
@@ -97,7 +112,7 @@ export function AttentionCard({
         ref={cardRef}
         id={ATTENTION_ANCHOR}
         className="scroll-mt-4"
-        title={archivedView ? `Archived · ${archivedCount}` : activeCount > 0 ? `Needs attention · ${activeCount}` : 'Needs attention'}
+        title={archivedView ? `Archived · ${archiveTotal}` : activeCount > 0 ? `Needs attention · ${activeCount}` : 'Needs attention'}
         subtitle={archivedView ? 'Kept out of Needs attention' : 'Emails that could not become transactions'}
         action={
           archivedView ? (
@@ -106,10 +121,10 @@ export function AttentionCard({
                 Back to needs attention
               </Button>
             </Text>
-          ) : archivedCount > 0 ? (
+          ) : hasArchive ? (
             <Text variant="label" as="span">
               <Button variant="link" size="sm" onClick={() => setShowArchived(true)}>
-                Archived · {archivedCount}
+                Archived · {archiveTotal}
               </Button>
             </Text>
           ) : undefined
@@ -117,24 +132,55 @@ export function AttentionCard({
       >
         {archivedView ? (
           <>
-            <ListPager data={archivedData} page={archivedPage} onPageChange={onArchivedPageChange} position="top" />
-            {archivedData.content.map((item) => (
-              <AttentionItemRow key={item.id} item={item} {...rowHandlers} />
-            ))}
-            <ListPager data={archivedData} page={archivedPage} onPageChange={onArchivedPageChange} position="bottom" />
+            {ignoredCount > 0 ? (
+              <>
+                <Card.Section>Ignored numbers · {ignoredCount}</Card.Section>
+                {groups.ignored.map((row) => (
+                  <IgnoredNumberRow key={row.id} row={row} onStop={onUnignoreNumber} />
+                ))}
+              </>
+            ) : null}
+            {archivedData && archivedCount > 0 ? (
+              <>
+                {ignoredCount > 0 ? <Card.Section>Archived emails · {archivedCount}</Card.Section> : null}
+                <ListPager data={archivedData} page={archivedPage} onPageChange={onArchivedPageChange} position="top" />
+                {archivedData.content.map((item) => (
+                  <AttentionItemRow key={item.id} item={item} {...rowHandlers} />
+                ))}
+                <ListPager data={archivedData} page={archivedPage} onPageChange={onArchivedPageChange} position="bottom" />
+              </>
+            ) : null}
           </>
-        ) : groups.length === 0 ? (
+        ) : activeCount === 0 ? (
           <Card.Empty>Nothing needs attention right now.</Card.Empty>
         ) : (
-          groups.map((group) => (
-            <AttentionGroup
-              key={group.reason}
-              group={group}
-              {...rowHandlers}
-              onRetryAll={() => onRetryAll(group.reason)}
-              onArchiveAll={() => setConfirmArchive(group.reason)}
-            />
-          ))
+          <>
+            {groups.unknownNumbers.length > 0 ? (
+              <section data-testid="attention-numbers">
+                <Card.Section>Unknown numbers · {groups.unknownNumbers.length}</Card.Section>
+                {groups.unknownNumbers.map((g) => (
+                  <UnknownNumberRow key={`${g.bank ?? ''}:${g.last4}`} group={g} onAdd={setAddingNumber} onIgnore={onIgnoreNumber} />
+                ))}
+              </section>
+            ) : null}
+            {groups.importOff.length > 0 ? (
+              <section data-testid="attention-import-off-group">
+                <Card.Section>Gmail import off · {groups.importOff.length}</Card.Section>
+                {groups.importOff.map((g) => (
+                  <ImportOffRow key={g.accountId} group={g} />
+                ))}
+              </section>
+            ) : null}
+            {reasonGroups.map((group) => (
+              <AttentionGroup
+                key={group.reason}
+                group={group}
+                {...rowHandlers}
+                onRetryAll={() => onRetryAll(group.reason)}
+                onArchiveAll={() => setConfirmArchive(group.reason)}
+              />
+            ))}
+          </>
         )}
       </Card>
 
@@ -152,6 +198,7 @@ export function AttentionCard({
       />
 
       <AssignDialog item={assigning} onClose={() => setAssigning(null)} />
+      <AssignNumberDialog group={addingNumber} onClose={() => setAddingNumber(null)} />
     </>
   );
 }

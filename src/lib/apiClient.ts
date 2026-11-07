@@ -588,6 +588,13 @@ export const cardholdersApi = {
   },
   addCard: async (accountId: string, cardholderId: string, body: CreateCardRequest): Promise<Cardholder> =>
     cardholdersApi.createCard(accountId, cardholderId, body),
+  /** When a card number shows up in the account's mail and transactions: firstSeen/lastSeen and the counts. */
+  seenDates: async (accountId: string, last4: string) => {
+    const { data } = await serverApi.GET('/api/v1/accounts/{accountId}/cards/seen-dates', {
+      params: { path: { accountId }, query: { last4 } },
+    });
+    return data ?? null;
+  },
   replaceCard: async (accountId: string, cardholderId: string, cardId: string, body: ReplaceCardRequest): Promise<Cardholder> => {
     const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}/replace', {
       params: { path: { accountId, cardholderId, cardId } },
@@ -1757,6 +1764,11 @@ export const gmailApi = {
   getAttentionItems: async (page = 0, size = 20, includeRetryable = false): Promise<PagedGmailAttention> => {
     const { data } = await serverApi.GET('/api/v1/gmail/attention', { params: { query: { page, size, includeRetryable } } });
     return data! as PagedGmailAttention;
+  },
+  /** What the Needs-attention card header counts: unknown-number groups + import-off accounts + ungrouped emails. */
+  getAttentionTotal: async (): Promise<number> => {
+    const { data } = await serverApi.GET('/api/v1/gmail/attention/groups');
+    return data!.total;
   },
   retryAttentionItem: async (ledgerId: string): Promise<EnqueueResponse> => {
     const { data } = await serverApi.POST('/api/v1/gmail/attention/{ledgerId}/retry', { params: { path: { ledgerId } } });

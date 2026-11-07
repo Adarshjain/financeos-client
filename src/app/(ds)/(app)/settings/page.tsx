@@ -21,7 +21,7 @@ export default async function DsSettingsPage() {
       user={user}
       appLock={appLock}
       values={{
-        attentionCount: optional(gmailApi.getAttentionItems(0, 1, false).then((a) => a.totalElements)),
+        attentionCount: optional(gmailApi.getAttentionTotal()),
         aiKeyCount: optional(llmKeysApi.list().then((k) => k.length)),
       }}
     />
