@@ -10,12 +10,12 @@ function monthYear(iso: string): string {
   return `${MONTHS[Number(m) - 1]} ${y}`;
 }
 
-/** "NPS account found in Gmail (••1234, Ravi) · 3 statements · Jan 2025 – Mar 2025. Whose is it?" */
-export function detectionText(d: NpsDetection): string {
-  const who = [`••${d.pranLast4}`, d.holderName || null].filter(Boolean).join(', ');
+/** "PRAN ••1234, Ravi · 3 statements · Jan 2025 – Mar 2025. Whose is it?" (holder and range left out when absent) */
+export function detectionDetails(d: NpsDetection): string {
+  const who = `PRAN ${[`••${d.pranLast4}`, d.holderName || null].filter(Boolean).join(', ')}`;
   const count = `${d.statementCount} ${d.statementCount === 1 ? 'statement' : 'statements'}`;
   const range = d.firstPeriodStart && d.lastPeriodEnd ? ` · ${monthYear(d.firstPeriodStart)} – ${monthYear(d.lastPeriodEnd)}` : '';
-  return `NPS account found in Gmail (${who}) · ${count}${range}. Whose is it?`;
+  return `${who} · ${count}${range}. Whose is it?`;
 }
 
 /** "Importing 3 statements…" */

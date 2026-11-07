@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import { detectionText, importingMessage, lockedText, unlockMessage } from './npsGmailModel';
+import { detectionDetails, importingMessage, lockedText, unlockMessage } from './npsGmailModel';
 
 const base = { key: 'k1', pranLast4: '1234', statementCount: 3 };
 
-describe('detectionText', () => {
+describe('detectionDetails', () => {
   it('names the PRAN, holder, count and months', () => {
-    expect(detectionText({ ...base, holderName: 'Ravi', firstPeriodStart: '2025-01-01', lastPeriodEnd: '2025-03-31' })).toBe(
-      'NPS account found in Gmail (••1234, Ravi) · 3 statements · Jan 2025 – Mar 2025. Whose is it?',
+    expect(detectionDetails({ ...base, holderName: 'Ravi', firstPeriodStart: '2025-01-01', lastPeriodEnd: '2025-03-31' })).toBe(
+      'PRAN ••1234, Ravi · 3 statements · Jan 2025 – Mar 2025. Whose is it?',
     );
   });
   it('copes with no holder, no dates and one statement', () => {
-    expect(detectionText({ ...base, statementCount: 1 })).toBe('NPS account found in Gmail (••1234) · 1 statement. Whose is it?');
+    expect(detectionDetails({ ...base, statementCount: 1 })).toBe('PRAN ••1234 · 1 statement. Whose is it?');
   });
 });
 

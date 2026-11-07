@@ -47,7 +47,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('tab').nth(2)).toHaveText(/^NPS/);
       await page.getByRole('tab', { name: /^NPS/ }).click();
       await page.waitForURL('**/investments/nps');
-      await expect(page.getByText('No NPS yet')).toBeVisible();
+      await expect(page.getByText('Track your NPS')).toBeVisible();
       await expect(page.getByRole('link', { name: 'Upload statement' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Add by hand' })).toBeVisible();
     });

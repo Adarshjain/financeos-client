@@ -8,6 +8,7 @@ import { GRID_GAP } from '@/components/ds/gridGap';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
 import { loadNpsAccountDialog } from '../lazyDialogs';
+import { NpsDetectedAccounts } from './NpsDetectedAccounts';
 import { NpsEntriesCard } from './NpsEntriesCard';
 import { NpsBanners, NpsHero } from './NpsFigures';
 import { NpsGmailBanners } from './NpsGmailBanners';
@@ -56,18 +57,27 @@ export function NpsScreen(props: NpsScreenProps) {
   const accountDialogNode =
     accountDialog && add.Component ? <add.Component account={accountDialog === 'edit' ? account : null} allocation={summary.allocation} onClose={() => setAccountDialog(null)} /> : null;
 
+  const emptyState = (
+    <EmptyState
+      className="flex-1"
+      title="Track your NPS"
+      description="Upload your NPS statement to bring in every contribution, charge and switch, or add your balance by hand."
+      action={{ label: 'Upload statement', variant: 'primary', href: NPS_UPLOAD_HREF }}
+      secondaryAction={{ label: 'Add by hand', onSelect: () => void add.run(() => setAccountDialog('new')) }}
+    />
+  );
+
   if (!account || !card) {
     return (
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
-        <NpsGmailBanners detections={summary.pendingGmail} locked={summary.lockedGmail} failed={summary.failedGmail} />
-        <Card>
-          <EmptyState
-            title="No NPS yet"
-            description="Upload your NPS statement to bring in every contribution, charge and switch, or add your balance by hand."
-            action={{ label: 'Upload statement', variant: 'primary', href: NPS_UPLOAD_HREF }}
-            secondaryAction={{ label: 'Add by hand', onSelect: () => void add.run(() => setAccountDialog('new')) }}
-          />
-        </Card>
+        <NpsGmailBanners locked={summary.lockedGmail} failed={summary.failedGmail} />
+        {summary.pendingGmail.length > 0 ? (
+          <NpsDetectedAccounts detections={summary.pendingGmail}>
+            <Card.Row>{emptyState}</Card.Row>
+          </NpsDetectedAccounts>
+        ) : (
+          <Card>{emptyState}</Card>
+        )}
         {accountDialogNode}
       </div>
     );
@@ -77,7 +87,8 @@ export function NpsScreen(props: NpsScreenProps) {
     <>
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <NpsHero figures={figures} />
-        <NpsGmailBanners detections={summary.pendingGmail} locked={summary.lockedGmail} failed={summary.failedGmail} />
+        <NpsGmailBanners locked={summary.lockedGmail} failed={summary.failedGmail} />
+        {summary.pendingGmail.length > 0 ? <NpsDetectedAccounts detections={summary.pendingGmail} /> : null}
         <NpsBanners flags={summary.flags} uploadHref={NPS_UPLOAD_HREF} statementEnd={account.latestStatementEnd} frozenAsOf={account.tier1Status === 'FROZEN' ? (account.tier1StatusAsOf ?? null) : undefined} />
         <div className={`grid grid-cols-1 desk:grid-cols-3 items-start ${GRID_GAP}`}>
           <div className="desk:col-span-2 min-w-0 flex flex-col gap-space-8 desk:gap-space-16">
