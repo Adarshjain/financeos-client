@@ -5637,6 +5637,7 @@ export interface components {
             /** @enum {string} */
             as: "OLDER_NUMBER" | "ADDON" | "OPEN_CARD" | "DEBIT_CARD" | "ALIAS";
             holderName?: string;
+            pastCard?: components["schemas"]["PastCardRequest"];
             /** @enum {string} */
             relationship?: "SELF" | "SPOUSE" | "PARENT" | "CHILD" | "SIBLING" | "OTHER";
         };

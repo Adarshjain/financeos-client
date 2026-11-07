@@ -113,4 +113,44 @@ test.describe('Account suggestion answers API (@api)', () => {
     expect(unknown.response.status).toBe(404);
     await clearAccountDetect(api);
   });
+
+  test('belongs: a debit-card number is saved as an old closed card, with the mail dates or the given ones', async ({ request }) => {
+    const { api } = await newUser(request, 'sugg-old-debit');
+    const bank = await createBankAccount(api, { name: 'HDFC Savings', bank: 'hdfc', last4: '1123' } as never);
+    await seedAccountDetect(api, {
+      entities: [
+        entity({ kind: 'DEBIT_CARD', last4: '3003', first: '2022-06-01', last: '2023-02-15' }),
+        entity({ kind: 'DEBIT_CARD', last4: '3004', first: '2022-06-01', last: '2023-02-15' }),
+        entity({ kind: 'ACCOUNT', last4: '7777' }),
+      ],
+    });
+    const rows = await items(api);
+    const byLast4 = (l4: string) => rows.find((r) => r.last4 === l4)!;
+
+    // a bank account number can never be an old card
+    const refused = await api.POST('/api/v1/account-suggestions/{id}/belongs', {
+      params: { path: { id: byLast4('7777').id } },
+      body: { accountId: bank.id, as: 'OLDER_NUMBER' },
+    });
+    expect(refused.response.status).toBe(400);
+
+    // no pastCard: dates come from the first and last mail
+    const plain = await api.POST('/api/v1/account-suggestions/{id}/belongs', {
+      params: { path: { id: byLast4('3003').id } },
+      body: { accountId: bank.id, as: 'OLDER_NUMBER' },
+    });
+    expectStatus(plain, 204);
+    // pastCard: the user's dates are used
+    const dated = await api.POST('/api/v1/account-suggestions/{id}/belongs', {
+      params: { path: { id: byLast4('3004').id } },
+      body: { accountId: bank.id, as: 'OLDER_NUMBER', pastCard: { issuedOn: '2021-01-02', closedOn: '2023-03-04' } },
+    });
+    expectStatus(dated, 204);
+
+    const holders = await api.GET('/api/v1/accounts/{accountId}/cardholders', { params: { path: { accountId: bank.id } } });
+    const cards = holders.data!.flatMap((h) => h.cards);
+    expect(cards.find((c) => c.last4 === '3003')).toMatchObject({ isOpen: false, issuedOn: '2022-06-01', closedOn: '2023-02-15' });
+    expect(cards.find((c) => c.last4 === '3004')).toMatchObject({ isOpen: false, issuedOn: '2021-01-02', closedOn: '2023-03-04' });
+    await clearAccountDetect(api);
+  });
 });

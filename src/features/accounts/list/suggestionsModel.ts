@@ -136,9 +136,9 @@ export function suggestionTitle(item: SuggestionItem): string {
   }
 }
 
-/** An older credit card number whose account is known: the server's guess that it is a past number of that card. */
+/** An older credit or debit card number whose account is known: the server's guess that it is a past number of that card. */
 export function isOlderNumberGuess(item: Pick<SuggestionItem, 'kind' | 'band' | 'parentAccount' | 'candidateAccount'>): boolean {
-  return item.kind === 'CREDIT_CARD' && item.band === 'OLDER' && !!item.parentAccount && !item.candidateAccount;
+  return (item.kind === 'CREDIT_CARD' || item.kind === 'DEBIT_CARD') && item.band === 'OLDER' && !!item.parentAccount && !item.candidateAccount;
 }
 
 export function suggestionSecondLine(item: SuggestionItem): string {

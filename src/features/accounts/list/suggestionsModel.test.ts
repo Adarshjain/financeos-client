@@ -9,6 +9,7 @@ import {
   foundBandLabel,
   foundRowSub,
   fromEmailsLine,
+  isOlderNumberGuess,
   isScanProgressShown,
   maybeBandLabel,
   mergeSuggestions,
@@ -166,6 +167,18 @@ describe('Found in your email card', () => {
     expect(foundRowSub(suggestionRow(isThis))).toBe('From your HDFC Bank emails · ••4321. Is this your Axis Magnus?');
     const older = item({ band: 'OLDER', parentAccount: { id: 'c1', name: 'HDFC Regalia', last4: '1111' } });
     expect(foundRowSub(suggestionRow(older))).toBe('From your HDFC Bank emails · ••4321. Older number on HDFC Regalia?');
+  });
+
+  it('asks the older-number question for an older debit card with one known bank account', () => {
+    const debit = item({ kind: 'DEBIT_CARD', band: 'OLDER', last4: '3003', parentAccount: { id: 'b1', name: 'HDFC Savings', last4: '1123' } });
+    expect(isOlderNumberGuess(debit)).toBe(true);
+    const row = suggestionRow(debit);
+    expect(row.olderOn).toEqual({ accountId: 'b1', accountName: 'HDFC Savings' });
+    expect(foundRowSub(row)).toBe('From your HDFC Bank emails · ••3003. Older number on HDFC Savings?');
+    expect(isOlderNumberGuess({ ...debit, band: 'FOUND' })).toBe(false);
+    expect(isOlderNumberGuess({ ...debit, parentAccount: null })).toBe(false);
+    expect(isOlderNumberGuess({ ...debit, candidateAccount: { id: 'b2', name: 'Other' } as SuggestionItem['candidateAccount'] })).toBe(false);
+    expect(isOlderNumberGuess({ ...debit, kind: 'BANK_ACCOUNT' })).toBe(false);
   });
 
   it('uses the email count and date for a question row with no number', () => {

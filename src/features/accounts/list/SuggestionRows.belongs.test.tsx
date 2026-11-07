@@ -22,6 +22,7 @@ vi.mock('@/components/ds/Toast/Toast', async (orig) => ({ ...(await orig<typeof 
 
 import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
+import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { FoundInEmailCard } from './FoundInEmailCard';
 import { type SectionSuggestions, type SuggestionItem, suggestionRow } from './suggestionsModel';
@@ -74,7 +75,7 @@ describe('Part of another account', () => {
   });
 
   it('opens the Where does it belong dialog', async () => {
-    render(<FoundInEmailCard suggestions={sugg('found', item())} />);
+    renderWithQuery(<FoundInEmailCard suggestions={sugg('found', item())} />);
     await user.click(screen.getAllByRole('button', { name: 'Part of another account' })[0]);
     expect(await screen.findByText('Where does ••4321 belong?')).toBeInTheDocument();
   });
@@ -97,6 +98,15 @@ describe('Older number question', () => {
     await waitFor(() => expect(actions.saveBelongs).toHaveBeenCalledWith('s1', { accountId: 'c1', as: 'OLDER_NUMBER' }));
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
     expect(toast).toHaveBeenCalledWith('Saved ••4321 on HDFC Regalia');
+  });
+
+  it('Yes on an older debit card files it as an older number on the bank account', async () => {
+    const debit = item({ kind: 'DEBIT_CARD', band: 'OLDER', parentAccount: { id: 'b1', name: 'HDFC Savings', last4: '1123' } });
+    render(<FoundInEmailCard suggestions={sugg('older', debit, [{ ...regalia, id: 'b1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT } as Account])} />);
+    await showBand('older');
+    expect(screen.getAllByText(/Older number on HDFC Savings\?$/).length).toBeGreaterThan(0);
+    await user.click(screen.getAllByRole('button', { name: 'Yes' })[0]);
+    await waitFor(() => expect(actions.saveBelongs).toHaveBeenCalledWith('s1', { accountId: 'b1', as: 'OLDER_NUMBER' }));
   });
 
   it('No declines the link and refreshes without a toast', async () => {
