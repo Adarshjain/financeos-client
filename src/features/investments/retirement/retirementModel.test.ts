@@ -72,4 +72,10 @@ describe('retirementModel', () => {
     expect(model.total).toBe(1533350);
     expect(retirementNetWorthTotal(model)).toBe(843210 + 594880);
   });
+
+  it('floors EPF and your own NPS each at zero in net worth, like the server', () => {
+    const model = retirementModel(epfSummary(), [employer()], npsSummary([npsAccount()]));
+    const negativeEpf = { ...model, rows: model.rows.map((r) => (r.kind === 'epf' ? { ...r, value: -5000 } : r)) };
+    expect(retirementNetWorthTotal(negativeEpf)).toBe(594880);
+  });
 });

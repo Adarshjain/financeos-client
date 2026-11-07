@@ -99,7 +99,10 @@ export function retirementModel(epf: EpfSummary, employers: EpfEmployer[], nps: 
 
 /** What net worth counts of retirement: EPF plus the holder's own NPS, the same set the server sums. */
 export function retirementNetWorthTotal(model: RetirementModel): number {
-  return model.rows.filter((r) => r.inNetWorth).reduce((sum, r) => sum + r.value, 0);
+  // The server floors EPF and the holder's NPS each at zero (NetWorthDatasource), so a negative ledger never lowers net worth.
+  const sumOf = (rows: RetirementRow[]) => Math.max(0, rows.reduce((sum, r) => sum + r.value, 0));
+  const counted = model.rows.filter((r) => r.inNetWorth);
+  return sumOf(counted.filter((r) => r.kind === 'epf')) + sumOf(counted.filter((r) => r.kind !== 'epf'));
 }
 
 export const EPF_UPLOAD_HREF = `${INVESTMENTS_IMPORT_HREF}?type=${EPF_IMPORT_TYPE}`;
