@@ -1,6 +1,8 @@
 import type { AccountFocusField } from '@/features/accounts/form/ds/AccountFormFields';
 import { appHref } from '@/features/shell/routes';
+import { type Account, isAccountClosed } from '@/lib/account.types';
 import type { Schemas } from '@/lib/api/types';
+import { AccountType } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
 export type AttentionItem = Schemas['PageGmailAttentionItemResponse']['content'][number];
@@ -157,4 +159,26 @@ export function attentionEditTarget(item: Pick<AttentionItem, 'reason' | 'accoun
   if (item.reason === 'LOCKED_STATEMENT') return { accountId: item.accountId, focusField: 'statementPassword' };
   if (item.reason === 'IMPORT_OFF') return { accountId: item.accountId, focusField: 'ingestFromDate' };
   return null;
+}
+
+export type LockedStatementTarget = { kind: 'open'; accountId: string } | { kind: 'pick'; accounts: Account[] } | { kind: 'none' };
+
+/** Which account a locked statement without a known account belongs to: opens it when the sender's last four or bank single one out, else asks among the likeliest accounts; 'none' when there is no open bank or card account at all. */
+export function lockedStatementTarget(item: Pick<AttentionItem, 'suggestedBankId' | 'suggestedLast4'>, accounts: readonly Account[]): LockedStatementTarget {
+  const candidates = accounts.filter((a) => (a.type === AccountType.BANK_ACCOUNT || a.type === AccountType.CREDIT_CARD) && !isAccountClosed(a));
+  if (candidates.length === 0) return { kind: 'none' };
+  const bankId = item.suggestedBankId ?? null;
+  const last4 = item.suggestedLast4 ?? null;
+  const bankOf = (a: Account) => (a as { bank?: string | null }).bank;
+  const sameBank = bankId ? candidates.filter((a) => bankOf(a) === bankId) : [];
+  if (last4) {
+    const byLast4 = candidates.filter((a) => (a as { last4?: string }).last4 === last4 && (!bankId || bankOf(a) === bankId));
+    if (byLast4.length === 1) return { kind: 'open', accountId: byLast4[0].id };
+  }
+  if (bankId) {
+    if (sameBank.length === 1) return { kind: 'open', accountId: sameBank[0].id };
+    return { kind: 'pick', accounts: sameBank.length >= 2 ? sameBank : candidates };
+  }
+  if (candidates.length === 1) return { kind: 'open', accountId: candidates[0].id };
+  return { kind: 'pick', accounts: candidates };
 }
