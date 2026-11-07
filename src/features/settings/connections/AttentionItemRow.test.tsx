@@ -151,10 +151,9 @@ describe('AttentionItemRow locked statement', () => {
     expect(screen.getByRole('link', { name: 'Set import date' })).toHaveAttribute('href', '/accounts');
   });
 
-  it('stays a link to /accounts without an account', () => {
+  it('without an account it is a button, not a link (the decision is in LockedStatementHint.test)', () => {
     renderRow(item({}));
-    expect(
-      screen.getByRole('link', { name: 'Add the statement password' })
-    ).toHaveAttribute('href', '/accounts');
+    expect(screen.queryByRole('link', { name: 'Add the statement password' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Add the statement password' })).toBeInTheDocument();
   });
 });
