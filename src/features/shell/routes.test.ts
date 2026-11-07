@@ -21,8 +21,11 @@ describe('appHref', () => {
     ['/accounts/abc-123/rewards', '/accounts/abc-123/rewards'],
     ['/accounts/abc-123/statements', '/accounts/abc-123/statements'],
     ['/settings', '/settings'],
-    ['/settings/activity', '/settings/activity'],
-    ['/settings/connections', '/settings/connections'],
+    ['/data-sources', '/data-sources'],
+    ['/data-sources/connections', '/data-sources/connections'],
+    ['/data-sources/imports?kind=epf_passbook', '/data-sources/imports?kind=epf_passbook'],
+    ['/data-sources/sync', '/data-sources/sync'],
+    ['/import', '/import'],
     ['/settings/ai', '/settings/ai'],
     ['/settings/notifications', '/settings/notifications'],
     ['/settings/debug', '/settings/debug'],
@@ -44,8 +47,10 @@ describe('appHref', () => {
 
   it.each([
     ['/settings/llm-keys', '/settings/ai'],
-    ['/settings/gmail', '/settings/connections'],
-    ['/settings/jobs', '/settings/activity'],
+    ['/settings/gmail', '/data-sources/connections'],
+    ['/settings/connections', '/data-sources/connections'],
+    ['/settings/jobs', '/data-sources/sync'],
+    ['/settings/activity', '/data-sources/sync'],
     ['/debug', '/settings/debug'],
     ['/rules', '/transactions/tags'],
     ['/rules/categories', '/transactions/tags'],
@@ -60,10 +65,10 @@ describe('appHref', () => {
   ])('maps the old path %s', (from, to) => expect(appHref(from)).toBe(to));
 
   it('keeps query strings and hashes', () => {
-    expect(appHref('/settings/activity?job=j1&type=X')).toBe('/settings/activity?job=j1&type=X');
+    expect(appHref('/settings/activity?job=j1&type=X')).toBe('/data-sources/sync?job=j1&type=X');
     expect(appHref('/accounts/a1/statements?statement=s1&fy=2025')).toBe('/accounts/a1/statements?statement=s1&fy=2025');
     expect(appHref('/debug?ref=r%201')).toBe('/settings/debug?ref=r%201');
-    expect(appHref('/settings/gmail?gmail=connected#top')).toBe('/settings/connections?gmail=connected#top');
+    expect(appHref('/settings/gmail?gmail=connected#top')).toBe('/data-sources/connections?gmail=connected#top');
     expect(appHref('/inbox#x')).toBe('/inbox#x');
     expect(appHref('/accounts?')).toBe('/accounts?');
   });
@@ -117,7 +122,8 @@ describe('rootRedirectFor', () => {
     expect(rootRedirectFor('/notifications', '?page=2')).toBe('/inbox/updates?page=2');
     expect(rootRedirectFor('/loans/lendings', '?q=a')).toBe('/lending?q=a');
     expect(rootRedirectFor('/loans/lendings/p-1', '?tab=x')).toBe('/lending/p-1?tab=x');
-    expect(rootRedirectFor('/settings/gmail', '?focus=attention')).toBe('/settings/connections?focus=attention');
+    expect(rootRedirectFor('/settings/gmail', '?focus=attention')).toBe('/data-sources/connections?focus=attention');
+    expect(rootRedirectFor('/settings/jobs', '?status=FAILED')).toBe('/data-sources/sync?status=FAILED');
   });
 
   it('sends Needs review to the filter', () => {

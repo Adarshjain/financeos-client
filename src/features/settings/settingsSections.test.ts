@@ -3,19 +3,18 @@ import { describe, expect, it } from 'vitest';
 import { activeSettingsSection, isSettingsIndex, settingsSection, settingsSections } from './settingsSections';
 
 describe('settingsSections', () => {
-  it('lists the five drill-in sections with their routes', () => {
+  it('lists the three drill-in sections with their routes', () => {
     expect(settingsSections.map((s) => [s.label, s.href])).toEqual([
       ['Notifications', '/settings/notifications'],
-      ['Connections', '/settings/connections'],
       ['AI', '/settings/ai'],
-      ['Activity', '/settings/activity'],
       ['Debug', '/settings/debug'],
     ]);
     expect(settingsSection('ai').label).toBe('AI');
   });
 
   it.each([
-    ['/settings/activity/', 'activity'],
+    ['/settings/connections', undefined],
+    ['/settings/activity', undefined],
     ['/settings/debug/deep', 'debug'],
     ['/settings/notifications', 'notifications'],
     ['/settings', undefined],

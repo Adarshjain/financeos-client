@@ -62,7 +62,7 @@ describe('NotificationsScreen', () => {
     renderWithQuery(<NotificationsScreen />);
     const rows = await screen.findAllByTestId('notification-row');
     fireEvent.click(rows[0]);
-    expect(push).toHaveBeenCalledWith('/settings/activity?job=j1');
+    expect(push).toHaveBeenCalledWith('/data-sources/sync?job=j1');
     push.mockClear();
     fireEvent.click(rows[1]);
     expect(push).not.toHaveBeenCalled();

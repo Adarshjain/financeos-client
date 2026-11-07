@@ -100,6 +100,10 @@ export type PushPublicKeyResponse = Schemas['PushPublicKeyResponse'];
 export type JobResponse = Schemas['JobResponse'];
 export type EnqueueResponse = Schemas['EnqueueResponse'];
 
+// Imports (the Data sources list)
+export type ImportRecordResponse = Schemas['ImportRecordResponse'];
+export type ImportKind = 'statement' | 'nps_statement' | 'epf_passbook' | 'broker';
+
 // Lending & Obligations
 export type LendingResponse = Schemas['LendingResponse'];
 export type CreateLendingRequest = Schemas['CreateLendingRequest'];

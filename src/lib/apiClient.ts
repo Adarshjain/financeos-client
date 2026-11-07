@@ -22,6 +22,7 @@ import type {
   BuiltinWidgetResponse,
   CardBillResponse,
   ErrorResponse,
+  ImportKind,
   InboxResponse,
   InboxSummaryResponse,
   NotificationFeedPage,
@@ -1114,6 +1115,11 @@ export const fnoApi = {
 };
 
 export const importsApi = {
+  /** Everything imported or held, newest first (`GET /api/v1/imports`), optionally one kind. */
+  list: async (params: { page?: number; size?: number; kind?: ImportKind }): Promise<Schemas['PageImportRecordResponse']> => {
+    const { data } = await serverApi.GET('/api/v1/imports', { params: { query: params } });
+    return data! as Schemas['PageImportRecordResponse'];
+  },
   preview: async (formData: FormData): Promise<ImportPreview> => investmentsApi.getImportPreview('', formData),
   commit: async (body: ImportCommitRequest): Promise<ImportCommitResult> => investmentsApi.commitImport(body),
   previewReconcile: async (formData: FormData): Promise<ReconcilePreview> => {

@@ -19,7 +19,7 @@ describe('rowButtons', () => {
       { id: 'mark_paid-0', label: 'Mark paid', variant: 'secondary', bill: 'mark_paid', disabled: false },
     ]);
     const reconnect = item({ key: 'c', kind: 'gmail_reconnect', actions: [nav('reconnect', 'Reconnect', '/settings/gmail')] });
-    expect(rowButtons(reconnect)[0]).toMatchObject({ label: 'Reconnect', variant: 'secondary', href: '/settings/connections' });
+    expect(rowButtons(reconnect)[0]).toMatchObject({ label: 'Reconnect', variant: 'secondary', href: '/data-sources/connections' });
   });
 
   it('mark paid with no statement is disabled', () => {
@@ -70,12 +70,12 @@ describe('rowButtons', () => {
 
   it('gmail attention reads Assign and goes to the connections page', () => {
     const row = item({ key: 'g', kind: 'gmail_attention', rowType: 'summary', actions: [nav('open', 'Open', '/settings/gmail?focus=attention')] });
-    expect(rowButtons(row)[0]).toMatchObject({ label: 'Assign', variant: 'link', href: '/settings/connections' });
+    expect(rowButtons(row)[0]).toMatchObject({ label: 'Assign', variant: 'link', href: '/data-sources/connections' });
   });
 
   it('a job row reads View and goes to Activity with the job id', () => {
-    const failed = item({ key: 'j1', kind: 'job', section: 'needs_look', refs: { jobId: 'job-1' }, actions: [nav('open', 'Open', '/settings/activity')] });
-    expect(rowButtons(failed)[0]).toMatchObject({ label: 'View', href: '/settings/activity?job=job-1' });
+    const failed = item({ key: 'j1', kind: 'job', section: 'needs_look', refs: { jobId: 'job-1' }, actions: [nav('open', 'Open', '/data-sources/sync')] });
+    expect(rowButtons(failed)[0]).toMatchObject({ label: 'View', href: '/data-sources/sync?job=job-1' });
   });
 
   it('reward rows read Rewards and go to the account rewards page, else the server href', () => {

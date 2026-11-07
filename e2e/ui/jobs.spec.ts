@@ -39,7 +39,7 @@ test.describe('Background Jobs UI (@ui)', () => {
     await setLlmMode(api, 'SCHEMA_DEFAULT');
   });
 
-  test('/settings/activity: list history, filter by status and type', async ({
+  test('/data-sources/sync: list history, filter by status and type', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -51,7 +51,7 @@ test.describe('Background Jobs UI (@ui)', () => {
       { filename: 'jobs-ui-test.pdf', buffer: pdf },
     ]);
 
-    await page.goto('/settings/activity');
+    await page.goto('/data-sources/sync');
 
     // 1. Verify the page: the Status and Type filter chips
     await expect(page.getByRole('button', { name: 'Status', exact: true })).toBeVisible({ timeout: 45000 });
@@ -83,7 +83,7 @@ test.describe('Background Jobs UI (@ui)', () => {
     await expect(jobRows.filter({ hasText: 'Succeeded' }).first()).toBeVisible();
   });
 
-  test('/settings/activity: retry a CANCELLED job from row action -> spawns new completing job', async ({
+  test('/data-sources/sync: retry a CANCELLED job from row action -> spawns new completing job', async ({
     page,
   }) => {
     // The retried job waits for the two big statements to free the worker slots
@@ -117,7 +117,7 @@ test.describe('Background Jobs UI (@ui)', () => {
       params: { path: { id: ruleJobId } },
     });
 
-    await page.goto('/settings/activity');
+    await page.goto('/data-sources/sync');
 
     const ruleRows = page.locator('[role="table"] [role="button"]').filter({ hasText: 'Rule apply' });
     const cancelledRow = ruleRows.filter({ hasText: 'Cancelled' });
@@ -139,7 +139,7 @@ test.describe('Background Jobs UI (@ui)', () => {
     await expect(ruleRows.filter({ hasText: 'Succeeded' })).toBeVisible({ timeout: 25000 });
   });
 
-  test('/settings/activity: cancel a RUNNING job from row action', async ({
+  test('/data-sources/sync: cancel a RUNNING job from row action', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -152,7 +152,7 @@ test.describe('Background Jobs UI (@ui)', () => {
     ]);
     const jobId = (uploadRes.data as { jobId: string }).jobId;
 
-    await page.goto(`/settings/activity?job=${jobId}`);
+    await page.goto(`/data-sources/sync?job=${jobId}`);
 
     // The job's result card shows its Cancel button while it is running
     const cancelBtn = page.getByTestId('job-result-card').getByRole('button', { name: 'Cancel' });

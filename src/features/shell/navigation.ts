@@ -54,7 +54,7 @@ export function shellTabBarItemsFor(slot: TabSlot = DEFAULT_TAB_SLOT): ShellTabB
  * - Money: Accounts, Transactions, Upcoming, Rewards
  * - Wealth: Investments, Lending
  * - Insights: Dashboards, Reports, Ask
- * - footer: Settings
+ * - footer: Data sources, Settings
  * Accounts also owns /loans (the Loans page sits under it for now).
  */
 export const shellRailGroups: ShellNavGroup[] = [
@@ -91,6 +91,7 @@ export const shellRailGroups: ShellNavGroup[] = [
 ];
 
 export const shellFooterItems: ShellNavItem[] = [
+  { id: 'data-sources', label: 'Data sources', icon: 'link', href: '/data-sources' },
   { id: 'settings', label: 'Settings', icon: 'settings', href: '/settings' },
 ];
 
@@ -115,13 +116,13 @@ export interface ShellMoreGroup {
 /**
  * Quick add items for the phone More sheet (P-more).
  * Transaction, Lending and Trade open their dialogs from state (no URL change).
- * Import links to /transactions/import.
+ * Import links to /import, the page that lists the kinds of file.
  */
 export const shellQuickAddItems: ShellQuickAddItem[] = [
   { id: 'transaction', label: 'Transaction', icon: 'add', dialog: 'transaction' },
   { id: 'lending', label: 'Lending', icon: 'handshake', dialog: 'lending' },
   { id: 'trade', label: 'Trade', icon: 'chart-line-up', dialog: 'trade' },
-  { id: 'import', label: 'Import', icon: 'upload', href: '/transactions/import' },
+  { id: 'import', label: 'Import', icon: 'upload', href: '/import' },
 ];
 
 /**
@@ -204,7 +205,8 @@ export type CrumbArea =
   | 'dashboards'
   | 'reports'
   | 'chat'
-  | 'settings';
+  | 'settings'
+  | 'dataSources';
 
 export interface CrumbEntry {
   /** The rail group above the area: the crumb of the area's own pages. */
@@ -234,6 +236,7 @@ export const crumbMap: Record<CrumbArea, CrumbEntry> = {
   reports: { group: 'Insights', label: 'Reports', href: appHref('/reports') },
   chat: { group: 'Insights', label: 'Ask', href: appHref('/chat') },
   settings: { group: 'Settings', label: 'Settings', href: appHref('/settings') },
+  dataSources: { group: 'Settings', label: 'Data sources', href: appHref('/data-sources') },
 };
 
 /** The crumb of an area's own pages (its list, tabs, a single-page area): "Money". */

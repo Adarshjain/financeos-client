@@ -13,7 +13,7 @@ export const RULES_SIZE_OPTIONS = [25, 50, 100];
 /** The jobs the rules page lists (applying a rule to its matches). */
 export const RULE_JOB_TYPE = 'RULE_APPLY';
 export const RULE_JOBS_SIZE = 5;
-export const RULE_JOBS_HREF = appHref(`/settings/activity?type=${RULE_JOB_TYPE}`);
+export const RULE_JOBS_HREF = appHref(`/data-sources/sync?type=${RULE_JOB_TYPE}`);
 
 export interface RulesUrlState {
   q: string;

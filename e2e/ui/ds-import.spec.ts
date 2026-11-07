@@ -92,7 +92,7 @@ for (const viewport of VIEWPORTS) {
     test('Import tab: Activity link goes to the imports in Activity; an unknown import is not found', async ({ page }) => {
       await page.goto('/transactions/import');
       await page.getByRole('link', { name: 'Activity' }).click();
-      await expect(page).toHaveURL(/\/settings\/activity\?type=STATEMENT_INGEST/, { timeout: 60000 });
+      await expect(page).toHaveURL(/\/data-sources\/sync\?type=STATEMENT_INGEST/, { timeout: 60000 });
 
       await page.goto('/transactions/import/00000000-0000-0000-0000-000000000000');
       await expect(page.getByText(/not found/i).first()).toBeVisible({ timeout: 30000 });

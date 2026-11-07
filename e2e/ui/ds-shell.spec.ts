@@ -48,7 +48,11 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(rail.getByRole('link', { name: 'Reports' })).toBeVisible();
     await expect(rail.getByRole('link', { name: 'Ask' })).toBeVisible();
 
-    // Footer: Settings
+    // Footer: Data sources above Settings
+    const dataSourcesLink = rail.locator('a[href="/data-sources"]');
+    await expect(dataSourcesLink).toBeVisible();
+    await expect(dataSourcesLink).toContainText('Data sources');
+
     const settingsLink = rail.locator('a[href="/settings"]');
     await expect(settingsLink).toBeVisible();
     await expect(settingsLink).toContainText(currentUser.email);
@@ -136,9 +140,9 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     // Lending is enabled and opens the Record ledger entry dialog from state (no URL change)
     await expect(sheet.getByRole('button', { name: 'Lending' })).toBeEnabled();
     await expect(sheet.getByRole('button', { name: 'Trade' })).toBeEnabled();
-    const importLink = sheet.getByRole('link', { name: 'Import' });
+    const importLink = sheet.getByRole('link', { name: 'Import', exact: true });
     await expect(importLink).toBeVisible();
-    await expect(importLink).toHaveAttribute('href', '/transactions/import');
+    await expect(importLink).toHaveAttribute('href', '/import');
 
     // Verify Section tiles in groups
     await expect(sheet.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/accounts');
@@ -150,6 +154,11 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(sheet.getByRole('link', { name: 'Dashboards' })).toHaveAttribute('href', '/dashboards');
     await expect(sheet.getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
     await expect(sheet.getByRole('link', { name: 'Ask' })).toHaveAttribute('href', '/chat');
+
+    // Verify Data sources row, above the profile row
+    const dataSourcesRow = sheet.getByRole('link', { name: /Gmail · imports · sync health/i });
+    await expect(dataSourcesRow).toBeVisible();
+    await expect(dataSourcesRow).toHaveAttribute('href', '/data-sources');
 
     // Verify Profile row
     const profileRow = sheet.getByRole('link', { name: /Settings · security · AI/i });

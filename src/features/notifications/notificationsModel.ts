@@ -22,11 +22,11 @@ export function notificationHref(n: Pick<AppNotification, 'kind' | 'refs'>): str
     case 'job_failed':
     case 'job_finished':
     case 'gmail_sync':
-      return jobId ? appHref(`/settings/activity?job=${jobId}`) : appHref('/settings/activity');
+      return jobId ? appHref(`/data-sources/sync?job=${jobId}`) : appHref('/data-sources/sync');
     case 'statement_imported':
       return accountId ? appHref(`/accounts/${accountId}/statements`) : null;
     case 'gmail_disconnected':
-      return appHref('/settings/connections');
+      return appHref('/data-sources/connections');
     case 'reward_milestone':
     case 'reward_cap':
       return accountId ? appHref(`/accounts/${accountId}/rewards`) : null;

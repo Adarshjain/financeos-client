@@ -96,7 +96,7 @@ describe('proxy', () => {
 
     it('sends an old path to the page that replaced it, keeping the query', () => {
       expect(to('/rules')).toBe('https://financeos.local/transactions/tags');
-      expect(to('/settings/gmail?focus=attention')).toBe('https://financeos.local/settings/connections?focus=attention');
+      expect(to('/settings/gmail?focus=attention')).toBe('https://financeos.local/data-sources/connections?focus=attention');
       expect(to('/debug')).toBe('https://financeos.local/settings/debug');
       expect(to('/rewards/recommend')).toBe('https://financeos.local/rewards/which-card');
     });

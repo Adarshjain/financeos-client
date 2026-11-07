@@ -4,12 +4,10 @@ const auth = vi.hoisted(() => ({ requireAuth: vi.fn(), redirectToSignIn: vi.fn()
 vi.mock('@/lib/auth', () => auth);
 const api = vi.hoisted(() => ({
   status: vi.fn(),
-  getAttentionItems: vi.fn(),
   list: vi.fn(),
 }));
 vi.mock('@/lib/apiClient', () => ({
   appLockApi: { status: api.status },
-  gmailApi: { getAttentionItems: api.getAttentionItems },
   llmKeysApi: { list: api.list },
 }));
 vi.mock('@/features/shell/tabSlotCookie', () => ({ readTabSlot: async () => 'accounts' }));
@@ -25,24 +23,20 @@ beforeEach(() => {
   vi.resetAllMocks();
   auth.requireAuth.mockResolvedValue(user);
   api.status.mockResolvedValue({ armed: false });
-  api.getAttentionItems.mockResolvedValue({ totalElements: 4 });
   api.list.mockResolvedValue([{}, {}]);
 });
 
 describe('Settings main page', () => {
-  it('hands the user, app lock status and streamed counts to the page', async () => {
+  it('hands the user, app lock status and the streamed key count to the page', async () => {
     const element = await DsSettingsPage();
     expect(element.props.user).toBe(user);
     expect(element.props.appLock).toEqual({ armed: false });
-    await expect(element.props.values.attentionCount).resolves.toBe(4);
     await expect(element.props.values.aiKeyCount).resolves.toBe(2);
   });
 
   it('hides a count whose request failed instead of failing the page', async () => {
-    api.getAttentionItems.mockRejectedValue(new Error('x'));
     api.list.mockRejectedValue(new ApiError(500, { code: 'X', message: 'no', timestamp: 'x' }));
     const element = await DsSettingsPage();
-    await expect(element.props.values.attentionCount).resolves.toBeUndefined();
     await expect(element.props.values.aiKeyCount).resolves.toBeUndefined();
   });
 

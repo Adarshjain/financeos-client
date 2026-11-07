@@ -224,7 +224,7 @@ describe('GmailSyncResult', () => {
     expect(failed).toHaveTextContent('Could not open the PDF');
     expect(failed).toHaveTextContent('Attempt 2 · next retry 20/10/26, 3:00 pm');
     expect(failed).toHaveTextContent('File: statement.pdf');
-    expect(screen.getByRole('link', { name: 'Retry from Gmail settings' })).toHaveAttribute('href', '/settings/connections');
+    expect(screen.getByRole('link', { name: 'Retry from Gmail settings' })).toHaveAttribute('href', '/data-sources/connections');
     expect(screen.getByRole('link', { name: 'Import manually' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Assign an account in Gmail settings' })).toBeInTheDocument();
 

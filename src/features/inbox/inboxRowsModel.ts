@@ -59,11 +59,11 @@ function destination(item: InboxItemResponse, action: InboxActionResponse): Pick
   const href = raw ? appHref(raw) : undefined;
   switch (item.kind) {
     case 'gmail_attention':
-      return { label: 'Assign', href: appHref('/settings/connections') };
+      return { label: 'Assign', href: appHref('/data-sources/connections') };
     case 'job':
       return {
         label: 'View',
-        href: item.refs.jobId ? appHref(`/settings/activity?job=${item.refs.jobId}`) : href,
+        href: item.refs.jobId ? appHref(`/data-sources/sync?job=${item.refs.jobId}`) : href,
       };
     case 'reward_milestone':
     case 'reward_cap':

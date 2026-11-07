@@ -23,6 +23,7 @@ import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 import {
   getActiveNavItem,
   hidesTabBar,
+  shellFooterItems,
   shellMoreGroups,
   shellQuickAddItems,
   shellRailGroups,
@@ -211,6 +212,19 @@ export function ShellTabBar({
               </div>
             ))}
 
+            {/* Data sources row */}
+            <Card className="mt-space-8 desk:mt-space-16">
+              <ListRow
+                asChild
+                title="Data sources"
+                subtitle="Gmail · imports · sync health"
+                chevron
+                borderTop={false}
+              >
+                <Link href={appHref('/data-sources')} prefetch={false} onClick={() => setMoreOpen(false)} />
+              </ListRow>
+            </Card>
+
             {/* Profile row */}
             <Card className="mt-space-8 desk:mt-space-16">
               <ListRow
@@ -296,6 +310,46 @@ export function ShellRail({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [collapsed]);
 
+  const settingsFooter = (
+      collapsed ? (
+        <Tooltip content={profileText} side="right">
+          <Link href={appHref('/settings')} prefetch={false} aria-label={profileText}>
+            <Avatar
+              variant="circle"
+              tone="brand"
+              size="sm"
+              src={user.avatar}
+              initials={initials}
+            >
+              {initials}
+            </Avatar>
+          </Link>
+        </Tooltip>
+      ) : (
+        <ListRow
+          asChild
+          leading={
+            <Avatar
+              variant="circle"
+              tone="brand"
+              size="sm"
+              src={user.avatar}
+              initials={initials}
+            >
+              {initials}
+            </Avatar>
+          }
+          title={profileText}
+          subtitle={user.name?.trim() ? user.email : undefined}
+          borderTop={false}
+          className="px-space-8"
+        >
+          <Link href={appHref('/settings')} prefetch={false} />
+        </ListRow>
+      )
+  );
+  const dataSourcesItem = shellFooterItems.find((item) => item.id === 'data-sources')!;
+
   return (
     <Rail
       collapsible
@@ -348,42 +402,34 @@ export function ShellRail({
         </Link>
       }
       footer={
-        collapsed ? (
-          <Tooltip content={profileText} side="right">
-            <Link href={appHref('/settings')} prefetch={false} aria-label={profileText}>
-              <Avatar
-                variant="circle"
-                tone="brand"
-                size="sm"
-                src={user.avatar}
-                initials={initials}
+        <div className="flex flex-col gap-space-4">
+          {collapsed ? (
+            <Tooltip content={dataSourcesItem.label} side="right">
+              <Button
+                variant="ghost"
+                size="md"
+                iconOnly
+                aria-label={dataSourcesItem.label}
+                icon={<Icon name={dataSourcesItem.icon} size="lg" />}
+                asChild
               >
-                {initials}
-              </Avatar>
-            </Link>
-          </Tooltip>
-        ) : (
-          <ListRow
-            asChild
-            leading={
-              <Avatar
-                variant="circle"
-                tone="brand"
-                size="sm"
-                src={user.avatar}
-                initials={initials}
-              >
-                {initials}
-              </Avatar>
-            }
-            title={profileText}
-            subtitle={user.name?.trim() ? user.email : undefined}
-            borderTop={false}
-            className="px-space-8"
-          >
-            <Link href={appHref('/settings')} prefetch={false} />
-          </ListRow>
-        )
+                <Link href={appHref(dataSourcesItem.href)} prefetch={false} />
+              </Button>
+            </Tooltip>
+          ) : (
+            <ListRow
+              asChild
+              leading={<Icon name={dataSourcesItem.icon} size="lg" />}
+              title={dataSourcesItem.label}
+              highlighted={current === dataSourcesItem.id}
+              borderTop={false}
+              className="px-space-8"
+            >
+              <Link href={appHref(dataSourcesItem.href)} prefetch={false} />
+            </ListRow>
+          )}
+          {settingsFooter}
+        </div>
       }
     />
   );

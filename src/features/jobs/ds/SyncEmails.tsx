@@ -13,7 +13,7 @@ import { appHref } from '@/features/shell/routes';
 import { formatDate, formatTime } from '@/lib/format';
 import type { SyncMessageResult } from '@/lib/types';
 
-const CONNECTIONS_HREF = appHref('/settings/connections');
+const CONNECTIONS_HREF = appHref('/data-sources/connections');
 const ACCOUNTS_HREF = appHref('/accounts');
 const IMPORT_HREF = '/transactions/import';
 

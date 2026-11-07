@@ -49,6 +49,13 @@ describe('ShellRail collapse', () => {
     expect(screen.queryByText('⌘K')).not.toBeInTheDocument();
   });
 
+  it('collapsed, Data sources is an icon-only link above the profile link', () => {
+    render(<ShellRail user={user} initialCollapsed />);
+    const link = screen.getByRole('link', { name: 'Data sources' });
+    expect(link).toHaveAttribute('href', '/data-sources');
+    expect(link).not.toHaveTextContent('Data sources');
+  });
+
   it('the toggle collapses and saves the choice in a cookie', () => {
     render(<ShellRail user={user} />);
     fireEvent.click(screen.getByRole('button', { name: 'Collapse sidebar' }));

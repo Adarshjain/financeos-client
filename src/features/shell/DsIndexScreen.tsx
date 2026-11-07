@@ -123,6 +123,15 @@ export function DsIndexScreen() {
           <ListRow asChild title="Settings" subtitle="/settings" chevron>
             <Link href="/settings" />
           </ListRow>
+          <ListRow asChild title="Data sources" subtitle="/data-sources" chevron>
+            <Link href="/data-sources" />
+          </ListRow>
+          <ListRow asChild title="Imports" subtitle="/data-sources/imports" chevron>
+            <Link href="/data-sources/imports" />
+          </ListRow>
+          <ListRow asChild title="Import a file" subtitle="/import" chevron>
+            <Link href="/import" />
+          </ListRow>
           <ListRow asChild title="Inbox" subtitle="/inbox" chevron>
             <Link href="/inbox" />
           </ListRow>

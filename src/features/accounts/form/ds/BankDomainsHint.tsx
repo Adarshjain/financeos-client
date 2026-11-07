@@ -7,7 +7,7 @@ import { Button } from '@/components/ds/Button/Button';
 import { Dialog } from '@/components/ds/Dialog/Dialog';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { bankById } from '@/features/banks/banks';
-import { loadBankDomains } from '@/features/settings/connections/gmailActions';
+import { loadBankDomains } from '@/features/data-sources/connections/gmailActions';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 

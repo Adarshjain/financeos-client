@@ -31,18 +31,18 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     await expect(page.getByText('Recent imports', { exact: true })).toBeVisible();
   });
 
-  test('old /settings/jobs redirects to /settings/activity and keeps the filters', async ({ page }) => {
+  test('old /settings/jobs redirects to /data-sources/sync and keeps the filters', async ({ page }) => {
     await page.goto('/settings/jobs?status=FAILED&type=GMAIL_SYNC');
-    await page.waitForURL('**/settings/activity?**');
+    await page.waitForURL('**/data-sources/sync?**');
     const url = new URL(page.url());
-    expect(url.pathname).toBe('/settings/activity');
+    expect(url.pathname).toBe('/data-sources/sync');
     expect(url.searchParams.get('status')).toBe('FAILED');
     expect(url.searchParams.get('type')).toBe('GMAIL_SYNC');
-    await expect(page.getByRole('banner')).toContainText('Activity', { timeout: 30000 });
+    await expect(page.getByRole('banner')).toContainText('Sync health', { timeout: 30000 });
 
     await page.goto('/settings/jobs');
-    await page.waitForURL('**/settings/activity');
-    await expect(page.getByRole('banner')).toContainText('Activity', { timeout: 30000 });
+    await page.waitForURL('**/data-sources/sync');
+    await expect(page.getByRole('banner')).toContainText('Sync health', { timeout: 30000 });
   });
 
   test('old /loans/calendar redirects to /upcoming', async ({ page }) => {
@@ -51,10 +51,10 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     await expect(page).toHaveTitle('Upcoming · FinanceOS');
   });
 
-  test('Settings links to Activity, and the Import page lists Recent imports', async ({ page }) => {
-    await page.goto('/settings');
-    await page.getByRole('main').getByRole('link', { name: 'Activity', exact: true }).click();
-    await page.waitForURL('**/settings/activity');
+  test('Data sources links to Sync health, and the Import page lists Recent imports', async ({ page }) => {
+    await page.goto('/data-sources');
+    await page.getByRole('main').getByRole('link', { name: 'Sync health', exact: true }).click();
+    await page.waitForURL('**/data-sources/sync');
     await expect(page.getByRole('button', { name: 'Status', exact: true })).toBeVisible({ timeout: 45000 });
 
     await page.goto('/transactions/import');

@@ -31,7 +31,7 @@ export function getJobTypeLabel(type: JobType): string {
 }
 
 /**
- * Builds a /settings/activity URL for the given filter state. Shared between the
+ * Builds a /data-sources/sync URL for the given filter state. Shared between the
  * server-rendered page and the client PageActionBar — a function can't cross
  * the server→client prop boundary, so both sides build URLs from primitives.
  */
@@ -50,7 +50,7 @@ export function buildJobsFilterUrl(
   setPageParam(q, page);
   if (current.size !== (target.defaultSize ?? 20)) q.set('size', String(current.size));
   const str = q.toString();
-  return `${target.base ?? '/settings/activity'}${str ? `?${str}` : ''}`;
+  return `${target.base ?? '/data-sources/sync'}${str ? `?${str}` : ''}`;
 }
 
 /**

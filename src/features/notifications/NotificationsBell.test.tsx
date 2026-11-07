@@ -92,7 +92,7 @@ describe('Notifications bell', () => {
     expect(screen.getByText('Notifications', { selector: 'div' })).toBeInTheDocument();
     expect(screen.getByText('Body a · 2:05 pm')).toBeInTheDocument();
     expect(screen.getByText('Body b · 13 Oct')).toBeInTheDocument();
-    expect(pop.closest('a')).toHaveAttribute('href', '/settings/activity?job=j1');
+    expect(pop.closest('a')).toHaveAttribute('href', '/data-sources/sync?job=j1');
     expect(screen.getByText('Cap reached').closest('a')).toBeNull();
     expect(screen.getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/inbox/updates');
     fireEvent.click(screen.getByRole('link', { name: 'See all' }));

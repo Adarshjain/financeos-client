@@ -22,7 +22,7 @@ import { expect, test } from '../fixtures/test';
 import { expectToast } from '../fixtures/ui';
 
 /**
- * /settings/connections (Gmail) end to end in a real browser: Add mailbox through the WireMock consent screen and
+ * /data-sources/connections (Gmail) end to end in a real browser: Add mailbox through the WireMock consent screen and
  * the server callback, sender allowlist dialog, manual sync, the Needs attention card with Retry,
  * disconnect, and the account form's Gmail cleanup confirmation. One serial journey per user.
  */
@@ -75,7 +75,7 @@ test.describe('Gmail settings UI (@ui)', () => {
 
   test('Add mailbox runs the consent round trip and lands back with Gmail connected', async ({ page }) => {
     test.slow();
-    await page.goto('/settings/connections');
+    await page.goto('/data-sources/connections');
     await expect(page.getByText('No Gmail accounts yet')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Connect your first account' })).toBeVisible();
 
@@ -96,7 +96,7 @@ test.describe('Gmail settings UI (@ui)', () => {
   });
 
   test('Add sender dialog creates an On sender', async ({ page }) => {
-    await page.goto('/settings/connections');
+    await page.goto('/data-sources/connections');
     // Connecting adds the NPS document senders, so the list is never empty.
     await expect(page.getByText('NPS (Protean)').first()).toBeVisible();
 
@@ -120,7 +120,7 @@ test.describe('Gmail settings UI (@ui)', () => {
 
   test('Manually Sync Now runs a job, the parked alert appears under Needs Attention, Retry re-queues it', async ({ page }) => {
     test.slow();
-    await page.goto('/settings/connections');
+    await page.goto('/data-sources/connections');
     await page.getByRole('button', { name: 'Sync now' }).click();
     await expectToast(page, 'Gmail sync started');
     await expectToast(page, 'Gmail sync completed');
@@ -206,7 +206,7 @@ test.describe('Gmail settings UI (@ui)', () => {
     });
     await waitForGmailJobsIdle(api);
 
-    await page.goto('/settings/connections');
+    await page.goto('/data-sources/connections');
     await expect(page.getByText('Allowed senders', { exact: true })).toBeVisible();
     await expect(page.getByText('Nothing needs attention right now.')).toBeVisible();
     await expect(page.getByText(/Needs attention ·/)).not.toBeVisible();
@@ -262,7 +262,7 @@ test.describe('Gmail settings UI (@ui)', () => {
   });
 
   test('disconnecting asks for confirmation and marks the mailbox disconnected', async ({ page }) => {
-    await page.goto('/settings/connections');
+    await page.goto('/data-sources/connections');
     await page.getByRole('button', { name: 'Disconnect', exact: true }).click();
     const confirm = page.getByRole('dialog', { name: `Disconnect ${identity.email}?` });
     await expect(confirm.getByText('Are you sure you want to disconnect this Gmail account?')).toBeVisible();

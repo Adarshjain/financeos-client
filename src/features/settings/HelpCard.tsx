@@ -6,15 +6,11 @@ import { ListRow } from '@/components/ds/ListRow/ListRow';
 
 import { settingsSection } from './settingsSections';
 
-/** Activity, Debug and the Storybook. */
+/** Debug and the Storybook. */
 export function HelpCard() {
-  const activity = settingsSection('activity');
   const debug = settingsSection('debug');
   return (
     <Card title="Help">
-      <ListRow asChild borderTop chevron title={activity.label}>
-        <Link href={activity.href} prefetch={false} />
-      </ListRow>
       <ListRow asChild borderTop chevron title={debug.label}>
         <Link href={debug.href} prefetch={false} />
       </ListRow>

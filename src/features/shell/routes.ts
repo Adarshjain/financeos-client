@@ -13,8 +13,10 @@ export const DS_HOME_HREF = '/home';
 /** Old paths that moved: the old path to the plain path of the page that replaces it. */
 const PATH_ALIASES: Record<string, string> = {
   '/settings/llm-keys': '/settings/ai',
-  '/settings/gmail': '/settings/connections',
-  '/settings/jobs': '/settings/activity',
+  '/settings/gmail': '/data-sources/connections',
+  '/settings/connections': '/data-sources/connections',
+  '/settings/jobs': '/data-sources/sync',
+  '/settings/activity': '/data-sources/sync',
   '/debug': '/settings/debug',
   '/rules/categories': '/transactions/tags',
   '/rules': '/transactions/tags',

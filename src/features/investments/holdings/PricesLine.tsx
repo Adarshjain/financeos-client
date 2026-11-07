@@ -5,7 +5,7 @@ import { appHref } from '@/features/shell/routes';
 
 /** Where one job is shown: Settings → Activity, opened on that job. */
 export function jobHref(jobId: string): string {
-  return appHref(`/settings/activity?job=${encodeURIComponent(jobId)}`);
+  return appHref(`/data-sources/sync?job=${encodeURIComponent(jobId)}`);
 }
 
 export interface PricesLineProps {

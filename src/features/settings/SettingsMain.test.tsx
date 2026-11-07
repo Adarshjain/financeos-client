@@ -23,12 +23,12 @@ const user = { email: 'a@b.c', displayName: 'A B', pictureUrl: null, hasPassword
 const appLock = { armed: true, locked: false, lockAfterSeconds: 60, rpId: 'localhost', heartbeatSeconds: 15 } as AppLockStatus;
 const settled = <T,>(value: T): Promise<T> => Object.assign(Promise.resolve(value), { status: 'fulfilled', value });
 
-function renderMain(values = { attentionCount: 3, aiKeyCount: 2 as number | undefined }) {
+function renderMain(values = { aiKeyCount: 2 as number | undefined }) {
   return renderWithQuery(
     <SettingsMain
       user={user}
       appLock={appLock}
-      values={{ attentionCount: settled(values.attentionCount), aiKeyCount: settled(values.aiKeyCount) }}
+      values={{ aiKeyCount: settled(values.aiKeyCount) }}
     />,
   );
 }
@@ -67,25 +67,23 @@ describe('SettingsMain', () => {
     expect(within(security).getByText('Hide amounts')).toBeInTheDocument();
   });
 
-  it('links Connections with its attention badge and AI with its key count', () => {
+  it('links AI with its key count; Connections and Activity moved to Data sources', () => {
     renderMain();
     const data = card('Data');
-    expect(within(data).getByRole('link', { name: /Connections/ })).toHaveAttribute('href', '/settings/connections');
-    expect(within(data).getByText('3 needs attention')).toBeInTheDocument();
+    expect(within(data).queryByRole('link', { name: /Connections/ })).toBeNull();
     expect(within(data).getByRole('link', { name: /AI/ })).toHaveAttribute('href', '/settings/ai');
     expect(within(data).getByText('2 keys')).toBeInTheDocument();
   });
 
   it('hides a value whose request failed', () => {
-    renderMain({ attentionCount: undefined as unknown as number, aiKeyCount: undefined });
-    expect(screen.queryByText(/needs attention/)).toBeNull();
+    renderMain({ aiKeyCount: undefined });
     expect(screen.queryByText(/keys?$/)).toBeNull();
   });
 
-  it('links Activity, Debug and a full-load Storybook in Help', () => {
+  it('links Debug and a full-load Storybook in Help', () => {
     renderMain();
     const help = card('Help');
-    expect(within(help).getByRole('link', { name: /Activity/ })).toHaveAttribute('href', '/settings/activity');
+    expect(within(help).queryByRole('link', { name: /Activity/ })).toBeNull();
     expect(within(help).getByRole('link', { name: /Debug/ })).toHaveAttribute('href', '/settings/debug');
     const storybook = within(help).getByRole('link', { name: /Storybook/ });
     expect(storybook).toHaveAttribute('href', '/storybook');

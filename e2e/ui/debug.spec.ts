@@ -12,7 +12,7 @@ import { expectToast } from '../fixtures/ui';
  * calls /api/v1 itself); the page then raises the same Ref toast as a real server failure.
  */
 async function failAddSender(page: Page, message: string) {
-  await page.route('**/settings/connections', async (route) => {
+  await page.route('**/data-sources/connections', async (route) => {
     const req = route.request();
     if (req.method() !== 'POST' || !req.headers()['next-action'] || !req.postData()?.includes('debug-toast@bank.test')) {
       return route.continue();
@@ -32,7 +32,7 @@ async function failAddSender(page: Page, message: string) {
     };
     return route.fulfill({ response: real, body: `${header}\n1:${JSON.stringify(failure)}\n` });
   });
-  await page.goto('/settings/connections');
+  await page.goto('/data-sources/connections');
   await page.getByRole('button', { name: 'Add sender', exact: true }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Add allowed sender' });
   await expect(dialog).toBeVisible();

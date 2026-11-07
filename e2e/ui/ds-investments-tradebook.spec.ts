@@ -198,10 +198,10 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText(/Last reconcile \d+ \w+, \d{1,2}:\d\d [ap]m/)).toBeVisible();
       const links = page.getByRole('link', { name: 'View job' });
       await expect(links).toHaveCount(2);
-      await expect(links.nth(0)).toHaveAttribute('href', `/settings/activity?job=${jobs.importJobId}`);
-      await expect(links.nth(1)).toHaveAttribute('href', `/settings/activity?job=${jobs.reconcileJobId}`);
+      await expect(links.nth(0)).toHaveAttribute('href', `/data-sources/sync?job=${jobs.importJobId}`);
+      await expect(links.nth(1)).toHaveAttribute('href', `/data-sources/sync?job=${jobs.reconcileJobId}`);
       await links.nth(1).click();
-      await page.waitForURL(new RegExp(`/settings/activity\\?job=${jobs.reconcileJobId}`));
+      await page.waitForURL(new RegExp(`/data-sources/sync\\?job=${jobs.reconcileJobId}`));
     });
   });
 }

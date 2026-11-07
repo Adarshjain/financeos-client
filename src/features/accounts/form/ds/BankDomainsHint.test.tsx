@@ -9,7 +9,7 @@ import { AccountFormFields } from './AccountFormFields';
 import { emptyValues } from './accountFormModel';
 
 const loadBankDomains = vi.fn();
-vi.mock('@/features/settings/connections/gmailActions', () => ({
+vi.mock('@/features/data-sources/connections/gmailActions', () => ({
   loadBankDomains: () => loadBankDomains(),
 }));
 

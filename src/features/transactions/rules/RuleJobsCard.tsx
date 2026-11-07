@@ -8,8 +8,8 @@ import { Button } from '@/components/ds/Button/Button';
 import { Card } from '@/components/ds/Card/Card';
 import { Text } from '@/components/ds/Text/Text';
 import { JobsHistory } from '@/components/organisms/JobsHistory/JobsHistory';
+import { activityUrl } from '@/features/data-sources/sync/activityModel';
 import { useJobsHistory } from '@/features/jobs/useJobsHistory';
-import { activityUrl } from '@/features/settings/activity/activityModel';
 import type { JobResponse } from '@/lib/types';
 
 import { RULE_JOB_TYPE, RULE_JOBS_HREF, RULE_JOBS_SIZE } from './rulesModel';

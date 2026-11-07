@@ -11,7 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_3"];
+        get: operations["list_4"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1179,7 +1179,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_2"];
+        get: operations["list_3"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2084,6 +2084,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["assignHeld"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_2"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7495,6 +7511,25 @@ export interface components {
             rows: components["schemas"]["ImportRowPreviewDto"][];
             summary: components["schemas"]["SummaryDto"];
         };
+        ImportRecordResponse: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            /** Format: int32 */
+            count: number;
+            /** Format: date-time */
+            createdAt: string;
+            errorMessage: string;
+            fileName: string;
+            id: string;
+            kind: string;
+            /** Format: date */
+            periodEnd: string;
+            /** Format: date */
+            periodStart: string;
+            source: string;
+            status: string;
+        };
         ImportRowPreviewDto: {
             duplicate: boolean;
             matchStatus: string;
@@ -8929,6 +8964,24 @@ export interface components {
         };
         PageGmailAttentionItemResponse: {
             content: components["schemas"]["GmailAttentionItemResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
+        PageImportRecordResponse: {
+            content: components["schemas"]["ImportRecordResponse"][];
             empty: boolean;
             first: boolean;
             last: boolean;
@@ -11062,7 +11115,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    list_3: {
+    list_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -13672,7 +13725,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -15982,6 +16035,39 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["FileIngestionResult"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_2: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+                kind?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageImportRecordResponse"];
                 };
             };
             /** @description Error response */

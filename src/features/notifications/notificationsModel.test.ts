@@ -13,8 +13,8 @@ function n(over: Partial<AppNotification> & { kind: string }): AppNotification {
 describe('notificationHref', () => {
   it('job kinds open the job in Activity, or Activity when there is no job', () => {
     for (const kind of ['job_failed', 'job_finished', 'gmail_sync']) {
-      expect(notificationHref(n({ kind, refs: { jobId: 'j1' } as never }))).toBe('/settings/activity?job=j1');
-      expect(notificationHref(n({ kind }))).toBe('/settings/activity');
+      expect(notificationHref(n({ kind, refs: { jobId: 'j1' } as never }))).toBe('/data-sources/sync?job=j1');
+      expect(notificationHref(n({ kind }))).toBe('/data-sources/sync');
     }
   });
 
@@ -40,7 +40,7 @@ describe('notificationHref', () => {
   });
 
   it('gmail_disconnected opens Connections', () => {
-    expect(notificationHref(n({ kind: 'gmail_disconnected' }))).toBe('/settings/connections');
+    expect(notificationHref(n({ kind: 'gmail_disconnected' }))).toBe('/data-sources/connections');
   });
 
   it('accounts_found opens Accounts', () => {

@@ -7,7 +7,7 @@ export const IMPORT_HREF = appHref('/transactions/import');
 /** Recent imports: how many show on the Import tab; the rest are in Activity. */
 export const RECENT_IMPORTS_SIZE = 5;
 export const IMPORT_JOB_TYPE = 'STATEMENT_INGEST';
-export const IMPORT_ACTIVITY_HREF = appHref(`/settings/activity?type=${IMPORT_JOB_TYPE}`);
+export const IMPORT_ACTIVITY_HREF = appHref(`/data-sources/sync?type=${IMPORT_JOB_TYPE}`);
 
 /** `?page=` on the Import tab: the 0-based page of Recent imports (the address counts from 1); anything unusable is the first page. */
 export function parseImportPage(params: SearchParamsRecord): number {

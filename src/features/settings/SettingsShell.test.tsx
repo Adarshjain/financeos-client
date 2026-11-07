@@ -48,9 +48,7 @@ describe('SettingsShell', () => {
 
   it.each([
     ['/settings/notifications', 'Notifications'],
-    ['/settings/connections', 'Connections'],
     ['/settings/ai', 'AI'],
-    ['/settings/activity', 'Activity'],
     ['/settings/debug', 'Debug'],
   ])('on %s the top bar is titled %s, the back button leads to /settings', (path, title) => {
     pathname = path;

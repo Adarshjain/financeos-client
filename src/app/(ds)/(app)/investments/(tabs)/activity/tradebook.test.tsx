@@ -182,7 +182,7 @@ describe('/investments/activity: the jobs line', () => {
     expect(screen.getByText(/Last import 13 Oct, 11:02 am · 14 trades/)).toBeTruthy();
     expect(screen.getByText(/Last reconcile 13 Oct, 11:02 am/)).toBeTruthy();
     const links = screen.getAllByRole('link', { name: 'View job' });
-    expect(links.map((l) => l.getAttribute('href'))).toEqual(['/settings/activity?job=job-1', '/settings/activity?job=job-2']);
+    expect(links.map((l) => l.getAttribute('href'))).toEqual(['/data-sources/sync?job=job-1', '/data-sources/sync?job=job-2']);
   });
 
   it('shows only the line of the job that ran', async () => {
