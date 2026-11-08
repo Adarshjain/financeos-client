@@ -4,8 +4,9 @@ const HEX = /^[0-9a-f]{16,}$/i;
 
 /** The first-level route segments of the app (src/app folders; a unit test keeps this in step). */
 export const KNOWN_ROOT_SEGMENTS: readonly string[] = [
-  'accounts', 'api', 'auth', 'chat', 'dashboard', 'dashboards', 'ds', 'inbox', 'investments', 'loans', 'locked',
-  'login', 'notifications', 'offline', 'reports', 'rewards', 'settings', 'signup', 'transactions', 'upcoming', 'welcome',
+  'accounts', 'api', 'auth', 'chat', 'dashboard', 'dashboards', 'data-sources', 'ds', 'home', 'import', 'inbox',
+  'investments', 'lending', 'loans', 'locked', 'login', 'notifications', 'offline', 'reports', 'rewards', 'settings',
+  'signup', 'transactions', 'upcoming', 'welcome',
 ];
 
 function isIdSegment(seg: string): boolean {

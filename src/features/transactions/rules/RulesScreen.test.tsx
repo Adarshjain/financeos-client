@@ -117,7 +117,7 @@ describe('RulesScreen', () => {
 
   it('the Tags tab replaces Rules and Categories', () => {
     renderWithQuery(<RulesScreen {...props()} />);
-    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['All', 'Tags']);
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['All', 'Tags', 'Import']);
   });
 
   it('the Category filter lists the fixed categories and writes the key to the address', () => {
