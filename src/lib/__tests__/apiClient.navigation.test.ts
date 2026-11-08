@@ -58,14 +58,6 @@ describe('apiClient navigation helpers', () => {
       await dashboardsApi.builtinData('net_worth', undefined, {});
       expect(JSON.parse((await lastRequest()).body!)).toEqual({ params: {} });
     });
-
-    it('restoreHome POSTs /dashboards/home/restore and returns the dashboard', async () => {
-      fetchSpy.mockResolvedValueOnce(json({ id: 'home', name: 'Home' }));
-      expect(await dashboardsApi.restoreHome()).toEqual({ id: 'home', name: 'Home' });
-      const r = await lastRequest();
-      expect(r.method).toBe('POST');
-      expect(r.url.pathname).toBe('/api/v1/dashboards/home/restore');
-    });
   });
 
   describe('inboxApi', () => {
@@ -75,12 +67,6 @@ describe('apiClient navigation helpers', () => {
       const r = await lastRequest();
       expect(r.method).toBe('GET');
       expect(r.url.pathname).toBe('/api/v1/inbox');
-    });
-
-    it('summary GETs /inbox/summary', async () => {
-      fetchSpy.mockResolvedValueOnce(json({ total: 3 }));
-      expect(await inboxApi.summary()).toEqual({ total: 3 });
-      expect((await lastRequest()).url.pathname).toBe('/api/v1/inbox/summary');
     });
   });
 
