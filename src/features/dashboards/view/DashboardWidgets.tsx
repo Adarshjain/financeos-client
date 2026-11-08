@@ -10,6 +10,7 @@ import { orderWidgets, widthStepOf } from '@/features/dashboards/layout/widgetLa
 import { isTextWidget, widgetTitle } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';
 
+import { DashboardLoadFlowProvider } from '../data/dashboardLoadFlow';
 import { DashboardWidgetFrame } from '../frame/DashboardWidgetFrame';
 import { HeaderWidget } from '../frame/HeaderWidget';
 import type { WidgetSettingsChange } from '../frame/WidgetSettingsDialog';
@@ -39,5 +40,9 @@ export function DashboardWidgets({ widgets, catalog, dashboardName, onSaveSettin
       />
     ),
   }));
-  return <WidgetGrid items={items} />;
+  return (
+    <DashboardLoadFlowProvider widgetCount={widgets.length}>
+      <WidgetGrid items={items} />
+    </DashboardLoadFlowProvider>
+  );
 }

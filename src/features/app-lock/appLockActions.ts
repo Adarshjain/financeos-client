@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import type { AppLockStatus } from '@/lib/api/types';
 import { appLockApi, type WebAuthnOptionsJson } from '@/lib/apiClient';
 import { createDomainAction } from '@/lib/domainApi';
+import { action } from '@/lib/observability/action';
 
 const DEVICE_COOKIE = 'FINANCEOS_DEVICE';
 
@@ -25,45 +26,45 @@ async function clearDeviceCookie(): Promise<void> {
   cookieStore.delete(DEVICE_COOKIE);
 }
 
-export const getAppLockStatus = createDomainAction(
+export const getAppLockStatus = action('appLock.getAppLockStatus', createDomainAction(
   { fallbackError: "Couldn't read app lock. Try again." },
   async (): Promise<AppLockStatus> => appLockApi.status(),
-);
+));
 
-export const startEnrolment = createDomainAction(
+export const startEnrolment = action('appLock.startEnrolment', createDomainAction(
   { fallbackError: "Couldn't start app lock setup. Try again." },
   async (lockAfterSeconds: number): Promise<WebAuthnOptionsJson> => appLockApi.registrationOptions(lockAfterSeconds),
-);
+));
 
 /** Verifies the new passkey, then keeps the (possibly new) device id in the device cookie. */
-export const finishEnrolment = createDomainAction(
+export const finishEnrolment = action('appLock.finishEnrolment', createDomainAction(
   { fallbackError: "Couldn't turn on app lock. Try again." },
   async (credential: unknown, label?: string): Promise<{ deviceId: string }> => {
     const result = await appLockApi.registrationVerify(credential, label);
     await setDeviceCookie(result.deviceId);
     return result;
   },
-);
+));
 
-export const updateLockAfter = createDomainAction(
+export const updateLockAfter = action('appLock.updateLockAfter', createDomainAction(
   { fallbackError: "Couldn't change when the app locks. Try again." },
   async (lockAfterSeconds: number): Promise<void> => appLockApi.updateSettings(lockAfterSeconds),
-);
+));
 
-export const disableAppLock = createDomainAction(
+export const disableAppLock = action('appLock.disableAppLock', createDomainAction(
   { fallbackError: "Couldn't turn off app lock. Try again." },
   async (credential: unknown): Promise<void> => {
     await appLockApi.disable(credential);
     await clearDeviceCookie();
   },
-);
+));
 
-export const startUnlock = createDomainAction(
+export const startUnlock = action('appLock.startUnlock', createDomainAction(
   { fallbackError: "Couldn't start unlock. Try again." },
   async (): Promise<WebAuthnOptionsJson> => appLockApi.unlockOptions(),
-);
+));
 
-export const finishUnlock = createDomainAction(
+export const finishUnlock = action('appLock.finishUnlock', createDomainAction(
   { fallbackError: "Couldn't unlock. Try again." },
   async (credential: unknown): Promise<void> => appLockApi.unlockVerify(credential),
-);
+));

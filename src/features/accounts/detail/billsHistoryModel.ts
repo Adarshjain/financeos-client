@@ -1,4 +1,4 @@
-import { billStatusLabel } from '@/features/bills/billsModel';
+import { billPaidDate, billStatusLabel, paidFromCaption } from '@/features/bills/billsModel';
 import type { CardBillResponse } from '@/lib/api/types';
 import { formatDate,formatMoney } from '@/lib/format';
 
@@ -49,10 +49,14 @@ export function buildBillRow(entry: BillEntry): BillRowModel {
   row.amount = bill.totalAmountDue != null ? formatMoney(bill.totalAmountDue, { decimals: 'exact' }) : null;
   switch (bill.status) {
     case 'PAID': {
-      const timing = paidTiming(bill.paidMarkedOn, bill.paymentDueDate);
-      row.caption = bill.paidMarkedOn
-        ? `Paid ${formatDate(bill.paidMarkedOn, 'list')}${timing ? ` · ${timing}` : ''}`
-        : 'Paid';
+      const paidOn = billPaidDate(bill);
+      const timing = paidTiming(paidOn, bill.paymentDueDate);
+      const from = paidFromCaption(bill);
+      row.caption = from
+        ? `${from}${timing ? ` · ${timing}` : ''}`
+        : paidOn
+          ? `Paid ${formatDate(paidOn, 'list')}${timing ? ` · ${timing}` : ''}`
+          : 'Paid';
       row.badge = { tone: 'success', label: 'Paid' };
       row.muted = true;
       break;

@@ -8,12 +8,13 @@ import { validationError } from '@/lib/apiResult';
 import { clearSessionCookie, rememberSsoState, setSessionCookie, takeSsoState } from '@/lib/auth';
 import { createDomainAction } from '@/lib/domainApi';
 import { optionalString } from '@/lib/forms';
+import { action } from '@/lib/observability/action';
 import type {
   ApiResult,
   UserResponse,
 } from '@/lib/types';
 
-export async function signup(
+export const signup = action('auth.signup', async function signup(
   _prevState: ApiResult<UserResponse> | null,
   formData: FormData
 ): Promise<ApiResult<UserResponse>> {
@@ -49,9 +50,9 @@ export async function signup(
     }
   );
   return action();
-}
+});
 
-export async function login(
+export const login = action('auth.login', async function login(
   _prevState: ApiResult<UserResponse> | null,
   formData: FormData
 ): Promise<ApiResult<UserResponse>> {
@@ -73,7 +74,7 @@ export async function login(
     }
   );
   return action();
-}
+});
 
 async function endSession(): Promise<void> {
   try {
@@ -85,19 +86,19 @@ async function endSession(): Promise<void> {
 }
 
 /** Signs out to the login page. */
-export async function logoutToDinero(): Promise<void> {
+export const logoutToDinero = action('auth.logoutToDinero', async function logoutToDinero(): Promise<void> {
   await endSession();
   redirect(appHref('/login'));
-}
+});
 
-export const startGoogleSSO = createDomainAction(
+export const startGoogleSSO = action('auth.startGoogleSSO', createDomainAction(
   { fallbackError: 'Failed to start Google SSO' },
   async () => {
     const response = await authApi.startGoogleAuth();
     await rememberSsoState(response.authorizationUrl);
     return response;
   }
-);
+));
 
 /** Shown when the callback's state is not the one this browser's sign-in started with. */
 const SSO_STATE_MISMATCH = 'Google sign-in expired or was not started here. Please try again.';
@@ -118,7 +119,7 @@ const completeGoogleSSO = createDomainAction(
  * the one remembered by {@link startGoogleSSO}, so a sign-in link started by someone else cannot sign
  * this browser into their account.
  */
-export async function handleGoogleCallbackAction(
+export const handleGoogleCallbackAction = action('auth.handleGoogleCallbackAction', async function handleGoogleCallbackAction(
   code: string | undefined,
   state: string | undefined,
   error: string | undefined
@@ -128,4 +129,4 @@ export async function handleGoogleCallbackAction(
     return validationError(SSO_STATE_MISMATCH);
   }
   return completeGoogleSSO(code, state, error);
-}
+});

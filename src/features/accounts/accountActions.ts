@@ -16,6 +16,7 @@ import type { components } from '@/lib/api/schema';
 import { serverApi } from '@/lib/api/server';
 import type { AccountIdentifierResponse, CreateAccountIdentifierRequest, PastCardRequest, PastCardResponse, Schemas } from '@/lib/api/types';
 import { createDomainAction } from '@/lib/domainApi';
+import { action } from '@/lib/observability/action';
 import type { CardCycleSummary, StatementDetail, StatementSummary } from '@/lib/statement.types';
 import type { BulkReattributeCardRequest, BulkReattributeResponse } from '@/lib/transaction.types';
 import type { GmailCleanupPreview, GmailCleanupResult } from '@/lib/types';
@@ -25,15 +26,15 @@ type StatementDeletionResult = components['schemas']['StatementDeletionResponse'
 
 // Account identifiers
 
-export const loadAccountIdentifiers = createDomainAction(
+export const loadAccountIdentifiers = action('accounts.account.loadAccountIdentifiers', createDomainAction(
   { fallbackError: "Couldn't load the account identifiers. Try again." },
   async (accountId: string): Promise<AccountIdentifierResponse[]> => {
     const { data } = await serverApi.GET('/api/v1/accounts/{id}/identifiers', { params: { path: { id: accountId } } });
     return data ?? [];
   },
-);
+));
 
-export const addAccountIdentifier = createDomainAction(
+export const addAccountIdentifier = action('accounts.account.addAccountIdentifier', createDomainAction(
   { fallbackError: "Couldn't add the identifier. Try again." },
   async (accountId: string, body: CreateAccountIdentifierRequest) => {
     const { data } = await serverApi.POST('/api/v1/accounts/{id}/identifiers', {
@@ -42,19 +43,19 @@ export const addAccountIdentifier = createDomainAction(
     });
     return data;
   },
-);
+));
 
-export const removeAccountIdentifier = createDomainAction(
+export const removeAccountIdentifier = action('accounts.account.removeAccountIdentifier', createDomainAction(
   { fallbackError: "Couldn't remove the identifier. Try again." },
   async (accountId: string, identifierId: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/accounts/{id}/identifiers/{identifierId}', {
       params: { path: { id: accountId, identifierId } },
     });
   },
-);
+));
 
 /** The identifier becomes an old (closed) card of the account in one step. */
-export const convertIdentifierToPastCard = createDomainAction(
+export const convertIdentifierToPastCard = action('accounts.account.convertIdentifierToPastCard', createDomainAction(
   { fallbackError: "Couldn't save the number as an old card. Try again." },
   async (accountId: string, identifierId: string, body: PastCardRequest): Promise<PastCardResponse | null> => {
     const { data } = await serverApi.POST('/api/v1/accounts/{id}/identifiers/{identifierId}/to-past-card', {
@@ -63,7 +64,7 @@ export const convertIdentifierToPastCard = createDomainAction(
     });
     return data ?? null;
   },
-);
+));
 
 // Account lifecycle
 
@@ -72,7 +73,7 @@ export const convertIdentifierToPastCard = createDomainAction(
  * doesn't exist until now). Alias failures do not roll the account back; they are returned so the form
  * can tell the user which values to re-add from the edit form.
  */
-export const createAccountWithIdentifiers = createDomainAction(
+export const createAccountWithIdentifiers = action('accounts.account.createAccountWithIdentifiers', createDomainAction(
   { fallbackError: "Couldn't create the account. Try again." },
   async (body: AccountRequest, identifiers: string[]): Promise<{ account: Account; failedIdentifiers: string[] }> => {
     const { data } = await serverApi.POST('/api/v1/accounts', { body: body as Schemas['BankAccountRequest'] });
@@ -88,9 +89,9 @@ export const createAccountWithIdentifiers = createDomainAction(
     }
     return { account, failedIdentifiers };
   },
-);
+));
 
-export const updateAccount = createDomainAction(
+export const updateAccount = action('accounts.account.updateAccount', createDomainAction(
   { fallbackError: "Couldn't update the account. Try again." },
   async (id: string, body: AccountRequest) => {
     const { data } = await serverApi.PUT('/api/v1/accounts/{id}', {
@@ -99,40 +100,40 @@ export const updateAccount = createDomainAction(
     });
     return data as Account;
   },
-);
+));
 
-export const closeAccount = createDomainAction(
+export const closeAccount = action('accounts.account.closeAccount', createDomainAction(
   { fallbackError: "Couldn't close the account. Try again." },
   async (id: string, body?: CloseAccountRequest) => {
     const { data } = await serverApi.POST('/api/v1/accounts/{id}/close', { params: { path: { id } }, body });
     return data as Account;
   },
-);
+));
 
-export const reopenAccount = createDomainAction(
+export const reopenAccount = action('accounts.account.reopenAccount', createDomainAction(
   { fallbackError: "Couldn't reopen the account. Try again." },
   async (id: string) => {
     const { data } = await serverApi.POST('/api/v1/accounts/{id}/reopen', { params: { path: { id } } });
     return data as Account;
   },
-);
+));
 
 /** POST /accounts/{id}/close-prompt/dismiss: "Not yet" on the "Close this account?" notice. */
-export const dismissAccountClosePrompt = createDomainAction(
+export const dismissAccountClosePrompt = action('accounts.account.dismissAccountClosePrompt', createDomainAction(
   { fallbackError: "Couldn't save that. Try again." },
   async (id: string): Promise<void> => {
     await serverApi.POST('/api/v1/accounts/{id}/close-prompt/dismiss', { params: { path: { id } } });
   },
-);
+));
 
-export const deleteAccount = createDomainAction(
+export const deleteAccount = action('accounts.account.deleteAccount', createDomainAction(
   { fallbackError: "Couldn't delete the account. Try again." },
   async (id: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/accounts/{id}', { params: { path: { id } } });
   },
-);
+));
 
-export const previewGmailCleanup = createDomainAction(
+export const previewGmailCleanup = action('accounts.account.previewGmailCleanup', createDomainAction(
   { fallbackError: "Couldn't preview the Gmail cleanup. Try again." },
   async (accountId: string, before: string) => {
     const { data } = await serverApi.GET('/api/v1/accounts/{id}/gmail-cleanup-preview', {
@@ -140,9 +141,9 @@ export const previewGmailCleanup = createDomainAction(
     });
     return data as GmailCleanupPreview;
   },
-);
+));
 
-export const executeGmailCleanup = createDomainAction(
+export const executeGmailCleanup = action('accounts.account.executeGmailCleanup', createDomainAction(
   { fallbackError: "Couldn't run the Gmail cleanup. Try again." },
   async (accountId: string, before: string) => {
     const { data } = await serverApi.POST('/api/v1/accounts/{id}/gmail-cleanup', {
@@ -150,19 +151,19 @@ export const executeGmailCleanup = createDomainAction(
     });
     return data as GmailCleanupResult;
   },
-);
+));
 
 // Cardholders and cards
 
-export const loadCardholders = createDomainAction(
+export const loadCardholders = action('accounts.account.loadCardholders', createDomainAction(
   { fallbackError: "Couldn't load the cardholders. Try again." },
   async (accountId: string): Promise<Cardholder[]> => {
     const { data } = await serverApi.GET('/api/v1/accounts/{accountId}/cardholders', { params: { path: { accountId } } });
     return (data as Cardholder[]) ?? [];
   },
-);
+));
 
-export const addPrimaryCard = createDomainAction(
+export const addPrimaryCard = action('accounts.account.addPrimaryCard', createDomainAction(
   { fallbackError: "Couldn't add the debit card. Try again." },
   async (accountId: string, body: CreateCardRequest) => {
     const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/primary', {
@@ -171,9 +172,9 @@ export const addPrimaryCard = createDomainAction(
     });
     return data as Cardholder;
   },
-);
+));
 
-export const addAddonCardholder = createDomainAction(
+export const addAddonCardholder = action('accounts.account.addAddonCardholder', createDomainAction(
   { fallbackError: "Couldn't add the cardholder. Try again." },
   async (accountId: string, body: CreateCardholderRequest) => {
     const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders', {
@@ -182,9 +183,9 @@ export const addAddonCardholder = createDomainAction(
     });
     return data as Cardholder;
   },
-);
+));
 
-export const updateCardholder = createDomainAction(
+export const updateCardholder = action('accounts.account.updateCardholder', createDomainAction(
   { fallbackError: "Couldn't update the cardholder. Try again." },
   async (accountId: string, cardholderId: string, body: UpdateCardholderRequest) => {
     const { data } = await serverApi.PUT('/api/v1/accounts/{accountId}/cardholders/{cardholderId}', {
@@ -193,9 +194,9 @@ export const updateCardholder = createDomainAction(
     });
     return data as Cardholder;
   },
-);
+));
 
-export const closeCardholder = createDomainAction(
+export const closeCardholder = action('accounts.account.closeCardholder', createDomainAction(
   { fallbackError: "Couldn't close the cardholder. Try again." },
   async (accountId: string, cardholderId: string, body?: CloseCardholderRequest) => {
     const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/close', {
@@ -204,9 +205,9 @@ export const closeCardholder = createDomainAction(
     });
     return data as Cardholder;
   },
-);
+));
 
-export const reopenCardholder = createDomainAction(
+export const reopenCardholder = action('accounts.account.reopenCardholder', createDomainAction(
   { fallbackError: "Couldn't reopen the cardholder. Try again." },
   async (accountId: string, cardholderId: string) => {
     const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/reopen', {
@@ -214,18 +215,18 @@ export const reopenCardholder = createDomainAction(
     });
     return data as Cardholder;
   },
-);
+));
 
-export const deleteCardholder = createDomainAction(
+export const deleteCardholder = action('accounts.account.deleteCardholder', createDomainAction(
   { fallbackError: "Couldn't delete the cardholder. Try again." },
   async (accountId: string, cardholderId: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/accounts/{accountId}/cardholders/{cardholderId}', {
       params: { path: { accountId, cardholderId } },
     });
   },
-);
+));
 
-export const addCard = createDomainAction(
+export const addCard = action('accounts.account.addCard', createDomainAction(
   { fallbackError: "Couldn't issue the card. Try again." },
   async (accountId: string, cardholderId: string, body: CreateCardRequest) => {
     const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards', {
@@ -234,16 +235,16 @@ export const addCard = createDomainAction(
     });
     return data as Cardholder;
   },
-);
+));
 
 /** When this card number was seen in the account's mail and transactions (prefills a past card's dates). */
-export const loadCardSeenDates = createDomainAction(
+export const loadCardSeenDates = action('accounts.account.loadCardSeenDates', createDomainAction(
   { fallbackError: "Couldn't look up when the card was seen. Try again." },
   async (accountId: string, last4: string) =>
     (await serverApi.GET('/api/v1/accounts/{accountId}/cards/seen-dates', { params: { path: { accountId }, query: { last4 } } })).data ?? null,
-);
+));
 
-export const replaceCard = createDomainAction(
+export const replaceCard = action('accounts.account.replaceCard', createDomainAction(
   { fallbackError: "Couldn't replace the card. Try again." },
   async (accountId: string, cardholderId: string, cardId: string, body: ReplaceCardRequest) => {
     const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}/replace', {
@@ -252,9 +253,9 @@ export const replaceCard = createDomainAction(
     });
     return data as Cardholder;
   },
-);
+));
 
-export const closeCard = createDomainAction(
+export const closeCard = action('accounts.account.closeCard', createDomainAction(
   { fallbackError: "Couldn't close the card. Try again." },
   async (accountId: string, cardholderId: string, cardId: string, body?: CloseCardRequest) => {
     const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}/close', {
@@ -263,20 +264,20 @@ export const closeCard = createDomainAction(
     });
     return data as Cardholder;
   },
-);
+));
 
 /** DELETE of one card plastic (the server has a real per-card DELETE). */
-export const deleteCardPlastic = createDomainAction(
+export const deleteCardPlastic = action('accounts.account.deleteCardPlastic', createDomainAction(
   { fallbackError: "Couldn't delete the card. Try again." },
   async (accountId: string, cardholderId: string, cardId: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}', {
       params: { path: { accountId, cardholderId, cardId } },
     });
   },
-);
+));
 
 /** The cards dialog's "delete plastic": the closest real lifecycle step (closes the card). */
-export const closeCardPlastic = createDomainAction(
+export const closeCardPlastic = action('accounts.account.closeCardPlastic', createDomainAction(
   { fallbackError: "Couldn't close the card. Try again." },
   async (accountId: string, cardholderId: string, cardId: string) => {
     const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}/close', {
@@ -284,9 +285,9 @@ export const closeCardPlastic = createDomainAction(
     });
     return data as Cardholder;
   },
-);
+));
 
-export const reattributeTransactionsToCard = createDomainAction(
+export const reattributeTransactionsToCard = action('accounts.account.reattributeTransactionsToCard', createDomainAction(
   { fallbackError: "Couldn't reassign transactions. Try again." },
   async (body: BulkReattributeCardRequest) => {
     const { data } = await serverApi.PATCH('/api/v1/transactions/card', {
@@ -294,35 +295,35 @@ export const reattributeTransactionsToCard = createDomainAction(
     });
     return data as BulkReattributeResponse;
   },
-);
+));
 
 // Statements
 
-export const loadAccountStatements = createDomainAction(
+export const loadAccountStatements = action('accounts.account.loadAccountStatements', createDomainAction(
   { fallbackError: "Couldn't load statements. Try again." },
   async (accountId: string): Promise<StatementSummary[]> => {
     const { data } = await serverApi.GET('/api/v1/accounts/{accountId}/statements', { params: { path: { accountId } } });
     return (data ?? []) as StatementSummary[];
   },
-);
+));
 
-export const loadCardCycleSummary = createDomainAction(
+export const loadCardCycleSummary = action('accounts.account.loadCardCycleSummary', createDomainAction(
   { fallbackError: "Couldn't load the card cycle summary. Try again." },
   async (accountId: string): Promise<CardCycleSummary | null> => {
     const { data } = await serverApi.GET('/api/v1/accounts/{id}/card-summary', { params: { path: { id: accountId } } });
     return (data ?? null) as CardCycleSummary | null;
   },
-);
+));
 
-export const loadStatementDetail = createDomainAction(
+export const loadStatementDetail = action('accounts.account.loadStatementDetail', createDomainAction(
   { fallbackError: "Couldn't load statement details. Try again." },
   async (statementId: string): Promise<StatementDetail> => {
     const { data } = await serverApi.GET('/api/v1/statements/{statementId}', { params: { path: { statementId } } });
     return data as StatementDetail;
   },
-);
+));
 
-export const loadStatementDeletionPreview = createDomainAction(
+export const loadStatementDeletionPreview = action('accounts.account.loadStatementDeletionPreview', createDomainAction(
   { fallbackError: "Couldn't load the deletion preview. Try again." },
   async (accountId: string, statementId: string): Promise<StatementDeletionPreview> => {
     const { data } = await serverApi.GET('/api/v1/accounts/{accountId}/statements/{statementId}/deletion-preview', {
@@ -330,9 +331,9 @@ export const loadStatementDeletionPreview = createDomainAction(
     });
     return data as StatementDeletionPreview;
   },
-);
+));
 
-export const deleteStatement = createDomainAction(
+export const deleteStatement = action('accounts.account.deleteStatement', createDomainAction(
   { fallbackError: "Couldn't delete the statement. Try again." },
   async (accountId: string, statementId: string): Promise<StatementDeletionResult> => {
     const { data } = await serverApi.DELETE('/api/v1/accounts/{accountId}/statements/{statementId}', {
@@ -340,4 +341,4 @@ export const deleteStatement = createDomainAction(
     });
     return data as StatementDeletionResult;
   },
-);
+));

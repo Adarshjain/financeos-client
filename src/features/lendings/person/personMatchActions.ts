@@ -3,9 +3,10 @@
 import { serverApi } from '@/lib/api/server';
 import { createDomainAction } from '@/lib/domainApi';
 import type { LendingTransferSuggestion } from '@/lib/lending.types';
+import { action } from '@/lib/observability/action';
 
 /** The bank transfers the server finds for this person's unlinked entries (the matching tolerance is the server's). */
-export const loadPersonMatches = createDomainAction(
+export const loadPersonMatches = action('personMatch.loadPersonMatches', createDomainAction(
   { fallbackError: "Couldn't find matching bank transactions. Try again." },
   async (counterpartyId: string): Promise<LendingTransferSuggestion[]> => {
     const { data } = await serverApi.GET('/api/v1/counterparties/{id}/match-suggestions', {
@@ -13,4 +14,4 @@ export const loadPersonMatches = createDomainAction(
     });
     return (data?.suggestions ?? []) as unknown as LendingTransferSuggestion[];
   },
-);
+));

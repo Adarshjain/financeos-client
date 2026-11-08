@@ -2,13 +2,14 @@
 
 import { serverApi } from '@/lib/api/server';
 import { createDomainAction } from '@/lib/domainApi';
+import { action } from '@/lib/observability/action';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 
 /** The user's saved reports (list metadata, no definitions). */
-export const loadReportsList = createDomainAction(
+export const loadReportsList = action('query.report.loadReportsList', createDomainAction(
   { fallbackError: "Couldn't load reports. Try again." },
   async (): Promise<ReportSummaryResponse[]> => {
     const { data } = await serverApi.GET('/api/v1/reports');
     return (data ?? []) as unknown as ReportSummaryResponse[];
   },
-);
+));

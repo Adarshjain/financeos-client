@@ -12,6 +12,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 // migration report.
 import type { GmailSenderRequest, GmailSenderResponse } from '@/lib/api/types';
 import { notify } from '@/lib/notify';
+import { startFlow } from '@/lib/observability/flow';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { SyncSummary } from '@/lib/types';
@@ -57,7 +58,14 @@ export function useGmailConnect() {
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // gmail.sync flow: from the Sync tap to the job's result (or the request's failure); only the job the Sync tap started.
+  const syncFlow = React.useRef<{ jobId: string | null; end: ReturnType<typeof startFlow>['end'] } | null>(null);
+
   const { isPolling } = useJobStatusPolling<SyncSummary>(activeJobId, (job) => {
+    if (syncFlow.current && syncFlow.current.jobId === activeJobId) {
+      syncFlow.current.end(job.status === 'SUCCEEDED' ? 'ok' : 'error');
+      syncFlow.current = null;
+    }
     if (job.status === 'SUCCEEDED') {
       notify.success('Gmail sync completed');
       // The job is what actually creates/reconciles transactions.
@@ -111,14 +119,24 @@ export function useGmailConnect() {
 
   const handleSync = async () => {
     setMessage(null);
+    // A second tap while a flow is open ends the first as failed rather than dropping it.
+    syncFlow.current?.end('error');
+    const flow = startFlow('gmail.sync');
+    syncFlow.current = { jobId: null, end: flow.end };
     try {
       const data = await syncMutation.mutateAsync();
       if (data?.jobId) {
+        syncFlow.current = { jobId: data.jobId, end: flow.end };
         setActiveJobId(data.jobId);
         emitJobStarted(data.jobId);
         notify.info('Gmail sync started');
+      } else {
+        flow.end('empty');
+        syncFlow.current = null;
       }
     } catch (err) {
+      flow.end('error');
+      syncFlow.current = null;
       setMessage({ type: 'error', text: getErrorMessage(err, "Couldn't sync Gmail. Try again.") });
     }
   };

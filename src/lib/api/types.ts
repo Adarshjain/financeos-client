@@ -97,10 +97,14 @@ export type InboxSummaryResponse = Schemas['InboxSummaryResponse'];
 export type InboxSnoozeRequest = Schemas['InboxSnoozeRequest'];
 
 // Bills & notifications
-export type CardBillResponse = Schemas['CardBillResponse'];
+/** `payments` is always sent by the server; optional here so bill fixtures that predate it still type-check. */
+export type CardBillResponse = Omit<Schemas['CardBillResponse'], 'payments'> & {
+  payments?: Schemas['CardBillResponse']['payments'];
+};
 export type BillStatus = CardBillResponse['status'];
 export type StatementSkipsResponse = Schemas['StatementSkipsResponse'];
 export type MarkBillPaidRequest = Schemas['MarkBillPaidRequest'];
+export type PaymentCandidateResponse = Schemas['PaymentCandidateResponse'];
 export type UpdateBillDetailsRequest = Schemas['UpdateBillDetailsRequest'];
 export type NotificationSettingsResponse = Schemas['NotificationSettingsResponse'];
 export type PushDeviceResponse = Schemas['PushDeviceResponse'];

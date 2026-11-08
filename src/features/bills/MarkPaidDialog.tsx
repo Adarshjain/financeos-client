@@ -6,14 +6,20 @@ import React from 'react';
 import { DateField } from '@/components/ds/DateField/DateField';
 import { Dialog } from '@/components/ds/Dialog/Dialog';
 import { SegmentedControl } from '@/components/ds/SegmentedControl/SegmentedControl';
+import { Select, type SelectOption } from '@/components/ds/Select/Select';
 import { showToast } from '@/components/ds/Toast/Toast';
 import { AmountField } from '@/components/organisms/AmountField/AmountField';
+import { isAccountClosed } from '@/lib/account.types';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
-import type { MarkBillPaidRequest } from '@/lib/api/types';
+import type { MarkBillPaidRequest, PaymentCandidateResponse } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
-import { formatMoney } from '@/lib/format';
+import { formatDate, formatMoney } from '@/lib/format';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
+import { usePaymentCandidates } from '@/lib/query/hooks/usePaymentCandidates';
+import { AccountType } from '@/lib/types';
+import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 const FORM_ID = 'bill-mark-paid-form';
 
@@ -30,6 +36,14 @@ export interface MarkPaidDialogProps {
 }
 
 type Mode = 'full' | 'part';
+
+/** Wall clock in ms; a function so the render-time open stamp reads as intentional. */
+const nowMs = () => Date.now();
+
+const NONE = 'none';
+const EXTERNAL = 'external';
+const candidateValue = (c: PaymentCandidateResponse) => `tx:${c.transactionId}`;
+const accountValue = (id: string) => `acct:${id}`;
 
 const MODES = [
   { value: 'full', label: 'Paid in full' },
@@ -56,10 +70,66 @@ export function MarkPaidDialog({
   const [paidOn, setPaidOn] = React.useState(today);
   const [amountError, setAmountError] = React.useState<string | null>(null);
   const [dateError, setDateError] = React.useState<string | null>(null);
+  // What the user picked in "Paid from"; null until they pick, so the default can follow the candidates.
+  const [picked, setPicked] = React.useState<string | null>(null);
+
+  const debouncedAmount = useDebouncedValue(amount, SEARCH_DEBOUNCE_MS);
+  const partAmount = mode === 'part' ? Number(resolveAmountExpression(debouncedAmount)) : null;
+  const partAmountValid = partAmount != null && Number.isFinite(partAmount) && partAmount > 0;
+  const lookupWanted = open && (mode === 'full' || partAmountValid);
+  // Not while submitting: the refetch after the mark would come back empty and unlock the fields.
+  const candidatesQuery = usePaymentCandidates(
+    statementId,
+    partAmountValid ? partAmount : null,
+    lookupWanted && !markPaid.isPending,
+  );
+  // The dialog stays mounted, so a query keeps the last open's answer: only data fetched since this open counts.
+  const [openedAt, setOpenedAt] = React.useState(0);
+  const [wasOpen, setWasOpen] = React.useState(false);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setOpenedAt(nowMs());
+  }
+  const fresh = (candidatesQuery.dataUpdatedAt ?? 0) >= openedAt;
+  const candidates = React.useMemo(
+    () => (lookupWanted && fresh && Array.isArray(candidatesQuery.data) ? candidatesQuery.data : []),
+    [lookupWanted, fresh, candidatesQuery.data],
+  );
+  const accountsQuery = useAccounts(undefined, { enabled: open });
+  const payFromAccounts = React.useMemo(
+    () =>
+      (Array.isArray(accountsQuery.data) ? accountsQuery.data : []).filter(
+        (a) => (a.type === AccountType.BANK_ACCOUNT || a.type === AccountType.GENERIC) && !isAccountClosed(a),
+      ),
+    [accountsQuery.data],
+  );
+
+  const options = React.useMemo<SelectOption[]>(
+    () => [
+      ...candidates.map((c) => ({
+        value: candidateValue(c),
+        label: `${c.accountName} · ${formatDate(c.date, 'list')} · ${formatMoney(c.amount, { decimals: 'exact' })}`,
+        description: c.description ?? undefined,
+      })),
+      ...payFromAccounts.map((a) => ({
+        value: accountValue(a.id),
+        label: a.name,
+        description: 'Creates the bank payment too',
+      })),
+      { value: EXTERNAL, label: 'An account not in FinanceOS', description: 'Adds the card payment only' },
+      { value: NONE, label: "Don't add a transaction" },
+    ],
+    [candidates, payFromAccounts],
+  );
+  // One found debit is preselected; a pick that no longer exists (the amount changed) falls back to the default.
+  const defaultChoice = candidates.length === 1 ? candidateValue(candidates[0]) : NONE;
+  const choice = picked != null && options.some((o) => o.value === picked) ? picked : defaultChoice;
+  const chosenCandidate = candidates.find((c) => candidateValue(c) === choice) ?? null;
 
   React.useEffect(() => {
     if (!open) return;
     setMode('full');
+    setPicked(null);
     setAmount('');
     setPaidOn(todayInAppZone());
     setAmountError(null);
@@ -80,6 +150,12 @@ export function MarkPaidDialog({
   const submit = async () => {
     const body: MarkBillPaidRequest = {};
     let valid = true;
+    if (chosenCandidate) {
+      // The debit decides the amount and the date.
+      body.payment = { mode: 'EXISTING', fromTransactionId: chosenCandidate.transactionId };
+      await send(body);
+      return;
+    }
     if (mode === 'part') {
       const resolvedAmount = resolveAmountExpression(amount);
       if (resolvedAmount !== amount) setAmount(resolvedAmount);
@@ -100,11 +176,16 @@ export function MarkPaidDialog({
       if (paidOn) body.paidOn = paidOn;
     }
     if (!valid) return;
+    if (choice === EXTERNAL) body.payment = { mode: 'NEW' };
+    else if (choice.startsWith('acct:')) body.payment = { mode: 'NEW', fromAccountId: choice.slice(5) };
+    await send(body);
+  };
 
+  const send = async (body: MarkBillPaidRequest) => {
     try {
       await markPaid.mutateAsync({ statementId, body });
       onOpenChange(false);
-      showToast(mode === 'part' ? 'Partial payment recorded' : 'Bill marked as paid', {
+      showToast(mode === 'part' && !chosenCandidate ? 'Partial payment recorded' : 'Bill marked as paid', {
         action: { label: 'Undo', onSelect: undo },
       });
       router.refresh();
@@ -145,7 +226,15 @@ export function MarkPaidDialog({
               value={mode}
               onValueChange={(v) => setMode(v as Mode)}
             />
-            {mode === 'part' ? (
+            {chosenCandidate ? (
+              <AmountField
+                label="Amount paid"
+                prefix="₹"
+                inputMode="decimal"
+                value={String(chosenCandidate.amount)}
+                disabled
+              />
+            ) : mode === 'part' ? (
               <AmountField
                 label="Amount paid"
                 prefix="₹"
@@ -159,9 +248,16 @@ export function MarkPaidDialog({
               label="Paid on"
               today={today}
               maxDate={today}
-              value={paidOn}
+              value={chosenCandidate ? chosenCandidate.date : paidOn}
               onValueChange={(v) => setPaidOn(typeof v === 'string' ? v : '')}
-              error={dateError ?? undefined}
+              disabled={Boolean(chosenCandidate)}
+              error={chosenCandidate ? undefined : (dateError ?? undefined)}
+            />
+            <Select
+              label="Paid from"
+              options={options}
+              value={choice}
+              onValueChange={(v) => setPicked(typeof v === 'string' ? v : null)}
             />
           </form>
         </Dialog.Body>

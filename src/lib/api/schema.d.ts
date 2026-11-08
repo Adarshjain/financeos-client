@@ -1172,6 +1172,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/bills/{statementId}/payment-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["paymentCandidates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/categorize": {
         parameters: {
             query?: never;
@@ -5902,6 +5918,7 @@ export interface components {
             paidSource: "NONE" | "MANUAL" | "CREDITS";
             /** Format: date */
             paymentDueDate?: string | null;
+            payments: components["schemas"]["PaymentResponse"][];
             /** Format: date */
             periodEnd?: string | null;
             /** Format: date */
@@ -8436,6 +8453,7 @@ export interface components {
             amount?: number | null;
             /** Format: date */
             paidOn?: string | null;
+            payment?: components["schemas"]["Payment"];
         };
         MarkNotificationsReadRequest: {
             /** Format: date-time */
@@ -9580,6 +9598,26 @@ export interface components {
             /** Format: int32 */
             reactivatedCount: number;
         };
+        Payment: {
+            /** Format: uuid */
+            fromAccountId?: string | null;
+            /** Format: uuid */
+            fromTransactionId?: string | null;
+            /** @enum {string|null} */
+            mode?: "NONE" | "EXISTING" | "NEW" | null;
+        };
+        PaymentCandidateResponse: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            amount: number;
+            /** Format: date */
+            date: string;
+            description?: string | null;
+            payeeSignal: boolean;
+            /** Format: uuid */
+            transactionId: string;
+        };
         PaymentInfo: {
             amount: number;
             /** Format: uuid */
@@ -9588,6 +9626,18 @@ export interface components {
             paymentDate: string;
             /** Format: uuid */
             transactionId?: string | null;
+        };
+        PaymentResponse: {
+            amount: number;
+            bankAccountName?: string | null;
+            /** Format: uuid */
+            bankTransactionId?: string | null;
+            /** Format: date */
+            date: string;
+            /** @enum {string} */
+            origin: "AUTO" | "USER";
+            /** Format: uuid */
+            transactionId: string;
         };
         PerCardCapUsage: {
             /** Format: uuid */
@@ -14062,6 +14112,39 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CardBillResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    paymentCandidates: {
+        parameters: {
+            query?: {
+                amount?: number;
+            };
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PaymentCandidateResponse"][];
                 };
             };
             /** @description Error response */

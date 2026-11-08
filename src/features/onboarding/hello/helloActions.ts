@@ -3,6 +3,7 @@
 import { serverApi } from '@/lib/api/server';
 import { authApi } from '@/lib/apiClient';
 import { createDomainAction } from '@/lib/domainApi';
+import { action } from '@/lib/observability/action';
 
 export interface HelloInput {
   displayName?: string;
@@ -12,24 +13,24 @@ export interface HelloInput {
 }
 
 // No revalidatePath: the screen stays on /welcome for the Connect Gmail step.
-export const submitHello = createDomainAction(
+export const submitHello = action('hello.submitHello', createDomainAction(
   { fallbackError: "Couldn't save that. Try again." },
   async (input: HelloInput) => {
     await authApi.hello({ ...input, termsAccepted: true });
   },
-);
+));
 
 /** Skip on the Connect Gmail step: onboarding is done. */
-export const finishHello = createDomainAction(
+export const finishHello = action('hello.finishHello', createDomainAction(
   { fallbackError: "Couldn't finish. Try again." },
   async () => {
     await authApi.finishHello();
   },
-);
+));
 
 /** Connect Gmail from Hello: the server sends the browser back to Home instead of Settings. */
-export const startGmailOAuthToHome = createDomainAction(
+export const startGmailOAuthToHome = action('hello.startGmailOAuthToHome', createDomainAction(
   { fallbackError: "Couldn't connect Gmail. Try again." },
   async () =>
     (await serverApi.GET('/api/v1/gmail/oauth/start', { params: { query: { returnTo: 'home' } } })).data ?? null,
-);
+));

@@ -24,6 +24,7 @@ import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.typ
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
 import { builtinPieces } from '../builtins/registry';
+import { useReportWidgetLoad } from '../data/dashboardLoadFlow';
 import { useDuplicateBuiltinReport } from '../data/useDashboardMutations';
 import { useInView } from '../data/useInView';
 import { ReportWidgetBody } from './ReportWidgetBody';
@@ -85,6 +86,8 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
   // Out of view: the loading state, and nothing fetched (a component built-in's body is not mounted).
   const loading = available && (!inView || (loadsHere && !state.data && !state.error));
   const failed = loadsHere && state.error ? state.error : undefined;
+  // dashboard.load flow: a widget out of view is not waited for; a component built-in fetches for itself and counts as settled once mounted.
+  useReportWidgetLoad(widget.id, !available ? 'settled' : !inView ? null : failed ? 'error' : loading ? 'pending' : 'settled');
 
   const openUnderlying = (next: UnderlyingTarget | null = null) => {
     const show = () => {
