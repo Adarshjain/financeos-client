@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { Account, CreditCard } from '@/lib/account.types';
+import type { CreditCard } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 
 import { AccountFormDialog } from './AccountFormDialog';
@@ -427,8 +427,13 @@ describe('Edit account', () => {
     expect(screen.getByDisplayValue('01/04/2026')).toBeInTheDocument();
     expect(screen.getByDisplayValue('HDFC cards')).toBeInTheDocument();
     expect(screen.getByText('Leave the date empty to pause Gmail import for this card.')).toBeInTheDocument();
-    expect(screen.getByText('Close account', { selector: 'h3' })).toBeInTheDocument();
-    expect(screen.getByText('Delete account', { selector: 'h3' })).toBeInTheDocument();
+  });
+
+  it('no longer offers Close account or Delete account in the Edit dialog', () => {
+    renderDialog({ account: card });
+    expect(screen.queryByText('Close account')).toBeNull();
+    expect(screen.queryByText('Delete account')).toBeNull();
+    expect(screen.queryByRole('button', { name: /Reopen/ })).toBeNull();
   });
 
   it('saves the changes, refreshes and closes', async () => {
@@ -507,73 +512,6 @@ describe('Edit account', () => {
     submit('Save account');
     await waitFor(() => expect(mutations.updateAccountMutation.mutateAsync).toHaveBeenCalled());
     expect(mutations.executeGmailCleanupMutation.mutateAsync).not.toHaveBeenCalled();
-  });
-
-  it('closes the account on the chosen date', async () => {
-    mutations.closeAccountMutation.mutateAsync.mockResolvedValue({ ...card, closedOn: '2026-10-31' });
-    renderDialog({ account: card });
-    await user.type(screen.getByRole('textbox', { name: /Closed on/ }), '31102026');
-    submit('Close account');
-    await waitFor(() =>
-      expect(mutations.closeAccountMutation.mutateAsync).toHaveBeenCalledWith({
-        id: 'c1',
-        body: { closedOn: '2026-10-31' },
-      })
-    );
-    expect(toast).toHaveBeenCalledWith('Account closed');
-    expect(onClose).toHaveBeenCalled();
-    expect(router.refresh).toHaveBeenCalled();
-  });
-
-  it('shows the server warnings after closing', async () => {
-    mutations.closeAccountMutation.mutateAsync.mockResolvedValue({ ...card, warnings: ['2 transactions are dated after the closing date.'] });
-    renderDialog({ account: card });
-    submit('Close account');
-    await waitFor(() =>
-      expect(toast).toHaveBeenCalledWith('2 transactions are dated after the closing date.', { tone: 'warning' })
-    );
-    expect(mutations.closeAccountMutation.mutateAsync).toHaveBeenCalledWith({ id: 'c1', body: { closedOn: undefined } });
-  });
-
-  it('reopens a closed account instead of offering to close it', async () => {
-    const closed: Account = { ...card, closedOn: '2026-06-30' };
-    mutations.reopenAccountMutation.mutateAsync.mockResolvedValue(card);
-    renderDialog({ account: closed });
-    expect(screen.getByText('Closed on 30 Jun 26')).toBeInTheDocument();
-    expect(screen.getByText('All transactions and statements are kept.')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Close account' })).toBeNull();
-    submit('Reopen account');
-    await waitFor(() => expect(mutations.reopenAccountMutation.mutateAsync).toHaveBeenCalledWith('c1'));
-    expect(toast).toHaveBeenCalledWith('Account reopened');
-    expect(router.refresh).toHaveBeenCalled();
-  });
-
-  it('confirms before deleting, with the wording from the board, then returns to the list', async () => {
-    mutations.deleteAccountMutation.mutateAsync.mockResolvedValue(undefined);
-    renderDialog({ account: card });
-    fireEvent.click(screen.getAllByRole('button', { name: 'Delete account' })[0]);
-
-    expect(await screen.findByText('Delete HDFC Regalia?')).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Deletes the account with all its transactions, statements, cards, reward rules and Gmail history. This can't be undone."
-      )
-    ).toBeInTheDocument();
-    expect(screen.getByText('Not using this account any more?')).toBeInTheDocument();
-    expect(mutations.deleteAccountMutation.mutateAsync).not.toHaveBeenCalled();
-
-    const confirm = screen.getAllByRole('button', { name: 'Delete' }).at(-1)!;
-    fireEvent.click(confirm);
-    await waitFor(() => expect(mutations.deleteAccountMutation.mutateAsync).toHaveBeenCalledWith('c1'));
-    expect(toast).toHaveBeenCalledWith('Account deleted');
-    expect(router.push).toHaveBeenCalledWith('/accounts');
-  });
-
-  it('leaves the close-instead note out of the delete confirm for a closed account', async () => {
-    renderDialog({ account: { ...card, closedOn: '2026-06-30' } });
-    fireEvent.click(screen.getAllByRole('button', { name: 'Delete account' })[0]);
-    expect(await screen.findByText('Delete HDFC Regalia?')).toBeInTheDocument();
-    expect(screen.queryByText('Not using this account any more?')).toBeNull();
   });
 
   it('prefills a broker provider and shows no email fields', () => {

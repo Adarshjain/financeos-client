@@ -5,6 +5,7 @@ import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 
 import { AccountClosePrompt } from './AccountClosePrompt';
+import { AccountLifecycleCard } from './AccountLifecycleCard';
 import { BankOverview } from './BankOverview';
 import { BrokerOverview } from './BrokerOverview';
 import { CardOverview } from './CardOverview';
@@ -37,6 +38,7 @@ export async function AccountOverview({
       ) : (
         <WalletOverview account={account} today={today} />
       )}
+      <AccountLifecycleCard account={account} />
     </div>
   );
 }

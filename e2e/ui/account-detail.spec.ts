@@ -92,9 +92,7 @@ test.describe('Account page /accounts/[id] (@ui)', () => {
     await expect(main.getByRole('tab', { name: 'Cards' })).toHaveCount(0);
     await expect(main.getByText('No transactions yet')).toBeVisible();
 
-    await main.getByRole('button', { name: 'Edit', exact: true }).first().click();
-    const edit = page.getByRole('dialog', { name: 'Edit account' });
-    await edit.getByRole('button', { name: 'Delete account' }).click();
+    await main.getByRole('button', { name: 'Delete account' }).click();
     const confirm = page.getByRole('dialog', { name: 'Delete Hub Wallet?' });
     await expect(confirm.getByText(/can't be undone/)).toBeVisible();
     await confirm.getByRole('button', { name: 'Delete', exact: true }).click();

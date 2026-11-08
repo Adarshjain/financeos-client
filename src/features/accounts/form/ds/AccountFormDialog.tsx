@@ -43,7 +43,6 @@ import {
   valuesFromAccount,
   withLimitPoolChoice,
 } from './accountFormModel';
-import { CloseAccountSection, DeleteAccountSection } from './AccountLifecycleSections';
 import { buildSuggestionPrefill, FROM_EMAIL_SUBTITLE } from './suggestionPrefill';
 
 const ACCOUNTS_HREF = appHref('/accounts');
@@ -94,8 +93,6 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
   const [errors, setErrors] = React.useState<FormErrors>({});
   const [identifierError, setIdentifierError] = React.useState<string | null>(null);
   const [cleanup, setCleanup] = React.useState<Cleanup | null>(null);
-  const [closeDate, setCloseDate] = React.useState('');
-  const [showDelete, setShowDelete] = React.useState(false);
   const [failure, setFailure] = React.useState<string | null>(null);
 
   // Edit: the stored identifiers load after the dialog opens; adopt them once.
@@ -120,7 +117,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
     mutations.updateAccountMutation.isPending ||
     mutations.previewGmailCleanupMutation.isPending ||
     mutations.executeGmailCleanupMutation.isPending;
-  const busy = saving || mutations.closeAccountMutation.isPending || mutations.reopenAccountMutation.isPending;
+  const busy = saving;
 
   const change = (patch: Partial<AccountFormValues>) => {
     setValues((v) => ({ ...v, ...patch }));
@@ -258,52 +255,6 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
     }
   };
 
-  const closeAccount = async () => {
-    if (!account) return;
-    try {
-      const closed = await mutations.closeAccountMutation.mutateAsync({
-        id: account.id,
-        body: { closedOn: closeDate || undefined },
-      });
-      if (closed.warnings && closed.warnings.length > 0) {
-        showToast(closed.warnings.join('; '), { tone: 'warning' });
-      } else {
-        showToast('Account closed');
-      }
-      onClose();
-      router.refresh();
-    } catch (e) {
-      showToast(getErrorMessage(e, "Couldn't close the account. Try again."), { tone: 'danger' });
-    }
-  };
-
-  const reopenAccount = async () => {
-    if (!account) return;
-    try {
-      await mutations.reopenAccountMutation.mutateAsync(account.id);
-      showToast('Account reopened');
-      onClose();
-      router.refresh();
-    } catch (e) {
-      showToast(getErrorMessage(e, "Couldn't reopen the account. Try again."), { tone: 'danger' });
-    }
-  };
-
-  const deleteAccount = async () => {
-    if (!account) return;
-    try {
-      await mutations.deleteAccountMutation.mutateAsync(account.id);
-      showToast('Account deleted');
-      setShowDelete(false);
-      router.push(ACCOUNTS_HREF);
-      router.refresh();
-    } catch (e) {
-      showToast(getErrorMessage(e, "Couldn't delete the account. Try again."), { tone: 'danger' });
-    }
-  };
-
-  const noun = isCard ? 'card' : 'account';
-
   return (
     <>
       <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
@@ -369,44 +320,9 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
                 }}
               />
             </form>
-            {account ? (
-              <>
-                <CloseAccountSection
-                  closedOn={account.closedOn}
-                  today={today}
-                  closeDate={closeDate}
-                  onCloseDateChange={setCloseDate}
-                  closing={mutations.closeAccountMutation.isPending}
-                  reopening={mutations.reopenAccountMutation.isPending}
-                  disabled={busy}
-                  onClose={closeAccount}
-                  onReopen={reopenAccount}
-                  noun={noun}
-                />
-                <DeleteAccountSection disabled={busy} onDelete={() => setShowDelete(true)} />
-              </>
-            ) : null}
           </Dialog.Body>
         </Dialog.Content>
       </Dialog>
-
-      {account ? (
-        <ConfirmDialog
-          open={showDelete}
-          onOpenChange={setShowDelete}
-          title={`Delete ${account.name}?`}
-          description="Deletes the account with all its transactions, statements, cards, reward rules and Gmail history. This can't be undone."
-          confirmLabel="Delete"
-          confirmLoading={mutations.deleteAccountMutation.isPending}
-          onConfirm={deleteAccount}
-        >
-          {account.closedOn ? null : (
-            <Banner tone="warning" title="Not using this account any more?">
-              Close it instead. Closing keeps all its history. Close account is just above Delete account in this form.
-            </Banner>
-          )}
-        </ConfirmDialog>
-      ) : null}
 
       <ConfirmDialog
         open={cleanup !== null}

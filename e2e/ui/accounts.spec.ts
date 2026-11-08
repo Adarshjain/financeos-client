@@ -232,13 +232,10 @@ test.describe('Accounts UI (@ui)', () => {
     await expect(page.getByText('Replaced', { exact: true })).toHaveCount(2);
     await expect(page.getByRole('button', { name: 'Replace', exact: true })).toHaveCount(1);
 
-    // 3. Close account: from the edit dialog
+    // 3. Close account: from the Close or delete card on the Overview
     await page.goto(`/accounts/${card.id}`);
-    await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
-    const closing = dialogOf(page, 'Edit account');
-    await closing.getByRole('button', { name: /Close (account|card)/ }).click();
+    await page.getByRole('button', { name: 'Close account', exact: true }).click();
     await expectToast(page, 'Account closed');
-    await expect(closing).not.toBeVisible();
 
     // Closed account moves behind the section's closed line
     await page.goto('/accounts');
@@ -248,11 +245,8 @@ test.describe('Accounts UI (@ui)', () => {
 
     // 4. Reopen account
     await page.goto(`/accounts/${card.id}`);
-    await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
-    const reopening = dialogOf(page, 'Edit account');
-    await reopening.getByRole('button', { name: /Reopen/ }).click();
+    await page.getByRole('button', { name: /Reopen/ }).click();
     await expectToast(page, 'Account reopened');
-    await expect(reopening).not.toBeVisible();
 
     // Account is back in the open rows
     await page.goto('/accounts');
@@ -273,10 +267,8 @@ test.describe('Accounts UI (@ui)', () => {
     await expect(page.getByRole('tab', { name: 'Statements' })).toHaveCount(0);
     await expect(page.getByRole('tab', { name: 'Cards' })).toHaveCount(0);
 
-    // Open edit dialog and delete it; deleting there returns to the list
-    await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
-    const del = dialogOf(page, 'Edit account');
-    await del.getByRole('button', { name: 'Delete account' }).click();
+    // Delete it from the Overview card; deleting returns to the list
+    await page.getByRole('button', { name: 'Delete account', exact: true }).click();
     const confirm = dialogOf(page, 'Delete Temp Petty Cash?');
     await expect(confirm.getByText(/can't be undone/)).toBeVisible();
     await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
