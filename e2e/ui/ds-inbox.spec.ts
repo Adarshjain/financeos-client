@@ -1,40 +1,29 @@
 import type { Page } from '@playwright/test';
 
+import type { ApiClient } from '../fixtures/api';
 import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { resetLlm, setLlmMode } from '../fixtures/control';
-import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import { seedDueSoonLoan } from '../fixtures/seed/obligations';
-import { uploadAndIngest } from '../fixtures/seed/statements';
+import { createTransaction, todayString } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
 import { expectToast } from '../fixtures/ui';
 
-const reviewSeedSpec: BankSpec = {
-  bank: 'HDFC Bank',
-  accountLast10: '7788990022',
-  periodStart: '2026-04-01',
-  periodEnd: '2026-04-30',
-  opening: 50000.0,
-  rows: [
-    { date: '2026-04-05', description: 'SWIGGY ORDER BANGALORE', debit: 450.0 },
-    { date: '2026-04-12', description: 'UBER TRIP AIRPORT', debit: 1250.0 },
-  ],
-};
-
-// The Swiggy row repeats in this overlapping statement, so both copies are possible duplicates
-// (the only reason a statement row waits for review now).
-const reviewOverlapSpec: BankSpec = {
-  ...reviewSeedSpec,
-  periodStart: '2026-04-05',
-  periodEnd: '2026-05-04',
-  rows: [
-    { date: '2026-04-05', description: 'SWIGGY ORDER BANGALORE', debit: 450.0 },
-    { date: '2026-04-25', description: 'NETFLIX SUBSCRIPTION', debit: 649.0 },
-  ],
-};
+/**
+ * One transaction waiting for review. An overlapping statement no longer flags its repeated rows (the matcher folds them
+ * into one), so the review queue is seeded by flagging a row directly.
+ */
+async function seedReviewRow(api: ApiClient, accountId: string) {
+  const t = await createTransaction(api, accountId, { amount: -450, date: todayString(-1), description: 'Swiggy Dinner' });
+  const res = await api.PUT('/api/v1/transactions/{id}', {
+    params: { path: { id: t.id } },
+    body: { accountId, amount: t.amount ?? undefined, date: t.date, description: t.description ?? undefined, reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] },
+  });
+  if (res.response.status !== 200) throw new Error(`flag failed (${res.response.status}): ${JSON.stringify(res.error)}`);
+}
 
 const row = (page: Page, key: string) => page.locator(`[data-inbox-key="${key}"]`);
 const toastAction = (page: Page, label: string) => page.locator('[data-sonner-toast]').getByRole('button', { name: label }).first();
@@ -73,11 +62,8 @@ test.describe('/ds Inbox right-click menu, desktop 1440px (@ui)', () => {
     const api = makeApi(currentUser.cookie);
     await resetLlm(api);
     await setLlmMode(api, 'SCHEMA_DEFAULT');
-    const bank = await createBankAccount(api, { name: 'Ds Inbox Bank', openingBalance: reviewSeedSpec.opening });
-    await uploadAndIngest(api, bank.id, [
-      { filename: 'ds-inbox-review.pdf', buffer: await genBankPdf(reviewSeedSpec) },
-      { filename: 'ds-inbox-review-overlap.pdf', buffer: await genBankPdf(reviewOverlapSpec) },
-    ]);
+    const bank = await createBankAccount(api, { name: 'Ds Inbox Bank' });
+    await seedReviewRow(api, bank.id);
 
     await page.goto('/inbox');
     await expect(row(page, 'review')).toBeVisible({ timeout: 45_000 });

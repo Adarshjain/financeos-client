@@ -4,7 +4,7 @@ import { BankSpec, genBankPdf } from '../fixtures/gen/statements';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import { getInbox, inboxRow } from '../fixtures/seed/nav';
 import { uploadAndIngest } from '../fixtures/seed/statements';
-import { findById, searchAll } from '../fixtures/seed/transactions';
+import { createTransaction, findById, searchAll } from '../fixtures/seed/transactions';
 import { newUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
@@ -34,26 +34,24 @@ test.describe('Inbox API: review summary subtitle (@api)', () => {
     ],
   };
 
-  // Rows of one statement are never compared, so an overlapping statement repeats the Blue Tokai row
-  // to make both copies DUPLICATE_SUSPECT. The parser needs two rows to place the amount column, so
-  // it also carries a Netflix row, reviewed away first below.
-  const overlap: BankSpec = {
-    ...spec,
-    periodStart: '2026-04-05',
-    periodEnd: '2026-05-04',
-    rows: [
-      { date: '2026-04-05', description: 'BLUE TOKAI COFFEE ROASTERS', debit: 650.0 },
-      { date: '2026-04-25', description: 'NETFLIX SUBSCRIPTION', debit: 649.0 },
-    ],
-  };
-
   test('the subtitle counts the rows waiting for review and follows the queue as it drains', async ({ request }) => {
     const { api } = await newUser(request, 'inbox-review-subtitle');
     const account = await createBankAccount(api, { name: 'Subtitle Account' });
-    await uploadAndIngest(api, account.id, [
-      { filename: 'subtitle.pdf', buffer: await genBankPdf(spec) },
-      { filename: 'subtitle-overlap.pdf', buffer: await genBankPdf(overlap) },
-    ]);
+    await uploadAndIngest(api, account.id, [{ filename: 'subtitle.pdf', buffer: await genBankPdf(spec) }]);
+
+    // An overlapping statement no longer flags its repeated rows (the matcher folds them into one), so the two
+    // possible-duplicate copies are seeded directly: the statement's Blue Tokai row and a second Blue Tokai row.
+    const imported = (await searchAll(api, [{ field: 'accountId', operator: 'is', value: account.id }])).find((t) =>
+      (t.sourcedDescription || t.description || '').includes('BLUE TOKAI')
+    )!;
+    const second = await createTransaction(api, account.id, { amount: -650, date: '2026-04-06', description: 'BLUE TOKAI COFFEE ROASTERS' });
+    for (const t of [imported, second]) {
+      const res = await api.PUT('/api/v1/transactions/{id}', {
+        params: { path: { id: t.id } },
+        body: { accountId: account.id, amount: t.amount ?? undefined, date: t.date, description: t.description ?? undefined, reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] },
+      });
+      expectStatus(res, 200);
+    }
 
     const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: account.id }]);
     const tokai = txns.filter((t) => (t.sourcedDescription || t.description || '').includes('BLUE TOKAI'));
