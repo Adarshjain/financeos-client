@@ -7,6 +7,7 @@ import React from 'react';
 import { Banner } from '@/components/ds/Banner/Banner';
 import { Card } from '@/components/ds/Card/Card';
 import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
+import { GRID_GAP } from '@/components/ds/gridGap';
 import { showToast } from '@/components/ds/Toast/Toast';
 import { useAccountFormMutations } from '@/features/accounts/form/useAccountFormMutations';
 import { appHref } from '@/features/shell/routes';
@@ -20,7 +21,7 @@ import { CloseAccountSection, DeleteAccountSection } from './AccountLifecycleSec
 
 const ACCOUNTS_HREF = appHref('/accounts');
 
-/** Close or reopen the account, or delete it: the last card of the Overview. */
+/** Close (or reopen) and Delete: two cards that end the Overview. */
 export function AccountLifecycleCard({ account }: { account: Account }) {
   const router = useRouter();
   const qc = useQueryClient();
@@ -28,12 +29,15 @@ export function AccountLifecycleCard({ account }: { account: Account }) {
   const today = todayInAppZone();
   const [closeDate, setCloseDate] = React.useState('');
   const [showDelete, setShowDelete] = React.useState(false);
+  // After a delete, the confirm keeps loading until the Accounts page has replaced this one.
+  const [leaving, startLeaving] = React.useTransition();
+  const deleting = mutations.deleteAccountMutation.isPending || leaving;
 
   const noun = account.type === AccountType.CREDIT_CARD ? 'card' : 'account';
   const busy =
     mutations.closeAccountMutation.isPending ||
     mutations.reopenAccountMutation.isPending ||
-    mutations.deleteAccountMutation.isPending;
+    deleting;
 
   const refreshed = () => {
     void qc.invalidateQueries({ queryKey: keys.accounts.all });
@@ -71,9 +75,11 @@ export function AccountLifecycleCard({ account }: { account: Account }) {
     try {
       await mutations.deleteAccountMutation.mutateAsync(account.id);
       showToast('Account deleted');
-      setShowDelete(false);
-      router.push(ACCOUNTS_HREF);
-      router.refresh();
+      // Replace, so Back doesn't return to the deleted account's page.
+      startLeaving(() => {
+        router.replace(ACCOUNTS_HREF);
+        router.refresh();
+      });
     } catch (e) {
       showToast(getErrorMessage(e, "Couldn't delete the account. Try again."), { tone: 'danger' });
     }
@@ -81,36 +87,44 @@ export function AccountLifecycleCard({ account }: { account: Account }) {
 
   return (
     <>
-      <Card title="Close or delete">
-        <div className="px-space-16 pt-space-4 pb-space-14 flex flex-col gap-space-16">
-          <CloseAccountSection
-            closedOn={account.closedOn}
-            today={today}
-            closeDate={closeDate}
-            onCloseDateChange={setCloseDate}
-            closing={mutations.closeAccountMutation.isPending}
-            reopening={mutations.reopenAccountMutation.isPending}
-            disabled={busy}
-            onClose={closeAccount}
-            onReopen={reopenAccount}
-            noun={noun}
-          />
-          <DeleteAccountSection disabled={busy} onDelete={() => setShowDelete(true)} />
-        </div>
-      </Card>
+      <div className={`grid grid-cols-1 desk:grid-cols-2 items-start ${GRID_GAP}`}>
+        <Card title="Close account">
+          <div className="px-space-16 pt-space-4 pb-space-14">
+            <CloseAccountSection
+              closedOn={account.closedOn}
+              today={today}
+              closeDate={closeDate}
+              onCloseDateChange={setCloseDate}
+              closing={mutations.closeAccountMutation.isPending}
+              reopening={mutations.reopenAccountMutation.isPending}
+              disabled={busy}
+              onClose={closeAccount}
+              onReopen={reopenAccount}
+              noun={noun}
+            />
+          </div>
+        </Card>
+        <Card title="Delete account">
+          <div className="px-space-16 pt-space-4 pb-space-14">
+            <DeleteAccountSection disabled={busy} onDelete={() => setShowDelete(true)} />
+          </div>
+        </Card>
+      </div>
 
       <ConfirmDialog
         open={showDelete}
-        onOpenChange={setShowDelete}
+        onOpenChange={(open) => {
+          if (!deleting) setShowDelete(open);
+        }}
         title={`Delete ${account.name}?`}
         description="Deletes the account with all its transactions, statements, cards, reward rules and Gmail history. This can't be undone."
         confirmLabel="Delete"
-        confirmLoading={mutations.deleteAccountMutation.isPending}
+        confirmLoading={deleting}
         onConfirm={deleteAccount}
       >
         {account.closedOn ? null : (
           <Banner tone="warning" title="Not using this account any more?">
-            Close it instead. Closing keeps all its history. Close account is just above Delete account on this page.
+            Close it instead. Closing keeps all its history. Use Close account on this page.
           </Banner>
         )}
       </ConfirmDialog>

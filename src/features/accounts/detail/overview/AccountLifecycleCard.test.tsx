@@ -55,12 +55,16 @@ function renderCard(account: Account = card) {
 describe('AccountLifecycleCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    for (const m of Object.values(mutations)) m.mutateAsync.mockReset();
+    for (const m of Object.values(mutations)) {
+      m.mutateAsync.mockReset();
+      m.isPending = false;
+    }
   });
 
   it('shows Close and Delete for an open account', () => {
     renderCard();
-    expect(screen.getByText('Close or delete')).toBeInTheDocument();
+    expect(screen.getByText('Close account', { selector: 'div' })).toBeInTheDocument();
+    expect(screen.getByText('Delete account', { selector: 'div' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Close account' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Delete account' })).toBeInTheDocument();
     expect(screen.getByText(/the card drops out of active lists/)).toBeInTheDocument();
@@ -125,13 +129,14 @@ describe('AccountLifecycleCard', () => {
     click('Delete account');
     expect(await screen.findByText('Delete HDFC Regalia?')).toBeInTheDocument();
     expect(screen.getByText('Not using this account any more?')).toBeInTheDocument();
-    expect(screen.getByText(/Close account is just above Delete account on this page\./)).toBeInTheDocument();
+    expect(screen.getByText(/Use Close account on this page\./)).toBeInTheDocument();
     expect(mutations.deleteAccountMutation.mutateAsync).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Delete' }).at(-1)!);
     await waitFor(() => expect(mutations.deleteAccountMutation.mutateAsync).toHaveBeenCalledWith('c1'));
     expect(toast).toHaveBeenCalledWith('Account deleted');
-    expect(router.push).toHaveBeenCalledWith('/accounts');
+    expect(router.replace).toHaveBeenCalledWith('/accounts');
+    expect(router.push).not.toHaveBeenCalled();
   });
 
   it('does not delete when the confirm is cancelled', async () => {
@@ -141,7 +146,21 @@ describe('AccountLifecycleCard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByText('Delete HDFC Regalia?')).toBeNull());
     expect(mutations.deleteAccountMutation.mutateAsync).not.toHaveBeenCalled();
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it('keeps the delete confirm open while the delete is running', async () => {
+    const view = renderCard();
+    click('Delete account');
+    await screen.findByText('Delete HDFC Regalia?');
+    mutations.deleteAccountMutation.isPending = true;
+    view.rerender(
+      <QueryClientProvider client={new QueryClient()}>
+        <AccountLifecycleCard account={card} />
+      </QueryClientProvider>
+    );
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(screen.getByText('Delete HDFC Regalia?')).toBeInTheDocument();
   });
 
   it('leaves the close-instead banner out for a closed account', async () => {

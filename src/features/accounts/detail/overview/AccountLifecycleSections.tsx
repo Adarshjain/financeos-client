@@ -7,14 +7,6 @@ import { DateField } from '@/components/ds/DateField/DateField';
 import { Text } from '@/components/ds/Text/Text';
 import { formatDate } from '@/lib/format';
 
-function Heading({ children, tone = 'ink-3' }: { children: React.ReactNode; tone?: 'ink-3' | 'danger' }) {
-  return (
-    <Text variant="overline" tone={tone} as="h3">
-      {children}
-    </Text>
-  );
-}
-
 /** Close account (a date and a button) or, for a closed account, when it closed and Reopen. */
 export function CloseAccountSection({
   closedOn,
@@ -42,7 +34,6 @@ export function CloseAccountSection({
   if (closedOn) {
     return (
       <section className="flex flex-col gap-space-8 desk:gap-space-12">
-        <Heading>Close account</Heading>
         <div className="flex items-center justify-between gap-space-12">
           <div className="flex flex-col min-w-0">
             <Text variant="body-strong">Closed on {formatDate(closedOn, 'full')}</Text>
@@ -59,7 +50,6 @@ export function CloseAccountSection({
   }
   return (
     <section className="flex flex-col gap-space-8 desk:gap-space-12">
-      <Heading>Close account</Heading>
       <Text variant="caption" tone="ink-3" as="p">
         {`Closing keeps every transaction and statement; the ${noun} drops out of active lists from this date.`}
       </Text>
@@ -76,7 +66,6 @@ export function CloseAccountSection({
 export function DeleteAccountSection({ disabled, onDelete }: { disabled: boolean; onDelete: () => void }) {
   return (
     <section className="flex flex-col gap-space-8 desk:gap-space-12">
-      <Heading tone="danger">Delete account</Heading>
       <div className="flex items-center gap-space-12">
         <Text variant="caption" tone="ink-3" as="p" className="flex-1">
           Deletes this account and everything recorded on it. This can&apos;t be undone.

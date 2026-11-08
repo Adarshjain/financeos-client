@@ -232,7 +232,7 @@ test.describe('Accounts UI (@ui)', () => {
     await expect(page.getByText('Replaced', { exact: true })).toHaveCount(2);
     await expect(page.getByRole('button', { name: 'Replace', exact: true })).toHaveCount(1);
 
-    // 3. Close account: from the Close or delete card on the Overview
+    // 3. Close account: from the Close account card on the Overview
     await page.goto(`/accounts/${card.id}`);
     await page.getByRole('button', { name: 'Close account', exact: true }).click();
     await expectToast(page, 'Account closed');
