@@ -105,7 +105,7 @@ export function AccountsScreen({
               ),
               caption: (
                 <Suspense fallback={null}>
-                  <InvestmentsDelta sections={sections} dayChangePct={streams.dayChangePct} />
+                  <InvestmentsDelta sections={sections} dayChangePct={streams.dayChangePct} retirement={streams.retirement} />
                 </Suspense>
               ),
             },

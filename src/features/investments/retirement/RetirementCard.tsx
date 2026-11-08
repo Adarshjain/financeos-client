@@ -12,7 +12,12 @@ import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
 import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
 
-import { type RetirementModel, type RetirementTableRow, retirementTableRows } from './retirementModel';
+import {
+  type RetirementModel,
+  type RetirementPartFailure,
+  type RetirementTableRow,
+  retirementTableRows,
+} from './retirementModel';
 
 const ch = createDataTableColumnHelper<RetirementTableRow>();
 
@@ -97,11 +102,34 @@ const columns = [
   }),
 ];
 
+/** In a failed part's place: one compact line, Retry (refreshes the route), and the request reference when there is one. */
+function PartFailed({ what, failure }: { what: string; failure: RetirementPartFailure }) {
+  const router = useRouter();
+  return (
+    <div className="flex flex-wrap items-baseline gap-x-space-6 py-space-8">
+      <Text variant="body" tone="ink-3" as="span">
+        Couldn&apos;t load {what}.
+      </Text>
+      <Text variant="label" as="span">
+        <Button variant="link" size="sm" onClick={() => router.refresh()}>
+          Retry
+        </Button>
+      </Text>
+      {failure.reference ? (
+        <Text variant="caption" tone="ink-3" as="span">
+          Reference {failure.reference}
+        </Text>
+      ) : null}
+    </div>
+  );
+}
+
 /** The Retirement card: one row per EPF and NPS account (an upload line for what is missing). A row opens its screen. Shown on Accounts. */
 export function RetirementCard({ model }: { model: RetirementModel }) {
   const router = useRouter();
   return (
     <Card title="EPF & NPS" subtitle="EPF passbook + NPS statements">
+      {model.failed?.epf ? <PartFailed what="EPF" failure={model.failed.epf} /> : null}
       <DataTable
         columns={columns}
         data={retirementTableRows(model)}
@@ -111,6 +139,7 @@ export function RetirementCard({ model }: { model: RetirementModel }) {
           if (!row.upload) router.push(row.href);
         }}
       />
+      {model.failed?.nps ? <PartFailed what="NPS" failure={model.failed.nps} /> : null}
     </Card>
   );
 }

@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
 import { RetirementCard } from '@/features/investments/retirement/RetirementCard';
-import { retirementNetWorthTotal } from '@/features/investments/retirement/retirementModel';
+import { retirementExcludesNote, retirementNetWorthTotal } from '@/features/investments/retirement/retirementModel';
 import { LoansCard } from '@/features/loans/list/LoansCard';
 import { LoadError } from '@/features/shell/LoadError';
 import type { CreditCard } from '@/lib/account.types';
@@ -74,12 +74,21 @@ export async function LoansSection({ loans }: Pick<AccountsListData, 'loans'>) {
 export async function InvestmentsDelta({
   sections,
   dayChangePct,
-}: Pick<AccountsListData, 'dayChangePct'> & { sections: AccountSections }) {
+  retirement,
+}: Pick<AccountsListData, 'dayChangePct' | 'retirement'> & { sections: AccountSections }) {
   const delta = investmentsKpi(sections, await dayChangePct).delta;
-  if (!delta) return null;
+  const retirementResult = await retirement;
+  const note = retirementResult.ok ? retirementExcludesNote(retirementResult.data.failed) : "Excludes EPF and NPS — couldn't load";
+  if (!delta && !note) return null;
   return (
     <>
-      <span>{delta.value}</span> {delta.period}
+      {delta ? (
+        <>
+          <span>{delta.value}</span> {delta.period}
+        </>
+      ) : null}
+      {delta && note ? ' · ' : null}
+      {note}
     </>
   );
 }

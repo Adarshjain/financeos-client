@@ -34,6 +34,12 @@ export interface RetirementModel {
   /** Nothing EPF to show: the row becomes an upload line. */
   epfMissing: boolean;
   npsMissing: boolean;
+  /** A part that could not be loaded (its rows are not in `rows`/`total`), with the request reference when there is one. */
+  failed?: { epf?: RetirementPartFailure; nps?: RetirementPartFailure };
+}
+
+export interface RetirementPartFailure {
+  reference?: string;
 }
 
 /** The EPF row: one UAN, its balance and passbook month. Null when no passbook or balance has been added. */
@@ -90,11 +96,30 @@ export function npsRetirementRows(summary: NpsSummary): RetirementRow[] {
   });
 }
 
-export function retirementModel(epf: EpfSummary, employers: EpfEmployer[], nps: NpsSummary): RetirementModel {
-  const epfRow = epfRetirementRow(epf, employers);
-  const npsRows = npsRetirementRows(nps);
+/** A part that failed to load is null; pass its failure in `failed`. The total is the loaded parts' sum. */
+export function retirementModel(
+  epf: EpfSummary | null,
+  employers: EpfEmployer[] | null,
+  nps: NpsSummary | null,
+  failed?: RetirementModel['failed'],
+): RetirementModel {
+  const epfRow = epf && employers ? epfRetirementRow(epf, employers) : null;
+  const npsRows = nps ? npsRetirementRows(nps) : [];
   const rows = [...(epfRow ? [epfRow] : []), ...npsRows];
-  return { rows, total: rows.reduce((sum, r) => sum + r.value, 0), epfMissing: !epfRow, npsMissing: npsRows.length === 0 };
+  const model: RetirementModel = {
+    rows,
+    total: rows.reduce((sum, r) => sum + r.value, 0),
+    epfMissing: !epfRow,
+    npsMissing: npsRows.length === 0,
+  };
+  if (failed && (failed.epf || failed.nps)) model.failed = failed;
+  return model;
+}
+
+/** "Excludes NPS — couldn't load", "Excludes EPF and NPS — couldn't load"; null when nothing failed. */
+export function retirementExcludesNote(failed: { epf?: unknown; nps?: unknown } | undefined): string | null {
+  const parts = [failed?.epf ? 'EPF' : null, failed?.nps ? 'NPS' : null].filter(Boolean);
+  return parts.length ? `Excludes ${parts.join(' and ')} — couldn't load` : null;
 }
 
 /** What net worth counts of retirement: EPF plus the holder's own NPS, the same set the server sums. */
@@ -131,10 +156,14 @@ export function retirementTableRows(model: RetirementModel): RetirementTableRow[
   const epf = model.rows.filter((r) => r.kind === 'epf').map(real);
   const nps = model.rows.filter((r) => r.kind === 'nps').map(real);
   return [
-    ...(model.epfMissing
+    ...(model.failed?.epf
+      ? []
+      : model.epfMissing
       ? [{ id: 'epf-missing', name: 'EPF', idLabel: '', sub: EPF_EMPTY.line, href: '', valueText: '', updated: '', status: null, upload: EPF_EMPTY.action }]
       : epf),
-    ...(model.npsMissing
+    ...(model.failed?.nps
+      ? []
+      : model.npsMissing
       ? [{ id: 'nps-missing', name: 'NPS', idLabel: '', sub: NPS_EMPTY.line, href: '', valueText: '', updated: '', status: null, upload: NPS_EMPTY.action }]
       : nps),
   ];
