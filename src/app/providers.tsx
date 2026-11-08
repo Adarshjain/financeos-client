@@ -1,4 +1,5 @@
 import { SerwistProvider } from '@serwist/turbopack/react';
+import { Suspense } from 'react';
 
 import { AppLockWatcher } from '@/features/app-lock/AppLockWatcher';
 import { FaroRouteTracker } from '@/lib/providers/FaroRouteTracker';
@@ -22,7 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <SerwistProvider swUrl="/serwist/sw.js" disable={isDev} cacheOnNavigation={false}>
           {children}
         </SerwistProvider>
-        <FaroRouteTracker />
+        <Suspense fallback={null}>
+          <FaroRouteTracker />
+        </Suspense>
         <AppLockWatcher />
       </QueryProvider>
     </ThemeProvider>

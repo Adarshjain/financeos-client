@@ -16,6 +16,7 @@ import { seedNeedsReviewCount } from '@/features/transactions/useNeedsReviewCoun
 import type { Account } from '@/lib/account.types';
 import type { CategoryDef } from '@/lib/categoryList.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import { startFlow } from '@/lib/observability/flow';
 import type { Tag } from '@/lib/tags.types';
 
 import { FilterChips } from './FilterChips';
@@ -133,7 +134,19 @@ export function TransactionsListPane({
         { scroll: false }
       );
     });
-  const { text, setText } = useSearchText(query.q, (q) => go({ q }));
+  // transactions.search flow: starts when a committed search text triggers the fetch, ends when the page for that q renders.
+  const searchFlow = React.useRef<{ q: string; end: (outcome: 'ok' | 'error' | 'empty') => void } | null>(null);
+  const { text, setText } = useSearchText(query.q, (q) => {
+    searchFlow.current = { q, end: startFlow('transactions.search').end };
+    go({ q });
+  });
+  React.useEffect(() => {
+    const flow = searchFlow.current;
+    // A response for an older q is stale: only the flow of the latest committed q ends.
+    if (!flow || flow.q.trim().toLowerCase() !== query.q.trim().toLowerCase()) return;
+    searchFlow.current = null;
+    flow.end(!list.ok ? 'error' : list.rows.length === 0 ? 'empty' : 'ok');
+  }, [query.q, list]);
 
   return (
     <>

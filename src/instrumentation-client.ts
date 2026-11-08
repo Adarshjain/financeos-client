@@ -1,6 +1,8 @@
 import type { Faro } from '@grafana/faro-web-sdk';
 import { initializeFaro } from '@grafana/faro-web-sdk';
 
+import { scheduleTracingLoad } from '@/lib/observability/lazyTracing';
+
 let faroInstance: Faro | null = null;
 
 /**
@@ -53,6 +55,8 @@ export function initFaro(): Faro | null {
         document.cookie = `faro_session=${session.id}; Path=/; SameSite=Lax; Secure`;
       }
     };
+
+    scheduleTracingLoad(faroInstance);
 
     updateSessionCookie();
     window.addEventListener('focus', updateSessionCookie);

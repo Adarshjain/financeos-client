@@ -3,6 +3,7 @@
 import { serverApi } from '@/lib/api/server';
 import type { Schemas } from '@/lib/api/types';
 import { createDomainAction } from '@/lib/domainApi';
+import { action } from '@/lib/observability/action';
 import type { FilterClause } from '@/lib/reports.types';
 import type {
   BatchReviewRequest,
@@ -16,7 +17,7 @@ import type {
 
 
 /** One page of the transaction picker's search. A failed page is the caller's to treat as empty. */
-export const searchPickerTransactions = createDomainAction(
+export const searchPickerTransactions = action('transaction.searchPickerTransactions', createDomainAction(
   { fallbackError: "Couldn't search the transactions. Try again." },
   async (
     filters: FilterClause[],
@@ -30,17 +31,17 @@ export const searchPickerTransactions = createDomainAction(
     });
     return data ?? null;
   },
-);
+));
 
-export const createTransaction = createDomainAction(
+export const createTransaction = action('transaction.createTransaction', createDomainAction(
   { fallbackError: "Couldn't save the transaction. Try again." },
   async (body: TransactionRequest): Promise<Transaction> => {
     const { data } = await serverApi.POST('/api/v1/transactions', { body: body as Schemas['CreateTransactionRequest'] });
     return data! as Transaction;
   },
-);
+));
 
-export const updateTransaction = createDomainAction(
+export const updateTransaction = action('transaction.updateTransaction', createDomainAction(
   { fallbackError: "Couldn't save the transaction. Try again." },
   async (id: string, body: TransactionRequest): Promise<Transaction> => {
     const { data } = await serverApi.PUT('/api/v1/transactions/{id}', {
@@ -49,58 +50,58 @@ export const updateTransaction = createDomainAction(
     });
     return data! as Transaction;
   },
-);
+));
 
 /** Set (or clear) a transaction's category; `restore` puts back what the response's `previous` reported (Undo). */
-export const setTransactionCategory = createDomainAction(
+export const setTransactionCategory = action('transaction.setTransactionCategory', createDomainAction(
   { fallbackError: "Couldn't set the category. Try again." },
   async (id: string, body: SetCategoryRequest): Promise<SetCategoryResponse> => {
     const { data } = await serverApi.PUT('/api/v1/transactions/{id}/category', { params: { path: { id } }, body });
     return data! as unknown as SetCategoryResponse;
   },
-);
+));
 
 /** A category suggestion for a description. */
-export const categorizeDescription = createDomainAction(
+export const categorizeDescription = action('transaction.categorizeDescription', createDomainAction(
   { fallbackError: "Couldn't suggest a category. Try again." },
   async (description: string): Promise<CategorizeResponse | null> => {
     const { data } = await serverApi.POST('/api/v1/categorize', { body: { description } });
     return (data ?? null) as CategorizeResponse | null;
   },
-);
+));
 
-export const batchDeleteTransactions = createDomainAction(
+export const batchDeleteTransactions = action('transaction.batchDeleteTransactions', createDomainAction(
   { fallbackError: "Couldn't delete the transactions. Try again." },
   async (transactionIds: string[]): Promise<Schemas['BatchDeleteResponse']> => {
     const { data } = await serverApi.POST('/api/v1/transactions/batch-delete', { body: { transactionIds } });
     if (!data) throw new Error('No response from the server');
     return data;
   },
-);
+));
 
-export const mergeTransactions = createDomainAction(
+export const mergeTransactions = action('transaction.mergeTransactions', createDomainAction(
   { fallbackError: "Couldn't merge these transactions. Try again." },
   async (keepId: string, deleteId: string): Promise<MergeTransactionsResponse> => {
     const { data } = await serverApi.POST('/api/v1/transactions/merge', { body: { keepId, deleteId } });
     if (!data) throw new Error('No response from the server');
     return data as MergeTransactionsResponse;
   },
-);
+));
 
-export const batchReviewTransactions = createDomainAction(
+export const batchReviewTransactions = action('transaction.batchReviewTransactions', createDomainAction(
   { fallbackError: "Couldn't update the review state. Try again." },
   async (body: BatchReviewRequest): Promise<Schemas['BatchReviewResponse']> => {
     const { data } = await serverApi.POST('/api/v1/transactions/batch-review', { body: body as Schemas['BatchReviewRequest'] });
     if (!data) throw new Error('No response from the server');
     return data;
   },
-);
+));
 
 /** Sends back what an approve cleared in one all-or-nothing request. */
-export const undoApproveTransactions = createDomainAction(
+export const undoApproveTransactions = action('transaction.undoApproveTransactions', createDomainAction(
   { fallbackError: "Couldn't undo. Try again." },
   async (body: Schemas['UndoApproveRequest']): Promise<void> => {
     const { data } = await serverApi.POST('/api/v1/transactions/undo-approve', { body });
     if (!data) throw new Error("Couldn't undo. Try again.");
   },
-);
+));

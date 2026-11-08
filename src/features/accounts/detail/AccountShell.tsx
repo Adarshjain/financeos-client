@@ -6,6 +6,7 @@ import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { Account } from '@/lib/account.types';
 
+import { AccountOpenFlowEnd } from './accountOpenFlow';
 import { AccountTabs } from './AccountTabs';
 import { AccountTitle } from './AccountTitle';
 
@@ -16,6 +17,7 @@ export function AccountShell({ account, children }: { account: Account; children
       <ShellPage crumb={subCrumb('accounts')} title={<AccountTitle account={account} />} backHref={appHref('/accounts')} flushTop>
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
           <AccountTabs accountId={account.id} type={account.type} />
+          <AccountOpenFlowEnd accountId={account.id} />
           {children}
         </div>
       </ShellPage>

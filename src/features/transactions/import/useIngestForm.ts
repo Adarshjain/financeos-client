@@ -11,6 +11,7 @@ import { api } from '@/lib/api/client';
 import { multipartBodySerializer } from '@/lib/api/multipart';
 import { formatCount } from '@/lib/format';
 import { notify } from '@/lib/notify';
+import { startFlow } from '@/lib/observability/flow';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -44,7 +45,14 @@ export function useIngestForm({
   const [isDragActive, setIsDragActive] = useState(false);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
+  // statement.upload flow: from submit to the job's result (or the upload's failure).
+  const uploadFlow = React.useRef<{ jobId: string | null; end: ReturnType<typeof startFlow>['end'] } | null>(null);
+
   const { isPolling } = useJobStatusPolling(activeJobId, (job) => {
+    if (uploadFlow.current && uploadFlow.current.jobId === activeJobId) {
+      uploadFlow.current.end(job.status === 'SUCCEEDED' && !importFailureSummary(job)?.allFailed ? 'ok' : 'error');
+      uploadFlow.current = null;
+    }
     if (job.status === 'SUCCEEDED') {
       const failure = importFailureSummary(job);
       if (!failure) notify.success(completedMessage);
@@ -187,6 +195,10 @@ export function useIngestForm({
     const toastId = notify.loading(
       `Uploading ${formatCount(files.length, ['file', 'files'])}…`
     );
+    // A second submit while a flow is open ends the first as failed rather than dropping it.
+    uploadFlow.current?.end('error');
+    const flow = startFlow('statement.upload');
+    uploadFlow.current = { jobId: null, end: flow.end };
     try {
       const response = await ingestMutation.mutateAsync({
         accountId: selectedAccountId,
@@ -194,6 +206,7 @@ export function useIngestForm({
       });
       if (response?.jobId) {
         const jobId = response.jobId;
+        uploadFlow.current = { jobId, end: flow.end };
         setActiveJobId(jobId);
         emitJobStarted(jobId);
         setFiles([]);
@@ -201,9 +214,13 @@ export function useIngestForm({
           id: toastId,
         });
       } else {
+        flow.end('empty');
+        uploadFlow.current = null;
         notify.dismiss(toastId);
       }
     } catch (err: unknown) {
+      flow.end('error');
+      uploadFlow.current = null;
       notify.dismiss(toastId);
       toastError(err, "Couldn't start the import. Try again.");
     }

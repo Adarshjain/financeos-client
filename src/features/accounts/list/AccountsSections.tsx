@@ -14,6 +14,7 @@ import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
 import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
+import { beginAccountOpen } from '@/features/accounts/detail/accountOpenFlow';
 import { loadAccountForm, useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { appHref } from '@/features/shell/routes';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
@@ -37,6 +38,11 @@ const ACCOUNTS_HREF = appHref('/accounts');
 
 function rowHref(row: { id: string }): string {
   return `${ACCOUNTS_HREF}/${row.id}`;
+}
+
+function openRow(router: { push: (href: string) => void }, row: { id: string }): void {
+  beginAccountOpen(row.id);
+  router.push(rowHref(row));
 }
 
 export function NameCell({
@@ -317,7 +323,7 @@ export function BankSection(props: SectionProps<BankRow> & { emptyText?: string 
         band={closedBand<BankRow>(props.closedLine, closed.toggle)}
         getRowId={(row) => row.id}
         rowState={mutedWhenClosed}
-        onRowSelect={(row) => router.push(rowHref(row))}
+        onRowSelect={(row) => openRow(router, row)}
         leading={(r) => <BankLogo bankId={r.bank ?? null} name={r.name} />}
         phoneSub={(row) => row.phoneSub}
         empty={<EmptyState compact description={props.emptyText ?? 'No bank accounts yet'} />}
@@ -471,7 +477,7 @@ export function CardsSection(
         band={closedBand<CardListRow>(props.closedLine, closed.toggle)}
         getRowId={(row) => row.id}
         rowState={mutedWhenClosed}
-        onRowSelect={(row) => router.push(rowHref(row))}
+        onRowSelect={(row) => openRow(router, row)}
         leading={(r) => <BankLogo bankId={r.bank ?? null} name={r.name} />}
         phoneSub={cardPhoneSub}
         empty={<EmptyState compact description={props.emptyText ?? 'No credit cards yet'} />}
@@ -528,7 +534,7 @@ export function BrokersSection(props: SectionProps<BrokerRow> & { emptyText?: st
         band={closedBand<BrokerRow>(props.closedLine, closed.toggle)}
         getRowId={(row) => row.id}
         rowState={mutedWhenClosed}
-        onRowSelect={(row) => router.push(rowHref(row))}
+        onRowSelect={(row) => openRow(router, row)}
         phoneSub={(row) => row.phoneSub}
         empty={<EmptyState compact description={props.emptyText ?? 'No broker accounts yet'} />}
       />
@@ -592,7 +598,7 @@ export function WalletsSection(props: SectionProps<WalletRow>) {
         band={closedBand<WalletRow>(props.closedLine, closed.toggle)}
         getRowId={(row) => row.id}
         rowState={mutedWhenClosed}
-        onRowSelect={(row) => router.push(rowHref(row))}
+        onRowSelect={(row) => openRow(router, row)}
         empty={<EmptyState compact description="No other accounts yet" />}
       />
       <ClosedFooter

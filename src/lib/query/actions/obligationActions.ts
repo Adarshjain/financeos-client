@@ -3,9 +3,10 @@
 import { serverApi } from '@/lib/api/server';
 import type { ObligationItemDto } from '@/lib/api/types';
 import { createDomainAction } from '@/lib/domainApi';
+import { action } from '@/lib/observability/action';
 
 /** Upcoming dated obligations within `months`, optionally limited to some kinds. */
-export const loadUpcomingObligations = createDomainAction(
+export const loadUpcomingObligations = action('obligation.loadUpcomingObligations', createDomainAction(
   { fallbackError: "Couldn't load upcoming items. Try again." },
   async (months: number, kinds?: string[]): Promise<ObligationItemDto[]> => {
     const { data } = await serverApi.GET('/api/v1/obligations/upcoming', {
@@ -13,4 +14,4 @@ export const loadUpcomingObligations = createDomainAction(
     });
     return data?.items ?? [];
   },
-);
+));

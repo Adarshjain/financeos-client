@@ -5,30 +5,31 @@ import type { Schemas } from '@/lib/api/types';
 import { createDomainAction } from '@/lib/domainApi';
 import type { CreateLendingRequest, LendingResponse } from '@/lib/lending.types';
 import type { CreateLoanPaymentRequest, InstallmentDto, LoanPaymentResponse, LoanResponse } from '@/lib/loan.types';
+import { action } from '@/lib/observability/action';
 
 import type { DividendRow, UNRESOLVED_RECEIPTS } from './dividendLinkModel';
 
 // EPF withdrawal
 
 /** The unlinked withdrawals offered for one credit. */
-export const loadEpfWithdrawals = createDomainAction(
+export const loadEpfWithdrawals = action('link.loadEpfWithdrawals', createDomainAction(
   { fallbackError: "Couldn't load the withdrawals. Try again." },
   async (transactionId: string): Promise<Schemas['EpfWithdrawalOption'][]> => {
     const { data } = await serverApi.GET('/api/v1/epf/withdrawals', { params: { query: { forTransactionId: transactionId } } });
     return (data ?? []) as Schemas['EpfWithdrawalOption'][];
   },
-);
+));
 
-export const loadEpfEmployers = createDomainAction(
+export const loadEpfEmployers = action('link.loadEpfEmployers', createDomainAction(
   { fallbackError: "Couldn't load the employers. Try again." },
   async () => {
     const { data } = await serverApi.GET('/api/v1/epf/employers');
     return data ?? [];
   },
-);
+));
 
 /** Links the credit to an existing withdrawal. */
-export const linkEpfWithdrawal = createDomainAction(
+export const linkEpfWithdrawal = action('link.linkEpfWithdrawal', createDomainAction(
   { fallbackError: "Couldn't link the EPF withdrawal. Try again." },
   async (entryId: string, transactionId: string, recordTds: boolean): Promise<void> => {
     await serverApi.PUT('/api/v1/epf/entries/{id}/transaction', {
@@ -36,20 +37,20 @@ export const linkEpfWithdrawal = createDomainAction(
       body: { transactionId, recordTds },
     });
   },
-);
+));
 
-export const createEpfWithdrawal = createDomainAction(
+export const createEpfWithdrawal = action('link.createEpfWithdrawal', createDomainAction(
   { fallbackError: "Couldn't record the EPF withdrawal. Try again." },
   async (body: Schemas['EpfEntryRequest']): Promise<{ id: string }> => {
     const { data } = await serverApi.POST('/api/v1/epf/entries', { body });
     return { id: data!.id };
   },
-);
+));
 
 // Dividend
 
 /** Every dividend whose receipt is not yet matched, one page per receipt state. */
-export const loadDividendPages = createDomainAction(
+export const loadDividendPages = action('link.loadDividendPages', createDomainAction(
   { fallbackError: "Couldn't load the dividends. Try again." },
   async (receipts: (typeof UNRESOLVED_RECEIPTS)[number][]): Promise<DividendRow[][]> => {
     const pages = await Promise.all(
@@ -61,9 +62,9 @@ export const loadDividendPages = createDomainAction(
     );
     return pages.map((p) => (p.data?.content ?? []) as DividendRow[]);
   },
-);
+));
 
-export const linkDividend = createDomainAction(
+export const linkDividend = action('link.linkDividend', createDomainAction(
   { fallbackError: "Couldn't link the dividend. Try again." },
   async (dividendId: string, transactionId: string, updateTds: boolean): Promise<void> => {
     await serverApi.PUT('/api/v1/investments/dividends/{id}/transaction', {
@@ -71,20 +72,20 @@ export const linkDividend = createDomainAction(
       body: { transactionId, updateTds },
     });
   },
-);
+));
 
-export const createDividend = createDomainAction(
+export const createDividend = action('link.createDividend', createDomainAction(
   { fallbackError: "Couldn't record the dividend. Try again." },
   async (body: Schemas['CreateDividendRequest']): Promise<{ id: string }> => {
     const { data } = await serverApi.POST('/api/v1/investments/dividends', { body });
     return { id: data!.id };
   },
-);
+));
 
 // Lending
 
 /** One person's lending entries (the first 50). */
-export const loadPersonLendings = createDomainAction(
+export const loadPersonLendings = action('link.loadPersonLendings', createDomainAction(
   { fallbackError: "Couldn't load the entries. Try again." },
   async (counterpartyId: string): Promise<LendingResponse[]> => {
     const { data } = await serverApi.GET('/api/v1/lendings', {
@@ -92,17 +93,17 @@ export const loadPersonLendings = createDomainAction(
     });
     return (data?.content ?? []) as LendingResponse[];
   },
-);
+));
 
-export const createLending = createDomainAction(
+export const createLending = action('link.createLending', createDomainAction(
   { fallbackError: "Couldn't record the lending. Try again." },
   async (body: CreateLendingRequest) => {
     const { data } = await serverApi.POST('/api/v1/lendings', { body });
     return data!;
   },
-);
+));
 
-export const attachLendingTransaction = createDomainAction(
+export const attachLendingTransaction = action('link.attachLendingTransaction', createDomainAction(
   { fallbackError: "Couldn't attach the transaction. Try again." },
   async (lendingId: string, transactionId: string): Promise<void> => {
     await serverApi.PUT('/api/v1/lendings/{id}/transaction', {
@@ -110,11 +111,11 @@ export const attachLendingTransaction = createDomainAction(
       body: { transactionId },
     });
   },
-);
+));
 
 // Loan payment
 
-export const loadActiveLoans = createDomainAction(
+export const loadActiveLoans = action('link.loadActiveLoans', createDomainAction(
   { fallbackError: "Couldn't load the loans. Try again." },
   async (): Promise<LoanResponse[]> => {
     const { data } = await serverApi.GET('/api/v1/loans', {
@@ -122,9 +123,9 @@ export const loadActiveLoans = createDomainAction(
     });
     return (data?.content ?? []) as LoanResponse[];
   },
-);
+));
 
-export const loadLoanInstallments = createDomainAction(
+export const loadLoanInstallments = action('link.loadLoanInstallments', createDomainAction(
   { fallbackError: "Couldn't load the schedule. Try again." },
   async (loanId: string): Promise<InstallmentDto[]> => {
     const { data } = await serverApi.GET('/api/v1/loans/{id}/schedule', { params: { path: { id: loanId } } });
@@ -132,20 +133,20 @@ export const loadLoanInstallments = createDomainAction(
     // Object.values(...).flat() is correct either way.
     return Object.values((data ?? {}) as Record<string, InstallmentDto[]>).flat();
   },
-);
+));
 
-export const payLoanInstallment = createDomainAction(
+export const payLoanInstallment = action('link.payLoanInstallment', createDomainAction(
   { fallbackError: "Couldn't settle the installment. Try again." },
   async (loanId: string, body: CreateLoanPaymentRequest): Promise<LoanPaymentResponse> => {
     const { data } = await serverApi.POST('/api/v1/loans/{id}/payments', { params: { path: { id: loanId } }, body });
     return data! as LoanPaymentResponse;
   },
-);
+));
 
 // Auto-link suggestions
 
 /** Accepts one candidate: the server creates a USER link (a lending suggestion settles the lending instead). */
-export const acceptLinkSuggestion = createDomainAction(
+export const acceptLinkSuggestion = action('link.acceptLinkSuggestion', createDomainAction(
   { fallbackError: "Couldn't link the transactions. Try again." },
   async (id: string, candidateId: string): Promise<Schemas['TransactionLinkResponse'] | undefined> => {
     const { data } = await serverApi.POST('/api/v1/link-suggestions/{id}/accept', {
@@ -155,12 +156,12 @@ export const acceptLinkSuggestion = createDomainAction(
     // A lending suggestion settles the lending and answers 204 with no body.
     return data as Schemas['TransactionLinkResponse'] | undefined;
   },
-);
+));
 
 /** Dismisses a suggestion; it is remembered and never suggested again. */
-export const dismissLinkSuggestion = createDomainAction(
+export const dismissLinkSuggestion = action('link.dismissLinkSuggestion', createDomainAction(
   { fallbackError: "Couldn't dismiss the suggestion. Try again." },
   async (id: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/link-suggestions/{id}', { params: { path: { id } } });
   },
-);
+));

@@ -9,6 +9,8 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import globals from "globals";
 
+import financeos from "./eslint-rules/wrapped-server-actions.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
@@ -84,6 +86,12 @@ const config = [
             "react-hooks/rules-of-hooks": "off",
             "@typescript-eslint/no-explicit-any": "warn",
         },
+    },
+    {
+        // Every server action carries a trace span + duration log. Warn only until the last un-wrapped files are migrated.
+        files: ["src/**/*.ts", "src/**/*.tsx"],
+        plugins: { financeos },
+        rules: { "financeos/wrapped-server-actions": "error" },
     },
     {
         ignores: [".next/*", "node_modules/*", "storybook-static/**"],

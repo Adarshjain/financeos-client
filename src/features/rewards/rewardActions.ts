@@ -3,6 +3,7 @@
 import { serverApi } from '@/lib/api/server';
 import type { Schemas } from '@/lib/api/types';
 import { createDomainAction } from '@/lib/domainApi';
+import { action } from '@/lib/observability/action';
 import type {
   PagedRewardLines,
   ReorderRewardRulesRequest,
@@ -114,47 +115,47 @@ export interface RewardLinesParams {
 
 // Reads
 
-export const loadRewardCapBuckets = createDomainAction(
+export const loadRewardCapBuckets = action('reward.loadRewardCapBuckets', createDomainAction(
   { fallbackError: "Couldn't load the cap buckets. Try again." },
   async (accountId: string) => {
     const { data } = await serverApi.GET('/api/v1/reward-cap-buckets', { params: { query: { accountId } } });
     return data ?? [];
   },
-);
+));
 
-export const loadRewardMilestones = createDomainAction(
+export const loadRewardMilestones = action('reward.loadRewardMilestones', createDomainAction(
   { fallbackError: "Couldn't load the milestones. Try again." },
   async (accountId: string) => {
     const { data } = await serverApi.GET('/api/v1/reward-milestones', { params: { query: { accountId } } });
     return data ?? [];
   },
-);
+));
 
-export const loadRewardRules = createDomainAction(
+export const loadRewardRules = action('reward.loadRewardRules', createDomainAction(
   { fallbackError: "Couldn't load the reward rules. Try again." },
   async (accountId: string) => {
     const { data } = await serverApi.GET('/api/v1/reward-rules', { params: { query: { accountId } } });
     return data ?? [];
   },
-);
+));
 
-export const loadRewardAccountConfig = createDomainAction(
+export const loadRewardAccountConfig = action('reward.loadRewardAccountConfig', createDomainAction(
   { fallbackError: "Couldn't load the reward settings. Try again." },
   async (accountId: string) => {
     const { data } = await serverApi.GET('/api/v1/reward-config', { params: { query: { accountId } } });
     return data!;
   },
-);
+));
 
-export const loadRewardReport = createDomainAction(
+export const loadRewardReport = action('reward.loadRewardReport', createDomainAction(
   { fallbackError: "Couldn't load the rewards report. Try again." },
   async (accountId: string, from: string, to: string) => {
     const { data } = await serverApi.GET('/api/v1/rewards/report', { params: { query: { accountId, from, to } } });
     return data!;
   },
-);
+));
 
-export const loadRewardLines = createDomainAction(
+export const loadRewardLines = action('reward.loadRewardLines', createDomainAction(
   { fallbackError: "Couldn't load the reward lines. Try again." },
   async (params: RewardLinesParams): Promise<PagedRewardLines> => {
     const { data } = await serverApi.GET('/api/v1/rewards/lines', {
@@ -182,44 +183,44 @@ export const loadRewardLines = createDomainAction(
       empty: page.empty,
     };
   },
-);
+));
 
 // Cap buckets
 
-export const createRewardCapBucket = createDomainAction(
+export const createRewardCapBucket = action('reward.createRewardCapBucket', createDomainAction(
   { fallbackError: "Couldn't create the cap bucket. Try again." },
   async (body: RewardCapBucketRequest) => {
     const { data } = await serverApi.POST('/api/v1/reward-cap-buckets', { body });
     return data!;
   },
-);
+));
 
-export const updateRewardCapBucket = createDomainAction(
+export const updateRewardCapBucket = action('reward.updateRewardCapBucket', createDomainAction(
   { fallbackError: "Couldn't update the cap bucket. Try again." },
   async (id: string, body: RewardCapBucketRequest) => {
     const { data } = await serverApi.PUT('/api/v1/reward-cap-buckets/{id}', { params: { path: { id } }, body });
     return data!;
   },
-);
+));
 
-export const deleteRewardCapBucket = createDomainAction(
+export const deleteRewardCapBucket = action('reward.deleteRewardCapBucket', createDomainAction(
   { fallbackError: "Couldn't delete the cap bucket. Try again." },
   async (id: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/reward-cap-buckets/{id}', { params: { path: { id } } });
   },
-);
+));
 
 // Milestones
 
-export const createRewardMilestone = createDomainAction(
+export const createRewardMilestone = action('reward.createRewardMilestone', createDomainAction(
   { fallbackError: "Couldn't create the milestone. Try again." },
   async (body: RewardMilestoneRequest) => {
     const { data } = await serverApi.POST('/api/v1/reward-milestones', { body: milestoneBody(body) });
     return data!;
   },
-);
+));
 
-export const updateRewardMilestone = createDomainAction(
+export const updateRewardMilestone = action('reward.updateRewardMilestone', createDomainAction(
   { fallbackError: "Couldn't update the milestone. Try again." },
   async (id: string, body: RewardMilestoneRequest) => {
     const { data } = await serverApi.PUT('/api/v1/reward-milestones/{id}', {
@@ -228,26 +229,26 @@ export const updateRewardMilestone = createDomainAction(
     });
     return data!;
   },
-);
+));
 
-export const deleteRewardMilestone = createDomainAction(
+export const deleteRewardMilestone = action('reward.deleteRewardMilestone', createDomainAction(
   { fallbackError: "Couldn't delete the milestone. Try again." },
   async (id: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/reward-milestones/{id}', { params: { path: { id } } });
   },
-);
+));
 
 // Rules
 
-export const createRewardRule = createDomainAction(
+export const createRewardRule = action('reward.createRewardRule', createDomainAction(
   { fallbackError: "Couldn't create the reward rule. Try again." },
   async (body: RewardRuleRequest) => {
     const { data } = await serverApi.POST('/api/v1/reward-rules', { body: ruleBody(body) });
     return data!;
   },
-);
+));
 
-export const updateRewardRule = createDomainAction(
+export const updateRewardRule = action('reward.updateRewardRule', createDomainAction(
   { fallbackError: "Couldn't update the reward rule. Try again." },
   async (id: string, body: RewardRuleRequest) => {
     const { data } = await serverApi.PUT('/api/v1/reward-rules/{id}', {
@@ -256,38 +257,38 @@ export const updateRewardRule = createDomainAction(
     });
     return data!;
   },
-);
+));
 
-export const deleteRewardRule = createDomainAction(
+export const deleteRewardRule = action('reward.deleteRewardRule', createDomainAction(
   { fallbackError: "Couldn't delete the reward rule. Try again." },
   async (id: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/reward-rules/{id}', { params: { path: { id } } });
   },
-);
+));
 
-export const reorderRewardRules = createDomainAction(
+export const reorderRewardRules = action('reward.reorderRewardRules', createDomainAction(
   { fallbackError: "Couldn't reorder reward rules. Try again." },
   async (body: ReorderRewardRulesRequest) => {
     const { data } = await serverApi.POST('/api/v1/reward-rules/reorder', { body });
     return data ?? [];
   },
-);
+));
 
 // Account config and recommendations
 
-export const updateRewardAccountConfig = createDomainAction(
+export const updateRewardAccountConfig = action('reward.updateRewardAccountConfig', createDomainAction(
   { fallbackError: "Couldn't update reward settings. Try again." },
   async (body: RewardAccountConfigRequest) => {
     const { data } = await serverApi.PUT('/api/v1/reward-config', { body: configBody(body) });
     return data!;
   },
-);
+));
 
 /** The card-picker simulation: read-only server-side, so it needs no cache refresh. */
-export const recommendRewardCards = createDomainAction(
+export const recommendRewardCards = action('reward.recommendRewardCards', createDomainAction(
   { fallbackError: "Couldn't simulate card rewards. Try again." },
   async (body: RewardRecommendationRequest) => {
     const { data } = await serverApi.POST('/api/v1/reward-recommendations', { body });
     return data!;
   },
-);
+));

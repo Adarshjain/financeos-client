@@ -8,6 +8,7 @@ import { AppError } from '@/lib/appError';
 import { reportWidgetResponse, toDashboardWidget } from '@/lib/dashboards.helpers';
 import type { DashboardResponse, WidgetParams, WidgetResponse } from '@/lib/dashboards.types';
 import { createDomainAction } from '@/lib/domainApi';
+import { action } from '@/lib/observability/action';
 import type { ReportCatalog, ReportData, ReportResponse, ReportSummaryResponse } from '@/lib/reports.types';
 
 type SaveBody = ReturnType<typeof saveBody>;
@@ -15,22 +16,22 @@ type SaveBody = ReturnType<typeof saveBody>;
 type ShownDashboard = Pick<DashboardResponse, 'id' | 'name' | 'description' | 'isDefault' | 'widgets'>;
 
 /** The datasource catalog (field labels and formats). */
-export const loadReportCatalog = createDomainAction(
+export const loadReportCatalog = action('dashboards.dashboard.loadReportCatalog', createDomainAction(
   { fallbackError: "Couldn't load the report fields. Try again." },
   async (): Promise<ReportCatalog> => {
     const { data } = await serverApi.GET('/api/v1/report/datasource');
     return data as unknown as ReportCatalog;
   },
-);
+));
 
 /** A report widget's saved report, or null when it is gone. */
-export const loadSavedReport = createDomainAction(
+export const loadSavedReport = action('dashboards.dashboard.loadSavedReport', createDomainAction(
   { fallbackError: "Couldn't load the report. Try again." },
   async (id: string): Promise<ReportResponse | null> => {
     const { data } = await serverApi.GET('/api/v1/reports/{id}', { params: { path: { id } } });
     return (data ?? null) as unknown as ReportResponse | null;
   },
-);
+));
 
 /** Table paging for a widget run (`sort=key,dir`); undefined for a chart or KPI. */
 export interface WidgetPage {
@@ -40,7 +41,7 @@ export interface WidgetPage {
 }
 
 /** The data behind a built-in template widget, run with its params. */
-export const loadBuiltinWidgetData = createDomainAction(
+export const loadBuiltinWidgetData = action('dashboards.dashboard.loadBuiltinWidgetData', createDomainAction(
   { fallbackError: "Couldn't load the widget. Try again." },
   async (key: string, params: Record<string, unknown>, page?: WidgetPage): Promise<ReportData> => {
     const { data } = await serverApi.POST('/api/v1/dashboards/builtins/{key}/data', {
@@ -50,10 +51,10 @@ export const loadBuiltinWidgetData = createDomainAction(
     });
     return data as unknown as ReportData;
   },
-);
+));
 
 /** The data behind a report widget: its saved report, run. */
-export const loadReportWidgetData = createDomainAction(
+export const loadReportWidgetData = action('dashboards.dashboard.loadReportWidgetData', createDomainAction(
   { fallbackError: "Couldn't run the report. Try again." },
   async (reportId: string, page?: WidgetPage): Promise<ReportData> => {
     const { data } = await serverApi.POST('/api/v1/reports/{id}/data', {
@@ -61,10 +62,10 @@ export const loadReportWidgetData = createDomainAction(
     });
     return data as unknown as ReportData;
   },
-);
+));
 
 /** Creates the dashboard (no `id`) or updates it. */
-export const saveDashboard = createDomainAction(
+export const saveDashboard = action('dashboards.dashboard.saveDashboard', createDomainAction(
   { fallbackError: "Couldn't save the dashboard. Try again." },
   async (id: string | undefined, body: SaveBody): Promise<DashboardResponse> => {
     const res = id
@@ -72,15 +73,15 @@ export const saveDashboard = createDomainAction(
       : await serverApi.POST('/api/v1/dashboards', { body });
     return res.data as DashboardResponse;
   },
-);
+));
 
-export const deleteDashboard = createDomainAction(
+export const deleteDashboard = action('dashboards.dashboard.deleteDashboard', createDomainAction(
   { fallbackError: "Couldn't delete the dashboard. Try again." },
   async (id: string): Promise<null> => {
     await serverApi.DELETE('/api/v1/dashboards/{id}', { params: { path: { id } } });
     return null;
   },
-);
+));
 
 async function putWidgetsOf(dashboard: ShownDashboard, widgets: WidgetResponse[]): Promise<DashboardResponse> {
   const { data } = await serverApi.PUT('/api/v1/dashboards/{id}', {
@@ -96,13 +97,13 @@ async function putWidgetsOf(dashboard: ShownDashboard, widgets: WidgetResponse[]
 }
 
 /** PUTs the dashboard as shown with `widgets` in place of its own. */
-export const saveDashboardWidgets = createDomainAction(
+export const saveDashboardWidgets = action('dashboards.dashboard.saveDashboardWidgets', createDomainAction(
   { fallbackError: "Couldn't save the dashboard. Try again." },
   (dashboard: ShownDashboard, widgets: WidgetResponse[]) => putWidgetsOf(dashboard, widgets),
-);
+));
 
 /** Sets or clears the default; refuses rather than overwrite a dashboard that changed since the caller loaded it. */
-export const setDashboardDefault = createDomainAction(
+export const setDashboardDefault = action('dashboards.dashboard.setDashboardDefault', createDomainAction(
   { fallbackError: "Couldn't change the default dashboard. Try again." },
   async (args: { id: string; makeDefault: boolean; updatedAt: string }): Promise<DashboardResponse | null> => {
     const { data: current } = await serverApi.GET('/api/v1/dashboards/{id}', { params: { path: { id: args.id } } });
@@ -124,10 +125,10 @@ export const setDashboardDefault = createDomainAction(
     });
     return (data ?? null) as DashboardResponse | null;
   },
-);
+));
 
 /** Takes a widget off a dashboard, read fresh so a widget added or moved elsewhere is never overwritten. Null when it is already gone. */
-export const removeWidgetFromDashboard = createDomainAction(
+export const removeWidgetFromDashboard = action('dashboards.dashboard.removeWidgetFromDashboard', createDomainAction(
   { fallbackError: "Couldn't remove the report from the dashboard. Try again." },
   async (dashboardId: string, widgetId: string): Promise<DashboardResponse | null> => {
     const { data: current } = await serverApi.GET('/api/v1/dashboards/{id}', { params: { path: { id: dashboardId } } });
@@ -135,10 +136,10 @@ export const removeWidgetFromDashboard = createDomainAction(
     if (!current.widgets.some((w) => w.id === widgetId)) return null;
     return putWidgetsOf(current, current.widgets.filter((w) => w.id !== widgetId));
   },
-);
+));
 
 /** Adds a saved report to a dashboard, read fresh first. Returns the saved dashboard and the new widget's id. */
-export const addReportToDashboard = createDomainAction(
+export const addReportToDashboard = action('dashboards.dashboard.addReportToDashboard', createDomainAction(
   { fallbackError: "Couldn't add the report to the dashboard. Try again." },
   async (
     dashboardId: string,
@@ -150,10 +151,10 @@ export const addReportToDashboard = createDomainAction(
     const saved = await putWidgetsOf(current, [...current.widgets, widget]);
     return { saved, widgetId: widget.id };
   },
-);
+));
 
 /** "Duplicate as my report" for a built-in widget: resolves the template with the widget's params and saves it as a new report. */
-export const duplicateBuiltinReport = createDomainAction(
+export const duplicateBuiltinReport = action('dashboards.dashboard.duplicateBuiltinReport', createDomainAction(
   { fallbackError: "Couldn't copy the widget as a report. Try again." },
   async (builtinKey: string, params: WidgetParams) => {
     const { data: resolved } = await serverApi.POST('/api/v1/dashboards/builtins/{key}/definition', {
@@ -172,4 +173,4 @@ export const duplicateBuiltinReport = createDomainAction(
     if (!report) throw new Error("Couldn't create the report. Try again.");
     return { report, windowAsOf: resolved.windowAsOf ?? null };
   },
-);
+));
