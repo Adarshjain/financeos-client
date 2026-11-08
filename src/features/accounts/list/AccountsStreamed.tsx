@@ -8,17 +8,20 @@ import { RetirementCard } from '@/features/investments/retirement/RetirementCard
 import { retirementNetWorthTotal } from '@/features/investments/retirement/retirementModel';
 import { LoansCard } from '@/features/loans/list/LoansCard';
 import { LoadError } from '@/features/shell/LoadError';
+import type { CreditCard } from '@/lib/account.types';
 import type { CardBillResponse } from '@/lib/api/types';
 
 import type { AccountsListData } from './accountsListData';
 import {
   type AccountSections,
   type CardBaseRow,
+  cardsSubtitle,
   investmentsKpi,
   netWorthKpi,
   nextBillBadge,
   rewardsText,
   type RewardTotal,
+  unpaidBillsDue,
 } from './accountsListModel';
 import type { CardListRow } from './AccountsSections';
 
@@ -156,4 +159,13 @@ export function streamedCardRow(
       </Suspense>
     ),
   };
+}
+
+/** The Credit cards subtitle: leads with the unpaid bills once they load, and is today's text until then or if they failed. */
+export async function CardsSubtitle({
+  bills,
+  open,
+  today,
+}: Pick<AccountsListData, 'bills'> & { open: readonly CreditCard[]; today: string }) {
+  return <Conceal>{cardsSubtitle(open, unpaidBillsDue(await bills, open, today))}</Conceal>;
 }

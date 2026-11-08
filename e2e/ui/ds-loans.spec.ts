@@ -302,14 +302,13 @@ for (const viewport of VIEWPORTS) {
       await page.waitForURL(`**/loans/${home.id}`);
     });
 
-    test('Accounts lists the open loans under What you owe; All loans opens the Loans page, which goes back to Accounts', async ({ page }) => {
+    test('Accounts lists the open loans; All loans opens the Loans page, which goes back to Accounts', async ({ page }) => {
       const api = makeApi(currentUser.cookie);
       await createBankAccount(api, { name: 'Owe Bank' });
       const home = await createLoan(api, { name: 'Home Loan', lender: 'SBI MaxGain', loanType: 'home', principal: 1000000, tenureMonths: 120 });
 
       await page.goto('/accounts');
-      await expect(page.getByRole('heading', { name: 'What you owe' })).toBeVisible({ timeout: 45_000 });
-      await expect(page.getByText('Home Loan').first()).toBeVisible();
+      await expect(page.getByText('Home Loan').first()).toBeVisible({ timeout: 45_000 });
 
       await page.getByRole('link', { name: 'All loans' }).click();
       await page.waitForURL('**/loans');

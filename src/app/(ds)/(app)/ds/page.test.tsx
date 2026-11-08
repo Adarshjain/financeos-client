@@ -95,7 +95,7 @@ describe('DsIndexPage', () => {
   it('links every built Investments tab page', () => {
     render(<DsIndexPage />);
     const hrefs = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
-    for (const tab of ['tradebook', 'dividends', 'fno', 'corporate-actions', 'instruments']) {
+    for (const tab of ['holdings', 'tradebook', 'dividends', 'fno', 'corporate-actions', 'epf', 'nps', 'instruments']) {
       expect(hrefs).toContain(`/investments/${tab}`);
     }
   });

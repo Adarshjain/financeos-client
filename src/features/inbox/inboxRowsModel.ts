@@ -109,7 +109,7 @@ function npsPendingButtons(item: InboxItemResponse): RowButton[] {
   const buttons: RowButton[] = [];
   for (const action of item.actions) {
     if (action.type === 'nps_password') {
-      buttons.push({ id: action.type, label: 'Enter password', variant: 'secondary', href: appHref(actionHref(action, item) ?? '/investments/retirement/nps') });
+      buttons.push({ id: action.type, label: 'Enter password', variant: 'secondary', href: appHref(actionHref(action, item) ?? '/investments/nps') });
       continue;
     }
     const known = NPS_PENDING_BUTTONS[action.type];
@@ -122,7 +122,7 @@ function npsPendingButtons(item: InboxItemResponse): RowButton[] {
 /** "Looks like you invest in NPS": one inline "Set up" (the row's open action); "Not NPS" lives in the menu. */
 function npsSetupButtons(item: InboxItemResponse): RowButton[] {
   const open = item.actions.find((a) => a.type === 'open');
-  return open ? [{ id: 'nps_setup', label: 'Set up', variant: 'secondary', href: appHref(actionHref(open, item) ?? '/investments/retirement/nps') }] : [];
+  return open ? [{ id: 'nps_setup', label: 'Set up', variant: 'secondary', href: appHref(actionHref(open, item) ?? '/investments/nps') }] : [];
 }
 
 /** "Link" / "Not this one" for a contribution that fits a payment but not uniquely. */

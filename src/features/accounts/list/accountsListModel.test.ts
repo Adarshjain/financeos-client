@@ -21,6 +21,7 @@ import {
   nextBillBadge,
   relativeDay,
   rewardsText,
+  unpaidBillsDue,
   walletRow,
 } from './accountsListModel';
 
@@ -363,5 +364,30 @@ describe('Gmail fetch line on rows', () => {
   it('is absent otherwise', () => {
     expect(bankRow(bank(), TODAY).fetchLine).toBeNull();
     expect(cardBaseRow(card({ gmailFetch: null }), TODAY).fetchLine).toBeNull();
+  });
+  it('leads the subtitle with unpaid bills: count, total remaining, earliest due date', () => {
+    const open = [card({ id: 'a' }), card({ id: 'b' })];
+    const bills = [
+      bill({ accountId: 'a', status: 'OPEN', remainingAmount: 1000, paymentDueDate: '2026-11-20' }),
+      bill({ accountId: 'b', status: 'OVERDUE', remainingAmount: 500, paymentDueDate: '2026-11-13' }),
+    ];
+    const due = unpaidBillsDue(bills, open, TODAY);
+    expect(due).toEqual({ count: 2, total: 1500, earliestDue: '2026-11-13' });
+    expect(cardsSubtitle(open, due)).toBe('2 bills due · ₹1,500 by 13 Nov · ₹2,00,000 limit, 2 cards');
+    const one = unpaidBillsDue([bills[0]], open, TODAY);
+    expect(cardsSubtitle(open, one)).toBe('1 bill due · ₹1,000 by 20 Nov · ₹2,00,000 limit, 2 cards');
+  });
+  it('counts a partly paid bill by what remains, and ignores paid, awaiting and closed-card bills', () => {
+    const open = [card({ id: 'a' })];
+    const bills = [
+      bill({ accountId: 'a', status: 'PARTIAL', remainingAmount: 250, paymentDueDate: '2026-11-15' }),
+      bill({ accountId: 'a', status: 'PAID', remainingAmount: 0 }),
+      bill({ accountId: 'a', status: 'AWAITING_STATEMENT' }),
+      bill({ accountId: 'zz', status: 'OPEN', remainingAmount: 9999, paymentDueDate: '2026-11-01' }),
+    ];
+    expect(unpaidBillsDue(bills, open, TODAY)).toEqual({ count: 1, total: 250, earliestDue: '2026-11-15' });
+    expect(unpaidBillsDue([bills[1], bills[2]], open, TODAY)).toBeNull();
+    expect(unpaidBillsDue(null, open, TODAY)).toBeNull();
+    expect(cardsSubtitle(open, null)).toBe('Owed today · ₹1,00,000 limit, 1 card');
   });
 });

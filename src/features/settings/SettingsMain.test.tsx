@@ -23,6 +23,9 @@ const user = { email: 'a@b.c', displayName: 'A B', pictureUrl: null, hasPassword
 const appLock = { armed: true, locked: false, lockAfterSeconds: 60, rpId: 'localhost', heartbeatSeconds: 15 } as AppLockStatus;
 const settled = <T,>(value: T): Promise<T> => Object.assign(Promise.resolve(value), { status: 'fulfilled', value });
 
+let issues = { connections: 3, failedJobs: 2, total: 5 };
+vi.mock('@/lib/query/hooks/useDataSourceIssues', () => ({ useDataSourceIssues: () => issues }));
+
 function renderMain(values = { aiKeyCount: 2 as number | undefined }) {
   return renderWithQuery(
     <SettingsMain
@@ -36,12 +39,13 @@ function renderMain(values = { aiKeyCount: 2 as number | undefined }) {
 const card = (title: string) => screen.getByText(title, { selector: 'h2, h3, div, span, p' }).closest('section, div[class*="rounded"]') as HTMLElement;
 
 describe('SettingsMain', () => {
-  it('stacks Profile, General, Security, Data, Help, Sign out, Delete', () => {
+  it('stacks Profile, General, Security, Data sources, Data, Help, Sign out, Delete', () => {
     renderMain();
     const order = [
       screen.getByTestId('profile-card'),
       screen.getByText('General'),
       screen.getByText('Security'),
+      screen.getByText('Data sources'),
       screen.getByText('Data'),
       screen.getByText('Help'),
       screen.getByRole('button', { name: 'Sign out' }),
@@ -73,6 +77,24 @@ describe('SettingsMain', () => {
     expect(within(data).queryByRole('link', { name: /Connections/ })).toBeNull();
     expect(within(data).getByRole('link', { name: /AI/ })).toHaveAttribute('href', '/settings/ai');
     expect(within(data).getByText('2 keys')).toBeInTheDocument();
+  });
+
+  it('lists the Data sources rows, with the attention count on Connections', () => {
+    renderMain();
+    const ds = card('Data sources');
+    expect(within(ds).getByRole('link', { name: /Connections/ })).toHaveAttribute('href', '/data-sources/connections');
+    expect(within(ds).getByRole('link', { name: /Imports/ })).toHaveAttribute('href', '/data-sources/imports');
+    expect(within(ds).getByRole('link', { name: /Sync health/ })).toHaveAttribute('href', '/data-sources/sync');
+    expect(within(ds).getByText('3 needs attention')).toBeInTheDocument();
+    expect(within(ds).getByText('2 failed')).toBeInTheDocument();
+  });
+
+  it('hides both badges at zero', () => {
+    issues = { connections: 0, failedJobs: 0, total: 0 };
+    renderMain();
+    expect(screen.queryByText(/needs attention/)).toBeNull();
+    expect(screen.queryByText(/failed/)).toBeNull();
+    issues = { connections: 3, failedJobs: 2, total: 5 };
   });
 
   it('hides a value whose request failed', () => {

@@ -21,7 +21,6 @@ describe('appHref', () => {
     ['/accounts/abc-123/rewards', '/accounts/abc-123/rewards'],
     ['/accounts/abc-123/statements', '/accounts/abc-123/statements'],
     ['/settings', '/settings'],
-    ['/data-sources', '/data-sources'],
     ['/data-sources/connections', '/data-sources/connections'],
     ['/data-sources/imports?kind=epf_passbook', '/data-sources/imports?kind=epf_passbook'],
     ['/data-sources/sync', '/data-sources/sync'],
@@ -47,6 +46,7 @@ describe('appHref', () => {
 
   it.each([
     ['/settings/llm-keys', '/settings/ai'],
+    ['/data-sources', '/settings'],
     ['/settings/gmail', '/data-sources/connections'],
     ['/settings/connections', '/data-sources/connections'],
     ['/settings/jobs', '/data-sources/sync'],

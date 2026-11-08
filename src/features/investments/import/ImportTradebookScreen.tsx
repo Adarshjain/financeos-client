@@ -54,7 +54,7 @@ export function ImportTradebookScreen({ brokers, initialMode }: { brokers: Broke
 
 type Wizard = ReturnType<typeof useImportWizard>;
 
-const EPF_HREF = appHref('/investments/retirement/epf');
+const EPF_HREF = appHref('/investments/epf');
 
 /** Once the entries are in, drops the router's cached pages so Open EPF / Open NPS shows them. Mounted for the EPF and NPS imports only. */
 function RefreshWhenDone() {

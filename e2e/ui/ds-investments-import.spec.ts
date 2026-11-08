@@ -89,7 +89,7 @@ for (const viewport of VIEWPORTS) {
       await page.goto('/investments/import');
       await expect(page.getByText('Investment bulk import')).toBeVisible();
       // Its own page: no Investments tab strip.
-      await expect(page.getByRole('tab', { name: /^Activity/ })).toHaveCount(0);
+      await expect(page.getByRole('tab', { name: /^Tradebook/ })).toHaveCount(0);
 
       await pick(page, /Broker \/ import type/, /Zerodha reconciliation/);
       await pick(page, /Target broker account/, new RegExp(broker.name));
@@ -139,7 +139,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText('Broker import reconciliation complete')).toBeVisible({ timeout: 30000 });
       await expect(page.getByText('Committed', { exact: true })).toBeVisible();
       await page.getByRole('link', { name: 'Done & view portfolio' }).click();
-      await expect(page).toHaveURL(/\/investments$/);
+      await expect(page).toHaveURL(/\/investments\/holdings$/);
       await expect(shown(page.getByText(new RegExp(`${knownName}|${symKnown}`)))).toBeVisible({ timeout: 15000 });
 
       await page.goto('/investments/fno');

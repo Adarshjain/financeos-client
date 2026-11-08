@@ -16,7 +16,7 @@ import { ratioText } from './corporateActionRatioModel';
 // ---- URL state ---------------------------------------------------------------
 
 /** The page's own address; it exists by definition, so it never goes through `appHref`. */
-export const CORPORATE_ACTIONS_HREF = `${DS_PREFIX}${INVESTMENTS_PATH}/activity/corporate-actions`;
+export const CORPORATE_ACTIONS_HREF = `${DS_PREFIX}${INVESTMENTS_PATH}/corporate-actions`;
 
 export const CORPORATE_ACTIONS_SIZE_OPTIONS = [25, 50, 100];
 

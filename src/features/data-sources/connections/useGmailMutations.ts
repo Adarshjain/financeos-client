@@ -27,12 +27,14 @@ export function useGmailMutations() {
   // The main Data sources page shows the attention count (server-rendered), so its cached copy is dropped.
   const refreshLayout = useRouterRefresh();
   const invalidateConnections = () => {
+    void qc.invalidateQueries({ queryKey: keys.shell.counts() });
     return qc.invalidateQueries({ queryKey: keys.settings.gmailConnection() });
   };
   const invalidateSenders = () => {
     return qc.invalidateQueries({ queryKey: keys.settings.gmailSenders() });
   };
   const invalidateAttention = () => {
+    void qc.invalidateQueries({ queryKey: keys.shell.counts() });
     return qc.invalidateQueries({ queryKey: keys.settings.gmailAttentionAll() });
   };
 

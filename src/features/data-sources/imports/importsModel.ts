@@ -90,11 +90,11 @@ function hrefOf(r: ImportRecordResponse): string | undefined {
     case 'statement':
       return r.accountId ? appHref(`/accounts/${r.accountId}/statements`) : undefined;
     case 'nps_statement':
-      return appHref(`/investments/retirement/nps${r.accountId ? `?account=${r.accountId}` : ''}`);
+      return appHref(`/investments/nps${r.accountId ? `?account=${r.accountId}` : ''}`);
     case 'epf_passbook':
-      return appHref('/investments/retirement/epf');
+      return appHref('/investments/epf');
     default:
-      return appHref('/investments/activity');
+      return appHref('/investments/tradebook');
   }
 }
 

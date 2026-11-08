@@ -1,4 +1,4 @@
-/** The Data sources drill-in sections. `/data-sources` itself is the main page; each section is its own page. */
+/** The Data sources drill-in sections, listed on the Settings page; each section is its own page under `/data-sources`. */
 import { activeAreaSection, type AreaSection, isAreaIndex } from '@/features/shell/areaSections';
 import { appHref } from '@/features/shell/routes';
 
@@ -6,12 +6,13 @@ export type DataSourcesSectionId = 'connections' | 'imports' | 'sync';
 
 export type DataSourcesSection = AreaSection<DataSourcesSectionId>;
 
-export const DATA_SOURCES_HREF = appHref('/data-sources');
+/** The path the sections live under; `/data-sources` itself redirects to Settings, so this is not a page link. */
+export const DATA_SOURCES_HREF = '/data-sources';
 
 const section = (id: DataSourcesSectionId, label: string): DataSourcesSection => ({
   id,
   label,
-  href: `${DATA_SOURCES_HREF}/${id}`,
+  href: appHref(`${DATA_SOURCES_HREF}/${id}`),
 });
 
 export const dataSourcesSections: DataSourcesSection[] = [

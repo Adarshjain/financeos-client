@@ -13,7 +13,9 @@ import DsAppError from './error';
 import HomeError from './home/error';
 import InboxError from './inbox/error';
 import UpdatesError from './inbox/updates/error';
-import InvestmentsError from './investments/(tabs)/error';
+import InvestmentsDrillError from './investments/(drill)/error';
+import InvestmentsLandingError from './investments/(landing)/error';
+import InvestmentsError from './investments/(stocks)/error';
 import HoldingNotFound from './investments/[id]/not-found';
 import LendingError from './lending/(list)/error';
 import PersonError from './lending/[id]/error';
@@ -47,6 +49,8 @@ describe('route error and not-found pages', () => {
     ['inbox updates', UpdatesError, "Couldn't load notifications"],
     ['rewards', RewardsError, "Couldn't load rewards"],
     ['investments', InvestmentsError, "Couldn't load investments"],
+    ['investments landing', InvestmentsLandingError, "Couldn't load investments"],
+    ['investments EPF and NPS', InvestmentsDrillError, "Couldn't load investments"],
     ['home', HomeError, "Couldn't load Home"],
     ['accounts list', AccountsListError, "Couldn't load accounts"],
     ['loans', LoansError, "Couldn't load loans"],

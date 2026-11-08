@@ -8,6 +8,7 @@ import { EMPTY_SEARCH_RESULT, fetchGlobalSearch } from './searchApi';
 import { SearchProvider } from './SearchProvider';
 
 const router = vi.hoisted(() => ({ push: vi.fn(), back: vi.fn() }));
+vi.mock('@/lib/query/hooks/useDataSourceIssues', () => ({ useDataSourceIssues: () => ({ connections: 0, failedJobs: 0, total: 0 }) }));
 vi.mock('next/navigation', () => ({ usePathname: () => '/accounts', useRouter: () => router }));
 vi.mock('@/lib/query/hooks/useInbox', () => ({ useInboxSummary: () => ({ data: { badge: 0 } }) }));
 vi.mock('@/features/transactions/useNeedsReviewCount', () => ({ useNeedsReviewCount: () => ({ data: 0 }) }));

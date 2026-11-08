@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NavigationProgress } from './NavigationProgress';
 import { endNavigation } from './navigationStore';
 import { ShellRail } from './ShellNav';
+vi.mock('@/lib/query/hooks/useDataSourceIssues', () => ({ useDataSourceIssues: () => ({ connections: 0, failedJobs: 0, total: 0 }) }));
 
 let pathname = '/accounts';
 vi.mock('next/navigation', () => ({

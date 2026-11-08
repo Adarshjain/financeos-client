@@ -50,7 +50,7 @@ for (const viewport of VIEWPORTS) {
     }
 
     test('lists the newest trades first, 25 a page, with the Pager above and below', async ({ page }) => {
-      await page.goto('/investments/activity?fy=all');
+      await page.goto('/investments/tradebook?fy=all');
 
       await expectPager(page, '1–25', seeded.total);
       // Newest first: the October fund buy, then the sell, then the stock's buys.
@@ -72,18 +72,18 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('pages through the server, and an address past the end shows the last page', async ({ page }) => {
-      await page.goto('/investments/activity?fy=all');
+      await page.goto('/investments/tradebook?fy=all');
       await page.getByRole('button', { name: 'Page 2' }).first().click();
       await page.waitForURL(/page=2/);
       await expectPager(page, `26–${seeded.total}`, seeded.total);
 
-      await page.goto('/investments/activity?fy=all&page=9');
+      await page.goto('/investments/tradebook?fy=all&page=9');
       await page.waitForURL(/page=2/);
       await expectPager(page, `26–${seeded.total}`, seeded.total);
     });
 
     test('the filters are one URL change each and answered by the server', async ({ page }) => {
-      await page.goto('/investments/activity?fy=all');
+      await page.goto('/investments/tradebook?fy=all');
 
       await page.getByRole('button', { name: 'Broker', exact: true }).click();
       await page.getByRole('option', { name: seeded.groww.name, exact: true }).click();
@@ -125,13 +125,13 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('the page opens on the current financial year', async ({ page }) => {
-      await page.goto('/investments/activity');
+      await page.goto('/investments/tradebook');
       await expectPager(page, '1–2', 2);
       await expect(page.getByRole('button', { name: /FY 26-27/ }).first()).toBeVisible();
     });
 
     test('a trade opens filled in, saves a change and shows it in the list', async ({ page }) => {
-      await page.goto('/investments/activity?type=buy&fy=2026');
+      await page.goto('/investments/tradebook?type=buy&fy=2026');
       const dialog = await openTrade(page, shown(page.getByRole('button').filter({ hasText: seeded.fund.name })));
       await expect(dialog.getByText('Edit trade')).toBeVisible();
       await expect(dialog.getByText(`${seeded.fund.name} · ${seeded.groww.name} · prices in ₹`)).toBeVisible();
@@ -158,7 +158,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Delete asks first, says what stays, and removes the trade', async ({ page }) => {
-      await page.goto('/investments/activity?type=sell');
+      await page.goto('/investments/tradebook?type=sell');
       const dialog = await openTrade(page, shown(page.getByRole('button').filter({ hasText: seeded.stock.symbol })));
       await expect(dialog.getByRole('radio', { name: 'Sell' })).toBeChecked();
       await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
@@ -176,7 +176,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('the settlement of a sell can be changed', async ({ page }) => {
-      await page.goto('/investments/activity?type=sell');
+      await page.goto('/investments/tradebook?type=sell');
       const dialog = await openTrade(page, shown(page.getByRole('button').filter({ hasText: seeded.stock.symbol })));
       await expect(dialog.getByRole('combobox', { name: /Settlement/ })).toContainText('CNC');
       await dialog.getByRole('combobox', { name: /Settlement/ }).click();
@@ -190,9 +190,9 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('View job links the last import and the last reconcile to their exact jobs', async ({ page }) => {
-      test.setTimeout(90_000); // the Activity page compiles on first visit in a dev client
+      test.setTimeout(90_000); // the Tradebook page compiles on first visit in a dev client
       const jobs = await seedImportJobs(makeApi(currentUser.cookie), seeded.zerodha.id);
-      await page.goto('/investments/activity');
+      await page.goto('/investments/tradebook');
 
       await expect(page.getByText(/Last import \d+ \w+, \d{1,2}:\d\d [ap]m · 0 trades/)).toBeVisible();
       await expect(page.getByText(/Last reconcile \d+ \w+, \d{1,2}:\d\d [ap]m/)).toBeVisible();

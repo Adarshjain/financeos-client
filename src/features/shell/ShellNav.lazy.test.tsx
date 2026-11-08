@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { AddLendingProvider } from '@/features/lendings/form/AddLendingProvider';
 
 import { ShellTabBar } from './ShellNav';
+vi.mock('@/lib/query/hooks/useDataSourceIssues', () => ({ useDataSourceIssues: () => ({ connections: 0, failedJobs: 0, total: 0 }) }));
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/accounts', useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('@/lib/query/hooks/useInbox', () => ({ useInboxSummary: () => ({ data: { badge: 0 } }) }));

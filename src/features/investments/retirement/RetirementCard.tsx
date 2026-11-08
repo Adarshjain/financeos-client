@@ -97,11 +97,11 @@ const columns = [
   }),
 ];
 
-/** The Retirement card: one row per EPF and NPS account (an upload line for what is missing). A row opens its screen. Shown on Accounts and on Investments › Retirement. */
+/** The Retirement card: one row per EPF and NPS account (an upload line for what is missing). A row opens its screen. Shown on Accounts. */
 export function RetirementCard({ model }: { model: RetirementModel }) {
   const router = useRouter();
   return (
-    <Card title="Retirement" subtitle="EPF passbook + NPS statements">
+    <Card title="EPF & NPS" subtitle="EPF passbook + NPS statements">
       <DataTable
         columns={columns}
         data={retirementTableRows(model)}
@@ -118,7 +118,7 @@ export function RetirementCard({ model }: { model: RetirementModel }) {
 /** The card while it loads. */
 export function RetirementCardSkeleton() {
   return (
-    <Card title="Retirement" subtitle="EPF passbook + NPS statements">
+    <Card title="EPF & NPS" subtitle="EPF passbook + NPS statements">
       <DataTable columns={columns} data={[]} getRowId={(row) => row.id} loading skeletonRows={2} />
     </Card>
   );

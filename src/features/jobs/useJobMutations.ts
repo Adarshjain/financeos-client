@@ -18,6 +18,7 @@ export function useJobMutations({ onRetried }: { onRetried?: (job: { id: string 
     onSuccess: () => {
       notify.info('Cancellation requested');
       queryClient.invalidateQueries({ queryKey: keys.jobs.all });
+      queryClient.invalidateQueries({ queryKey: keys.shell.counts() });
     },
     onError: (err) => toastError(err, "Couldn't cancel the job. Try again."),
   });
@@ -28,6 +29,7 @@ export function useJobMutations({ onRetried }: { onRetried?: (job: { id: string 
       notify.success('Job retried');
       emitJobStarted(retried.id);
       queryClient.invalidateQueries({ queryKey: keys.jobs.all });
+      queryClient.invalidateQueries({ queryKey: keys.shell.counts() });
       onRetried?.(retried);
     },
     onError: (err) => toastError(err, "Couldn't retry the job. Try again."),

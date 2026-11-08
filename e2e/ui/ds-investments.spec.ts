@@ -5,6 +5,7 @@ import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { istToday } from '../fixtures/dates';
+import { seedEpfBalance } from '../fixtures/seed/epf';
 import { type SeededHoldings, seedHoldings } from '../fixtures/seed/holdings';
 import { expect, test } from '../fixtures/test';
 
@@ -35,14 +36,41 @@ for (const viewport of VIEWPORTS) {
       seeded = await seedHoldings(makeApi(currentUser.cookie));
     });
 
-    test('Holdings: the four tabs, the figures and every row state', async ({ page }) => {
+    test('the landing: the total and a row (desktop) or tile (phone) per product, each opening its own page', async ({ page }) => {
+      await seedEpfBalance(makeApi(currentUser.cookie));
       await page.goto('/investments');
       await expect(page).toHaveTitle('Investments · FinanceOS');
+      // No tab strip on the landing.
+      await expect(page.getByRole('main').getByRole('tab')).toHaveCount(0);
+      await expect(shown(page.getByText('Total value', { exact: true }))).toBeVisible();
+      // The total is the stocks plus the EPF opening balance (₹3,00,000 + ₹2,00,000), so the EPF value shows too.
+      await expect(shown(page.getByText('₹5,00,000'))).toBeVisible();
+
+      // Desktop: a table row per product; phone: a tile per product.
+      const product = (name: string, testId: string) =>
+        viewport.width < 641 ? page.getByTestId(testId) : page.getByRole('button').filter({ hasText: name }).first();
+      await expect(product('Stocks & funds', 'overview-stocks')).toBeVisible();
+      await expect(product('EPF', 'overview-epf')).toBeVisible();
+
+      await product('Stocks & funds', 'overview-stocks').click();
+      await page.waitForURL('**/investments/holdings');
+      await expect(page.getByRole('tab', { name: 'Holdings' })).toHaveAttribute('data-state', 'active');
+
+      await page.goto('/investments');
+      await product('EPF', 'overview-epf').click();
+      await page.waitForURL('**/investments/epf');
+      // A drill-in: no tab strip.
+      await expect(page.getByRole('main').getByRole('tab')).toHaveCount(0);
+    });
+
+    test('Holdings: the three tabs, the figures and every row state', async ({ page }) => {
+      await page.goto('/investments/holdings');
+      await expect(page).toHaveTitle('Stocks & funds · FinanceOS');
 
       await expect(page.getByRole('tab', { name: 'Holdings' })).toHaveAttribute('data-state', 'active');
       // The tab order, and no counts on any tab.
-      await expect(page.getByRole('main').getByRole('tab')).toHaveText(['Holdings', 'Retirement', 'Activity', 'F&O']);
-      await expect(page.getByRole('tab', { name: 'Activity' })).toHaveAttribute('href', '/investments/activity');
+      await expect(page.getByRole('main').getByRole('tab')).toHaveText(['Holdings', 'Dividends', 'Tradebook', 'F&O', 'Corporate actions']);
+      await expect(page.getByRole('tab', { name: 'Tradebook' })).toHaveAttribute('href', '/investments/tradebook');
 
       // The hero names its headline figure at both sizes.
       await expect(page.getByText('Current value', { exact: true }).filter({ visible: true })).toHaveCount(1);
@@ -63,7 +91,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Holdings: search, type, sort and Broker are one URL change each and answered by the server', async ({ page }) => {
-      await page.goto('/investments');
+      await page.goto('/investments/holdings');
 
       await page.getByPlaceholder('Search').fill('TCSX');
       await page.waitForURL(/q=TCSX/);
@@ -103,7 +131,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Holdings: a row opens its holding page', async ({ page }) => {
-      await page.goto('/investments');
+      await page.goto('/investments/holdings');
       await shown(page.getByText(seeded.tcs.symbol, { exact: true })).click();
       await page.waitForURL(`**/investments/${seeded.tcs.id}`);
       // A holding's page is one page: no tabs, not even the Investments ones.

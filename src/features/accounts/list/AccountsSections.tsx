@@ -451,20 +451,22 @@ function cardPhoneSub(row: CardListRow): React.ReactNode {
 }
 
 export function CardsSection(
-  props: SectionProps<CardListRow> & { subtitle: string; emptyText?: string }
+  props: SectionProps<CardListRow> & { subtitle: React.ReactNode; emptyText?: string }
 ) {
   const router = useRouter();
   const closed = useClosedToggle();
   return (
-    <Card
-      title="Credit cards"
-      subtitle={props.subtitle}
-      action={
-        <AddLink addType="credit_card">
-          Add credit card
-        </AddLink>
-      }
-    >
+    <Card>
+      {/* The bills-due line wraps on phone rather than cutting off. */}
+      <Card.Header>
+        <div className="min-w-0">
+          <Card.Title>Credit cards</Card.Title>
+          <Card.Subtitle truncate={false}>{props.subtitle}</Card.Subtitle>
+        </div>
+        <div className="shrink-0 flex items-center">
+          <AddLink addType="credit_card">Add credit card</AddLink>
+        </div>
+      </Card.Header>
       <DataTable
         columns={cardColumns}
         data={withClosed(props, closed.showing)}
@@ -609,24 +611,18 @@ export function WalletsSection(props: SectionProps<WalletRow>) {
 export function AccountsTablesSkeleton() {
   return (
     <>
-      <SectionHeader as="h2" variant="strong" sticky={false} className="px-0">
-        What you have
-      </SectionHeader>
       <Card>
         <DataTable
-          columns={bankColumns}
+          columns={cardColumns}
           data={[]}
           getRowId={(row) => row.id}
           loading
           skeletonRows={3}
         />
       </Card>
-      <SectionHeader as="h2" variant="strong" sticky={false} className="px-0">
-        What you owe
-      </SectionHeader>
       <Card>
         <DataTable
-          columns={cardColumns}
+          columns={bankColumns}
           data={[]}
           getRowId={(row) => row.id}
           loading

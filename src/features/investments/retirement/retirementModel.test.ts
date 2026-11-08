@@ -12,7 +12,7 @@ describe('retirementModel', () => {
       name: 'EPF',
       idLabel: 'UAN ••4321',
       sub: 'Northwind Labs · 2 earlier employers',
-      href: '/investments/retirement/epf',
+      href: '/investments/epf',
       valueText: '₹8,43,210',
       updated: 'Sep 2026',
       status: null,
@@ -38,7 +38,7 @@ describe('retirementModel', () => {
 
   it('links each NPS row to that account on the NPS screen', () => {
     const model = retirementModel(epfSummary({ hasData: false }), [], npsSummary([npsAccount(), npsAccount({ id: 'a2', pranMasked: 'XXXXXXX3390' })]));
-    expect(model.rows.map((r) => r.href)).toEqual(['/investments/retirement/nps?account=a1', '/investments/retirement/nps?account=a2']);
+    expect(model.rows.map((r) => r.href)).toEqual(['/investments/nps?account=a1', '/investments/nps?account=a2']);
   });
 
   it('flags a frozen Tier I as Frozen (danger)', () => {

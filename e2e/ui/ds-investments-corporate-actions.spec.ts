@@ -28,7 +28,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('lists every recorded action with its type, ratio and effect, and the rules card', async ({ page }) => {
-      await page.goto('/investments/activity/corporate-actions');
+      await page.goto('/investments/corporate-actions');
 
       await expect(shown(page.getByText(`${seeded.infy.symbol} · ${seeded.infy.name}`))).toBeVisible();
       await expect(shown(page.getByText('Note: record date 11 Jun 25'))).toBeVisible();
@@ -48,7 +48,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('search, type and sort are one URL change each and answered by the server', async ({ page }) => {
-      await page.goto('/investments/activity/corporate-actions');
+      await page.goto('/investments/corporate-actions');
 
       await page.getByPlaceholder('Search').fill('INFYX');
       await page.waitForURL(/q=INFYX/);
@@ -77,7 +77,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('a row opens the edit dialog; changing the ratio saves and the list shows it', async ({ page }) => {
-      await page.goto('/investments/activity/corporate-actions');
+      await page.goto('/investments/corporate-actions');
       await shown(page.getByText(`${seeded.infy.symbol} · ${seeded.infy.name}`)).click();
 
       const dialog = page.getByRole('dialog');
@@ -99,7 +99,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('the edit dialog shows a demerger with its child and cost share', async ({ page }) => {
-      await page.goto('/investments/activity/corporate-actions?type=demerger');
+      await page.goto('/investments/corporate-actions?type=demerger');
       await shown(page.getByText(seeded.itc.symbol, { exact: false })).click();
 
       const dialog = page.getByRole('dialog');
@@ -112,7 +112,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test('Delete asks first, keeps the action on Cancel and removes it on confirm', async ({ page }) => {
-      await page.goto('/investments/activity/corporate-actions?type=bonus');
+      await page.goto('/investments/corporate-actions?type=bonus');
       await shown(page.getByText(`${seeded.infy.symbol} · ${seeded.infy.name}`)).click();
       await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
 

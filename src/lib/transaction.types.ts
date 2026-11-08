@@ -122,7 +122,7 @@ export type ObligationKind = 'LENDING' | 'LOAN_PAYMENT' | 'LOAN_EVENT' | 'LOAN_C
  * A direct-FK reference from a lending ledger entry, loan row or dividend row
  * back to this transaction. `parentId` is the id the badge should link to: a
  * counterparty (`/lending/{parentId}`) for LENDING, an instrument
- * (`/investments/activity/dividends?instrumentId={parentId}`) for DIVIDEND, a loan
+ * (`/investments/dividends?instrumentId={parentId}`) for DIVIDEND, a loan
  * (`/loans/{parentId}`) otherwise.
  */
 export interface ObligationRef {

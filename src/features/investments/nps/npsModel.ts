@@ -25,7 +25,7 @@ export type NpsSchemeDetail = Schemas['NpsSchemeDetailResponse'];
 
 // ---- URL state ---------------------------------------------------------------
 
-export const NPS_HREF = `${DS_PREFIX}/investments/retirement/nps`;
+export const NPS_HREF = `${DS_PREFIX}/investments/nps`;
 export const NPS_SIZE_OPTIONS = [25, 50, 100];
 
 export interface NpsUrlState {

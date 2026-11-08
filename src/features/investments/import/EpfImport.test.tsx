@@ -294,7 +294,7 @@ describe('EPF passbook import: result', () => {
     expect(epfCalls.commit).toHaveBeenCalledWith({ files: [pdf], assign: [] });
     expect(screen.getByText('2 new and 1 replaced. EPF balance is now ₹8,43,210, up to September 2026.')).toBeInTheDocument();
     expect(mockRouter.refresh).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('link', { name: 'Open EPF' })).toHaveAttribute('href', '/investments/retirement/epf');
+    expect(screen.getByRole('link', { name: 'Open EPF' })).toHaveAttribute('href', '/investments/epf');
   });
 
   it('Import another starts over', async () => {

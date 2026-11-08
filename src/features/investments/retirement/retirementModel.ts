@@ -62,7 +62,7 @@ function accountValue(account: NpsAccount): number {
 }
 
 /** The newest NAV date among the account's holdings. */
-function accountNavDate(account: NpsAccount, holdings: NpsHolding[]): string | null {
+export function accountNavDate(account: NpsAccount, holdings: NpsHolding[]): string | null {
   const dates = holdings.filter((h) => h.accountId === account.id && h.navDate).map((h) => h.navDate as string);
   return dates.length ? dates.reduce((a, b) => (a > b ? a : b)) : null;
 }
@@ -107,6 +107,10 @@ export function retirementNetWorthTotal(model: RetirementModel): number {
 
 export const EPF_UPLOAD_HREF = `${INVESTMENTS_IMPORT_HREF}?type=${EPF_IMPORT_TYPE}`;
 
+/** What an EPF or NPS with nothing added yet says, and the link that adds it. */
+export const EPF_EMPTY = { line: 'Upload your EPFO passbook to see your balance here', action: { label: 'Upload passbook', href: EPF_UPLOAD_HREF } };
+export const NPS_EMPTY = { line: 'Upload an NPS statement. New ones in Gmail come in on their own', action: { label: 'Upload statement', href: NPS_UPLOAD_HREF } };
+
 /** One line of the overview table: an account, or the upload line of an EPF / NPS that has nothing yet. */
 export interface RetirementTableRow {
   id: string;
@@ -128,10 +132,10 @@ export function retirementTableRows(model: RetirementModel): RetirementTableRow[
   const nps = model.rows.filter((r) => r.kind === 'nps').map(real);
   return [
     ...(model.epfMissing
-      ? [{ id: 'epf-missing', name: 'EPF', idLabel: '', sub: 'Upload your EPFO passbook to see your balance here', href: '', valueText: '', updated: '', status: null, upload: { label: 'Upload passbook', href: EPF_UPLOAD_HREF } }]
+      ? [{ id: 'epf-missing', name: 'EPF', idLabel: '', sub: EPF_EMPTY.line, href: '', valueText: '', updated: '', status: null, upload: EPF_EMPTY.action }]
       : epf),
     ...(model.npsMissing
-      ? [{ id: 'nps-missing', name: 'NPS', idLabel: '', sub: 'Upload an NPS statement. New ones in Gmail come in on their own', href: '', valueText: '', updated: '', status: null, upload: { label: 'Upload statement', href: NPS_UPLOAD_HREF } }]
+      ? [{ id: 'nps-missing', name: 'NPS', idLabel: '', sub: NPS_EMPTY.line, href: '', valueText: '', updated: '', status: null, upload: NPS_EMPTY.action }]
       : nps),
   ];
 }

@@ -13,17 +13,18 @@ import { Icon } from '@/components/ds/Icon/Icon';
 import { Kbd } from '@/components/ds/Kbd/Kbd';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { Rail } from '@/components/ds/Rail/Rail';
+import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { TabBar } from '@/components/ds/TabBar/TabBar';
 import { Text } from '@/components/ds/Text/Text';
 import { Tooltip } from '@/components/ds/Tooltip/Tooltip';
 import { Logo } from '@/components/organisms/Logo/Logo';
 import { useNeedsReviewCount } from '@/features/transactions/useNeedsReviewCount';
+import { useDataSourceIssues } from '@/lib/query/hooks/useDataSourceIssues';
 import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 
 import {
   getActiveNavItem,
   hidesTabBar,
-  shellFooterItems,
   shellMoreGroups,
   shellQuickAddItems,
   shellRailGroups,
@@ -96,6 +97,7 @@ export function ShellTabBar({
   const pendingPath = usePendingPath();
   const current = (pendingPath && getActiveNavItem(pendingPath)) || getActiveNavItem(pathname);
   const counts = useNavCounts();
+  const issues = useDataSourceIssues().total;
   const openQuickAdd = useOpenQuickAddDialog();
   const quickAddLoading = useQuickAddLoading();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -212,19 +214,6 @@ export function ShellTabBar({
               </div>
             ))}
 
-            {/* Data sources row */}
-            <Card className="mt-space-8 desk:mt-space-16">
-              <ListRow
-                asChild
-                title="Data sources"
-                subtitle="Gmail · imports · sync health"
-                chevron
-                borderTop={false}
-              >
-                <Link href={appHref('/data-sources')} prefetch={false} onClick={() => setMoreOpen(false)} />
-              </ListRow>
-            </Card>
-
             {/* Profile row */}
             <Card className="mt-space-8 desk:mt-space-16">
               <ListRow
@@ -240,7 +229,13 @@ export function ShellTabBar({
                   </Avatar>
                 }
                 title={profileText}
-                subtitle="Settings · security · AI"
+                subtitle={
+                  issues > 0 ? (
+                    <StatusWord tone="warning">{issues === 1 ? '1 issue' : `${issues} issues`}</StatusWord>
+                  ) : (
+                    'Settings · connections · notifications'
+                  )
+                }
                 chevron
                 borderTop={false}
               >
@@ -289,6 +284,8 @@ export function ShellRail({
   const counts = useNavCounts();
   const profileText = user.name?.trim() || user.email;
   const initials = getInitials(profileText);
+  const issues = useDataSourceIssues().total;
+  const issuesText = issues === 1 ? '1 issue' : `${issues} issues`;
   const { open: openSearch } = useSearch();
   const [collapsed, setCollapsedState] = useState(initialCollapsed);
   const setCollapsed = (next: boolean) => {
@@ -312,7 +309,7 @@ export function ShellRail({
 
   const settingsFooter = (
       collapsed ? (
-        <Tooltip content={profileText} side="right">
+        <Tooltip content={issues > 0 ? `${profileText} · ${issuesText}` : profileText} side="right">
           <Link href={appHref('/settings')} prefetch={false} aria-label={profileText}>
             <Avatar
               variant="circle"
@@ -340,7 +337,7 @@ export function ShellRail({
             </Avatar>
           }
           title={profileText}
-          subtitle={user.name?.trim() ? user.email : undefined}
+          subtitle={issues > 0 ? <StatusWord tone="warning">{issuesText}</StatusWord> : user.name?.trim() ? user.email : undefined}
           borderTop={false}
           className="px-space-8"
         >
@@ -348,7 +345,6 @@ export function ShellRail({
         </ListRow>
       )
   );
-  const dataSourcesItem = shellFooterItems.find((item) => item.id === 'data-sources')!;
 
   return (
     <Rail
@@ -403,31 +399,6 @@ export function ShellRail({
       }
       footer={
         <div className="flex flex-col gap-space-4">
-          {collapsed ? (
-            <Tooltip content={dataSourcesItem.label} side="right">
-              <Button
-                variant="ghost"
-                size="md"
-                iconOnly
-                aria-label={dataSourcesItem.label}
-                icon={<Icon name={dataSourcesItem.icon} size="lg" />}
-                asChild
-              >
-                <Link href={appHref(dataSourcesItem.href)} prefetch={false} />
-              </Button>
-            </Tooltip>
-          ) : (
-            <ListRow
-              asChild
-              leading={<Icon name={dataSourcesItem.icon} size="lg" />}
-              title={dataSourcesItem.label}
-              highlighted={current === dataSourcesItem.id}
-              borderTop={false}
-              className="px-space-8"
-            >
-              <Link href={appHref(dataSourcesItem.href)} prefetch={false} />
-            </ListRow>
-          )}
           {settingsFooter}
         </div>
       }

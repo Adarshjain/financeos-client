@@ -118,7 +118,7 @@ describe('ImportTradebookScreen: step 1', () => {
   it('is a page with a back link, the Stepper and the Zerodha form', async () => {
     renderWithQuery(<ImportTradebookScreen brokers={brokers} />);
     expect(screen.getByRole('heading', { name: 'Import tradebook' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back to tradebook' })).toHaveAttribute('href', '/investments/activity');
+    expect(screen.getByRole('link', { name: 'Back to tradebook' })).toHaveAttribute('href', '/investments/tradebook');
     expect(screen.getByText('Investment bulk import')).toBeInTheDocument();
     expect(screen.getAllByText('Upload files').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Review').length).toBeGreaterThan(0);
@@ -129,7 +129,7 @@ describe('ImportTradebookScreen: step 1', () => {
     expect(screen.getByText('2. Zerodha Tradebook')).toBeInTheDocument();
     expect(screen.getByText('3. Holdings snapshot anchor (optional)')).toBeInTheDocument();
     expect(screen.getByText('Authoritative intraday & clean FIFO:')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Cancel' })).toHaveAttribute('href', '/investments/activity');
+    expect(screen.getByRole('link', { name: 'Cancel' })).toHaveAttribute('href', '/investments/tradebook');
   });
 
   it('asks for a target account, then a tradebook, then a tax P&L, and stays on step 1', async () => {
@@ -355,7 +355,7 @@ describe('ImportTradebookScreen: import job and result', () => {
     expect(screen.getByText('#31 trade date is before the account was opened')).toBeInTheDocument();
     expect(screen.getByText('Skipped executions (1)')).toBeInTheDocument();
     expect(screen.getByText('#9 RELIANCE — already imported (same exchange reference)')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Done & view portfolio' })).toHaveAttribute('href', '/investments');
+    expect(screen.getByRole('link', { name: 'Done & view portfolio' })).toHaveAttribute('href', '/investments/holdings');
   });
 
   it('shows no lists when nothing failed or was skipped', async () => {

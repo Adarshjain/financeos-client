@@ -372,12 +372,44 @@ export function cardRow(
   };
 }
 
-export function cardsSubtitle(open: readonly CreditCard[]): string {
+/** The open cards' unpaid bills: how many, what is left to pay, and the earliest due date. */
+export interface BillsDue {
+  count: number;
+  total: number;
+  earliestDue: string | null;
+}
+
+/** Unpaid = a statement is out with something left to pay (the Bills due widget's arrived and overdue phases). Null when none. */
+export function unpaidBillsDue(
+  bills: readonly CardBillResponse[] | null,
+  openCards: readonly CreditCard[],
+  today: string
+): BillsDue | null {
+  if (!bills) return null;
+  const open = new Set(openCards.map((c) => c.id));
+  let count = 0;
+  let total = 0;
+  let earliestDue: string | null = null;
+  for (const bill of bills) {
+    if (!open.has(bill.accountId)) continue;
+    const state = deriveBillCardState(bill, today);
+    if (state.phase === 'awaiting') continue;
+    count += 1;
+    total += state.toPay ?? 0;
+    const due = bill.paymentDueDate ?? null;
+    if (due && (earliestDue === null || due < earliestDue)) earliestDue = due;
+  }
+  return count > 0 ? { count, total, earliestDue } : null;
+}
+
+export function cardsSubtitle(open: readonly CreditCard[], due: BillsDue | null = null): string {
   const limit = sumCreditUsage(open).limit;
-  const base = 'Owed today';
+  const lead = due
+    ? `${formatCount(due.count, ['bill', 'bills'])} due · ${formatMoney(due.total)}${due.earliestDue ? ` by ${formatDate(due.earliestDue, 'list')}` : ''}`
+    : 'Owed today';
   return limit > 0
-    ? `${base} · ${formatMoney(limit)} limit, ${formatCount(open.length, ['card', 'cards'])}`
-    : base;
+    ? `${lead} · ${formatMoney(limit)} limit, ${formatCount(open.length, ['card', 'cards'])}`
+    : lead;
 }
 
 // ---- Brokers and wallets ---------------------------------------------------

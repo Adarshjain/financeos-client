@@ -104,25 +104,25 @@ const CATALOG: Record<
   },
   portfolio_snapshot: {
     label: 'Portfolio', category: 'investments', subtitle: 'Value and day change', requires: 'Needs investments', view: null,
-    minW: 50, kind: 'component', templateType: null, datasource: null, href: '/investments',
+    minW: 50, kind: 'component', templateType: null, datasource: null, href: '/investments/holdings',
     description:
       'Current value, amount invested, unrealised gain and XIRR across all brokers, plus the change since the last evening price update.',
   },
   top_movers: {
     label: 'Top movers', category: 'investments', subtitle: 'Biggest moves today', requires: 'Needs investments', view: null,
-    minW: 50, kind: 'component', templateType: null, datasource: null, href: '/investments',
+    minW: 50, kind: 'component', templateType: null, datasource: null, href: '/investments/holdings',
     description:
       'Your holdings that moved most since the previous evening price update. Mutual fund NAVs update a day late.',
   },
   allocation: {
     label: 'Allocation', category: 'investments', subtitle: 'By asset class', requires: 'Needs investments', view: 'allocation',
-    minW: 50, kind: 'template', templateType: 'CHART', datasource: 'positions', href: '/investments',
+    minW: 50, kind: 'template', templateType: 'CHART', datasource: 'positions', href: '/investments/holdings',
     description:
       'How your portfolio splits across equity, debt, hybrid, gold and international, at current market value.',
   },
   tax_harvest: {
     label: 'Tax harvesting', category: 'investments', subtitle: 'Gains this FY', requires: 'Needs investments', view: null,
-    minW: 50, kind: 'component', templateType: null, datasource: null, href: '/investments',
+    minW: 50, kind: 'component', templateType: null, datasource: null, href: '/investments/holdings',
     description:
       'Capital gains booked this financial year, how much of the ₹1.25L LTCG exemption is left, and which lots are worth selling — or waiting on — to use it. Not tax advice.',
   },

@@ -91,8 +91,7 @@ export const shellRailGroups: ShellNavGroup[] = [
 ];
 
 export const shellFooterItems: ShellNavItem[] = [
-  { id: 'data-sources', label: 'Data sources', icon: 'link', href: '/data-sources' },
-  { id: 'settings', label: 'Settings', icon: 'settings', href: '/settings' },
+  { id: 'settings', label: 'Settings', icon: 'settings', href: '/settings', also: ['/data-sources'] },
 ];
 
 export interface ShellQuickAddItem {
@@ -175,7 +174,7 @@ export function getActiveNavItem(pathname: string | null | undefined): string | 
 
   // Check footer
   for (const item of shellFooterItems) {
-    if (path === item.href || path.startsWith(item.href + '/')) {
+    if ([item.href, ...(item.also ?? [])].some((p) => path === p || path.startsWith(p + '/'))) {
       return item.id;
     }
   }

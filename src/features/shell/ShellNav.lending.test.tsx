@@ -6,6 +6,7 @@ import { AddLendingProvider } from '@/features/lendings/form/AddLendingProvider'
 
 import { AddTradeProvider } from './AddTradeProvider';
 import { ShellTabBar } from './ShellNav';
+vi.mock('@/lib/query/hooks/useDataSourceIssues', () => ({ useDataSourceIssues: () => ({ connections: 0, failedJobs: 0, total: 0 }) }));
 
 const router = { push: vi.fn() };
 vi.mock('next/navigation', () => ({ usePathname: () => '/accounts', useRouter: () => router }));

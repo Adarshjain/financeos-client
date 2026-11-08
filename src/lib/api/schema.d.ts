@@ -6505,6 +6505,12 @@ export interface components {
             reportId?: string | null;
             title?: string | null;
         };
+        DataSourcesCountsResponse: {
+            /** Format: int32 */
+            connections: number;
+            /** Format: int32 */
+            failedJobs: number;
+        };
         DateOperators: {
             absolute: string[];
             cycle: string[];
@@ -7244,8 +7250,11 @@ export interface components {
             loans: components["schemas"]["SearchLoanHit"][];
             people: components["schemas"]["SearchPersonHit"][];
             reports: components["schemas"]["SearchReportHit"][];
+            retirement: components["schemas"]["SearchRetirementHit"][];
             rules: components["schemas"]["SearchRuleHit"][];
+            tags: components["schemas"]["SearchTagHit"][];
             transactions: components["schemas"]["SearchTransactionHit"][];
+            upcoming: components["schemas"]["SearchUpcomingHit"][];
         };
         GmailAttentionItemResponse: {
             /** Format: uuid */
@@ -10203,11 +10212,28 @@ export interface components {
             /** @enum {string} */
             type: "KPI" | "CHART" | "TABLE";
         };
+        SearchRetirementHit: {
+            /** Format: uuid */
+            accountId?: string | null;
+            holderName?: string | null;
+            kind: string;
+            matchedScheme?: string | null;
+            pranLast4?: string | null;
+            subtitle?: string | null;
+            title: string;
+        };
         SearchRuleHit: {
             categoryName: string;
             /** Format: uuid */
             id: string;
             matchText: string;
+        };
+        SearchTagHit: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: int64 */
+            transactionCount: number;
         };
         SearchTransactionHit: {
             /** Format: uuid */
@@ -10219,6 +10245,15 @@ export interface components {
             description: string;
             /** Format: uuid */
             id: string;
+        };
+        SearchUpcomingHit: {
+            amount: number;
+            /** Format: uuid */
+            id: string;
+            kind: string;
+            name: string;
+            /** Format: date */
+            nextDueOn: string;
         };
         SellEstimateResponse: {
             bookedEquityLongTermGain?: number | null;
@@ -10273,6 +10308,7 @@ export interface components {
         };
         ShellCountsResponse: {
             appLock?: components["schemas"]["AppLockStatusResponse"];
+            dataSources?: components["schemas"]["DataSourcesCountsResponse"];
             inbox?: components["schemas"]["InboxSummaryResponse"];
             /** Format: int64 */
             needsReview?: number | null;

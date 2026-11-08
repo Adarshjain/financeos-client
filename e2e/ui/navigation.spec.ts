@@ -20,14 +20,14 @@ test.describe('Navigation and relocated pages (@ui)', () => {
 
     await page.goto(`/settings/ingest?account=${account.id}`);
     await page.waitForURL(`**/transactions/import?account=${account.id}`);
-    await expect(page.getByRole('tab', { name: 'Import' })).toHaveCount(0);
+    await expect(page.getByRole('tab', { name: 'Import' })).toHaveAttribute('data-state', 'active', { timeout: 30000 });
     await expect(page.getByRole('combobox', { name: 'Account' })).toContainText('Redirect Bank');
 
     // Without a query the redirect carries none.
     await page.goto('/settings/ingest');
     await page.waitForURL('**/transactions/import');
     expect(new URL(page.url()).search).toBe('');
-    await expect(page.getByRole('tab', { name: 'Import' })).toHaveCount(0);
+    await expect(page.getByRole('tab', { name: 'Import' })).toHaveAttribute('data-state', 'active', { timeout: 30000 });
     await expect(page.getByText('Recent imports', { exact: true })).toBeVisible();
   });
 
@@ -51,14 +51,14 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     await expect(page).toHaveTitle('Upcoming · FinanceOS');
   });
 
-  test('Data sources links to Sync health, and the Import page lists Recent imports', async ({ page }) => {
+  test('Settings leads to Sync health (via the /data-sources redirect), and the Import page lists Recent imports', async ({ page }) => {
     await page.goto('/data-sources');
     await page.getByRole('main').getByRole('link', { name: 'Sync health', exact: true }).click();
     await page.waitForURL('**/data-sources/sync');
     await expect(page.getByRole('button', { name: 'Status', exact: true })).toBeVisible({ timeout: 45000 });
 
     await page.goto('/transactions/import');
-    await expect(page.getByRole('tab', { name: 'Import' })).toHaveCount(0);
+    await expect(page.getByRole('tab', { name: 'Import' })).toHaveAttribute('data-state', 'active', { timeout: 60000 });
     await expect(page.getByText('Recent imports', { exact: true })).toBeVisible();
   });
 

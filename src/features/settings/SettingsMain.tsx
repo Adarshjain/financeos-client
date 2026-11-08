@@ -8,6 +8,7 @@ import type { AppLockStatus } from '@/lib/api/types';
 import type { UserResponse } from '@/lib/types';
 
 import { DataCard, type SettingsDataValues } from './DataCard';
+import { DataSourcesCard } from './DataSourcesCard';
 import { GeneralCard } from './GeneralCard';
 import { HelpCard } from './HelpCard';
 import { DeleteAccountCard } from './profile/DeleteAccountCard';
@@ -32,6 +33,7 @@ export function SettingsMain({
       <ProfileCard user={user} />
       <GeneralCard tabSlot={tabSlot} />
       <SecurityCard appLock={appLock} />
+      <DataSourcesCard />
       <DataCard values={values} />
       <HelpCard />
       <Card>

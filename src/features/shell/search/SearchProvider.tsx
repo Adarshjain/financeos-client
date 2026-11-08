@@ -7,10 +7,11 @@ import { SearchPalette } from '@/components/ds/SearchPalette/SearchPalette';
 import { useAddTransaction } from '@/features/transactions/form/AddTransactionProvider';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
-import { shellFooterItems, shellQuickAddItems, shellRailGroups } from '../navigation';
+import { shellQuickAddItems } from '../navigation';
 import { useOpenQuickAddDialog, useQuickAddLoading } from '../quickAdd';
 import { appHref } from '../routes';
 import { buildSearchGroups, type SearchAction, searchHint, type SearchPage } from './searchItems';
+import { searchPages } from './searchPages';
 import { useGlobalSearch } from './useGlobalSearch';
 
 // Mark paid opens from a search action: its code is not in the page and loads when the action is picked.
@@ -28,11 +29,7 @@ export function useSearch(): SearchValue {
   return React.useContext(SearchContext);
 }
 
-const PAGES: SearchPage[] = [
-  ...[...shellRailGroups.flatMap((g) => g.items), ...shellFooterItems].map(({ id, label, icon, href }) => ({ id, label, icon, href })),
-  // Instruments left the Investments tab strip: it stays findable here.
-  { id: 'instruments', label: 'Instruments', icon: 'chart-line-up', href: '/investments/instruments' },
-];
+const PAGES: SearchPage[] = searchPages();
 
 /** Owns the search palette (open state and text) for the signed-in Dinero shell and renders it once; ⌘K / Ctrl+K toggles it. */
 export function SearchProvider({ children }: { children: React.ReactNode }) {

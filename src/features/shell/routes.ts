@@ -17,6 +17,7 @@ const PATH_ALIASES: Record<string, string> = {
   '/settings/connections': '/data-sources/connections',
   '/settings/jobs': '/data-sources/sync',
   '/settings/activity': '/data-sources/sync',
+  '/data-sources': '/settings',
   '/debug': '/settings/debug',
   '/rules/categories': '/transactions/tags',
   '/rules': '/transactions/tags',
@@ -26,11 +27,9 @@ const PATH_ALIASES: Record<string, string> = {
   '/rewards/recommend': '/rewards/which-card',
   '/settings/ingest': '/transactions/import',
   '/loans/calendar': '/upcoming',
-  '/investments/epf': '/investments/retirement/epf',
-  '/investments/nps': '/investments/retirement/nps',
-  '/investments/tradebook': '/investments/activity',
-  '/investments/dividends': '/investments/activity/dividends',
-  '/investments/corporate-actions': '/investments/activity/corporate-actions',
+  '/investments/retirement': '/investments',
+  '/investments/retirement/epf': '/investments/epf',
+  '/investments/retirement/nps': '/investments/nps',
 };
 
 /** Old path prefixes that moved with their sub-pages: `/loans/lendings` and `/loans/lendings/{id}` live at `/lending`. */

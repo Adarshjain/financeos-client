@@ -50,10 +50,10 @@ describe('DataSourcesShell', () => {
     ['/data-sources/connections', 'Connections'],
     ['/data-sources/imports', 'Imports'],
     ['/data-sources/sync', 'Sync health'],
-  ])('on %s the top bar is titled %s, the back button leads to /data-sources', (path, title) => {
+  ])('on %s the top bar is titled %s, the back button leads to /settings', (path, title) => {
     pathname = path;
     renderShell();
     expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
-    expect(document.querySelector('[data-back]')).toHaveAttribute('data-back', '/data-sources');
+    expect(document.querySelector('[data-back]')).toHaveAttribute('data-back', '/settings');
   });
 });

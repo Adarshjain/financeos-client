@@ -42,7 +42,7 @@ describe('ImportsScreen', () => {
     expect(link).toHaveTextContent('hdfc-oct.pdf · 1 Oct–31 Oct · 42 transactions');
     expect(link).toHaveTextContent('2 Nov');
     expect(link).not.toHaveTextContent("Couldn't import");
-    expect(screen.getByRole('link', { name: /EPF passbook/ })).toHaveAttribute('href', '/investments/retirement/epf');
+    expect(screen.getByRole('link', { name: /EPF passbook/ })).toHaveAttribute('href', '/investments/epf');
   });
 
   it('marks a failed import and a held file', () => {

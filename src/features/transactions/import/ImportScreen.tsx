@@ -26,6 +26,7 @@ import { useAccounts } from '@/lib/query';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
 
+import { TransactionsTabs } from '../TransactionsTabs';
 import { formatFileSize, MAX_REQUEST_MB } from './fileLimits';
 import { HeldUploads } from './HeldUploads';
 import { IMPORT_ACTIVITY_HREF, IMPORT_JOB_TYPE, importJobHref, importUrl, RECENT_IMPORTS_SIZE } from './importModel';
@@ -99,10 +100,12 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
     <ShellPage
       crumb={subCrumb('transactions', 'Import')}
       title="Import"
+      flushTop
       onAdd={chooseFiles}
       addLabel="Add statements"
     >
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
+        <TransactionsTabs />
         <div className={`grid grid-cols-1 items-start ${GRID_GAP} desk:grid-cols-12`}>
           <div className="flex flex-col gap-space-8 desk:gap-space-16 desk:col-span-7 min-w-0">
           <Card>

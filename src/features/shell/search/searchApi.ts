@@ -84,6 +84,36 @@ export interface SearchRule {
   categoryName: string;
 }
 
+/** EPF (one hit, no accountId; subtitle = current employer) or one NPS account. Only the PRAN's last 4 ever arrive. */
+export interface SearchRetirement {
+  kind: 'EPF' | 'NPS';
+  accountId: string | null;
+  /** "EPF", "NPS" or "NPS Vatsalya". */
+  title: string;
+  subtitle: string | null;
+  pranLast4: string | null;
+  /** A child account's holder only. */
+  holderName: string | null;
+  /** Set only when the match came from a scheme name. */
+  matchedScheme: string | null;
+}
+
+/** A tracked bill, subscription or EMI from Upcoming. */
+export interface SearchUpcoming {
+  id: string;
+  name: string;
+  /** Calendar date, YYYY-MM-DD. */
+  nextDueOn: string;
+  amount: number;
+  kind: 'SUBSCRIPTION' | 'EMI' | 'OTHER';
+}
+
+export interface SearchTag {
+  id: string;
+  name: string;
+  transactionCount: number;
+}
+
 export interface GlobalSearchResult {
   accounts: SearchAccount[];
   transactions: SearchTransaction[];
@@ -94,6 +124,9 @@ export interface GlobalSearchResult {
   dashboards: SearchDashboard[];
   categories: SearchCategory[];
   rules: SearchRule[];
+  retirement: SearchRetirement[];
+  upcoming: SearchUpcoming[];
+  tags: SearchTag[];
 }
 
 export const EMPTY_SEARCH_RESULT: GlobalSearchResult = {
@@ -106,6 +139,9 @@ export const EMPTY_SEARCH_RESULT: GlobalSearchResult = {
   dashboards: [],
   categories: [],
   rules: [],
+  retirement: [],
+  upcoming: [],
+  tags: [],
 };
 
 // Browser fetch on purpose (documented exception): server actions run one at a time per tab and would queue search.

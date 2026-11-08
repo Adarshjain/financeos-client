@@ -18,7 +18,7 @@ export type EpfLatestContribution = Schemas['EpfLatestContribution'];
 
 // ---- URL state ---------------------------------------------------------------
 
-export const EPF_HREF = `${DS_PREFIX}/investments/retirement/epf`;
+export const EPF_HREF = `${DS_PREFIX}/investments/epf`;
 export const EPF_SIZE_OPTIONS = [25, 50, 100];
 /** The Import page with the EPF passbook type chosen. */
 export const EPF_IMPORT_TYPE = 'epf';

@@ -50,9 +50,9 @@ describe('Holdings URL state', () => {
   });
 
   it('keeps defaults out of the address', () => {
-    expect(holdingsUrl(parseHoldingsUrl({}))).toBe('/investments');
+    expect(holdingsUrl(parseHoldingsUrl({}))).toBe('/investments/holdings');
     expect(holdingsUrl({ q: 'tcs', type: 'stock', broker: 'b1', sort: 'return_pct', dir: 'desc', page: 1, size: 50 })).toBe(
-      '/investments?q=tcs&type=stock&broker=b1&sort=return_pct&page=2&size=50',
+      '/investments/holdings?q=tcs&type=stock&broker=b1&sort=return_pct&page=2&size=50',
     );
   });
 
@@ -84,10 +84,10 @@ describe('Holdings sort direction', () => {
   });
 
   it('writes dir to the address only when it differs from the key default', () => {
-    expect(holdingsUrl(parseHoldingsUrl({ sort: 'name', dir: 'asc' }))).toBe('/investments');
-    expect(holdingsUrl(parseHoldingsUrl({ sort: 'name', dir: 'desc' }))).toBe('/investments?dir=desc');
-    expect(holdingsUrl(parseHoldingsUrl({ sort: 'return_pct', dir: 'desc' }))).toBe('/investments?sort=return_pct');
-    expect(holdingsUrl(parseHoldingsUrl({ sort: 'return_abs', dir: 'asc' }))).toBe('/investments?sort=return_abs&dir=asc');
+    expect(holdingsUrl(parseHoldingsUrl({ sort: 'name', dir: 'asc' }))).toBe('/investments/holdings');
+    expect(holdingsUrl(parseHoldingsUrl({ sort: 'name', dir: 'desc' }))).toBe('/investments/holdings?dir=desc');
+    expect(holdingsUrl(parseHoldingsUrl({ sort: 'return_pct', dir: 'desc' }))).toBe('/investments/holdings?sort=return_pct');
+    expect(holdingsUrl(parseHoldingsUrl({ sort: 'return_abs', dir: 'asc' }))).toBe('/investments/holdings?sort=return_abs&dir=asc');
   });
 
   it('sends dir to the server only when it differs from the key default', () => {

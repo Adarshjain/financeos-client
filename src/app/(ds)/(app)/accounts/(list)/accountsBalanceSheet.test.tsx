@@ -66,13 +66,13 @@ describe('/accounts as the balance sheet', () => {
     push.mockReset();
   });
 
-  it('orders What you have (banks, brokers and wallets, retirement) before What you owe (cards, loans)', async () => {
+  it('orders cards first, then banks, brokers and wallets, retirement and loans, with no group headings', async () => {
     loadMock.mockReturnValue(data({ loans: { rows: [loan('l1', 'Home Loan')], closedLine: null } }));
     await renderPage();
-    const order = ['What you have', 'Bank accounts', 'Brokers', 'Wallets & cash', 'Retirement', 'What you owe', 'Credit cards', 'Loans'].map((t) => screen.getByText(t));
+    const order = ['Credit cards', 'Bank accounts', 'Brokers', 'Wallets & cash', 'EPF & NPS', 'Loans'].map((t) => screen.getByText(t));
     order.slice(1).forEach((el, i) => expect(before(order[i], el)).toBe(true));
-    expect(screen.getByRole('heading', { name: 'What you have' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'What you owe' })).toBeInTheDocument();
+    expect(screen.queryByText('What you have')).not.toBeInTheDocument();
+    expect(screen.queryByText('What you owe')).not.toBeInTheDocument();
   });
 
   it('shows the Investments figure as brokers + EPF + your own NPS, leaving the child account out', async () => {
@@ -98,9 +98,9 @@ describe('/accounts as the balance sheet', () => {
       expect(screen.getAllByText(t).length).toBeGreaterThan(0);
     }
     fireEvent.click(screen.getAllByText('EPF')[0]);
-    expect(push).toHaveBeenLastCalledWith('/investments/retirement/epf');
+    expect(push).toHaveBeenLastCalledWith('/investments/epf');
     fireEvent.click(screen.getAllByText('NPS Vatsalya')[0]);
-    expect(push).toHaveBeenLastCalledWith('/investments/retirement/nps?account=a2');
+    expect(push).toHaveBeenLastCalledWith('/investments/nps?account=a2');
 
     const accountsRows = screen.getAllByText(/PRAN ••|UAN ••/).map((n) => n.textContent);
     document.body.innerHTML = '';

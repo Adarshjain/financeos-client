@@ -35,8 +35,8 @@ describe('DsIndexPage Investments links', () => {
     render(<DsIndexPage />);
     expect(screen.getByText('Holdings')).toBeDefined();
     expect(screen.getByText('Holding detail')).toBeDefined();
-    expect(screen.getByText('/investments')).toBeDefined();
+    expect(screen.getByText('/investments/holdings')).toBeDefined();
     const hrefs = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
-    expect(hrefs.filter((h) => h === '/investments')).toHaveLength(2);
+    expect(hrefs.filter((h) => h === '/investments/holdings')).toHaveLength(2);
   });
 });

@@ -3,16 +3,18 @@ import React from 'react';
 import { Icon } from '@/components/ds/Icon/Icon';
 import { type IconName } from '@/components/ds/Icon/registry';
 import { type SearchPaletteGroup, type SearchPaletteItem } from '@/components/ds/SearchPalette/SearchPalette';
+import { Text } from '@/components/ds/Text/Text';
 import { TransactionRow } from '@/components/organisms/TransactionRow/TransactionRow';
 import { ALL_TIME, DEFAULT_QUERY, transactionsUrl } from '@/features/transactions/list/transactionsUrl';
+import { KIND_WORDS } from '@/features/upcoming/recurringModel';
 import { supportsIngestion } from '@/lib/account.types';
-import { formatDate } from '@/lib/format';
+import { formatCount, formatDate } from '@/lib/format';
 import { rowAmount } from '@/lib/transactionAmount';
 import type { AccountType } from '@/lib/types';
 
 import { appHref } from '../routes';
 import { SearchAmount } from './SearchAmount';
-import { type GlobalSearchResult, SEARCH_MIN_CHARS, type SearchTransaction } from './searchApi';
+import { type GlobalSearchResult, SEARCH_MIN_CHARS, type SearchRetirement, type SearchTransaction } from './searchApi';
 
 export interface SearchPage {
   id: string;
@@ -20,6 +22,8 @@ export interface SearchPage {
   icon: IconName;
   /** App path; appHref resolves moved pages. */
   href: string;
+  /** Where the page lives ("Investments · Stocks & funds"): shown after the label and matched like it. */
+  context?: string;
 }
 
 export interface SearchAction {
@@ -69,6 +73,29 @@ export function categoryHref(c: { key: string; parentName: string | null }): str
 /** The Rules page (it has no per-rule link). */
 export const RULES_HREF = '/transactions/tags';
 
+/** The Transactions page filtered to one tag, over all time. */
+export function tagHref(id: string): string {
+  return transactionsUrl({ ...DEFAULT_QUERY, period: ALL_TIME, tags: [id] });
+}
+
+/** The EPF screen, or the NPS screen on this account. */
+export function retirementHref(r: Pick<SearchRetirement, 'kind' | 'accountId'>): string {
+  return r.kind === 'NPS' && r.accountId ? `/investments/nps?account=${r.accountId}` : '/investments/epf';
+}
+
+/** Upcoming has no per-series page, so a bill opens the Upcoming list. */
+export const UPCOMING_HREF = '/upcoming';
+
+/** "EPF · Northwind Labs", "NPS · PRAN ••7731 · Zq Equity Fund", "NPS Vatsalya · PRAN ••5208 · For Aarav". */
+function retirementTitle(r: SearchRetirement): string {
+  return joinTitle([
+    r.title,
+    r.subtitle,
+    r.pranLast4 ? `PRAN ••${r.pranLast4}` : null,
+    r.matchedScheme ?? (r.holderName ? `For ${r.holderName}` : null),
+  ]);
+}
+
 /** The Transactions page for `q` over all time. */
 export function transactionsSearchHref(q: string): string {
   return transactionsUrl({ ...DEFAULT_QUERY, q, period: ALL_TIME });
@@ -85,12 +112,15 @@ function joinTitle(parts: Array<string | null | undefined>): string {
   return parts.filter(Boolean).join(' · ');
 }
 
+/** Most rows the Pages group shows. */
+const PAGES_CAP = 8;
+
 // No text shows nothing (owner, 2026-10-26): every row comes from what was typed.
 const matches = (label: string, needle: string) => needle.length > 0 && label.toLowerCase().includes(needle);
 
 /**
- * The palette's groups, in order: Accounts, Actions, Transactions, Holdings, Lending, Loans, Reports,
- * Dashboards, Categories, Rules, Pages, Ask. Pages and Actions filter on the text from its first character; the server
+ * The palette's groups, in order: Accounts, Actions, Transactions, Holdings, EPF & NPS, Lending, Loans, Upcoming,
+ * Reports, Dashboards, Categories, Rules, Tags, Pages, Ask. Pages and Actions filter on the text from its first character; the server
  * groups show only once the text has SEARCH_MIN_CHARS characters and an answer has arrived.
  */
 export function buildSearchGroups({ query, result, pages, actions, go, onAddTransaction, onMarkBillPaid }: SearchItemsInput): SearchPaletteGroup[] {
@@ -196,6 +226,13 @@ export function buildSearchGroups({ query, result, pages, actions, go, onAddTran
       ),
     },
     {
+      id: 'retirement',
+      label: 'EPF & NPS',
+      items: (server?.retirement ?? []).map((r) =>
+        link(`retirement:${r.accountId ?? r.kind}`, retirementTitle(r), retirementHref(r)),
+      ),
+    },
+    {
       id: 'lending',
       label: 'Lending',
       items: (server?.people ?? []).map((p) => link(`lending:${p.id}`, p.name, `/lending/${p.id}`)),
@@ -204,6 +241,14 @@ export function buildSearchGroups({ query, result, pages, actions, go, onAddTran
       id: 'loans',
       label: 'Loans',
       items: (server?.loans ?? []).map((l) => link(`loans:${l.id}`, joinTitle([l.name, l.lender]), `/loans/${l.id}`)),
+    },
+    {
+      id: 'upcoming',
+      label: 'Upcoming',
+      items: (server?.upcoming ?? []).map((u) => ({
+        ...link(`upcoming:${u.id}`, joinTitle([u.name, KIND_WORDS[u.kind], `due ${formatDate(u.nextDueOn, 'list')}`]), UPCOMING_HREF),
+        trailing: <SearchAmount amount={-u.amount} />,
+      })),
     },
     {
       id: 'reports',
@@ -230,11 +275,37 @@ export function buildSearchGroups({ query, result, pages, actions, go, onAddTran
       items: (server?.rules ?? []).map((r) => link(`rules:${r.id}`, `${r.matchText} → ${r.categoryName}`, RULES_HREF)),
     },
     {
+      id: 'tags',
+      label: 'Tags',
+      items: (server?.tags ?? []).map((t) => ({
+        ...link(`tags:${t.id}`, t.name, tagHref(t.id)),
+        trailing: (
+          <Text as="span" variant="caption" tone="ink-3">
+            {formatCount(t.transactionCount, ['transaction', 'transactions'])}
+          </Text>
+        ),
+      })),
+    },
+    {
       id: 'pages',
       label: 'Pages',
       items: pages
-        .filter((p) => matches(p.label, needle))
-        .map((p) => ({ ...link(`pages:${p.id}`, p.label, p.href), leading: <Icon name={p.icon} /> })),
+        .filter((p) => matches(p.label, needle) || (p.context !== undefined && matches(p.context, needle)))
+        .slice(0, PAGES_CAP)
+        .map((p) => ({
+          ...link(`pages:${p.id}`, p.label, p.href),
+          // Where the page lives sits on the right, so the title stays plain text and keeps its match highlight.
+          ...(p.context
+            ? {
+                trailing: (
+                  <Text as="span" variant="caption" tone="ink-3">
+                    {p.context}
+                  </Text>
+                ),
+              }
+            : {}),
+          leading: <Icon name={p.icon} />,
+        })),
     },
     {
       id: 'ask',

@@ -75,17 +75,17 @@ const entry = (over: Partial<NpsEntry> = {}): NpsEntry => ({
 
 describe('npsUrl', () => {
   it('leaves defaults out and round-trips the filters', () => {
-    expect(npsUrl(parseNpsUrl({}))).toBe('/investments/retirement/nps');
+    expect(npsUrl(parseNpsUrl({}))).toBe('/investments/nps');
     const state = parseNpsUrl({ tier: 'II', type: 'CHARGE', page: '3', account: 'a1' });
     expect(state).toMatchObject({ tier: 'II', type: 'CHARGE', page: 2, account: 'a1' });
-    expect(npsUrl(state)).toBe('/investments/retirement/nps?account=a1&tier=II&type=CHARGE&page=3');
+    expect(npsUrl(state)).toBe('/investments/nps?account=a1&tier=II&type=CHARGE&page=3');
   });
   it('reads the FY and From filters, with the current FY as the default', () => {
     const state = parseNpsUrl({ fy: '2025', contributor: 'EMPLOYER' });
     expect(state).toMatchObject({ fy: 2025, contributor: 'EMPLOYER' });
-    expect(npsUrl(state)).toBe('/investments/retirement/nps?fy=2025&contributor=EMPLOYER');
+    expect(npsUrl(state)).toBe('/investments/nps?fy=2025&contributor=EMPLOYER');
     expect(parseNpsUrl({})).toMatchObject({ fy: null, contributor: '' });
-    expect(npsUrl(parseNpsUrl({ fy: 'all' }))).toBe('/investments/retirement/nps?fy=all');
+    expect(npsUrl(parseNpsUrl({ fy: 'all' }))).toBe('/investments/nps?fy=all');
     expect(effectiveFy(parseNpsUrl({}), '2026-11-05')).toBe(2026);
     expect(effectiveFy(parseNpsUrl({}), '2027-02-05')).toBe(2026);
     expect(effectiveFy(parseNpsUrl({ fy: 'all' }), '2026-11-05')).toBeUndefined();

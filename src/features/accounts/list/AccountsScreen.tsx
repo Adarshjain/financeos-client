@@ -2,7 +2,6 @@ import React, { Suspense } from 'react';
 
 import { GRID_GAP } from '@/components/ds/gridGap';
 import { Hero } from '@/components/ds/Hero/Hero';
-import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import type { AccountSuggestions } from '@/features/accounts/list/suggestionsModel';
 import { RetirementCardSkeleton } from '@/features/investments/retirement/RetirementCard';
@@ -15,7 +14,7 @@ import {
   brokerRow,
   cardBaseRow,
   cardsKpi,
-  cardsSubtitle,
+  cardsSubtitle as cardsSubtitleText,
   cashKpi,
   closedLineFor,
   groupAccounts,
@@ -30,6 +29,7 @@ import {
 } from './AccountsSections';
 import { AccountsEmpty } from './AccountsStates';
 import {
+  CardsSubtitle,
   InvestmentsDelta,
   InvestmentsValue,
   LoansSection,
@@ -114,9 +114,17 @@ export function AccountsScreen({
         ) : null}
         {foundCount > 0 ? <FoundInEmailCard suggestions={mergeSuggestions(found)} /> : null}
 
-        <SectionHeader as="h2" variant="strong" sticky={false} className="px-0">
-          What you have
-        </SectionHeader>
+        <CardsSection
+          subtitle={
+            <Suspense fallback={cardsSubtitleText(sections.cards.open)}>
+              <CardsSubtitle bills={streams.bills} open={sections.cards.open} today={today} />
+            </Suspense>
+          }
+          rows={cardRows(sections.cards.open)}
+          closedRows={cardRows(sections.cards.closed)}
+          closedLine={closedLineFor(sections.cards.closed)}
+          emptyText={scanningEmptyCopy('card', progressShown)}
+        />
 
         <BankSection
           rows={sections.banks.open.map((a) => bankRow(a, today))}
@@ -142,18 +150,6 @@ export function AccountsScreen({
         <Suspense fallback={<RetirementCardSkeleton />}>
           <RetirementSection retirement={streams.retirement} />
         </Suspense>
-
-        <SectionHeader as="h2" variant="strong" sticky={false} className="px-0">
-          What you owe
-        </SectionHeader>
-
-        <CardsSection
-          subtitle={cardsSubtitle(sections.cards.open)}
-          rows={cardRows(sections.cards.open)}
-          closedRows={cardRows(sections.cards.closed)}
-          closedLine={closedLineFor(sections.cards.closed)}
-          emptyText={scanningEmptyCopy('card', progressShown)}
-        />
 
         <Suspense fallback={<LoansCardSkeleton />}>
           <LoansSection loans={streams.loans} />

@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { AddTransactionProvider } from '@/features/transactions/form/AddTransactionProvider';
 
 import { ShellTabBar } from './ShellNav';
+vi.mock('@/lib/query/hooks/useDataSourceIssues', () => ({ useDataSourceIssues: () => ({ connections: 0, failedJobs: 0, total: 0 }) }));
 
 const router = { push: vi.fn() };
 vi.mock('next/navigation', () => ({ usePathname: () => '/accounts', useRouter: () => router }));

@@ -38,8 +38,8 @@ describe('url state', () => {
   });
 
   it('keeps the defaults out of the address', () => {
-    expect(epfUrl(parseEpfUrl({}))).toBe('/investments/retirement/epf');
-    expect(epfUrl({ fy: 2025, employer: 'all', page: 1, size: 50 })).toBe('/investments/retirement/epf?fy=2025&employer=all&page=2&size=50');
+    expect(epfUrl(parseEpfUrl({}))).toBe('/investments/epf');
+    expect(epfUrl({ fy: 2025, employer: 'all', page: 1, size: 50 })).toBe('/investments/epf?fy=2025&employer=all&page=2&size=50');
   });
 
   it('picks the employer: the one chosen, the only one, the current one, or all', () => {

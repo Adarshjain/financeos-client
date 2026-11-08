@@ -78,6 +78,7 @@ export function useNotificationMutations() {
 }
 
 const NONE: ReadonlySet<string> = new Set();
+const subscribeNever = () => () => undefined;
 
 /**
  * The bell for the top bar: a dot while something is unread, a dropdown of the latest ten. Opening
@@ -91,6 +92,9 @@ export function useNotificationsAction(): TopBarAction {
   const { markRead } = useFeedMutations();
   const [highlighted, setHighlighted] = React.useState<ReadonlySet<string>>(NONE);
   const unread = summary?.unread ?? 0;
+  // The shell seeds the unread count into the cache, which can land before this page's part of the tree hydrates;
+  // like the rail's counts, the dot waits for hydration so the server and the first client render match.
+  const hydrated = React.useSyncExternalStore(subscribeNever, () => true, () => false);
 
   // refetch() works while the query is disabled; skip it when a fresh copy is cached or one is already on its way.
   const warm = () => {
@@ -113,8 +117,7 @@ export function useNotificationsAction(): TopBarAction {
     id: 'notifications',
     icon: 'notifications',
     label: 'Notifications',
-    dot: unread > 0,
-    deskOnly: true,
+    dot: hydrated && unread > 0,
     popover: { content: <NotificationsDropdown highlightedIds={highlighted} />, onOpenChange, onWarm: warm },
   };
 }

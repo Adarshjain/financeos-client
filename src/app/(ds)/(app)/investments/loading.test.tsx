@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import DsInvestmentsLoading from './(tabs)/loading';
+import DsInvestmentsLoading from './(stocks)/holdings/loading';
 import DsHoldingLoading from './[id]/loading';
 
 vi.mock('next/navigation', () => ({

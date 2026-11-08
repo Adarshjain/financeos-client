@@ -12,6 +12,7 @@ import {
   shellTabBarItemsFor,
 } from './navigation';
 import { ShellRail, ShellTabBar } from './ShellNav';
+vi.mock('@/lib/query/hooks/useDataSourceIssues', () => ({ useDataSourceIssues: () => ({ connections: 0, failedJobs: 0, total: 0 }) }));
 
 let mockPathname = '/home';
 const mockPush = vi.fn();
@@ -54,7 +55,6 @@ describe('shell navigation', () => {
     ]);
 
     expect(shellFooterItems.map((i) => [i.id, i.label, i.href])).toEqual([
-      ['data-sources', 'Data sources', '/data-sources'],
       ['settings', 'Settings', '/settings'],
     ]);
   });
@@ -99,19 +99,16 @@ describe('shell navigation', () => {
     expect(getActiveNavItem('/accounts/a1/rewards')).toBe('accounts');
     expect(getActiveNavItem('/settings')).toBe('settings');
     expect(getActiveNavItem('/settings/ai')).toBe('settings');
-    expect(getActiveNavItem('/data-sources')).toBe('data-sources');
-    expect(getActiveNavItem('/data-sources/imports')).toBe('data-sources');
+    expect(getActiveNavItem('/data-sources/imports')).toBe('settings');
     expect(getActiveNavItem('/inbox/updates')).toBe('inbox');
     expect(getActiveNavItem('/dsx/inbox')).toBeUndefined();
   });
 
-  it('the rail footer has Data sources above the profile row, current on its pages', () => {
+  it('the rail footer is the profile row only, current on Data sources pages', () => {
     mockPathname = '/data-sources/imports';
     render(<ShellRail user={{ email: 'a@b.test' }} />);
-    const dataSources = screen.getByRole('link', { name: 'Data sources' });
-    expect(dataSources).toHaveAttribute('href', '/data-sources');
-    const profile = screen.getByRole('link', { name: /a@b.test/i });
-    expect(dataSources.compareDocumentPosition(profile) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Data sources' })).toBeNull();
+    expect(screen.getByRole('link', { name: /a@b.test/i })).toHaveAttribute('href', '/settings');
   });
 
   it('shell links go to the Dinero page', () => {
@@ -294,15 +291,9 @@ describe('shell navigation', () => {
     expect(screen.getByRole('link', { name: /Reports/i }).className).not.toContain('col-span-2');
     expect(screen.queryByText('Hide amounts')).toBeNull();
     expect(screen.queryByRole('switch')).toBeNull();
-    expect(screen.getByText('Settings · security · AI')).toBeInTheDocument();
+    expect(screen.getByText('Settings · connections · notifications')).toBeInTheDocument();
 
-    // Data sources row, directly above the profile row
-    const dataSources = screen.getByRole('link', { name: /Data sources/i });
-    expect(dataSources).toHaveAttribute('href', '/data-sources');
-    expect(screen.getByText('Gmail · imports · sync health')).toBeInTheDocument();
-    expect(dataSources.closest('.mt-space-8')!.nextElementSibling).toBe(
-      screen.getByRole('link', { name: /Arjun Mehta/i }).closest('.mt-space-8'),
-    );
+    expect(screen.queryByRole('link', { name: /Data sources/i })).toBeNull();
 
     // Verify Profile row
     const profileLink = screen.getByRole('link', { name: /Arjun Mehta/i });

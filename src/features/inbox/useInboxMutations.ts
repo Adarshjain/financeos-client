@@ -122,6 +122,7 @@ export function useInboxMutations(notifier: InboxNotifier = sonnerInboxNotifier)
   // could land while another action is in flight and bring back the row it has optimistically hidden.
   const settle = () => {
     if (qc.isMutating({ mutationKey: INBOX_ACTION_KEY }) > 1) return undefined;
+    void qc.invalidateQueries({ queryKey: keys.shell.counts() });
     return qc.invalidateQueries({ queryKey: keys.inbox.all });
   };
 

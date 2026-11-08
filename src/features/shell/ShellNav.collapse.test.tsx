@@ -3,6 +3,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ShellRail } from './ShellNav';
+vi.mock('@/lib/query/hooks/useDataSourceIssues', () => ({ useDataSourceIssues: () => ({ connections: 0, failedJobs: 0, total: 0 }) }));
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/transactions', useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('@/lib/query/hooks/useInbox', () => ({ useInboxSummary: () => ({ data: { badge: 0 } }) }));
@@ -47,13 +48,6 @@ describe('ShellRail collapse', () => {
     expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Arjun Mehta' })).toHaveAttribute('href', '/settings');
     expect(screen.queryByText('⌘K')).not.toBeInTheDocument();
-  });
-
-  it('collapsed, Data sources is an icon-only link above the profile link', () => {
-    render(<ShellRail user={user} initialCollapsed />);
-    const link = screen.getByRole('link', { name: 'Data sources' });
-    expect(link).toHaveAttribute('href', '/data-sources');
-    expect(link).not.toHaveTextContent('Data sources');
   });
 
   it('the toggle collapses and saves the choice in a cookie', () => {

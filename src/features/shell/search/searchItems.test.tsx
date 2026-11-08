@@ -42,6 +42,9 @@ const result: GlobalSearchResult = {
   dashboards: [{ id: 'd1', name: 'Home', isDefault: true }],
   categories: [],
   rules: [],
+  retirement: [],
+  upcoming: [],
+  tags: [],
 };
 
 const addOn = vi.fn();
@@ -54,14 +57,16 @@ const ids = (groups: ReturnType<typeof build>['groups']) => groups.filter((g) =>
 const group = (groups: ReturnType<typeof build>['groups'], id: string) => groups.find((g) => g.id === id)!;
 
 describe('buildSearchGroups', () => {
-  it('orders the groups Accounts, Actions, Transactions, Holdings, Lending, Loans, Reports, Dashboards, Pages, Ask', () => {
+  it('orders the groups Accounts, Actions, Transactions, Holdings, EPF & NPS, Lending, Loans, Upcoming, Reports, Dashboards, Tags, Pages, Ask', () => {
     const { groups } = build('Transaction');
     expect(groups.map((g) => g.id)).toEqual([
-      'accounts', 'actions', 'transactions', 'holdings', 'lending', 'loans', 'reports', 'dashboards', 'categories', 'rules', 'pages', 'ask',
+      'accounts', 'actions', 'transactions', 'holdings', 'retirement', 'lending', 'loans', 'upcoming', 'reports', 'dashboards',
+      'categories', 'rules', 'tags', 'pages', 'ask',
     ]);
     expect(ids(groups)).toEqual([
       'accounts', 'actions', 'transactions', 'holdings', 'lending', 'loans', 'reports', 'dashboards', 'ask',
     ]);
+    expect(group(groups, 'retirement').label).toBe('EPF & NPS');
   });
 
   it('shows nothing for empty or blank text', () => {
@@ -117,7 +122,7 @@ describe('buildSearchGroups', () => {
 
     it('lists them after Dashboards with parent and target as secondary text', () => {
       const { groups } = build('Gro', extra);
-      expect(groups.map((g) => g.id).slice(-5)).toEqual(['dashboards', 'categories', 'rules', 'pages', 'ask']);
+      expect(groups.map((g) => g.id).slice(-6)).toEqual(['dashboards', 'categories', 'rules', 'tags', 'pages', 'ask']);
       expect(group(groups, 'categories').items.map((i) => i.title)).toEqual(['Food', 'Groceries · Food']);
       expect(group(groups, 'rules').items.map((i) => i.title)).toEqual(['BIGBASKET → Groceries']);
     });
@@ -314,6 +319,80 @@ describe('buildSearchGroups', () => {
       render(<ConcealProvider concealed>{items[0].trailing}</ConcealProvider>);
       expect(screen.getByText('You owe ₹ —')).toBeInTheDocument();
       expect(screen.queryByText(/44,319/)).toBeNull();
+    });
+  });
+
+  describe('retirement, upcoming and tags', () => {
+    const more: GlobalSearchResult = {
+      ...EMPTY_SEARCH_RESULT,
+      retirement: [
+        { kind: 'EPF', accountId: null, title: 'EPF', subtitle: 'Northwind Labs', pranLast4: null, holderName: null, matchedScheme: null },
+        { kind: 'NPS', accountId: 'n1', title: 'NPS', subtitle: null, pranLast4: '7731', holderName: null, matchedScheme: 'Zq Equity Fund' },
+        { kind: 'NPS', accountId: 'n2', title: 'NPS Vatsalya', subtitle: null, pranLast4: '5208', holderName: 'Aarav', matchedScheme: null },
+        { kind: 'NPS', accountId: 'n3', title: 'NPS', subtitle: null, pranLast4: null, holderName: null, matchedScheme: null },
+      ],
+      upcoming: [
+        { id: 'u1', name: 'Netflix', nextDueOn: '2026-11-14', amount: 649, kind: 'SUBSCRIPTION' },
+        { id: 'u2', name: 'Bajaj Finserv', nextDueOn: '2026-11-05', amount: 12500, kind: 'EMI' },
+        { id: 'u3', name: 'Society maintenance', nextDueOn: '2026-12-01', amount: 3200, kind: 'OTHER' },
+      ],
+      tags: [
+        { id: 'g1', name: 'Goa trip', transactionCount: 1 },
+        { id: 'g2', name: 'Wedding', transactionCount: 1240 },
+      ],
+    };
+    const titlesOf = (id: string) => group(build('zz', more).groups, id).items.map((i) => i.title);
+
+    it('writes retirement rows with the employer, PRAN tail and the matched scheme or child', () => {
+      expect(titlesOf('retirement')).toEqual([
+        'EPF · Northwind Labs',
+        'NPS · PRAN ••7731 · Zq Equity Fund',
+        'NPS Vatsalya · PRAN ••5208 · For Aarav',
+        'NPS',
+      ]);
+    });
+
+    it('opens EPF on the EPF screen and each NPS hit on its account', () => {
+      const { groups, go } = build('zz', more);
+      group(groups, 'retirement').items.forEach((i) => i.onSelect());
+      expect(go.mock.calls.map((c) => c[0])).toEqual([
+        '/investments/epf',
+        '/investments/nps?account=n1',
+        '/investments/nps?account=n2',
+        '/investments/nps?account=n3',
+      ]);
+    });
+
+    it('writes upcoming rows with the kind and due date, the amount on the right, and opens Upcoming', () => {
+      expect(titlesOf('upcoming')).toEqual([
+        'Netflix · Subscription · due 14 Nov',
+        'Bajaj Finserv · EMI · due 5 Nov',
+        'Society maintenance · Regular payment · due 1 Dec',
+      ]);
+      const { groups, go } = build('zz', more);
+      const items = group(groups, 'upcoming').items;
+      render(<p>{items[1].trailing}</p>);
+      expect(screen.getByText('₹12,500')).toBeInTheDocument();
+      items[0].onSelect();
+      expect(go).toHaveBeenCalledWith('/upcoming');
+    });
+
+    it('writes tag rows with their transaction count and opens Transactions filtered to the tag over all time', () => {
+      const { groups, go } = build('zz', more);
+      const items = group(groups, 'tags').items;
+      expect(items.map((i) => i.title)).toEqual(['Goa trip', 'Wedding']);
+      render(<p>{items[0].trailing}{items[1].trailing}</p>);
+      expect(screen.getByText('1 transaction')).toBeInTheDocument();
+      expect(screen.getByText('1,240 transactions')).toBeInTheDocument();
+      items[1].onSelect();
+      const url = new URL(go.mock.calls[0][0], 'https://x');
+      expect(url.pathname).toBe('/transactions');
+      expect(url.searchParams.getAll('tag')).toEqual(['g2']);
+    });
+
+    it('shows none of them below 2 characters', () => {
+      const groups = build('z', more).groups;
+      for (const id of ['retirement', 'upcoming', 'tags']) expect(group(groups, id).items).toHaveLength(0);
     });
   });
 });

@@ -84,7 +84,7 @@ describe('/accounts streaming', () => {
     expect(screen.getAllByText('Investments').length).toBeGreaterThan(0);
     // The Investments figure waits for retirement: no brokers-only number flashes first.
     expect(screen.queryByText('₹5,000')).toBeNull();
-    expect(screen.getByText('Retirement')).toBeDefined();
+    expect(screen.getByText('EPF & NPS')).toBeDefined();
     expect(screen.getByText('Loans')).toBeDefined();
     expect(screen.queryByText('₹11,98,842')).toBeNull();
     expect(screen.queryByText("Couldn't load net worth. Try again.")).toBeNull();

@@ -49,21 +49,21 @@ describe('importRow', () => {
     const row = importRow(record({ id: 'nps:n1', kind: 'nps_statement', source: 'gmail', fileName: null as never, accountName: null as never, accountId: 'n-acc', count: 18 }));
     expect(row.title).toBe('NPS statement');
     expect(row.detail).toBe('From Gmail · 1 Oct–31 Oct · 18 contributions');
-    expect(row.href).toBe('/investments/retirement/nps?account=n-acc');
+    expect(row.href).toBe('/investments/nps?account=n-acc');
   });
 
   it('an EPF passbook counts entries and links to EPF', () => {
     const row = importRow(record({ id: 'epf:e1', kind: 'epf_passbook', fileName: null as never, accountName: null as never, accountId: null as never, count: 18 }));
     expect(row.title).toBe('EPF passbook');
     expect(row.detail).toBe('1 Oct–31 Oct · 18 entries');
-    expect(row.href).toBe('/investments/retirement/epf');
+    expect(row.href).toBe('/investments/epf');
   });
 
   it('a broker import has no period or count and links to Activity', () => {
     const row = importRow(record({ id: 'job:j1', kind: 'broker', accountName: null as never, accountId: null as never, periodStart: null as never, periodEnd: null as never, count: null as never, fileName: 'tradebook.csv' }));
     expect(row.title).toBe('Broker import');
     expect(row.detail).toBe('tradebook.csv');
-    expect(row.href).toBe('/investments/activity');
+    expect(row.href).toBe('/investments/tradebook');
   });
 
   it('a failed import says so, shows the error and links to the failed jobs', () => {

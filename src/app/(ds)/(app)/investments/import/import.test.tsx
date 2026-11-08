@@ -34,6 +34,6 @@ describe('/investments/import', () => {
     render(<DsInvestmentsImportLoading />);
     expect(screen.getByRole('heading', { name: 'Import tradebook' })).toBeInTheDocument();
     expect(screen.getByText('Wealth / Investments')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/investments/activity');
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute('href', '/investments/tradebook');
   });
 });

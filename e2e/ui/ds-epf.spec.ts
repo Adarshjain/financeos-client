@@ -64,18 +64,12 @@ for (const viewport of VIEWPORTS) {
       api = makeApi(currentUser.cookie);
     });
 
-    test('EPF sits under the Retirement tab; with nothing yet it offers an upload and an opening balance', async ({ page }) => {
+    test('EPF is a card on the Investments landing; with nothing yet it offers an upload and an opening balance', async ({ page }) => {
       await page.goto('/investments');
-      const tabs = page.getByRole('tab');
-      await expect(tabs.nth(0)).toHaveText(/^Holdings/);
-      await expect(tabs.nth(1)).toHaveText(/^Retirement/);
-      await expect(page.getByRole('tab', { name: /^Retirement/ })).toHaveAttribute('href', '/investments/retirement');
-
-      await page.getByRole('tab', { name: /^Retirement/ }).click();
-      await page.waitForURL('**/investments/retirement');
       await expect(page.getByRole('link', { name: 'Upload passbook' }).first()).toHaveAttribute('href', /\/investments\/import\?type=epf/);
-      await page.goto('/investments/retirement/epf');
-      await expect(page.getByRole('tab', { name: /^Retirement/ })).toHaveAttribute('data-state', 'active');
+      await page.goto('/investments/epf');
+      // A drill-in of the landing: no tab strip.
+      await expect(page.getByRole('main').getByRole('tab')).toHaveCount(0);
       await expect(page.getByText('No EPF yet')).toBeVisible();
       await page.getByRole('link', { name: 'Upload passbook' }).click();
       await page.waitForURL(/\/investments\/import\?type=epf/);
@@ -85,7 +79,7 @@ for (const viewport of VIEWPORTS) {
     // The first employer ends the empty state; the open Add dialog must survive that switch.
     test('the empty tab: adding the first employer from the dialog keeps the opening-balance form', async ({ page }) => {
       test.slow();
-      await page.goto('/investments/retirement/epf');
+      await page.goto('/investments/epf');
       await page.getByRole('button', { name: 'Add opening balance' }).click();
       const dialog = page.getByRole('dialog', { name: 'Record EPF entry' });
       await expect(dialog).toBeVisible();
@@ -107,7 +101,7 @@ for (const viewport of VIEWPORTS) {
     test('adds an opening balance and a contribution by hand: figures, passbook rows, delete', async ({ page }) => {
       test.slow();
       await createEpfEmployer(api, { name: 'Hand Added Labs' });
-      await page.goto('/investments/retirement/epf');
+      await page.goto('/investments/epf');
       await plus(page).click();
       const dialog = page.getByRole('dialog', { name: 'Record EPF entry' });
       await expect(dialog).toBeVisible();
@@ -169,7 +163,7 @@ for (const viewport of VIEWPORTS) {
         employeeAmount: 20000,
         employerAmount: 10000,
       });
-      await page.goto('/investments/retirement/epf');
+      await page.goto('/investments/epf');
       // Newest FY first: 2026-27 holds the opening balance only.
       await expect(shown(page.getByText('Opening balance'))).toBeVisible();
       await expect(page.getByText(/^Interest · FY/)).toHaveCount(0);
@@ -211,7 +205,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText(`Imported ${PASSBOOK_ENTRIES} entries`)).toBeVisible({ timeout: 45_000 });
       await expect(page.getByText(new RegExp(`EPF balance is now ${PASSBOOK_BALANCE}`))).toBeVisible();
       await page.getByRole('link', { name: 'Open EPF' }).click();
-      await page.waitForURL('**/investments/retirement/epf');
+      await page.waitForURL('**/investments/epf');
       await expect(shown(page.getByText(PASSBOOK_BALANCE))).toBeVisible();
       await expect(shown(page.getByText('Opening balance'))).toBeVisible();
       await expect(shown(page.getByText(/Interest · FY 25-26/))).toBeVisible();
@@ -276,7 +270,7 @@ for (const viewport of VIEWPORTS) {
 
       await expect(page.getByText(/across 2 employers/)).toBeVisible({ timeout: 45_000 });
       await page.getByRole('link', { name: 'Open EPF' }).click();
-      await page.waitForURL('**/investments/retirement/epf');
+      await page.waitForURL('**/investments/epf');
       await expect(shown(page.getByText('NORTHWIND LABS PRIVATE LIMITED'))).toBeVisible();
     });
 
@@ -287,7 +281,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('button', { name: /^Import \d+ entries$/ })).toBeEnabled({ timeout: 45_000 });
       await page.getByRole('button', { name: /^Import \d+ entries$/ }).click();
       await expect(page.getByText(/^Imported \d+ entries$/)).toBeVisible({ timeout: 45_000 });
-      await page.goto('/investments/retirement/epf?fy=all');
+      await page.goto('/investments/epf?fy=all');
 
       // A contribution: read-only, Close only.
       await contribution(page, 'Passbook').click();
@@ -322,7 +316,7 @@ for (const viewport of VIEWPORTS) {
         creditAmount: 50000,
         description: 'NEFT EPFO PARTIAL LINKME',
       });
-      await page.goto('/investments/retirement/epf');
+      await page.goto('/investments/epf');
       await shown(page.getByText(WITHDRAWAL)).click();
       const dialog = page.getByRole('dialog').first();
       await expect(dialog.getByText('Suggested match')).toBeVisible({ timeout: 30_000 });
@@ -365,7 +359,7 @@ for (const viewport of VIEWPORTS) {
         creditAmount: 45000,
         description: 'NEFT EPFO NET OF TDS',
       });
-      await page.goto('/investments/retirement/epf');
+      await page.goto('/investments/epf');
       await shown(page.getByText(WITHDRAWAL)).click();
       const dialog = page.getByRole('dialog').first();
       await expect(dialog.getByText('Suggested match')).toHaveCount(0);
@@ -437,7 +431,7 @@ for (const viewport of VIEWPORTS) {
       await expect(link).toHaveCount(0, { timeout: 30_000 });
       await expect(page.getByRole('dialog', { name: 'NEFT EPFO NEWWD' }).getByText('EPF withdrawal')).toBeVisible({ timeout: 30_000 });
 
-      await page.goto('/investments/retirement/epf');
+      await page.goto('/investments/epf');
       await shown(page.getByText(WITHDRAWAL)).click();
       const dialog = page.getByRole('dialog').first();
       await expect(dialog.getByText('Linked', { exact: true })).toBeVisible({ timeout: 30_000 });

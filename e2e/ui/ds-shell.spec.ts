@@ -48,10 +48,8 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(rail.getByRole('link', { name: 'Reports' })).toBeVisible();
     await expect(rail.getByRole('link', { name: 'Ask' })).toBeVisible();
 
-    // Footer: Data sources above Settings
-    const dataSourcesLink = rail.locator('a[href="/data-sources"]');
-    await expect(dataSourcesLink).toBeVisible();
-    await expect(dataSourcesLink).toContainText('Data sources');
+    // Footer: the profile row to Settings (Data sources lives on the Settings page)
+    await expect(rail.locator('a[href="/data-sources"]')).toHaveCount(0);
 
     const settingsLink = rail.locator('a[href="/settings"]');
     await expect(settingsLink).toBeVisible();
@@ -155,13 +153,11 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(sheet.getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
     await expect(sheet.getByRole('link', { name: 'Ask' })).toHaveAttribute('href', '/chat');
 
-    // Verify Data sources row, above the profile row
-    const dataSourcesRow = sheet.getByRole('link', { name: /Gmail · imports · sync health/i });
-    await expect(dataSourcesRow).toBeVisible();
-    await expect(dataSourcesRow).toHaveAttribute('href', '/data-sources');
+    // Data sources is no longer a Menu row (it is a card on the Settings page)
+    await expect(sheet.getByRole('link', { name: /Gmail · imports · sync health/i })).toHaveCount(0);
 
     // Verify Profile row
-    const profileRow = sheet.getByRole('link', { name: /Settings · security · AI/i });
+    const profileRow = sheet.getByRole('link', { name: /Settings · connections · notifications/i });
     await expect(profileRow).toBeVisible();
     await expect(profileRow).toHaveAttribute('href', '/settings');
 

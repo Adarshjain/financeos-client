@@ -42,7 +42,7 @@ test.describe('Dividends UI (@ui)', () => {
       tradeDate: '2024-01-01',
     });
 
-    await page.goto('/investments/activity/dividends');
+    await page.goto('/investments/dividends');
 
     // 1. Record a payout by hand from the top-bar +.
     await page.getByRole('button', { name: 'Record dividend', exact: true }).first().click();
