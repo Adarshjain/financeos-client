@@ -63,7 +63,7 @@ export function NpsScreen(props: NpsScreenProps) {
       title="Track your NPS"
       description="Upload your NPS statement to bring in every contribution, charge and switch, or add your balance by hand."
       action={{ label: 'Upload statement', variant: 'primary', href: NPS_UPLOAD_HREF }}
-      secondaryAction={{ label: 'Add by hand', onSelect: () => void add.run(() => setAccountDialog('new')) }}
+      secondaryAction={{ label: 'Add by hand', loading: add.loading, onSelect: () => void add.run(() => setAccountDialog('new')) }}
     />
   );
 
@@ -102,10 +102,11 @@ export function NpsScreen(props: NpsScreenProps) {
               accountOptions={accountOptions}
               accountValue={accountValue}
               onRecord={() => void entry.run(() => setRecording(true))}
+              recordLoading={entry.loading}
             />
           </div>
           <div className="flex flex-col gap-space-8 desk:gap-space-16">
-            <NpsAccountCardView card={card} onEdit={() => void add.run(() => setAccountDialog('edit'))} onStatements={() => void statements.run(() => setListingStatements(true))} />
+            <NpsAccountCardView card={card} editLoading={add.loading} onEdit={() => void add.run(() => setAccountDialog('edit'))} onStatements={() => void statements.run(() => setListingStatements(true))} />
             <NpsThisFyCard lines={fyLines} />
             <NpsAllocationCard allocation={allocation} />
           </div>

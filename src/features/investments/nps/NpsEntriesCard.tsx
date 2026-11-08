@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -19,6 +18,7 @@ import { StatusWords } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
 import { appHref } from '@/features/shell/routes';
 import { todayInAppZone } from '@/lib/date-range';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { FilterRowSkeleton } from '../FilterRowSkeleton';
 import { NPS_UPLOAD_HREF } from './npsImportModel';
@@ -97,12 +97,13 @@ export interface NpsEntriesCardProps {
   accountOptions: { value: string; label: string }[];
   accountValue: string;
   onRecord: () => void;
+  recordLoading?: boolean;
 }
 
 /** The ledger: account, tier and type filters, and the paged table of entries. Every control is one URL change. */
-export function NpsEntriesCard({ state, fy, rows, totalElements, totalPages, accountOptions, accountValue, onRecord }: NpsEntriesCardProps) {
-  const router = useRouter();
-  const go = (next: Partial<NpsUrlState>) => router.push(npsUrl({ ...state, ...next }), { scroll: false });
+export function NpsEntriesCard({ state, fy, rows, totalElements, totalPages, accountOptions, accountValue, onRecord, recordLoading }: NpsEntriesCardProps) {
+  const router = useAppRouter();
+  const go = (next: Partial<NpsUrlState>) => router.replace(npsUrl({ ...state, ...next }), { scroll: false });
   const pager = (
     <Pager
       page={state.page}
@@ -188,7 +189,7 @@ export function NpsEntriesCard({ state, fy, rows, totalElements, totalPages, acc
         action={
           <span className="flex items-center gap-space-12">
             <Text variant="label" as="span">
-              <Button variant="link" size="sm" onClick={onRecord}>
+              <Button variant="link" size="sm" loading={recordLoading} onClick={onRecord}>
                 Record entry
               </Button>
             </Text>

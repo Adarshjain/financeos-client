@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
@@ -21,6 +20,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatCount } from '@/lib/format';
 import { keys } from '@/lib/query/keys';
 import type { ApplyRuleResult, CategoryRule } from '@/lib/rules.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { MatchRow } from './MatchRow';
 import { applyRule } from './ruleActions';
@@ -39,7 +39,7 @@ export interface FindMatchesDialogProps {
  * Apply gives the ticked ones the rule's categories and links them to the rule. "Select all N" takes every match, on every page.
  */
 export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const queryClient = useQueryClient();
   const { page, setPage, matches, loading, failed, refetch } = useRuleMatches({
     merchantKey: rule.merchantKey,
@@ -98,7 +98,7 @@ export function FindMatchesDialog({ rule, onClose }: FindMatchesDialogProps) {
   };
 
   const apply = () => {
-    if (count === 0) return;
+    if (count === 0 || applying) return;
     applyMutation.mutate(all ? { all: true } : { transactionIds: picked });
   };
 

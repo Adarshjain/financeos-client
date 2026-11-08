@@ -46,7 +46,8 @@ export function AssignNumberDialog({ group, onClose }: { group: UnknownNumberGro
           label: a.isPending ? 'Adding…' : 'Add to account',
           type: 'submit',
           form: FORM_ID,
-          disabled: a.isPending || !a.accountId,
+          loading: a.isPending,
+          disabled: !a.accountId,
         }}
       >
         <Dialog.Body>
@@ -80,6 +81,7 @@ export function AssignNumberDialog({ group, onClose }: { group: UnknownNumberGro
                   variant="link"
                   size="sm"
                   type="button"
+                  loading={loadingForm}
                   disabled={a.isPending || loadingForm}
                   onClick={() => {
                     created.current = false;

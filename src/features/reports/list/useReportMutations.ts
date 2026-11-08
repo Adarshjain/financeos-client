@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import React from 'react';
 
 import { showToast } from '@/components/ds/Toast/Toast';
 import { addReportToDashboard, removeWidgetFromDashboard } from '@/features/dashboards/dashboardActions';
@@ -12,6 +12,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { storeSavedDashboard } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 /**
  * The row actions of the Reports list. The list is server-rendered, so each success refreshes the page.
@@ -19,10 +20,12 @@ import type { ReportSummaryResponse } from '@/lib/reports.types';
  */
 export function useReportMutations() {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
+  // The refresh runs in a transition so a row's spinner holds until the refreshed list is on screen.
+  const [refreshing, startRefresh] = React.useTransition();
   const done = () => {
     void queryClient.invalidateQueries({ queryKey: keys.reports.all });
-    router.refresh();
+    startRefresh(() => router.refresh());
   };
   const failed = (fallback: string) => (e: unknown) => showToast(getErrorMessage(e, fallback), { tone: 'danger' });
 
@@ -80,5 +83,5 @@ export function useReportMutations() {
     onError: failed("Couldn't add the report to the dashboard. Try again."),
   });
 
-  return { remove, duplicate, addToDashboard };
+  return { remove, duplicate, addToDashboard, refreshing };
 }

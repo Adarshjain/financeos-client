@@ -21,6 +21,8 @@ export const NoBankNoWarning: Story = { args: { bankId: null, name: 'Cash wallet
 
 export const NoBank: Story = { args: { bankId: null, name: 'Cash wallet' } };
 
+export const Medium: Story = { args: { bankId: 'hdfc', name: 'Salary', size: 'md' } };
+
 export const Small: Story = { args: { bankId: 'hdfc', name: 'Salary', size: 'sm' } };
 
 export const SmallNoBank: Story = { args: { bankId: null, name: 'Cash wallet', size: 'sm' } };

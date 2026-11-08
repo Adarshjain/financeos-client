@@ -14,15 +14,22 @@ import type { PendingBillAction } from './inboxBillActions';
 interface InboxBillHostProps {
   pending: PendingBillAction | null;
   onClose: () => void;
+  /** True from the press until the bill is in and the dialog can open (or it failed). */
+  onLoadingChange?: (loading: boolean) => void;
 }
 
 /**
  * Hosts the Mark paid and Set statement details dialogs for inbox rows. The bill is loaded by
  * statement id first, so the dialogs open against its real figures.
  */
-export function InboxBillHost({ pending, onClose }: InboxBillHostProps) {
+export function InboxBillHost({ pending, onClose, onLoadingChange }: InboxBillHostProps) {
   const { data: bill, error } = useBill(pending?.statementId, pending !== null);
   const ready = pending !== null && bill != null && bill.statementId === pending.statementId;
+
+  const loading = pending !== null && !ready && !error;
+  React.useEffect(() => {
+    onLoadingChange?.(loading);
+  }, [loading, onLoadingChange]);
 
   React.useEffect(() => {
     if (pending && error) {

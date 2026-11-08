@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -15,6 +14,7 @@ import { type TransferRow, transferRows } from '@/features/lendings/list/lending
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { useTransferLink } from '../list/useTransferLink';
 import { loadPersonMatches } from './personMatchActions';
@@ -30,7 +30,7 @@ export interface PersonMatchingCardProps {
 
 /** This person's entries against bank transfers: how many are linked, and the transfers that look like unlinked ones. */
 export function PersonMatchingCard({ counterpartyId, personName, linked, hasUnlinked }: PersonMatchingCardProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { data: accounts = [] } = useAccounts();
   const [rows, setRows] = React.useState<TransferRow[] | null>(null);
   const transfer = useTransferLink(rows ?? [], () => router.refresh());

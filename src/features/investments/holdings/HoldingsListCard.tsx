@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -22,6 +21,7 @@ import { useSearchText } from '@/features/shell/useSearchText';
 import type { HoldingRow, HoldingsGroup } from '@/lib/investments.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { AccountType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   groupBands,
@@ -229,8 +229,8 @@ export interface HoldingsListCardProps {
 
 /** The search, asset type, Broker and sort controls over the grouped holdings table. Every control is one URL change. */
 export function HoldingsListCard({ state, rows, groups, totalElements, totalPages, brokers }: HoldingsListCardProps) {
-  const router = useRouter();
-  const go = (next: Partial<HoldingsUrlState>) => router.push(holdingsUrl({ ...state, ...next }), { scroll: false });
+  const router = useAppRouter();
+  const go = (next: Partial<HoldingsUrlState>) => router.replace(holdingsUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
 
   const listRows = React.useMemo(() => rows.map(holdingListRow), [rows]);

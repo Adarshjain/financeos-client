@@ -5,7 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { JobResponse } from '@/lib/types';
 
 const push = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push }), usePathname: () => '/transactions/import' }));
+const replace = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push, replace }), usePathname: () => '/transactions/import' }));
 vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ invalidateQueries: vi.fn() }) }));
 vi.mock('@/features/shell/ShellPage', () => ({
   ShellPage: ({ children, onAdd, addLabel }: { children: React.ReactNode; onAdd?: () => void; addLabel?: string }) => (
@@ -45,6 +46,7 @@ beforeEach(() => {
   jobs = [];
   totalPages = 1;
   push.mockClear();
+  replace.mockClear();
   form = {
     selectedAccountId: 'a1', setSelectedAccountId: vi.fn(), files: [file('Oct.pdf'), file('Sep.pdf')], isUploading: false, isSending: false,
     uploadableAccounts: accounts, addFiles, removeFile: vi.fn(), clearAllFiles, handleSubmit,
@@ -133,7 +135,7 @@ describe('ImportScreen', () => {
     render(<ImportScreen initialAccounts={accounts} initialAccountId="a1" since="2026-09-22T18:30:00.000Z" page={1} />);
     expect(screen.getAllByRole('button', { name: 'Page 3' }).length).toBeGreaterThan(0);
     fireEvent.click(screen.getAllByRole('button', { name: 'Page 3' })[0]);
-    expect(push).toHaveBeenCalledWith('/transactions/import?account=a1&page=3', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/transactions/import?account=a1&page=3', { scroll: false });
   });
 
   it('draws no pager for a single page', () => {

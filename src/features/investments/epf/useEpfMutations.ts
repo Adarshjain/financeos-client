@@ -1,11 +1,11 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 import { unwrapAction } from '@/lib/actionResult';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   createEpfEmployer,
@@ -26,7 +26,7 @@ import type { EpfEntryRequest } from './epfModel';
  */
 export function useEpfMutations() {
   const qc = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
 
   const refresh = async () => {
     await Promise.all([

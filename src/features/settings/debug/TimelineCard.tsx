@@ -32,7 +32,7 @@ export function TimelineCard({ timeline, truncated = false, currentRef, currentT
       action={
         currentRef ? (
           <Text variant="label" as="span">
-            <Button variant="link" size="sm" onClick={copyRaw} disabled={copying}>
+            <Button variant="link" size="sm" onClick={copyRaw} loading={copying}>
               Copy raw
             </Button>
           </Text>

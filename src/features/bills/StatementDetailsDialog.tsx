@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -14,6 +13,7 @@ import type { UpdateBillDetailsRequest } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatDate } from '@/lib/format';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 const FORM_ID = 'statement-details-form';
 
@@ -47,7 +47,7 @@ export function StatementDetailsDialog({
   minimumDue,
   dueDate,
 }: StatementDetailsDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { updateDetails } = useBillMutations();
   const today = todayInAppZone();
   const [totalText, setTotal] = React.useState('');

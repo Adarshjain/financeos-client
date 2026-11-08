@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Card } from '@/components/ds/Card/Card';
@@ -9,6 +8,7 @@ import { Text } from '@/components/ds/Text/Text';
 import { showToast } from '@/components/ds/Toast/Toast';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { markMonthEmpty, unmarkMonthEmpty } from './coverageActions';
 import {
@@ -29,7 +29,15 @@ const CELL_KIND: Record<CellKind, string> = {
 };
 
 /** One month: the cell is a button only when it offers actions. */
-function Cell({ cell, onAction }: { cell: CoverageCell; onAction: (cell: CoverageCell, action: CellAction) => void }) {
+function Cell({
+  cell,
+  pending,
+  onAction,
+}: {
+  cell: CoverageCell;
+  pending: boolean;
+  onAction: (cell: CoverageCell, action: CellAction) => void;
+}) {
   const face = (
     <Text variant="caption" tone="ink" className="text-inherit">
       {cell.label}
@@ -49,7 +57,9 @@ function Cell({ cell, onAction }: { cell: CoverageCell; onAction: (cell: Coverag
       trigger={
         <button
           type="button"
-          className={`${className} cursor-pointer hover:bg-hover active:bg-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring`}
+          disabled={pending}
+          aria-busy={pending || undefined}
+          className={`${className} disabled:cursor-progress disabled:opacity-50 cursor-pointer hover:bg-hover active:bg-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring`}
           data-kind={cell.kind}
           data-month={cell.month}
         >
@@ -68,26 +78,40 @@ function Cell({ cell, onAction }: { cell: CoverageCell; onAction: (cell: Coverag
 
 /** The months this account has data for, oldest first, grouped by year; an empty month can be uploaded or marked empty. */
 export function CoverageStrip({ accountId, coverage }: { accountId: string; coverage: CoverageData }) {
-  const router = useRouter();
+  const router = useAppRouter();
+  const [navPending, startNav] = React.useTransition();
+  // The pressed month, from the press until the refresh that shows its new state has landed (`done`: the request itself finished).
+  const [active, setActive] = React.useState<{ month: string; done: boolean } | null>(null);
+  React.useEffect(() => {
+    if (active?.done && !navPending) setActive(null);
+  }, [active, navPending]);
   const model = buildCoverageModel(coverage);
 
   const unmark = async (month: string, toast: string) => {
+    if (active) return;
+    setActive({ month, done: false });
     try {
       await unwrapAction(unmarkMonthEmpty(accountId, month));
       if (toast) showToast(toast);
-      router.refresh();
+      setActive({ month, done: true });
+      startNav(() => router.refresh());
     } catch (e) {
       showToast(getErrorMessage(e, "Couldn't undo this. Try again."), { tone: 'danger' });
+      setActive(null);
     }
   };
 
   const mark = async (month: string) => {
+    if (active) return;
+    setActive({ month, done: false });
     try {
       await unwrapAction(markMonthEmpty(accountId, month));
       showToast('Marked as nothing happened', { action: { label: 'Undo', onSelect: () => void unmark(month, '') } });
-      router.refresh();
+      setActive({ month, done: true });
+      startNav(() => router.refresh());
     } catch (e) {
       showToast(getErrorMessage(e, "Couldn't mark this month. Try again."), { tone: 'danger' });
+      setActive(null);
     }
   };
 
@@ -110,7 +134,7 @@ export function CoverageStrip({ accountId, coverage }: { accountId: string; cove
               </Text>
               <div className="flex gap-space-4">
                 {group.cells.map((cell) => (
-                  <Cell key={cell.month} cell={cell} onAction={onAction} />
+                  <Cell key={cell.month} cell={cell} pending={active?.month === cell.month} onAction={onAction} />
                 ))}
               </div>
             </div>

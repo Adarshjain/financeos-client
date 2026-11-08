@@ -27,5 +27,6 @@ export function useDetailTransaction(id: string | null, open: boolean, pageTrans
     failed: open && id !== null && !transaction && query.isError,
     error: query.error,
     retry: () => void query.refetch(),
+    retrying: query.isFetching,
   };
 }

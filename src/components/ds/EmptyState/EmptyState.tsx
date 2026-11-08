@@ -70,6 +70,7 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
               variant={action.variant ?? 'link'}
               href={action.href}
               onSelect={action.onSelect}
+              loading={action.loading}
               className="text-inherit"
             >
               {action.label}
@@ -80,6 +81,7 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
               variant="link"
               href={secondaryAction.href}
               onSelect={secondaryAction.onSelect}
+              loading={secondaryAction.loading}
               className="text-inherit"
             >
               {secondaryAction.label}
@@ -126,6 +128,7 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
                 variant={action.variant ?? 'primary'}
                 href={action.href}
                 onSelect={action.onSelect}
+                loading={action.loading}
               >
                 {action.label}
               </ActionButton>
@@ -135,6 +138,7 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
                 variant="secondary"
                 href={secondaryAction.href}
                 onSelect={secondaryAction.onSelect}
+                loading={secondaryAction.loading}
               >
                 {secondaryAction.label}
               </ActionButton>

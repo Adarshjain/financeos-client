@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ImportRecordResponse } from '@/lib/api/types';
 
-const push = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+const replace = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ replace }) }));
 
 import { pinClock } from '@/test/pinClock';
 
@@ -32,7 +32,7 @@ const rec = (over: Partial<ImportRecordResponse>): ImportRecordResponse =>
 
 const props = { rows: [] as ImportRecordResponse[], totalElements: 0, totalPages: 0, page: 0, size: 25, kind: '' as const };
 
-beforeEach(() => push.mockReset());
+beforeEach(() => replace.mockReset());
 
 describe('ImportsScreen', () => {
   it('shows a row per import with its text, date and a link', () => {
@@ -79,12 +79,12 @@ describe('ImportsScreen', () => {
     const pagers = screen.getAllByRole('navigation').length ? screen.getAllByRole('navigation') : screen.getAllByText(/of 60/);
     expect(pagers).toHaveLength(2);
     fireEvent.click(within(pagers[0] as HTMLElement).getByRole('button', { name: 'Page 2' }));
-    expect(push).toHaveBeenCalledWith('/data-sources/imports?page=2', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/data-sources/imports?page=2', { scroll: false });
   });
 
   it('keeps the kind when paging', () => {
     render(<ImportsScreen {...props} rows={[rec({})]} totalElements={60} totalPages={3} page={1} kind="statement" />);
     fireEvent.click(screen.getAllByRole('button', { name: 'Page 3' })[0]);
-    expect(push).toHaveBeenCalledWith('/data-sources/imports?kind=statement&page=3', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/data-sources/imports?kind=statement&page=3', { scroll: false });
   });
 });

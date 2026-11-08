@@ -161,6 +161,9 @@ describe('SendersCard bank grouping', () => {
     expect(await screen.findByText('alerts@hdfcbank.bank.in')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('switch', { name: 'Read mail from alerts@hdfcbank.bank.in' }));
     expect(toggle).toHaveBeenCalledWith(grouped[1], true);
+    // The switch is disabled while the save runs.
+    expect(screen.getByRole('switch', { name: 'Read mail from alerts@hdfcbank.bank.in' })).toBeDisabled();
+    await waitFor(() => expect(screen.getByRole('switch', { name: 'Read mail from alerts@hdfcbank.bank.in' })).toBeEnabled());
     fireEvent.click(screen.getAllByRole('button', { name: 'Remove' })[0]);
     expect(remove).not.toHaveBeenCalled();
     fireEvent.click(screen.getAllByRole('button', { name: 'Remove' }).at(-1)!);

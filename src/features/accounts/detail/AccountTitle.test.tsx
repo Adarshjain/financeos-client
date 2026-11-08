@@ -19,6 +19,11 @@ describe('AccountTitle', () => {
     expect(screen.getByRole('img')).toBeInTheDocument();
   });
 
+  it('draws the logo at the 20px title size', () => {
+    render(<AccountTitle account={{ id: 'b', type: AccountType.BANK_ACCOUNT, name: 'Salary', bank: 'hdfc' } as Account} />);
+    expect(screen.getByRole('img', { name: 'HDFC Bank' })).toHaveClass('h-space-20', 'w-space-20');
+  });
+
   it('shows a letter tile without a bank', () => {
     render(<AccountTitle account={{ id: 'b', type: AccountType.BANK_ACCOUNT, name: 'Salary', bank: null } as Account} />);
     expect(screen.queryByRole('img')).toBeNull();

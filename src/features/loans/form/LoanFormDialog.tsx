@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Dialog } from '@/components/ds/Dialog/Dialog';
@@ -11,6 +10,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import type { LoanResponse } from '@/lib/loan.types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   buildCreateLoanRequest,
@@ -35,7 +35,7 @@ export function LoanFormDialog({
   /** Runs after the loan is created, before the dialog closes. */
   onCreated?: (loan: LoanResponse) => void | Promise<unknown>;
 }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const today = todayInAppZone();
   const createLoan = useCreateLoan({
     onError: (e) => showToast(getErrorMessage(e, "Couldn't create loan. Try again."), { tone: 'danger' }),
@@ -56,6 +56,7 @@ export function LoanFormDialog({
   };
 
   const submit = async () => {
+    if (createLoan.isPending) return;
     const resolved = {
       ...values,
       principal: resolveAmountExpression(values.principal),

@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Badge } from '@/components/ds/Badge/Badge';
@@ -30,6 +29,7 @@ import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { ObligationRef, Transaction } from '@/lib/transaction.types';
 import { foreignAmountText, foreignChargedText, rowAmount } from '@/lib/transactionAmount';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { isApprovable } from '../bulk/bulkModel';
 import { sourceLine } from '../category/categoryModel';
@@ -77,6 +77,10 @@ export interface TransactionDetailPanelProps {
   onLink?: (transaction: Transaction) => void;
   /** "Review" (piece 6); the button is hidden while there is no handler, and for a transaction with nothing to clear (not in Needs review, or with no reason). */
   onReview?: (transaction: Transaction) => void;
+  /** True while the code behind Edit, Link to… or Set category loads after a press: that button shows its loading state. */
+  editLoading?: boolean;
+  linkLoading?: boolean;
+  categoryLoading?: boolean;
 }
 
 /** The detail of one transaction: a side panel on desktop beside the list, a sheet on phone. The address never changes. */
@@ -93,7 +97,7 @@ export function TransactionDetailPanel({
   const [shownId, setShownId] = React.useState(transactionId);
   if (transactionId !== null && transactionId !== shownId) setShownId(transactionId);
   const found = useDetailTransaction(shownId, transactionId !== null, pageTransactions);
-  const { loading, failed, retry } = found;
+  const { loading, failed, retry, retrying } = found;
   React.useEffect(() => {
     if (failed) onLoadFailed?.(found.error);
   }, [failed, found.error, onLoadFailed]);
@@ -118,7 +122,7 @@ export function TransactionDetailPanel({
         <Dialog.Content size="sm" srTitle="Transaction" onDismiss={onClose} className={PANEL_OFFSET}>
           <Dialog.Body>
             {failed ? (
-              <Banner tone="danger" action={{ label: 'Retry', onSelect: retry }}>
+              <Banner tone="danger" action={{ label: 'Retry', loading: retrying, onSelect: retry }}>
                 Couldn&apos;t load this transaction.
               </Banner>
             ) : loading ? (
@@ -152,14 +156,17 @@ function DetailContent({
   onDeleted,
   onLink,
   onReview,
+  editLoading,
+  linkLoading,
+  categoryLoading,
 }: DetailContentProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const queryClient = useQueryClient();
   const unlink = useTransactionUnlink(t.id);
   const [deleting, setDeleting] = React.useState(false);
   const [removing, setRemoving] = React.useState<ObligationRef | null>(null);
 
-  const { data: links = [], isError: linksFailed, refetch: refetchLinks } = useQuery({
+  const { data: links = [], isError: linksFailed, isFetching: linksFetching, refetch: refetchLinks } = useQuery({
     queryKey: keys.transactions.links(t.id),
     queryFn: () => fetchTransactionLinks(t.id),
     enabled: open && (t.links?.length ?? 0) > 0,
@@ -295,11 +302,11 @@ function DetailContent({
               <StatusWords items={status} />
             ) : null}
             <div className="flex flex-wrap items-center gap-space-8">
-              <Button size="sm" onClick={() => onEdit(t)}>
+              <Button size="sm" loading={editLoading} onClick={() => onEdit(t)}>
                 Edit
               </Button>
               {onLink ? (
-                <Button size="sm" onClick={() => onLink(t)}>
+                <Button size="sm" loading={linkLoading} onClick={() => onLink(t)}>
                   Link to…
                 </Button>
               ) : null}
@@ -338,7 +345,7 @@ function DetailContent({
                     </span>
                   </Badge>
                 ) : onSetCategory ? (
-                  <Button size="sm" variant="secondary" onClick={() => onSetCategory(t)}>
+                  <Button size="sm" variant="secondary" loading={categoryLoading} onClick={() => onSetCategory(t)}>
                     Set category
                   </Button>
                 ) : null}
@@ -381,7 +388,7 @@ function DetailContent({
               <SectionHeader variant="band">Links</SectionHeader>
               {linksFailed ? (
                 <div className="px-space-16 py-space-10">
-                  <Banner tone="danger" action={{ label: 'Retry', onSelect: () => void refetchLinks() }}>
+                  <Banner tone="danger" action={{ label: 'Retry', loading: linksFetching, onSelect: () => void refetchLinks() }}>
                     Couldn&apos;t load the links.
                   </Banner>
                 </div>

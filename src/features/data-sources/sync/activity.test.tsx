@@ -6,9 +6,9 @@ import type { JobResponse } from '@/lib/types';
 
 import { ActivityScreen } from './ActivityScreen';
 
-const push = vi.fn();
+const replace = vi.fn();
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push }),
+  useRouter: () => ({ replace }),
   usePathname: () => '/data-sources/sync',
 }));
 
@@ -58,7 +58,7 @@ const job = (over: Partial<JobResponse>): JobResponse =>
 const props = { statusFilter: '', typeFilter: '', page: 0, size: 25, jobId: null as string | null };
 
 beforeEach(() => {
-  push.mockReset();
+  replace.mockReset();
   cancel.mockReset();
   retry.mockReset();
   jobs = [];
@@ -89,7 +89,7 @@ describe('filters', () => {
     const options = screen.getAllByRole('option');
     expect(options.map((o) => o.textContent)).toEqual(['All statuses', 'Running', 'Succeeded', 'Failed', 'Cancelled']);
     fireEvent.click(screen.getByRole('option', { name: /Failed/ }));
-    expect(push).toHaveBeenCalledWith('/data-sources/sync?status=FAILED', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/data-sources/sync?status=FAILED', { scroll: false });
   });
 
   it('lists all six types and navigates on pick, keeping the status and resetting the page', () => {
@@ -105,14 +105,14 @@ describe('filters', () => {
       'Rule apply',
     ]);
     fireEvent.click(screen.getByRole('option', { name: 'Price refresh' }));
-    expect(push).toHaveBeenCalledWith('/data-sources/sync?status=SUCCEEDED&type=PRICE_REFRESH', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/data-sources/sync?status=SUCCEEDED&type=PRICE_REFRESH', { scroll: false });
   });
 
   it('choosing all statuses clears the filter', () => {
     render(<ActivityScreen {...props} statusFilter="FAILED" />);
     fireEvent.click(screen.getByRole('button', { name: 'Failed' }));
     fireEvent.click(screen.getByRole('option', { name: 'All statuses' }));
-    expect(push).toHaveBeenCalledWith('/data-sources/sync', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/data-sources/sync', { scroll: false });
   });
 });
 
@@ -213,7 +213,7 @@ describe('list', () => {
     totalElements = 1;
     render(<ActivityScreen {...props} />);
     fireEvent.click(screen.getByText('6.1 s'));
-    expect(push).toHaveBeenCalledWith('/data-sources/sync?job=abc', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/data-sources/sync?job=abc', { scroll: false });
   });
 });
 
@@ -248,13 +248,13 @@ describe('pager', () => {
     render(<ActivityScreen {...props} page={2} />);
     fireEvent.click(screen.getAllByRole('button', { name: 'Rows per page' })[0]);
     fireEvent.click(screen.getByRole('option', { name: /50/ }));
-    expect(push).toHaveBeenCalledWith('/data-sources/sync?size=50', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/data-sources/sync?size=50', { scroll: false });
   });
 
   it('paging keeps the filters and the open job', () => {
     render(<ActivityScreen {...props} statusFilter="SUCCEEDED" jobId="abc" />);
     fireEvent.click(screen.getAllByRole('button', { name: 'Next page' })[0]);
-    expect(push).toHaveBeenCalledWith('/data-sources/sync?status=SUCCEEDED&page=2&job=abc', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/data-sources/sync?status=SUCCEEDED&page=2&job=abc', { scroll: false });
   });
 });
 
@@ -304,7 +304,7 @@ describe('job result card', () => {
     jobs = [job({ id: 'abc' })];
     render(<ActivityScreen {...props} statusFilter="SUCCEEDED" page={1} jobId="abc" />);
     fireEvent.click(within(screen.getByTestId('job-result-card')).getByRole('button', { name: 'Close' }));
-    expect(push).toHaveBeenCalledWith('/data-sources/sync?status=SUCCEEDED&page=2', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/data-sources/sync?status=SUCCEEDED&page=2', { scroll: false });
   });
 
   it('a running job has Cancel and its progress', () => {

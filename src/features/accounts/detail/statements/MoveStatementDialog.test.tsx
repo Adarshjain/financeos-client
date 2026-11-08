@@ -3,9 +3,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const push = vi.fn();
+const replace = vi.fn();
 const refresh = vi.fn();
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh }) }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ replace, refresh }) }));
 const showToast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', () => ({ showToast: (...a: unknown[]) => showToast(...a) }));
 vi.mock('./moveStatementAction', () => ({ moveStatement: vi.fn() }));
@@ -58,6 +58,7 @@ describe('MoveStatementDialog', () => {
     await waitFor(() => expect(moveStatement).toHaveBeenCalledWith('a1', 's1', 'a4'));
     await waitFor(() => expect(showToast).toHaveBeenCalledWith('Moved to SBI Savings'));
     expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(replace).toHaveBeenCalledWith('/accounts/a1/statements?fy=2026');
   });
 
   it('shows the server message as an error toast on 409', async () => {

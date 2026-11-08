@@ -1,10 +1,10 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 import { unwrapAction } from '@/lib/actionResult';
 import type { CreateDividendRequest, UpdateDividendRequest } from '@/lib/api/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { createDividend, deleteDividend, updateDividend } from './dividendsActions';
 import { useDividendReceiptMutations } from './useDividendReceiptMutations';
@@ -14,7 +14,7 @@ import { useDividendReceiptMutations } from './useDividendReceiptMutations';
  * receipt note. After each change the investment and transaction queries refresh and the page re-reads.
  */
 export function useDividendMutations() {
-  const router = useRouter();
+  const router = useAppRouter();
 
   const receipt = useDividendReceiptMutations();
   const { link, unlink, setNote } = receipt;

@@ -1,9 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { useJobsHistory } from '@/features/jobs/useJobsHistory';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { ActivityFilters } from './ActivityFilters';
 import { ActivityJobsCard } from './ActivityJobsCard';
@@ -21,11 +21,15 @@ export interface ActivityScreenProps {
 
 /** Data sources → Sync health: filter chips, the jobs list, and the result card of the job picked with View. */
 export function ActivityScreen({ statusFilter, typeFilter, page, size, jobId }: ActivityScreenProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { jobs } = useJobsHistory({ page, size, statusFilter, typeFilter });
 
+  const [closing, startTransition] = React.useTransition();
+
   const close = () =>
-    router.push(activityUrl({ statusFilter, typeFilter, size }, { newPage: page }), { scroll: false });
+    startTransition(() => {
+      router.replace(activityUrl({ statusFilter, typeFilter, size }, { newPage: page }), { scroll: false });
+    });
 
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
@@ -37,7 +41,7 @@ export function ActivityScreen({ statusFilter, typeFilter, page, size, jobId }: 
         page={page}
         jobId={jobId}
       />
-      {jobId ? <JobResultCard jobId={jobId} jobs={jobs} onClose={close} /> : null}
+      {jobId ? <JobResultCard jobId={jobId} jobs={jobs} onClose={close} closing={closing} /> : null}
     </div>
   );
 }

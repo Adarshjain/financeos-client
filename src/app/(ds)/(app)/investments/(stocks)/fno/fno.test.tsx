@@ -144,10 +144,10 @@ describe('/investments/fno: page', () => {
     await renderPage({ page: '1' });
     fireEvent.click(screen.getByRole('button', { name: 'Contract' }));
     fireEvent.click(await screen.findByRole('option', { name: 'PE' }));
-    expect(router.push).toHaveBeenLastCalledWith(`${FNO_HREF}?contract=PE`, { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith(`${FNO_HREF}?contract=PE`, { scroll: false });
     fireEvent.click(screen.getByRole('button', { name: 'Contract' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Futures' }));
-    expect(router.push).toHaveBeenLastCalledWith(`${FNO_HREF}?contract=FUT`, { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith(`${FNO_HREF}?contract=FUT`, { scroll: false });
   });
 
   it('searches by underlying after typing pauses', async () => {
@@ -155,11 +155,11 @@ describe('/investments/fno: page', () => {
     try {
       await renderPage();
       fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'NIFTY' } });
-      expect(router.push).not.toHaveBeenCalled();
+      expect(router.replace).not.toHaveBeenCalled();
       await act(async () => {
         await vi.advanceTimersByTimeAsync(400);
       });
-      expect(router.push).toHaveBeenLastCalledWith(`${FNO_HREF}?q=NIFTY`, { scroll: false });
+      expect(router.replace).toHaveBeenLastCalledWith(`${FNO_HREF}?q=NIFTY`, { scroll: false });
     } finally {
       vi.useRealTimers();
     }
@@ -170,7 +170,7 @@ describe('/investments/fno: page', () => {
     expect(server.fetchFnoPage).toHaveBeenCalledWith(expect.objectContaining({ optionType: 'OPT' }));
     expect(screen.queryByText('Contract: Options')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
-    expect(router.push).toHaveBeenLastCalledWith(`${FNO_HREF}`, { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith(`${FNO_HREF}`, { scroll: false });
   });
 
   it('hides every amount when amounts are hidden', async () => {
@@ -184,17 +184,17 @@ describe('/investments/fno: page', () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: /FY 26-27/ }));
     fireEvent.click(await screen.findByRole('option', { name: 'FY 25-26' }));
-    expect(router.push).toHaveBeenLastCalledWith(`${FNO_HREF}?fy=2025`, { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith(`${FNO_HREF}?fy=2025`, { scroll: false });
     fireEvent.click(screen.getByRole('button', { name: /Newest/ }));
     fireEvent.click(await screen.findByRole('option', { name: 'Highest P&L' }));
-    expect(router.push).toHaveBeenLastCalledWith(`${FNO_HREF}?sort=pnl_desc`, { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith(`${FNO_HREF}?sort=pnl_desc`, { scroll: false });
   });
 
   it('picks a broker', async () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: 'Broker' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Zerodha' }));
-    expect(router.push).toHaveBeenLastCalledWith(`${FNO_HREF}?broker=b1`, { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith(`${FNO_HREF}?broker=b1`, { scroll: false });
   });
 
   it('says when nothing matches and clears the filters', async () => {

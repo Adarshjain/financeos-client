@@ -15,10 +15,13 @@ export function useJobMutations({ onRetried }: { onRetried?: (job: { id: string 
 
   const cancelMutation = useMutation({
     mutationFn: (id: string) => unwrapAction(cancelJob(id)),
+    // Returned so the spinner lasts until the refreshed list is in.
     onSuccess: () => {
       notify.info('Cancellation requested');
-      queryClient.invalidateQueries({ queryKey: keys.jobs.all });
-      queryClient.invalidateQueries({ queryKey: keys.shell.counts() });
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: keys.jobs.all }),
+        queryClient.invalidateQueries({ queryKey: keys.shell.counts() }),
+      ]);
     },
     onError: (err) => toastError(err, "Couldn't cancel the job. Try again."),
   });
@@ -28,9 +31,11 @@ export function useJobMutations({ onRetried }: { onRetried?: (job: { id: string 
     onSuccess: (retried) => {
       notify.success('Job retried');
       emitJobStarted(retried.id);
-      queryClient.invalidateQueries({ queryKey: keys.jobs.all });
-      queryClient.invalidateQueries({ queryKey: keys.shell.counts() });
       onRetried?.(retried);
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: keys.jobs.all }),
+        queryClient.invalidateQueries({ queryKey: keys.shell.counts() }),
+      ]);
     },
     onError: (err) => toastError(err, "Couldn't retry the job. Try again."),
   });

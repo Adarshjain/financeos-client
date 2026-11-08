@@ -505,6 +505,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
                   key={i}
                   variant="link"
                   disabled={a.disabled}
+                  loading={a.loading}
                   href={a.href}
                   onSelect={() => {
                     onOpenChange?.(false);

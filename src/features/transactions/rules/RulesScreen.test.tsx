@@ -124,29 +124,29 @@ describe('RulesScreen', () => {
     renderWithQuery(<RulesScreen {...props()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Category' }));
     fireEvent.click(screen.getByRole('option', { name: 'Groceries' }));
-    expect(router.push).toHaveBeenCalledWith('?category=groceries', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('?category=groceries', { scroll: false });
   });
 
   it('a filter set shows a changed chip; Reset filters and the chip x put it back', () => {
     renderWithQuery(<RulesScreen {...props({ state: { ...DEFAULT_RULES_STATE, matchType: 'EXACT' } })} />);
     fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
-    expect(router.push).toHaveBeenCalledWith('?', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('?', { scroll: false });
     fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
-    expect(router.push).toHaveBeenCalledTimes(2);
+    expect(router.replace).toHaveBeenCalledTimes(2);
   });
 
   it('a filter resets the page and keeps the rest of the address', () => {
     renderWithQuery(<RulesScreen {...props({ state: { ...DEFAULT_RULES_STATE, matchType: 'EXACT', page: 2 } })} />);
     fireEvent.click(screen.getByRole('button', { name: 'Exact' }));
     fireEvent.click(screen.getByRole('option', { name: 'Regex' }));
-    expect(router.push).toHaveBeenCalledWith('?match=REGEX', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('?match=REGEX', { scroll: false });
   });
 
   it('Reset filters keeps the search text', () => {
     renderWithQuery(<RulesScreen {...props({ state: { ...DEFAULT_RULES_STATE, q: 'dunzo', matchType: 'EXACT' } })} />);
     fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
-    expect(router.push).toHaveBeenCalledWith(expect.stringContaining('q=dunzo'), { scroll: false });
-    expect(router.push).toHaveBeenCalledWith(expect.not.stringContaining('match'), { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith(expect.stringContaining('q=dunzo'), { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith(expect.not.stringContaining('match'), { scroll: false });
   });
 
   it('has no Usage or Sort filter', () => {
@@ -158,7 +158,7 @@ describe('RulesScreen', () => {
     renderWithQuery(<RulesScreen {...props({ rules: { rows: rules, totalElements: 64, totalPages: 3 } })} />);
     expect(screen.getAllByText(/64/).length).toBeGreaterThanOrEqual(2);
     fireEvent.click(screen.getAllByRole('button', { name: 'Page 2' })[0]);
-    expect(router.push).toHaveBeenCalledWith('?page=2', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('?page=2', { scroll: false });
   });
 
   it('says so when nothing matches, offering to clear the filters, and when the load failed', () => {
@@ -167,7 +167,7 @@ describe('RulesScreen', () => {
     );
     expect(screen.getByText('No rules match')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(router.push).toHaveBeenCalledWith('?', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('?', { scroll: false });
     unmount();
     renderWithQuery(<RulesScreen {...props({ rules: null, reference: 'r-1' })} />);
     expect(screen.getByText("Couldn't load rules")).toBeTruthy();

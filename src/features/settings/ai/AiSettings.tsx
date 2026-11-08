@@ -33,8 +33,8 @@ export function AiSettings() {
   const onTest = useCallback((key: LlmKeyDto) => void latest.current.testKey(key), []);
   const onMove = useCallback((row: KeyRow, delta: number) => void latest.current.moveKey(row, delta), []);
 
-  const { Component: AddKeyDialog, run: runAddKey } = useLazyDialog(loadAddKeyDialog);
-  const { Component: RoutingEditorDialog, run: runRouting } = useLazyDialog(loadRoutingEditorDialog);
+  const { Component: AddKeyDialog, run: runAddKey, loading: addLoading } = useLazyDialog(loadAddKeyDialog);
+  const { Component: RoutingEditorDialog, run: runRouting, loading: routingLoading } = useLazyDialog(loadRoutingEditorDialog);
   const addOpen = s.addOpen;
   useEffect(() => {
     // Once loaded the dialogs stay mounted, so their close animation plays; a failed load backs the open state out.
@@ -100,6 +100,8 @@ export function AiSettings() {
           <YourKeysCard
             keys={s.keysList}
             testingKeyId={s.testingKeyId}
+            movingKeyId={s.movingKeyId}
+            adding={addLoading}
             onAdd={onAdd}
             onTest={onTest}
             onMove={onMove}
@@ -108,7 +110,11 @@ export function AiSettings() {
         </div>
         {s.routing ? (
           <div>
-            <RoutingCard groups={groups} error={editing ? null : s.routingError} />
+            <RoutingCard
+              groups={groups}
+              error={editing ? null : s.routingError}
+              startingGroup={routingLoading ? editingGroup : null}
+            />
           </div>
         ) : null}
         <div>

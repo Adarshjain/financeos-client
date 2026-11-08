@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -22,6 +21,7 @@ import { todayInAppZone } from '@/lib/date-range';
 import { formatDate } from '@/lib/format';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { type AccountFocusField, AccountFormFields } from './AccountFormFields';
 import {
@@ -75,7 +75,7 @@ export interface AccountFormDialogProps {
 
 /** Add account and Edit account: one dialog, the fields follow the picked type. */
 export function AccountFormDialog({ account, initialType = null, onClose, onCreated, fromSuggestion, prefillBank, prefillLast4, focusField }: AccountFormDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const isEdit = Boolean(account);
   const today = todayInAppZone();
   const mutations = useAccountFormMutations();
@@ -117,7 +117,9 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
     mutations.updateAccountMutation.isPending ||
     mutations.previewGmailCleanupMutation.isPending ||
     mutations.executeGmailCleanupMutation.isPending;
-  const busy = saving;
+  // The new page's navigation: the dialog stays busy from the press until that page has committed (and the dialog unmounts).
+  const [navigating, startNavigation] = React.useTransition();
+  const busy = saving || navigating;
 
   const change = (patch: Partial<AccountFormValues>) => {
     setValues((v) => ({ ...v, ...patch }));
@@ -229,7 +231,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
           onCreated(created);
           onClose();
         } else {
-          router.push(`${ACCOUNTS_HREF}/${created.id}`);
+          startNavigation(() => router.push(`${ACCOUNTS_HREF}/${created.id}`));
         }
       }
     } catch (e) {
@@ -257,7 +259,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
 
   return (
     <>
-      <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
+      <Dialog open onOpenChange={(open) => (open || busy ? undefined : onClose())}>
         <Dialog.Content
           size="md"
           title={isEdit ? 'Edit account' : 'Add account'}
@@ -269,7 +271,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
             label: isEdit ? 'Save account' : 'Add account',
             type: 'submit',
             form: FORM_ID,
-            loading: saving,
+            loading: busy,
             disabled: !type || busy,
           }}
         >

@@ -14,6 +14,7 @@ import { LoadError } from '@/features/shell/LoadError';
 import { UPCOMING_HREF } from '@/features/upcoming/upcomingTabs';
 import { unwrapAction } from '@/lib/actionResult';
 import type { InboxItemResponse } from '@/lib/api/types';
+import { useBill } from '@/lib/query/hooks/useBills';
 import { useInbox } from '@/lib/query/hooks/useInbox';
 import { keys } from '@/lib/query/keys';
 import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
@@ -38,10 +39,13 @@ export interface InboxScreenProps {
 
 /** The Inbox tab: Act now and Needs a look in one card, plus the dialogs rows open. */
 export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
-  const { data, isLoading, error, refetch } = useInbox();
+  const { data, isLoading, isFetching, error, refetch } = useInbox();
   const { snooze, dismiss, epfLink, epfDismiss, noStatement, npsPendingAction, npsPaymentAction } = useInboxMutations(dsInboxNotifier);
   const [pendingBill, setPendingBill] = React.useState<PendingBillAction | null>(null);
   const closeBill = React.useCallback(() => setPendingBill(null), []);
+  // The bill loads after the press (shared with the host's query): the pressed button shows loading until its dialog can open.
+  const bill = useBill(pendingBill?.statementId, pendingBill !== null);
+  const billLoading = pendingBill && !bill.data && !bill.error ? pendingBill : null;
 
   const items = React.useMemo(() => data?.items ?? [], [data]);
   // Which account a debit is recorded to, and whether Tier II is open on it: read only when a Record row is shown.
@@ -80,7 +84,7 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
   } else if (error) {
     body = (
       <Card>
-        <LoadError what="the inbox" retry={() => void refetch()} />
+        <LoadError what="the inbox" retry={() => void refetch()} retrying={isFetching} />
       </Card>
     );
   } else if (items.length === 0) {
@@ -106,6 +110,7 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
                 items={shownItems.filter((i) => i.section === key)}
                 highlightKey={deepLink.found ? highlightKey : null}
                 rowOptions={rowOptions}
+                billLoading={billLoading}
                 onBillButton={onBillButton}
                 onMenuAction={onMenuAction}
                 onSnooze={(item, until) => snooze(item.key, until)}

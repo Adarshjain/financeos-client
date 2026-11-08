@@ -33,6 +33,8 @@ export interface UpcomingListProps {
   onMarkPaid: (item: ObligationItem) => void;
   onSettle: (item: ObligationItem) => void;
   onSetDetails?: (item: ObligationItem) => void;
+  /** The statement whose bill is loading after Set details. */
+  setDetailsLoadingFor?: string | null;
   onStopTracking?: (item: ObligationItem) => void;
   onSkipStatement?: (item: ObligationItem) => void;
 }
@@ -76,6 +78,7 @@ export function UpcomingList({
   onMarkPaid,
   onSettle,
   onSetDetails,
+  setDetailsLoadingFor = null,
   onStopTracking,
   onSkipStatement,
 }: UpcomingListProps) {
@@ -155,6 +158,7 @@ export function UpcomingList({
                     onMarkPaid={onMarkPaid}
                     onSettle={onSettle}
                     onSetDetails={onSetDetails}
+                    setDetailsLoading={Boolean(item.statementId) && item.statementId === setDetailsLoadingFor}
                     onStopTracking={onStopTracking}
                   />
                 </RowTransition>

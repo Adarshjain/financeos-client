@@ -65,6 +65,24 @@ describe('useRecurringActions', () => {
     expect(toast).toHaveBeenCalledWith('Stopped tracking Netflix');
   });
 
+  it('stop shows a loading toast, ignores a second call for the same series, and clears it after', async () => {
+    let finish: (v: unknown) => void = () => {};
+    act_.stopRecurring.mockReturnValueOnce(new Promise((r) => (finish = r)));
+    const { result } = setup();
+    let first!: Promise<boolean>;
+    act(() => {
+      first = result.current.stop('r1', 'Netflix');
+    });
+    expect(await result.current.stop('r1', 'Netflix')).toBe(false);
+    await act(async () => {
+      finish(ok);
+      await first;
+    });
+    expect(act_.stopRecurring).toHaveBeenCalledTimes(1);
+    await act(() => result.current.stop('r1', 'Netflix'));
+    expect(act_.stopRecurring).toHaveBeenCalledTimes(2);
+  });
+
   it('converted posts the loan id without a toast', async () => {
     const { result, spy } = setup();
     await act(() => result.current.converted('r2', 'L9'));

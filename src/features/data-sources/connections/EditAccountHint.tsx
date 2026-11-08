@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -10,6 +9,7 @@ import type { AccountFormDialogProps } from '@/features/accounts/form/ds/Account
 import type { AccountFocusField } from '@/features/accounts/form/ds/AccountFormFields';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useAccount } from '@/lib/query/hooks/useAccounts';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 type FormDialog = React.ComponentType<AccountFormDialogProps>;
 
@@ -41,7 +41,7 @@ export function EditAccountHint({ accountId, focusField, label, href }: { accoun
 }
 
 export function EditAccountLoader({ accountId, focusField, href, Dialog, onReady, onClose }: { accountId: string; focusField: AccountFocusField; href: string; Dialog: FormDialog | null; onReady: () => void; onClose: () => void }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { data: account, isError, isSuccess } = useAccount(accountId);
   const failed = isError || (isSuccess && !account);
   const shown = Boolean(account && Dialog);

@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds/Toast/Toast';
 import { duplicateReport } from '@/features/reports/duplicateReportModel';
@@ -10,6 +9,7 @@ import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { keys } from '@/lib/query/keys';
 import type { CreateReportRequest, UpdateReportRequest } from '@/lib/reports.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 /**
  * The editor's writes: create, update, duplicate (confirmed afterwards with a toast whose Undo deletes the copy)
@@ -22,7 +22,7 @@ import type { CreateReportRequest, UpdateReportRequest } from '@/lib/reports.typ
  */
 export function useReportEditorMutations() {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
   const invalidate = () => void queryClient.invalidateQueries({ queryKey: keys.reports.all });
   const changed = () => {
     invalidate();

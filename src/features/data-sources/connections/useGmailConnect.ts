@@ -84,7 +84,9 @@ export function useGmailConnect() {
   });
 
   const isSyncing = Boolean(activeJobId) && isPolling;
-  const loading = startOAuthMutation.isPending ? 'connect' : syncMutation.isPending ? 'sync' : readsLoading ? 'connections' : null;
+  // Once Google's URL is known the page navigates away: the Connect spinner stays until it does.
+  const [redirecting, setRedirecting] = useState(false);
+  const loading = startOAuthMutation.isPending || redirecting ? 'connect' : syncMutation.isPending ? 'sync' : readsLoading ? 'connections' : null;
 
   // Sender add/edit dialog state
   const [isSenderDialogOpen, setIsSenderDialogOpen] = useState(false);
@@ -95,10 +97,12 @@ export function useGmailConnect() {
   const submittingSender = createSenderMutation.isPending || updateSenderMutation.isPending;
 
   const handleConnect = async () => {
+    if (startOAuthMutation.isPending || redirecting) return;
     setMessage(null);
     try {
       const data = await startOAuthMutation.mutateAsync();
       if (data?.authorizationUrl) {
+        setRedirecting(true);
         window.location.href = data.authorizationUrl;
       }
     } catch (err) {
@@ -183,11 +187,15 @@ export function useGmailConnect() {
   };
 
   const handleIgnoreNumber = async (group: { bank?: string | null; last4: string }) => {
+    // The row's ⋯ menu closes on press, so a loading toast stands in for the pressed control.
+    const toastId = `ignore-number:${group.bank ?? ''}:${group.last4}`;
+    notify.loading(`Ignoring ${numberTitle(group)}…`, { id: toastId });
     try {
       const res = await ignoreNumberMutation.mutateAsync({ bank: group.bank ?? undefined, last4: group.last4 });
       const n = res?.count ?? 0;
-      notify.success(`Ignoring ${numberTitle(group)} · ${n} ${n === 1 ? 'email' : 'emails'} moved to Archived`);
+      notify.success(`Ignoring ${numberTitle(group)} · ${n} ${n === 1 ? 'email' : 'emails'} moved to Archived`, { id: toastId });
     } catch (err) {
+      notify.dismiss(toastId);
       toastError(err, "Couldn't ignore the number. Try again.");
     }
   };
@@ -229,6 +237,7 @@ export function useGmailConnect() {
 
   const handleSenderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingSender) return;
 
     const requestData: GmailSenderRequest = {
       name: senderName || undefined,

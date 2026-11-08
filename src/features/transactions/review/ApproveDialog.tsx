@@ -59,12 +59,12 @@ export function ApproveDialog({ transactions, open, onOpenChange, onDone, instan
   const total = transactions.length;
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={(next) => !(isPending && !next) && onOpenChange(next)}>
         <Dialog.Content
           size="sm"
           title={approveTitle(total)}
           description="Tick the reasons to clear. Each transaction is marked manually reviewed for those; any other flag it carries stays."
-          secondary={{ label: 'Cancel', onSelect: () => onOpenChange(false) }}
+          secondary={{ label: 'Cancel', onSelect: () => onOpenChange(false), disabled: isPending }}
           primary={{
             label: `Approve ${total}`,
             onSelect: () => void submit(),

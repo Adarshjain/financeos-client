@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import React from 'react';
 
+import { beginBusy } from '@/lib/busy';
 import { notify } from '@/lib/notify';
 
 type Importer<C> = () => Promise<C>;
@@ -90,6 +91,12 @@ export function useLazyDialog<C>(importer: Importer<C>): LazyDialog<C> {
     },
     [],
   );
+
+  // The top bar shows while a press waits for the code; the cleanup releases it on load, failure, cancel and unmount.
+  React.useEffect(() => {
+    if (!loading) return;
+    return beginBusy();
+  }, [loading]);
 
   const preload = React.useCallback(() => {
     start(importer).catch(() => undefined);

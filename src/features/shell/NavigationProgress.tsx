@@ -4,6 +4,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import React, { useEffect } from 'react';
 
 import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
+import { endRoute, NAVIGATION_PROGRESS_DELAY_MS, NAVIGATION_PROGRESS_TIMEOUT_MS, useBusyShowing } from '@/lib/busy';
 
 import {
   commitRoute,
@@ -13,11 +14,9 @@ import {
   startNavigation,
   useNavigationShowing,
 } from './navigationStore';
+import { useRefreshOnHistoryReturn } from './useRefreshOnHistoryReturn';
 
-/** A navigation faster than this never shows the bar, so instant page changes do not flash. */
-export const NAVIGATION_PROGRESS_DELAY_MS = 120;
-/** Gives up on a navigation that never commits (cancelled, redirected back) so the bar cannot stick. */
-export const NAVIGATION_PROGRESS_TIMEOUT_MS = 8000;
+export { NAVIGATION_PROGRESS_DELAY_MS, NAVIGATION_PROGRESS_TIMEOUT_MS };
 
 /** The in-app URL a plain left click on a live link is heading to (it may equal the current URL), or null. */
 function targetOf(event: MouseEvent): URL | null {
@@ -38,13 +37,16 @@ function targetOf(event: MouseEvent): URL | null {
 
 /**
  * A thin indeterminate bar at the top of the content column, from the moment an in-app link to a
- * different URL is clicked until the new route commits. Mount once in the app layout, inside Suspense
+ * different URL is clicked until the new route commits, and for lazy code and code-driven push/replace (see `@/lib/busy`). Mount once in the app layout, inside Suspense
  * (it reads useSearchParams).
  */
 export function NavigationProgress() {
   const pathname = usePathname();
   const search = useSearchParams().toString();
-  const showing = useNavigationShowing();
+  const navigationShowing = useNavigationShowing();
+  const busyShowing = useBusyShowing();
+  const showing = navigationShowing || busyShowing;
+  useRefreshOnHistoryReturn(pathname, search);
 
   useEffect(() => {
     let delay: number | undefined;
@@ -78,6 +80,7 @@ export function NavigationProgress() {
   // The route committed (link, back or forward): the new URL is in place, so the bar goes.
   useEffect(() => {
     endNavigation();
+    endRoute();
   }, [pathname, search]);
 
   // Keeps the in-app history behind Back (pathname only: search-only commits are the same entry).

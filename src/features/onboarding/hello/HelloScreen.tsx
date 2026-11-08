@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -14,6 +13,7 @@ import { StepList } from '@/components/ds/StepList/StepList';
 import { Text } from '@/components/ds/Text/Text';
 import { TextField } from '@/components/ds/TextField/TextField';
 import { appHref } from '@/features/shell/routes';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   BIRTH_CAPTION_GOOGLE,
@@ -63,7 +63,7 @@ export function HelloScreen({
   helloProfileSaved = false,
   today,
 }: HelloScreenProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [step, setStep] = useState<1 | 2>(startStep(helloProfileSaved, hasGmail));
   const [name, setName] = useState(displayName ?? '');
   const [birth, setBirth] = useState(birthDateFieldValue(birthDate));
@@ -86,6 +86,7 @@ export function HelloScreen({
   const home = () => router.replace(appHref('/home'));
 
   const submit = async () => {
+    if (saving) return;
     setError(null);
     const outcome = pressOutcome({
       name,
@@ -125,6 +126,7 @@ export function HelloScreen({
   };
 
   const skip = async () => {
+    if (skipping) return;
     setSkipping(true);
     setError(null);
     const result = await finishHello();
@@ -138,6 +140,7 @@ export function HelloScreen({
   };
 
   const connect = async () => {
+    if (connecting) return;
     setSkipOpen(false);
     setConnecting(true);
     setError(null);

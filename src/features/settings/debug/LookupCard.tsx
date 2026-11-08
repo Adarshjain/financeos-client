@@ -55,7 +55,7 @@ export function LookupCard({ admin, initialRef, initialType, isLoading, onSearch
             value={type}
             onValueChange={setType}
           />
-          <Button type="submit" variant="primary" disabled={isLoading || !ref.trim()}>
+          <Button type="submit" variant="primary" loading={isLoading} disabled={!ref.trim()}>
             Look up
           </Button>
         </div>

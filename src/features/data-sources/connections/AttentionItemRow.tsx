@@ -13,14 +13,15 @@ import { formatDate, formatDateTime } from '@/lib/format';
 import { attentionEditTarget, attentionHintLink, type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItemModel';
 import { EditAccountHint } from './EditAccountHint';
 import { LockedStatementHint } from './LockedStatementHint';
+import { usePendingAction } from './usePendingAction';
 import { ViewEmailDialog } from './ViewEmailDialog';
 
 interface AttentionItemRowProps {
   item: AttentionItem;
-  retryItem: (ledgerId: string) => void;
+  retryItem: (ledgerId: string) => Promise<void> | void;
   onAssign: (item: AttentionItem) => void;
-  onArchive: (ledgerId: string) => void;
-  onUnarchive: (ledgerId: string) => void;
+  onArchive: (ledgerId: string) => Promise<void> | void;
+  onUnarchive: (ledgerId: string) => Promise<void> | void;
 }
 
 /** The detail card of one email: mailbox, sender, dates, error and the links to view it here or open it in Gmail. */
@@ -68,6 +69,7 @@ export function Details({ item, archived }: { item: AttentionItem; archived: boo
 /** One Gmail item that could not become a transaction: what happened, the next step, details and actions. */
 export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarchive }: AttentionItemRowProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const { pending, run } = usePendingAction();
   const { label, summary, hint } = describeAttentionItem(item);
   const hintLink = attentionHintLink(item);
   const editTarget = attentionEditTarget(item);
@@ -120,7 +122,7 @@ export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarc
 
       <div className="flex flex-wrap items-center gap-space-8 desk:shrink-0 desk:justify-end">
         {archived ? (
-          <Button variant="secondary" size="sm" onClick={() => onUnarchive(item.id)}>
+          <Button variant="secondary" size="sm" loading={pending === 'unarchive'} disabled={pending !== null} onClick={() => run('unarchive', () => onUnarchive(item.id))}>
             Unarchive
           </Button>
         ) : (
@@ -130,10 +132,10 @@ export function AttentionItemRow({ item, retryItem, onAssign, onArchive, onUnarc
                 Assign
               </Button>
             ) : null}
-            <Button variant="secondary" size="sm" onClick={() => retryItem(item.id)}>
+            <Button variant="secondary" size="sm" loading={pending === 'retry'} disabled={pending !== null} onClick={() => run('retry', () => retryItem(item.id))}>
               Retry
             </Button>
-            <Button variant="secondary" size="sm" onClick={() => onArchive(item.id)}>
+            <Button variant="secondary" size="sm" loading={pending === 'archive'} disabled={pending !== null} onClick={() => run('archive', () => onArchive(item.id))}>
               Archive
             </Button>
           </>

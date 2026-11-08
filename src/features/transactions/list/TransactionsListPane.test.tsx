@@ -61,9 +61,10 @@ function setup(over: Partial<TransactionsListPaneProps> = {}) {
 }
 
 const LAST_14_DAYS = { kind: 'preset', id: 'last_14_days' } as const;
-const lastUrl = () => String(router.push.mock.calls.at(-1)?.[0]);
+const lastUrl = () => String(router.replace.mock.calls.at(-1)?.[0]);
 
 beforeEach(() => {
+  router.replace.mockClear();
   router.push.mockClear();
   loadNeedsReviewCount.mockClear();
 });
@@ -91,11 +92,11 @@ describe('TransactionsListPane', () => {
     setup({ query: { ...DEFAULT_QUERY, page: 2 } });
     fireEvent.click(screen.getByRole('button', { name: 'Status' }));
     fireEvent.click(optionOf('Monitoring'));
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
     fireEvent.click(optionOf('Up to statement'));
     fireEvent.click(optionOf('Needs review'));
     fireEvent.click(screen.getByRole('button', { name: /Done/ }));
-    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledTimes(1);
     expect(lastUrl()).toContain('monitoring=1');
     expect(lastUrl()).toContain('statement=1');
     expect(lastUrl()).toContain('review=needs_review');
@@ -209,9 +210,9 @@ describe('TransactionsListPane', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Account' }));
     fireEvent.click(screen.getByText('HDFC Bank Savings', { selector: '[role="option"] *, [role="option"]' }));
     fireEvent.click(screen.getByText('Amex Platinum', { selector: '[role="option"] *, [role="option"]' }));
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: /Done/ }));
-    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledTimes(1);
     expect(lastUrl()).toBe('/transactions?account=a1&account=a2');
   });
 
@@ -219,9 +220,9 @@ describe('TransactionsListPane', () => {
     vi.useFakeTimers();
     setup({ query: { ...DEFAULT_QUERY, page: 3 } });
     fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'swig' } });
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
     act(() => vi.advanceTimersByTime(SEARCH_DEBOUNCE_MS + 10));
-    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledTimes(1);
     expect(lastUrl()).toBe('/transactions?q=swig');
   });
 
@@ -235,7 +236,7 @@ describe('TransactionsListPane', () => {
     setup();
     fireEvent.click(screen.getByRole('button', { name: '+ More' }));
     expect(screen.getByText('Every filter combines with the others.')).toBeInTheDocument();
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
     expect(await screen.findByRole('button', { name: 'Show 7 results' })).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText('Excluded transactions only'));
     fireEvent.click(screen.getByRole('button', { name: /Show/ }));
@@ -248,7 +249,7 @@ describe('TransactionsListPane', () => {
     fireEvent.click(screen.getByLabelText('Excluded transactions only'));
     fireEvent.click(within(screen.getByRole('dialog', { name: 'Filters' })).getAllByRole('button', { name: 'Close' })[0]);
     expect(screen.queryByText('Every filter combines with the others.')).not.toBeInTheDocument();
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: '+ More' }));
     expect(screen.getByLabelText('Excluded transactions only')).not.toBeChecked();
   });
@@ -366,7 +367,7 @@ describe('TransactionsListPane', () => {
     expect(screen.getByText('No transactions yet')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Add account' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Import' }));
-    expect(lastUrl()).toBe('/transactions/import');
+    expect(String(router.push.mock.calls.at(-1)?.[0])).toBe('/transactions/import');
   });
 
   it('shows the first-run state under filters when there is no account at all', () => {

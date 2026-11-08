@@ -202,7 +202,7 @@ describe('/investments Holdings: rows', () => {
       type: 'merger',
     });
     // The row itself was not opened.
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
   });
 
   it('writes a fund by its name with units', async () => {
@@ -248,7 +248,7 @@ describe('/investments Holdings: filters go to the URL', () => {
     await renderPage({ page: '3' });
     fireEvent.click(screen.getByRole('button', { name: 'Asset type' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Mutual funds' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/holdings?type=mutual_fund', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/holdings?type=mutual_fund', { scroll: false });
   });
 
   it('offers All types, Stocks, Mutual funds and ETFs, and names the chosen type on its chip', async () => {
@@ -263,15 +263,15 @@ describe('/investments Holdings: filters go to the URL', () => {
     await renderPage({ type: 'etf', q: 'gold' });
     fireEvent.click(screen.getByRole('button', { name: 'ETFs' }));
     fireEvent.click(await screen.findByRole('option', { name: 'All types' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/holdings?q=gold', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/holdings?q=gold', { scroll: false });
   });
 
   it('resets a changed type with the x of its chip, and every filter with Reset filters at the row end', async () => {
     await renderPage({ type: 'etf', q: 'gold' });
     fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/holdings?q=gold', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/holdings?q=gold', { scroll: false });
     fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/holdings', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/holdings', { scroll: false });
   });
 
   it('shows no Reset filters while every filter is on its default', async () => {
@@ -284,19 +284,19 @@ describe('/investments Holdings: filters go to the URL', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     await renderPage({ page: '3' });
     fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'infy' } });
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(400);
     });
-    expect(router.push).toHaveBeenCalledTimes(1);
-    expect(router.push).toHaveBeenCalledWith('/investments/holdings?q=infy', { scroll: false });
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith('/investments/holdings?q=infy', { scroll: false });
   });
 
   it('sorts by return from the sort dropdown, which starts on Name A–Z', async () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: /Name A–Z/ }));
     fireEvent.click(await screen.findByRole('option', { name: 'Best % return' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/holdings?sort=return_pct', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/holdings?sort=return_pct', { scroll: false });
   });
 
   it('lists every sort with its direction and puts sort and dir in the address', async () => {
@@ -307,11 +307,11 @@ describe('/investments Holdings: filters go to the URL', () => {
       ['Worst ₹ return', '/investments/holdings?sort=return_abs&dir=asc'],
     ];
     for (const [label, url] of cases) {
-      router.push.mockClear();
+      router.replace.mockClear();
       const { unmount } = await renderPage();
       fireEvent.click(screen.getByRole('button', { name: /Name A–Z/ }));
       fireEvent.click(await screen.findByRole('option', { name: label }));
-      expect(router.push, label).toHaveBeenCalledWith(url, { scroll: false });
+      expect(router.replace, label).toHaveBeenCalledWith(url, { scroll: false });
       unmount();
     }
   });
@@ -334,7 +334,7 @@ describe('/investments Holdings: filters go to the URL', () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: 'Broker' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Groww Demat' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/holdings?broker=b2', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/holdings?broker=b2', { scroll: false });
   });
 
   it('names the chosen broker on its chip', async () => {
@@ -353,7 +353,7 @@ describe('/investments Holdings: filters go to the URL', () => {
     await renderPage({ type: 'stock' });
     expect(screen.getAllByText('/ 120').length).toBeGreaterThanOrEqual(2);
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/investments/holdings?type=stock&page=2', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/holdings?type=stock&page=2', { scroll: false });
   });
 });
 

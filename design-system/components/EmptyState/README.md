@@ -5,8 +5,8 @@ What a screen shows when it has nothing yet, or cannot load: an optional illustr
 ## Props
 - `title?: ReactNode` (rendered in display font, screen-title style)
 - `description?: ReactNode` (explanatory one-sentence description in body style)
-- `action?: { label: ReactNode; onSelect: () => void; variant?: 'primary' | 'secondary' | 'link' }`
-- `secondaryAction?: { label: ReactNode; onSelect: () => void }` (a second action after the first, always `secondary`; a `link` when compact. Example: Clear amount · Clear all filters, Try again · Copy reference)
+- `action?: { label: ReactNode; onSelect: () => void; variant?: 'primary' | 'secondary' | 'link'; loading?: boolean }`
+- `secondaryAction?: { label: ReactNode; onSelect: () => void; loading?: boolean }` (a second action after the first, always `secondary`; a `link` when compact. Example: Clear amount · Clear all filters, Try again · Copy reference)
 - `illustration?: ReactNode`
 - `compact?: boolean` (compact single-line style for small panels or widget rows)
 - `size?: 'sm' | 'md'` (default `'md'`, controlling padding scale)

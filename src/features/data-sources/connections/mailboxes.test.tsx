@@ -73,6 +73,12 @@ describe('MailboxesCard', () => {
     expect(screen.getByRole('button', { name: /Syncing/ })).toBeDisabled();
   });
 
+  it('shows Reconnect pressed while OAuth starts', () => {
+    setup([healthy, stale], { loading: 'connect' });
+    expect(screen.getByRole('button', { name: /Reconnect/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add mailbox' })).toBeDisabled();
+  });
+
   it('Add mailbox starts OAuth', () => {
     const p = setup([healthy]);
     fireEvent.click(screen.getByRole('button', { name: 'Add mailbox' }));

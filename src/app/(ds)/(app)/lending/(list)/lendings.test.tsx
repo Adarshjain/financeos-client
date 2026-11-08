@@ -193,7 +193,7 @@ describe('/lending', () => {
     server.fetchPeople.mockResolvedValue(pageOf(people, { totalElements: 60, totalPages: 3 }));
     await renderPage({ filter: 'owed' });
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/lending?filter=owed&page=2', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/lending?filter=owed&page=2', { scroll: false });
   });
 
   it('shows one Direction dropdown chip: plain on All, the value with a × when changed, and the × resets it', async () => {
@@ -204,19 +204,19 @@ describe('/lending', () => {
     await renderPage({ filter: 'owe' });
     expect(screen.getByRole('button', { name: 'You owe' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
-    expect(router.push).toHaveBeenLastCalledWith('/lending', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/lending', { scroll: false });
   });
 
   it('searches the server once typing pauses, from the first page', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     await renderPage({ page: '3', filter: 'owed' });
     fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'pri' } });
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(400);
     });
-    expect(router.push).toHaveBeenCalledTimes(1);
-    expect(router.push).toHaveBeenCalledWith('/lending?q=pri&filter=owed', { scroll: false });
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith('/lending?q=pri&filter=owed', { scroll: false });
   });
 
   it('says nothing matches when a search or chip finds no one, and invites an entry when there is no one at all', async () => {

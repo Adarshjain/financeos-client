@@ -1,14 +1,16 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useState } from 'react';
+
+import { useAppRouter } from '@/lib/useAppRouter';
 
 /**
  * The reference being looked up and its type, kept in `?ref=&type=` (page state, not a dialog).
  * `select` is a tap on a local failure: admins look it up, everyone else just highlights it.
  */
 export function useDebugRef(initialRef: string, initialType: string, admin: boolean) {
-  const router = useRouter();
+  const router = useAppRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 

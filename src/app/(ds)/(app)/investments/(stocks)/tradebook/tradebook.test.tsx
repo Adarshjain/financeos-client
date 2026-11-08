@@ -198,11 +198,11 @@ describe('/investments/tradebook: filters', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     await renderPage({ page: '2' });
     fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'tcs' } });
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(400);
     });
-    expect(router.push).toHaveBeenCalledWith('/investments/tradebook?q=tcs', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/tradebook?q=tcs', { scroll: false });
   });
 
   it('picks a broker from one dropdown chip, and the x of the changed chip clears it', async () => {
@@ -210,14 +210,14 @@ describe('/investments/tradebook: filters', () => {
     await renderPage();
     await user.click(screen.getByRole('button', { name: 'Broker' }));
     await user.click(await screen.findByRole('option', { name: 'Zerodha' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook?broker=b-zerodha', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/tradebook?broker=b-zerodha', { scroll: false });
   });
 
   it('shows a chosen broker as just its name, darker, with a x that resets it', async () => {
     await renderPage({ broker: 'b-groww' });
     expect(screen.getByRole('button', { name: 'Groww' }).className).not.toContain('bg-brand-tint');
     fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/tradebook', { scroll: false });
   });
 
   it('picks Buy or Sell from one Type dropdown chip', async () => {
@@ -225,7 +225,7 @@ describe('/investments/tradebook: filters', () => {
     await renderPage({ type: 'buy' });
     await user.click(screen.getByRole('button', { name: 'Buy' }));
     await user.click(await screen.findByRole('option', { name: 'Sell' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook?type=sell', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/tradebook?type=sell', { scroll: false });
   });
 
   it('resets everything with Reset filters, which shows only while a filter is changed', async () => {
@@ -234,7 +234,7 @@ describe('/investments/tradebook: filters', () => {
     unmount();
     await renderPage({ type: 'sell', q: 'tata' });
     fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/tradebook', { scroll: false });
   });
 
   it('picks a financial year', async () => {
@@ -242,7 +242,7 @@ describe('/investments/tradebook: filters', () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: fyLabel(currentFy()) }));
     await user.click(await screen.findByRole('option', { name: 'FY 25-26' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook?fy=2025', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/tradebook?fy=2025', { scroll: false });
   });
 
   it('defaults to the current FY and All years is chosen explicitly', async () => {
@@ -250,7 +250,7 @@ describe('/investments/tradebook: filters', () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: fyLabel(currentFy()) }));
     await user.click(await screen.findByRole('option', { name: 'All years' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook?fy=all', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/tradebook?fy=all', { scroll: false });
   });
 
   it('asks the server for every year when the address says fy=all', async () => {
@@ -262,7 +262,7 @@ describe('/investments/tradebook: filters', () => {
   it('pages through the server: next page and page size', async () => {
     await renderPage();
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenLastCalledWith('/investments/tradebook?page=2', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/tradebook?page=2', { scroll: false });
   });
 });
 

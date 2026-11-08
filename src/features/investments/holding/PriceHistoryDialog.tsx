@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -15,6 +14,7 @@ import { showToast } from '@/components/ds/Toast/Toast';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { watchSession } from '@/lib/authExpiry';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { usePriceMutations } from '../usePriceMutations';
 import { loadPricesPage } from './holdingActions';
@@ -29,10 +29,11 @@ export interface PriceHistoryDialogProps {
 
 /** The newest prices first, a page at a time from the server. Only the user's own manual prices carry Edit and Delete. */
 export function PriceHistoryDialog({ instrumentId, name, onClose }: PriceHistoryDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { deletePrice } = usePriceMutations(instrumentId);
   const [section, setSection] = React.useState<HoldingSection<PriceRowModel> | null>(null);
   const [failed, setFailed] = React.useState(false);
+  const [retrying, setRetrying] = React.useState(false);
   const [editing, setEditing] = React.useState<PriceDialogTarget | null>(null);
   const [deleting, setDeleting] = React.useState<PriceRowModel | null>(null);
 
@@ -93,7 +94,15 @@ export function PriceHistoryDialog({ instrumentId, name, onClose }: PriceHistory
           <Dialog.Body className="p-0 gap-0 desk:gap-0">
             {section === null && !failed ? <Skeleton height={48} /> : null}
             {section === null && failed ? (
-              <EmptyState compact description="Couldn't load the price history." action={{ label: 'Retry', onSelect: () => void load(0), variant: 'link' }} />
+              <EmptyState compact description="Couldn't load the price history." action={{
+                  label: 'Retry',
+                  variant: 'link',
+                  loading: retrying,
+                  onSelect: () => {
+                    setRetrying(true);
+                    void load(0).finally(() => setRetrying(false));
+                  },
+                }} />
             ) : null}
             {section && section.rows.length === 0 ? <EmptyState compact description="No prices yet" /> : null}
             {section && section.rows.length > 0 ? pager : null}

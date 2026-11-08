@@ -2,6 +2,8 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { beginBusy, resetBusy, trackRoute } from '@/lib/busy';
+
 import { NAVIGATION_PROGRESS_DELAY_MS, NAVIGATION_PROGRESS_TIMEOUT_MS, NavigationProgress } from './NavigationProgress';
 import { endNavigation, hasInAppHistory, resetInAppNavigation, usePendingPath } from './navigationStore';
 
@@ -11,6 +13,7 @@ let search = '';
 vi.mock('next/navigation', () => ({
   usePathname: () => pathname,
   useSearchParams: () => new URLSearchParams(search),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
 }));
 
 function Pending() {
@@ -50,7 +53,10 @@ describe('NavigationProgress', () => {
     window.history.replaceState({}, '', '/accounts');
   });
   afterEach(() => {
-    act(() => endNavigation());
+    act(() => {
+      endNavigation();
+      resetBusy();
+    });
     vi.useRealTimers();
   });
 
@@ -138,6 +144,36 @@ describe('NavigationProgress', () => {
     wait(NAVIGATION_PROGRESS_TIMEOUT_MS);
     expect(bar()).toBeNull();
     expect(screen.getByTestId('pending')).toHaveTextContent('none');
+  });
+
+  it('shows the bar for busy work after the delay and hides it when it ends', () => {
+    setup();
+    let end!: () => void;
+    act(() => {
+      end = beginBusy();
+    });
+    expect(bar()).toBeNull();
+    wait(NAVIGATION_PROGRESS_DELAY_MS);
+    expect(bar()).toBeInTheDocument();
+    act(() => end());
+    expect(bar()).toBeNull();
+  });
+
+  it('shows the bar for a code-driven route change and hides it on commit', () => {
+    const { rerender } = setup();
+    act(() => trackRoute('/accounts?page=2'));
+    wait(NAVIGATION_PROGRESS_DELAY_MS);
+    expect(bar()).toBeInTheDocument();
+    search = 'page=2';
+    rerender(<><NavigationProgress /><Pending /></>);
+    expect(bar()).toBeNull();
+  });
+
+  it('does not show for a route change to the page already open', () => {
+    setup();
+    act(() => trackRoute('/accounts'));
+    wait(NAVIGATION_PROGRESS_DELAY_MS * 2);
+    expect(bar()).toBeNull();
   });
 
   it('tracks in-app history depth across push, back and search-only commits', () => {

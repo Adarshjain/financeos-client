@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React, { useActionState, useEffect, useState } from 'react';
 
 import { signup, startGoogleSSO } from '@/actions/auth';
@@ -14,13 +13,14 @@ import { showToast } from '@/components/ds/Toast/Toast';
 import { Illustration } from '@/components/organisms/Illustration/Illustration';
 import { appHref } from '@/features/shell/routes';
 import type { ApiResult, UserResponse } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 export function SignupForm() {
   const [state, formAction, isPending] = useActionState(
     signup,
     null as ApiResult<UserResponse> | null,
   );
-  const router = useRouter();
+  const router = useAppRouter();
 
   const [inviteCode, setInviteCode] = useState('');
   const [email, setEmail] = useState('');
@@ -32,7 +32,7 @@ export function SignupForm() {
 
   useEffect(() => {
     if (isSuccess) {
-      router.push(appHref('/home'));
+      router.replace(appHref('/home'));
     }
   }, [isSuccess, router]);
 
@@ -182,7 +182,7 @@ export function SignupForm() {
                 variant="primary"
                 size="xl"
                 className="w-full"
-                loading={isPending}
+                loading={isPending || isSuccess}
                 loadingLabel="Creating account…"
                 disabled={isPending || ssoPending || isSuccess}
               >

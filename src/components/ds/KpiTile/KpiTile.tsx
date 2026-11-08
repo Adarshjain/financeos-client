@@ -139,6 +139,7 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
                   size="sm"
                   href={action.href}
                   onSelect={action.onSelect}
+                  loading={action.loading}
                   className="inline-flex h-auto p-0 text-ink font-bold underline hover:text-ink-2 hover:bg-transparent"
                 >
                   {action.label}

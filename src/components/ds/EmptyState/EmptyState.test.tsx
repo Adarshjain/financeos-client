@@ -167,4 +167,17 @@ describe('EmptyState', () => {
     expect(screen.queryByRole('heading')).toBeNull();
     expect(screen.queryByRole('button')).toBeNull();
   });
+
+  it('a loading action and secondary action show the spinner and block onSelect', () => {
+    const onSelect = vi.fn();
+    render(
+      <EmptyState title="Nothing yet" action={{ label: 'Add account', onSelect, loading: true }} secondaryAction={{ label: 'Import', onSelect, loading: true }} />
+    );
+    expect(screen.getByRole('button', { name: 'Add account' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Import' })).toBeDisabled();
+    expect(screen.getAllByTestId('spinner-icon').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Add account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });

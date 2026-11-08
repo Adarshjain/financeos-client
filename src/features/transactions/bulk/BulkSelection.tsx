@@ -37,10 +37,13 @@ export interface BulkBarProps {
   onApprove: () => void;
   onTag: () => void;
   onDelete: () => void;
+  /** True while the Link or Add tag code loads after a press: that action shows its loading state. */
+  linkLoading?: boolean;
+  tagLoading?: boolean;
 }
 
 /** The bar over the list: how many, how much, and Link · Merge · Approve · Add tag · Delete. One hint per action. */
-export function BulkBar({ selected, pageCount, onSelectAll, onClear, onLink, onMerge, onApprove, onTag, onDelete }: BulkBarProps) {
+export function BulkBar({ selected, pageCount, onSelectAll, onClear, onLink, onMerge, onApprove, onTag, onDelete, linkLoading, tagLoading }: BulkBarProps) {
   const flagged = selected.filter(isApprovable).length;
   return (
     <SelectionBar
@@ -51,7 +54,7 @@ export function BulkBar({ selected, pageCount, onSelectAll, onClear, onLink, onM
       onSelectAll={selected.length < pageCount ? onSelectAll : undefined}
       selectAllLabel={`Select all ${pageCount}`}
       actions={[
-        { id: 'link', label: 'Link', icon: <Icon name="link" size="lg" />, onSelect: onLink },
+        { id: 'link', label: 'Link', icon: <Icon name="link" size="lg" />, onSelect: onLink, loading: linkLoading },
         {
           id: 'merge',
           label: 'Merge',
@@ -69,7 +72,7 @@ export function BulkBar({ selected, pageCount, onSelectAll, onClear, onLink, onM
           disabled: flagged === 0,
           onSelect: onApprove,
         },
-        { id: 'tag', label: 'Add tag', icon: <Icon name="tag" size="lg" />, onSelect: onTag },
+        { id: 'tag', label: 'Add tag', icon: <Icon name="tag" size="lg" />, onSelect: onTag, loading: tagLoading },
         { id: 'delete', label: 'Delete', icon: <Icon name="delete" size="lg" />, tone: 'danger', onSelect: onDelete },
       ]}
     />

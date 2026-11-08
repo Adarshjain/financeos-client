@@ -10,10 +10,13 @@ const api = vi.hoisted(() => ({ GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), DELET
 vi.mock('@/lib/api/client', async (orig) => ({ ...(await orig<typeof import('@/lib/api/client')>()), api }));
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({ ...(await orig<typeof import('@/components/ds/Toast/Toast')>()), showToast: vi.fn() }));
 
+const notify = vi.hoisted(() => ({ loading: vi.fn(), dismiss: vi.fn() }));
+vi.mock('@/lib/notify', () => ({ notify }));
+
 import type { DashboardResponse, WidgetResponse } from '@/lib/dashboards.types';
 import { keys } from '@/lib/query/keys';
 
-import { useAddWidgetNow, useDeleteDashboard, useSaveDashboard } from './useDashboardMutations';
+import { useAddWidgetNow, useDeleteDashboard, useSaveDashboard, useToggleDefault } from './useDashboardMutations';
 
 const widget = (id: string): WidgetResponse =>
   ({ id, kind: 'builtin', builtinKey: 'upcoming', params: {}, title: null, reportId: null, layout: { x: 0, y: 0, w: 50, h: 24 } }) as unknown as WidgetResponse;
@@ -93,5 +96,41 @@ describe('dashboard writes invalidate only the lists', () => {
     expect(stale(queryClient, keys.dashboards.list())).toBe(true);
     expect(stale(queryClient, keys.dashboards.builtins())).toBeFalsy();
     expect(stale(queryClient, keys.dashboards.widget('w1', {}))).toBeFalsy();
+  });
+});
+
+describe('pending toasts for actions whose menu has closed', () => {
+  it('Set as default shows a loading toast while it saves and ends it on success', async () => {
+    const { wrapper } = setup();
+    api.GET.mockResolvedValue({ data: dash([]) });
+    api.PUT.mockResolvedValue({ data: dash([], { isDefault: true }) });
+    const { result } = renderHook(() => useToggleDefault(vi.fn()), { wrapper });
+    await act(async () => {
+      await result.current.mutateAsync({ id: 'd1', makeDefault: true, updatedAt: 'x' });
+    });
+    expect(notify.loading).toHaveBeenCalledWith('Saving…', { id: 'dashboard-default' });
+    expect(notify.dismiss).toHaveBeenCalledWith('dashboard-default');
+  });
+
+  it('ends the loading toast when Set as default fails', async () => {
+    const { wrapper } = setup();
+    api.PUT.mockResolvedValue({ error: { message: 'no' } });
+    const { result } = renderHook(() => useToggleDefault(vi.fn()), { wrapper });
+    await act(async () => {
+      await result.current.mutateAsync({ id: 'd1', makeDefault: true, updatedAt: 'x' }).catch(() => undefined);
+    });
+    expect(notify.loading).toHaveBeenCalledTimes(1);
+    expect(notify.dismiss).toHaveBeenCalledWith('dashboard-default');
+  });
+
+  it('Add widget shows a loading toast and ends it when the save settles', async () => {
+    const { wrapper } = setup();
+    api.PUT.mockResolvedValue({ data: dash([widget('w1')]) });
+    const { result } = renderHook(() => useAddWidgetNow(), { wrapper });
+    await act(async () => {
+      await result.current.mutateAsync({ dashboard: dash([]), widget: widget('w1') });
+    });
+    expect(notify.loading).toHaveBeenCalledWith('Saving…', { id: 'dashboard-add-widget' });
+    expect(notify.dismiss).toHaveBeenCalledWith('dashboard-add-widget');
   });
 });

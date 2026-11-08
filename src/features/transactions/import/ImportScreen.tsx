@@ -2,7 +2,6 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -25,6 +24,7 @@ import { formatCount } from '@/lib/format';
 import { useAccounts } from '@/lib/query';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { TransactionsTabs } from '../TransactionsTabs';
 import { formatFileSize, MAX_REQUEST_MB } from './fileLimits';
@@ -53,7 +53,7 @@ export interface ImportScreenProps {
 
 /** /transactions/import: upload statements to an account; Recent imports beside it, the running one on top. */
 export function ImportScreen({ initialAccounts, initialAccountId, since, page = 0, initialHeld, heldId }: ImportScreenProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const queryClient = useQueryClient();
   const { data: accounts = initialAccounts } = useAccounts(initialAccounts);
   const form = useIngestForm({ accounts, initialAccountId, completedMessage: 'Import finished. See it in Recent imports.', failedHint: 'See Recent imports.' });
@@ -82,7 +82,7 @@ export function ImportScreen({ initialAccounts, initialAccountId, since, page = 
       totalElements={history.totalElements}
       totalPages={history.totalPages}
       unit="imports"
-      onPageChange={(p) => router.push(importUrl({ page: p, account: initialAccountId }), { scroll: false })}
+      onPageChange={(p) => router.replace(importUrl({ page: p, account: initialAccountId }), { scroll: false })}
     />
   );
 

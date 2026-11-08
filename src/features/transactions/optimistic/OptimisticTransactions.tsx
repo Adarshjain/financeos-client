@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import type { TransactionListRow } from '@/features/transactions/list/transactionRowsModel';
@@ -9,6 +8,7 @@ import type { TransactionsListResult } from '@/features/transactions/list/Transa
 import type { Account } from '@/lib/account.types';
 import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import type { TransactionsQuery } from '../list/transactionsUrl';
 import { applyChanges, applyTo, type OptimisticChange } from './optimisticModel';
@@ -67,7 +67,7 @@ const afterRead = (es: Entry[]) => es.filter((e) => !e.settled);
  */
 export function useOptimisticLayer({ transactions, list, accounts, query, needsReviewCount }: Input) {
   const qc = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
   const [entries, setEntries] = React.useState<Entry[]>([]);
   // The same entries, readable from handlers (a request is sent later than the render that showed it).
   const live = React.useRef<Entry[]>([]);

@@ -686,6 +686,16 @@ describe('A saved report', () => {
     expect(router.refresh).toHaveBeenCalled();
   });
 
+  it('keeps Save loading after the request ends, while it leaves for the page it came from', async () => {
+    commitRoute('/dashboards');
+    commitRoute('/reports/r1');
+    setup(props());
+    await type('Report name', 'Still busy');
+    await user.click(screen.getByRole('button', { name: 'Save report' }));
+    await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
+    expect(screen.getByRole('button', { name: /Save report/ })).toHaveAttribute('aria-busy', 'true');
+  });
+
   it('goes back to where it was opened from (a dashboard) after a save, refreshing it', async () => {
     commitRoute('/dashboards');
     commitRoute('/reports/r1');
@@ -793,10 +803,10 @@ describe('A saved report', () => {
     expect(api.DELETE).not.toHaveBeenCalled();
     await user.click(within(dialog).getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(api.DELETE).toHaveBeenCalledWith('/api/v1/reports/{id}', { params: { path: { id: 'r1' } } }));
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/reports'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/reports'));
     // Refresh comes after the navigation, so the list it opens is fresh and the deleted page is never re-rendered.
     expect(router.refresh).toHaveBeenCalledTimes(1);
-    expect(router.push.mock.invocationCallOrder[0]).toBeLessThan(router.refresh.mock.invocationCallOrder[0]);
+    expect(router.replace.mock.invocationCallOrder[0]).toBeLessThan(router.refresh.mock.invocationCallOrder[0]);
     expect(toast).toHaveBeenCalledWith('Report deleted');
   });
 

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { DateField } from '@/components/ds/DateField/DateField';
@@ -11,6 +10,7 @@ import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpr
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   checkDetails,
@@ -41,7 +41,7 @@ export function EditDetailsDialog({
   statementLabel,
   initial,
 }: EditDetailsDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { updateDetails } = useBillMutations();
   const [form, setForm] = React.useState<DetailsForm>(() =>
     detailsFormFrom(initial)

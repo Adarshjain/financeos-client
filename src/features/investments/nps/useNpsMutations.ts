@@ -1,11 +1,11 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 import { unwrapAction } from '@/lib/actionResult';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   addNpsGmailDetection,
@@ -24,7 +24,7 @@ import type { NpsAccountRequest, NpsAllocationRequest, NpsEntryRequest } from '.
 /** Everything the user changes on the NPS tab. After a change `refresh()` re-reads the investment queries and the page. */
 export function useNpsMutations() {
   const qc = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
 
   const refresh = async () => {
     await Promise.all([invalidateInvestmentQueries(qc), qc.invalidateQueries({ queryKey: keys.nps.all })]);

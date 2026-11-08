@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -10,6 +9,7 @@ import { DataTable } from '@/components/ds/DataTable/DataTable';
 import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
 import { Text } from '@/components/ds/Text/Text';
 import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { labelLines, type OverviewCard, yearLines } from './overviewModel';
 
@@ -104,7 +104,7 @@ const columns = ch.columns([
 
 /** One row per card, highest first. A press opens the card's rewards page; "Set point value" opens its rules. */
 export function RewardsCardList({ cards }: { cards: OverviewCard[] }) {
-  const router = useRouter();
+  const router = useAppRouter();
   return (
     <Card>
       <DataTable

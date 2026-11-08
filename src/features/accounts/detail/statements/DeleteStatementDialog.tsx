@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -11,6 +10,7 @@ import { useDeleteStatement } from '@/features/accounts/statements/useStatementM
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatCount } from '@/lib/format';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { accountHref } from '../accountTabsModel';
 import { deletionImpact, deletionNote } from './detailModel';
@@ -36,7 +36,7 @@ export function DeleteStatementDialog({
   source,
   fy,
 }: DeleteStatementDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { preview, remove, refreshAfterDelete } = useDeleteStatement(accountId, statementId, open);
 
   const confirm = async () => {
@@ -46,7 +46,7 @@ export function DeleteStatementDialog({
         `Statement deleted, ${formatCount(result.transactionsDeleted, ['transaction', 'transactions'])} removed`
       );
       onOpenChange(false);
-      router.push(`${accountHref(accountId)}/statements?fy=${fy}`);
+      router.replace(`${accountHref(accountId)}/statements?fy=${fy}`);
       router.refresh();
       void refreshAfterDelete();
     } catch (e) {

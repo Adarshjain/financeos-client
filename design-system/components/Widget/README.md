@@ -4,7 +4,7 @@ A dashboard tile: title, subtitle and a ⋮ menu, then a figure, rows, a chart o
 
 ## States
 - Loading: a skeleton in the widget's own shape (a figure or rows), else the default three lines (`WidgetSkeleton`). A body that is still waiting on anything (its report, its chart code) shows that same skeleton, never a second, different placeholder.
-- Failed: an inline error with Retry action; the rest of the dashboard still renders.
+- Failed: an inline error with Retry action (`loading` while the retry runs); the rest of the dashboard still renders.
 - Unavailable: shown when the content can't be shown (e.g. report deleted); offers Remove action.
 - Report tables sort by header and page inside the widget.
 
@@ -12,7 +12,7 @@ A dashboard tile: title, subtitle and a ⋮ menu, then a figure, rows, a chart o
 Report widgets: Edit report · View full page · View underlying data (KPIs). Built-ins and templates: Widget settings · Duplicate as my report (templates) · View full page.
 
 ## Props
-`title`, `subtitle`, `menu`, `menuItems`, `loading`, `loadingSkeleton`, `error` (message node), `errorTitle`, `unavailable` (message node), `unavailableTitle`, `action` (`{ label, onSelect }`), `flush`.
+`title`, `subtitle`, `menu`, `menuItems`, `loading`, `loadingSkeleton`, `error` (message node), `errorTitle`, `unavailable` (message node), `unavailableTitle`, `action` (`{ label, onSelect, loading? }`), `flush`.
 
 ## Built from
 Card, Menu, Skeleton, Button.

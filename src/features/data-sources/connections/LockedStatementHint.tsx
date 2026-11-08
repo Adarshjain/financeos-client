@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -12,6 +11,7 @@ import type { Account } from '@/lib/account.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { statementPasswordAccounts } from './attentionItemModel';
 import { EditAccountLoader } from './EditAccountHint';
@@ -22,7 +22,7 @@ type Phase = { name: 'idle' } | { name: 'picking'; accounts: Account[] } | { nam
 
 /** The hint for a locked statement with no known account: on press asks which bank account or card it is for (never guessed), then opens its Edit dialog on the statement password; with no bank or card account it goes to the accounts page. */
 export function LockedStatementHint({ label, href }: { label: string; href: string }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [pressed, setPressed] = useState(false);
   const [phase, setPhase] = useState<Phase>({ name: 'idle' });
   const [ready, setReady] = useState(false);

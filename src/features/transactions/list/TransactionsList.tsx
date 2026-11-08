@@ -54,6 +54,8 @@ export interface TransactionsListProps {
   noAccounts: boolean;
   onChange: (patch: Partial<TransactionsQuery>, resetPage?: boolean) => void;
   onAddAccount: () => void;
+  /** The Add account form's code is still loading. */
+  addAccountLoading?: boolean;
   onImport: () => void;
   /** A row was pressed (piece 2 opens the detail). */
   onOpenDetail?: (id: string) => void;
@@ -78,6 +80,7 @@ export function TransactionsList({
   noAccounts,
   onChange,
   onAddAccount,
+  addAccountLoading,
   onImport,
   onOpenDetail,
   openId,
@@ -114,7 +117,7 @@ export function TransactionsList({
         }
         action={
           noAccounts
-            ? { label: 'Add account', onSelect: onAddAccount }
+            ? { label: 'Add account', loading: addAccountLoading, onSelect: onAddAccount }
             : { label: 'Import', onSelect: onImport }
         }
       />

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Card } from '@/components/ds/Card/Card';
@@ -10,6 +9,7 @@ import { subCrumb } from '@/features/shell/navigation';
 import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import type { Broker } from '@/lib/account.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { HOLDINGS_HREF } from '../investmentsTabs';
 import { importableCount, readyToImport, totalsOf } from '../nps/npsImportModel';
@@ -58,7 +58,7 @@ const EPF_HREF = appHref('/investments/epf');
 
 /** Once the entries are in, drops the router's cached pages so Open EPF / Open NPS shows them. Mounted for the EPF and NPS imports only. */
 function RefreshWhenDone() {
-  const router = useRouter();
+  const router = useAppRouter();
   React.useEffect(() => {
     router.refresh();
   }, [router]);

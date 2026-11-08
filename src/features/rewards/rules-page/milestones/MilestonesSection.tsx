@@ -44,7 +44,7 @@ export function MilestonesSection({
   const remove = useDeleteRewardMilestone();
   const refresh = useRefreshUsage();
   const [open, setOpen] = React.useState<Open>(null);
-  const { Component: MilestoneDialog, run: runMilestone } = useLazyDialog(loadMilestoneDialog);
+  const { Component: MilestoneDialog, run: runMilestone, loading: milestoneLoading } = useLazyDialog(loadMilestoneDialog);
   const [deleting, setDeleting] = React.useState<RewardMilestone | null>(null);
 
   const editing = open?.mode === 'edit' ? milestones.find((m) => m.id === open.id) : undefined;
@@ -69,7 +69,7 @@ export function MilestonesSection({
       subtitle="Bonuses for hitting a spend threshold"
       action={
         <Text variant="label" as="div">
-          <Button variant="link" size="sm" disabled={!accountId} onClick={() => void runMilestone(() => setOpen({ mode: 'new' }))}>
+          <Button variant="link" size="sm" disabled={!accountId} loading={milestoneLoading} onClick={() => void runMilestone(() => setOpen({ mode: 'new' }))}>
             Add milestone
           </Button>
         </Text>

@@ -28,7 +28,7 @@ interface DebugScreenProps {
 /** The Debug tab: the admin lookup, its results, and this device's recent failures. */
 export function DebugScreen({ initialRef = '', initialType = 'auto', admin, failuresAdmin = false }: DebugScreenProps) {
   const { currentRef, currentType, search, select } = useDebugRef(initialRef, initialType, admin);
-  const { data, isLoading, isError, refetch } = useDiagnosticsLookup(currentRef, currentType, admin);
+  const { data, isLoading, isError, isFetching, refetch } = useDiagnosticsLookup(currentRef, currentType, admin);
 
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
@@ -59,7 +59,7 @@ export function DebugScreen({ initialRef = '', initialType = 'auto', admin, fail
       ) : null}
 
       {admin && isError ? (
-        <LoadError what="that reference" retry={() => void refetch()} />
+        <LoadError what="that reference" retry={() => void refetch()} retrying={isFetching} />
       ) : null}
 
       {admin && data && !isLoading ? (

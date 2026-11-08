@@ -41,6 +41,8 @@ export function useJobsHistory(filters: JobsHistoryFilters) {
     totalPages: query.data?.totalPages ?? 0,
     totalElements: query.data?.totalElements ?? 0,
     isPending: query.isPending,
+    /** True while another page's or filter's data is loading and the previous list is still shown. */
+    isPlaceholderData: query.isPlaceholderData,
   };
 }
 

@@ -57,6 +57,7 @@ export function DeleteAccountCard({ user }: { user: UserResponse }) {
             tone: 'danger',
             type: 'submit',
             form: FORM_ID,
+            loading: f.isDeleting,
             disabled: !f.canSubmit,
           }}
         >

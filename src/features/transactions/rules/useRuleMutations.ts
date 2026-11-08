@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds/Toast/Toast';
 import { emitJobStarted } from '@/features/jobs/jobsBus';
@@ -10,6 +9,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Schemas } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 import type { CategoryRule } from '@/lib/rules.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { applyRule, createRule, deleteRule, updateRule } from './ruleActions';
 
@@ -20,7 +20,7 @@ const isConflict = (error: unknown) => error instanceof ActionError && error.res
 /** Add, edit and delete rules. The list is server-rendered, so each success refreshes the page. */
 export function useRuleMutations(handlers: { onSaved?: (rule: CategoryRule) => void; onDeleted?: (id: string) => void } = {}) {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
   const done = () => {
     void queryClient.invalidateQueries({ queryKey: keys.rules.all });
     router.refresh();

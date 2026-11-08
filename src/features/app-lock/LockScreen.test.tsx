@@ -132,4 +132,13 @@ describe('LockScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
     expect(logout).toHaveBeenCalled();
   });
+
+  it('Sign out shows loading and a second press does nothing', () => {
+    render(<LockScreen from="/loans" />);
+    const signOut = screen.getByRole('button', { name: 'Sign out' });
+    fireEvent.click(signOut);
+    fireEvent.click(signOut);
+    expect(logout).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Sign out' })).toBeDisabled();
+  });
 });

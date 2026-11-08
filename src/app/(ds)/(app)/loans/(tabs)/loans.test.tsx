@@ -180,19 +180,19 @@ describe('/loans', () => {
     await renderPage({ q: 'bank' });
     expect(screen.getAllByText('/ 60').length).toBeGreaterThanOrEqual(2);
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/loans?q=bank&page=2', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/loans?q=bank&page=2', { scroll: false });
   });
 
   it('searches the server once typing pauses, from the first page', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     await renderPage({ page: '3' });
     fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'sbi' } });
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(400);
     });
-    expect(router.push).toHaveBeenCalledTimes(1);
-    expect(router.push).toHaveBeenCalledWith('/loans?q=sbi', { scroll: false });
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith('/loans?q=sbi', { scroll: false });
   });
 
   it('says nothing matches when a search finds no loan, and invites one when there are none', async () => {
@@ -326,7 +326,7 @@ describe('/loans', () => {
       await waitFor(() => expect(screen.getAllByText('Old Bike Loan').length).toBeGreaterThan(0));
       expect(loadClosedLoans).toHaveBeenCalledWith('bike');
       expect(screen.getAllByText('Closed').length).toBeGreaterThan(0);
-      expect(router.push).not.toHaveBeenCalled();
+      expect(router.replace).not.toHaveBeenCalled();
 
       fireEvent.click(screen.getByRole('button', { name: /Hide/ }));
       expect(screen.queryByText('Old Bike Loan')).toBeNull();

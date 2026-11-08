@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Dialog } from '@/components/ds/Dialog/Dialog';
@@ -11,6 +10,7 @@ import { TextField } from '@/components/ds/TextField/TextField';
 import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { candidateKey,CatalogSearch } from './CatalogSearch';
 import { INSTRUMENT_FIELD_LIMITS as LIMITS, type InstrumentFormErrors,instrumentFormErrors } from './instrumentEditModel';
@@ -33,7 +33,7 @@ export interface InstrumentAddDialogProps {
 
 /** Add an instrument: pick it from the live AMFI and Yahoo catalogs, or enter it by hand. Refreshes the page after saving. */
 export function InstrumentAddDialog({ onClose, initialMode = 'catalog', onCreated }: InstrumentAddDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [mode, setMode] = React.useState<InstrumentAddMode>(initialMode);
   const [values, setValues] = React.useState<InstrumentFormValues>(emptyInstrumentForm);
   const [yahooEdited, setYahooEdited] = React.useState(false);

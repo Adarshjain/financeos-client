@@ -48,6 +48,7 @@ export function ChargeFormDialog({ today, submitting, onSubmit, onClose }: Charg
   };
 
   const submit = async () => {
+    if (submitting) return;
     const resolved = { ...values, amount: resolveAmountExpression(values.amount) };
     setValues(resolved);
     const problems = chargeProblems(resolved);

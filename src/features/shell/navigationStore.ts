@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
+import { resetNavigationIntent, takeReplace } from '@/lib/navigationIntent';
+
 /**
  * Where an in-app navigation is heading, from the click until the route commits. NavigationProgress
  * writes it; the shell nav reads `pendingPath` to show the clicked item as current at once, and
@@ -86,6 +88,7 @@ export function commitRoute(pathname: string) {
 function commitEntry(pathname: string) {
   const isPop = popPending;
   popPending = false;
+  const isReplace = takeReplace(pathname);
   if (cursor >= 0 && entries[cursor] === pathname) return;
   if (cursor < 0) {
     entries = [pathname];
@@ -101,6 +104,9 @@ function commitEntry(pathname: string) {
         cursor += 1;
       }
     }
+  } else if (isReplace) {
+    // router.replace onto another page: the browser entry was rewritten, not added.
+    entries[cursor] = pathname;
   } else {
     entries = entries.slice(0, cursor + 1).concat(pathname);
     cursor += 1;
@@ -123,4 +129,5 @@ export function resetInAppNavigation() {
   entries = [];
   cursor = -1;
   popPending = false;
+  resetNavigationIntent();
 }

@@ -69,7 +69,7 @@ function FailedStatements({ count }: { count: number }) {
 
   return (
     <div data-testid="nps-gmail-failed">
-      <Banner tone="warning" rounded="md" action={retryFailed.isPending ? undefined : { label: 'Retry', onSelect: () => void retry() }}>
+      <Banner tone="warning" rounded="md" action={{ label: 'Retry', loading: retryFailed.isPending, onSelect: () => void retry() }}>
         {failedText(count)}
       </Banner>
     </div>

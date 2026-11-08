@@ -24,15 +24,17 @@ import type {
 export function HolderMenu({
   items,
   onSelect,
+  loading,
 }: {
   items: HolderMenuItem[];
   onSelect: (id: HolderMenuId) => void;
+  loading?: boolean;
 }) {
   return (
     <Menu
       align="end"
       trigger={
-        <Button variant="secondary" size="sm" iconOnly aria-label="Cardholder actions">
+        <Button variant="secondary" size="sm" iconOnly loading={loading} aria-label="Cardholder actions">
           <Icon name="more" size="sm" />
         </Button>
       }
@@ -119,8 +121,11 @@ export function HolderCard({
   onCloseCard,
   onDeleteCard,
   onCloseHolder,
+  busy,
 }: {
   model: HolderCardModel;
+  /** An action on this holder is waiting (its dialog's code, or Reopen). */
+  busy?: boolean;
   onMenu: (holderId: string, id: HolderMenuId) => void;
   onReplace: (holderId: string, cardId: string) => void;
   onCloseCard: (holderId: string, cardId: string) => void;
@@ -146,7 +151,7 @@ export function HolderCard({
             {model.caption}
           </Text>
         </div>
-        <HolderMenu items={model.menu} onSelect={(id) => onMenu(model.id, id)} />
+        <HolderMenu items={model.menu} loading={busy} onSelect={(id) => onMenu(model.id, id)} />
       </Card.Header>
       {model.stats.length > 0 ? (
         <div className={`px-space-16 pt-space-4 pb-space-12 grid grid-cols-2 gap-space-8 ${model.statColumns === 3 ? 'desk:grid-cols-3' : 'desk:grid-cols-4'}`}>
@@ -185,7 +190,9 @@ export function ClosedHolders({
   rows,
   onMenu,
   onReopen,
+  busyId,
 }: {
+  busyId?: string | null;
   rows: ClosedHolderModel[];
   onMenu: (holderId: string, id: HolderMenuId) => void;
   onReopen: (holderId: string) => void;
@@ -207,11 +214,11 @@ export function ClosedHolders({
           trailing={
             <>
               {row.menu.some((i) => i.id === 'reopen') ? (
-                <Button variant="secondary" size="sm" onClick={() => onReopen(row.id)}>
+                <Button variant="secondary" size="sm" loading={busyId === row.id} onClick={() => onReopen(row.id)}>
                   Reopen
                 </Button>
               ) : null}
-              <HolderMenu items={row.menu} onSelect={(id) => onMenu(row.id, id)} />
+              <HolderMenu items={row.menu} loading={busyId === row.id} onSelect={(id) => onMenu(row.id, id)} />
             </>
           }
         />

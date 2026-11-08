@@ -15,6 +15,7 @@ import { reportHref } from '@/features/reports/list/reportsListModel';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { DashboardResponse, WidgetResponse } from '@/lib/dashboards.types';
+import { notify } from '@/lib/notify';
 import { storeSavedDashboard, useRestoreHomeDashboard } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
 
@@ -63,10 +64,16 @@ export function useSaveWidgetSettings(dashboard: DashboardResponse | undefined, 
   return (widgetId: string, change: WidgetSettingsChange) => mutation.mutateAsync({ widgetId, change }).then(() => undefined);
 }
 
+const TOGGLE_DEFAULT_TOAST = 'dashboard-default';
+const ADD_WIDGET_TOAST = 'dashboard-add-widget';
+
 /** Sets this dashboard as the default, or clears it when it already is. */
 export function useToggleDefault(onSaved: (saved: DashboardResponse) => void) {
   const queryClient = useQueryClient();
   return useMutation({
+    // The row's menu has closed, so the wait shows as a toast that ends with the result.
+    onMutate: () => void notify.loading('Saving…', { id: TOGGLE_DEFAULT_TOAST }),
+    onSettled: () => notify.dismiss(TOGGLE_DEFAULT_TOAST),
     mutationFn: (vars: { id: string; makeDefault: boolean; updatedAt: string }) => unwrapAction(setDashboardDefault(vars)),
     onSuccess: (saved, vars) => {
       invalidateDashboardLists(queryClient, saved?.id ?? vars.id);
@@ -129,6 +136,9 @@ export function useAddWidgetNow() {
     onError: (e) => showToast(getErrorMessage(e, "Couldn't remove the widget. Try again."), { tone: 'danger' }),
   });
   return useMutation({
+    // The picker has closed, so the wait shows as a toast that ends with the result.
+    onMutate: () => void notify.loading('Saving…', { id: ADD_WIDGET_TOAST }),
+    onSettled: () => notify.dismiss(ADD_WIDGET_TOAST),
     mutationFn: async ({ dashboard, widget }: { dashboard: DashboardResponse; widget: WidgetResponse }) => {
       // The latest saved dashboard, not the snapshot the click saw (a quick second add or a settings save may have landed since).
       const latest = readLatestDashboard(queryClient, dashboard.id) ?? dashboard;

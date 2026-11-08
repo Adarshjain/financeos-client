@@ -21,10 +21,12 @@ export function JobResultCard({
   jobId,
   jobs,
   onClose,
+  closing = false,
 }: {
   jobId: string;
   jobs: JobResponse[];
   onClose: () => void;
+  closing?: boolean;
 }) {
   const onPage = jobs.find((j) => j.id === jobId) ?? null;
   const { job: fetched, error } = useJobStatusPolling(onPage ? null : jobId);
@@ -37,7 +39,7 @@ export function JobResultCard({
 
   const close = (
     <Text variant="label" as="span">
-      <Button variant="link" size="sm" onClick={onClose}>
+      <Button variant="link" size="sm" loading={closing} onClick={onClose}>
         Close
       </Button>
     </Text>

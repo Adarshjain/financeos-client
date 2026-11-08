@@ -64,7 +64,7 @@ export function NotificationsSettings() {
 
   if (settingsQuery.isLoading && !settings) return <NotificationsSkeleton />;
   if (!settings) {
-    return <LoadError what="notification settings" retry={() => void settingsQuery.refetch()} />;
+    return <LoadError what="notification settings" retry={() => void settingsQuery.refetch()} retrying={settingsQuery.isFetching} />;
   }
   return <Loaded settings={settings} cards={cards} loans={loansQuery.data ?? []} />;
 }

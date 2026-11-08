@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Card } from '@/components/ds/Card/Card';
@@ -19,6 +18,7 @@ import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpr
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { AccountType, type FnoContractType, type FnoTradeResponse, type OptionType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
 import {
@@ -55,7 +55,7 @@ export interface FnoTradeDialogProps {
 
 /** Record or edit an F&O trade. An edit also offers Delete, behind a confirmation. */
 export function FnoTradeDialog({ trade, brokers, onClose }: FnoTradeDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const create = useCreateFnoTrade();
   const update = useUpdateFnoTrade(trade?.id);
   const remove = useDeleteFnoTrade();

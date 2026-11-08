@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Card } from '@/components/ds/Card/Card';
@@ -18,6 +17,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { watchSession } from '@/lib/authExpiry';
 import { todayInAppZone } from '@/lib/date-range';
 import type { CorporateActionItem, CorporateActionKind, CorporateActionPreview } from '@/lib/investments.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import { isBadRequest } from '../badRequest';
@@ -61,7 +61,7 @@ type PreviewState =
  * holdings (quantity and cost, rolled back on the server) is shown as "After saving".
  */
 export function CorporateActionDialog({ onClose, instrument, type, action }: CorporateActionDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const editing = Boolean(action);
   const [today] = React.useState(() => todayInAppZone());
   const [form, setForm] = React.useState<CorporateActionForm>(() => initialForm({ today, instrument, type, action }));

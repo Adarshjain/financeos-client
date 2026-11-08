@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -14,6 +13,7 @@ import { Hero } from '@/components/ds/Hero/Hero';
 import { KpiTile } from '@/components/ds/KpiTile/KpiTile';
 import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
 import { Text } from '@/components/ds/Text/Text';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { type OverviewCardModel, overviewHero, overviewShare } from './overviewModel';
 
@@ -33,7 +33,7 @@ function productCell(render: (card: Extract<OverviewCardModel, { kind: 'product'
 }
 
 function RetryLink() {
-  const router = useRouter();
+  const router = useAppRouter();
   return (
     <Button variant="link" size="sm" onClick={() => router.refresh()}>
       Retry
@@ -164,7 +164,7 @@ function OverviewHero({ cards }: { cards: OverviewCardModel[] }) {
 
 /** Desktop: one row per product; a row with data opens the product. */
 function OverviewTable({ cards }: { cards: OverviewCardModel[] }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const columns = useColumns(cards);
   return (
     <div className="hidden desk:block">
@@ -184,7 +184,7 @@ function OverviewTable({ cards }: { cards: OverviewCardModel[] }) {
 }
 
 function OverviewTile({ card }: { card: OverviewCardModel }) {
-  const router = useRouter();
+  const router = useAppRouter();
   if (card.kind === 'error') {
     return <KpiTile label={card.title} error={`Couldn't load ${card.what}`} action={{ label: 'Retry', onSelect: () => router.refresh() }} />;
   }

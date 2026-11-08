@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { loadJobs } from '@/features/jobs/jobActions';
@@ -10,6 +9,7 @@ import { jobsPollInterval } from '@/features/jobs/jobsPollInterval';
 import { unwrapAction } from '@/lib/actionResult';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse, JobType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 // 5s while a job is active (or one announced here has not shown its end yet), else 30s, so a job
 // enqueued by another tab or a background trigger still shows up within 30s.
@@ -21,7 +21,7 @@ interface UseJobsListPollingOptions {
 
 export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOptions = {}) {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [expandedJobIds, setExpandedJobIds] = useState<Set<string>>(new Set());
   const prevActiveJobIdsRef = useRef<Set<string>>(new Set());

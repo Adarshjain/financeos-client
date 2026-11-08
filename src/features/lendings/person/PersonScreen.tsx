@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { ActionBar } from '@/components/ds/ActionBar/ActionBar';
@@ -18,6 +17,7 @@ import { ShellPage } from '@/features/shell/ShellPage';
 import { formatDate } from '@/lib/format';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { CounterpartyLedgerResponse, LedgerEntryResponse, PersonCounterparty } from '@/lib/lending.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 import { SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
@@ -58,7 +58,7 @@ const loadEditEntryDialog = () => import('./EditEntryDialog').then((m) => m.Edit
 
 /** One person: who owes whom, the ledger, expected return, matching and details, with the forms they open. */
 export function PersonScreen({ cp, ledger, state, today, myName, openExport }: PersonScreenProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const addLending = useAddLending();
   const actions = usePersonMutations(cp.id);
 
@@ -76,8 +76,9 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
   const hero = personHero(cp);
   const rows = React.useMemo(() => ledgerRows(ledger.entries.content), [ledger]);
   const hasEntries = cp.entryCount > 0;
+  const [navPending, startNav] = React.useTransition();
   const go = (next: Partial<PersonUrlState>) =>
-    router.push(personUrl(cp.id, { ...state, ...next }), { scroll: false });
+    startNav(() => router.replace(personUrl(cp.id, { ...state, ...next }), { scroll: false }));
 
   return (
     <>
@@ -122,6 +123,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
               <LedgerCard
                 firstName={firstNameOf(cp.name)}
                 rows={rows}
+                busy={navPending}
                 totals={totalsLine(ledger.totals)}
                 page={state.page}
                 size={state.size}

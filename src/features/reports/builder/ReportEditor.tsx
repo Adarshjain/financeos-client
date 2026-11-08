@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -13,6 +12,7 @@ import { afterNextRoute, hasInAppHistory } from '@/features/shell/navigationStor
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useLeaveGuard } from '@/features/shell/useLeaveGuard';
 import type { ReportCatalog, ReportData, ReportResponse } from '@/lib/reports.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import type { BuilderAction } from './builderReducerModel';
 import { EditorActions } from './EditorActions';
@@ -49,7 +49,7 @@ function firstPerKey(issues: ReturnType<typeof validationIssues>): Issues {
  * and guarded: leaving by a link, Back, a reload or closing the tab asks first.
  */
 export function ReportEditor({ catalog: allDatasources, report, initialResult, templateId }: ReportEditorProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const actions = useReportEditorMutations();
 
   const [initial] = React.useState(() => initialEditorState({ catalog: allDatasources, report, templateId }));
@@ -93,17 +93,21 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
 
   const dirty = snapshot(state) !== baseline;
   const guard = useLeaveGuard(dirty);
-  const saving = actions.create.isPending || actions.update.isPending;
+  const [navigating, startNavigation] = React.useTransition();
+  const [leaving, setLeaving] = React.useState(false);
+  // Stays busy through the page change: once leaving starts it is never reset, the editor unmounts with the old page.
+  const saving = actions.create.isPending || actions.update.isPending || leaving || navigating;
   const edit = state.mode === 'edit' && !!state.reportId;
 
   // A save takes the visitor back to where they came from (the list, a dashboard, the report's page). It waits for the
   // draft to be marked clean, so the unsaved-changes guard does not ask; the page it lands on is refreshed.
-  const [leaving, setLeaving] = React.useState(false);
+  const leftRef = React.useRef(false);
   React.useEffect(() => {
-    if (!leaving || dirty) return;
-    setLeaving(false);
+    if (!leaving || dirty || leftRef.current) return;
+    leftRef.current = true;
+    // router.back() cannot be held in a transition, so that branch stays busy until this page unmounts.
     if (hasInAppHistory()) router.back();
-    else router.push(REPORTS_HREF);
+    else startNavigation(() => router.push(REPORTS_HREF));
     // Once the page it opens has committed (history.back is async), so that page, not this one, is refetched
     // instead of coming from Next's router cache.
     afterNextRoute(() => router.refresh());
@@ -252,7 +256,7 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
         <ConfirmDialog
           open
           onOpenChange={(open) => {
-            if (!open && !actions.remove.isPending) setDeleting(false);
+            if (!open && !actions.remove.isPending && !navigating) setDeleting(false);
           }}
           title="Delete report?"
           description={`${savedName} will be deleted. This can't be undone.`}
@@ -262,14 +266,16 @@ export function ReportEditor({ catalog: allDatasources, report, initialResult, t
             'Your transactions and other data stay.',
           ]}
           confirmLabel="Delete"
-          confirmLoading={actions.remove.isPending}
+          confirmLoading={actions.remove.isPending || navigating}
           onConfirm={() =>
             actions.remove.mutate(state.reportId as string, {
               onSuccess: () => {
                 setBaseline(snapshot(state));
-                router.push(REPORTS_HREF);
-                // Last, so the list it opens is not the cached one.
-                router.refresh();
+                startNavigation(() => {
+                  router.replace(REPORTS_HREF);
+                  // Last, so the list it opens is not the cached one.
+                  router.refresh();
+                });
               },
             })
           }

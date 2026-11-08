@@ -51,7 +51,7 @@ export function EmailsTab({ initial, currentUserId }: { initial: EmailPage; curr
   });
 
   const items = data?.content ?? [];
-  const retry = (item: FailedEmail) => run(retryEmail(item.ledgerId), 'Retrying that email');
+  const retry = (item: FailedEmail) => run(retryEmail(item.ledgerId), 'Retrying that email', 'Retrying that email');
   const canRetry = (item: FailedEmail) => item.status === 'FAILED_RETRYABLE' || item.status === 'FAILED_PERMANENT';
 
   return (

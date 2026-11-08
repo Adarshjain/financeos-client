@@ -68,4 +68,40 @@ describe('CoverageStrip', () => {
     fireEvent.click(await screen.findByText('Undo: something happened'));
     await waitFor(() => expect(unmark).toHaveBeenCalledWith('a1', '2026-03'));
   });
+
+  it('disables the pressed month while marking, and a second press does nothing', async () => {
+    let finish: (v: unknown) => void = () => undefined;
+    mark.mockReturnValue(new Promise((res) => (finish = res)));
+    render(<CoverageStrip accountId="a1" coverage={coverage} />);
+    openMenu('2026-02');
+    fireEvent.click(await screen.findByText('Nothing happened that month'));
+    await waitFor(() => expect(document.querySelector('[data-month="2026-02"]')).toBeDisabled());
+    finish({ success: true, data: undefined });
+    await waitFor(() => expect(document.querySelector('[data-month="2026-02"]')).toBeEnabled());
+    expect(mark).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the other months enabled while one is in flight, and ignores a second action', async () => {
+    let finish: (v: unknown) => void = () => undefined;
+    mark.mockReturnValue(new Promise((res) => (finish = res)));
+    render(<CoverageStrip accountId="a1" coverage={coverage} />);
+    openMenu('2026-02');
+    fireEvent.click(await screen.findByText('Nothing happened that month'));
+    await waitFor(() => expect(document.querySelector('[data-month="2026-02"]')).toBeDisabled());
+    expect(document.querySelector('[data-month="2026-03"]')).toBeEnabled();
+    openMenu('2026-03');
+    fireEvent.click(await screen.findByText('Undo: something happened'));
+    expect(unmark).not.toHaveBeenCalled();
+    finish({ success: true, data: undefined });
+    await waitFor(() => expect(document.querySelector('[data-month="2026-02"]')).toBeEnabled());
+  });
+
+  it('works again after a failed mark', async () => {
+    mark.mockResolvedValue({ success: false, status: 500, error: { code: 'X', message: 'no' } });
+    render(<CoverageStrip accountId="a1" coverage={coverage} />);
+    openMenu('2026-02');
+    fireEvent.click(await screen.findByText('Nothing happened that month'));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' }));
+    await waitFor(() => expect(document.querySelector('[data-month="2026-02"]')).toBeEnabled());
+  });
 });

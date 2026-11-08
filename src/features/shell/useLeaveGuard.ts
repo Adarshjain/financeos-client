@@ -1,9 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { pushUrl } from '@/lib/urlState';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 export interface LeaveGuard {
   /** Where the visitor tried to go, while the page waits for an answer; null otherwise. */
@@ -74,7 +74,7 @@ function internalTarget(anchor: HTMLAnchorElement, event: MouseEvent): string | 
  * leaving the site).
  */
 export function useLeaveGuard(active: boolean): LeaveGuard {
-  const router = useRouter();
+  const router = useAppRouter();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   // The entry the guard protects: where Back or Forward put the visitor again when the question is answered "stay".
   const protectedHref = useRef<string>('');

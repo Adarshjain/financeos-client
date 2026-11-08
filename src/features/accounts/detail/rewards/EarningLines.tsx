@@ -1,7 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 
 import { Card } from '@/components/ds/Card/Card';
 import { DataTable } from '@/components/ds/DataTable/DataTable';
@@ -12,6 +11,7 @@ import { Pager } from '@/components/ds/Pager/Pager';
 import { Select } from '@/components/ds/Select/Select';
 import { StatusWords } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { RewardLineDialog } from './RewardLineDialog';
 import { type LineRow, PAGE_SIZES, rewardsHref, type RewardsQuery, type RuleChip } from './rewardsModel';
@@ -88,8 +88,9 @@ export interface EarningLinesProps {
 
 /** The Transactions card: a rule dropdown in its header (`?rule=`), and the earning lines with a server-side pager (`?page=`, `?size=`). */
 export function EarningLines({ basePath, subtitle, rows, total, chips, query }: EarningLinesProps) {
-  const router = useRouter();
-  const go = (next: Partial<RewardsQuery>) => router.push(rewardsHref(basePath, { ...query, ...next }));
+  const router = useAppRouter();
+  const [pending, startTransition] = useTransition();
+  const go = (next: Partial<RewardsQuery>) => startTransition(() => router.replace(rewardsHref(basePath, { ...query, ...next }), { scroll: false }));
   // The line dialog opens from state, not the address.
   const [open, setOpen] = useState<LineRow | null>(null);
 
@@ -101,6 +102,7 @@ export function EarningLines({ basePath, subtitle, rows, total, chips, query }: 
       <Select
         value={query.ruleId ?? ALL_RULES}
         options={ruleOptions}
+        loading={pending}
         onValueChange={(value) => {
           const next = Array.isArray(value) ? value[0] : value;
           go({ ruleId: next === ALL_RULES ? undefined : next, page: 0 });

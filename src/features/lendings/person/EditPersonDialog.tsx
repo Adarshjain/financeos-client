@@ -24,6 +24,7 @@ export function EditPersonDialog({ person, submitting, onSubmit, onClose }: Edit
   const [error, setError] = React.useState<string | null>(null);
 
   const submit = async () => {
+    if (submitting) return;
     if (!name.trim()) {
       setError('Enter a name.');
       return;

@@ -92,7 +92,7 @@ export function PushCard({ settings, browser }: DevicesProps) {
       subtitle="Pushes only. The bell always shows everything."
       action={
         showTest ? (
-          <Button variant="link" size="sm" disabled={browser.testPending} onClick={browser.test}>
+          <Button variant="link" size="sm" loading={browser.testPending} onClick={browser.test}>
             Send a test
           </Button>
         ) : undefined
@@ -112,7 +112,7 @@ export function PushCard({ settings, browser }: DevicesProps) {
         subtitle={status}
         trailing={
           browser.checking || !canEnable ? undefined : browser.registered ? (
-            <Button variant="secondary" size="sm" disabled={browser.working} onClick={browser.disable}>
+            <Button variant="secondary" size="sm" loading={browser.working} onClick={browser.disable}>
               Turn off here
             </Button>
           ) : (
@@ -135,7 +135,12 @@ export function PushCard({ settings, browser }: DevicesProps) {
           title={<Text variant="body-strong">{device.userAgent || 'Browser'}</Text>}
           subtitle={device.addedAt ? `added ${addedOn(device.addedAt)}` : undefined}
           trailing={
-            <Button variant="secondary" size="sm" disabled={unsubscribe.isPending || removeDevice.isPending || browser.checking} onClick={() => void remove(device.endpoint)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={removeDevice.isPending && removeDevice.variables === device.endpoint}
+              disabled={unsubscribe.isPending || removeDevice.isPending || browser.checking}
+              onClick={() => void remove(device.endpoint)}>
               Remove
             </Button>
           }

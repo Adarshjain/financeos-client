@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -11,6 +10,7 @@ import { DataTable } from '@/components/ds/DataTable/DataTable';
 import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
 import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   type RetirementModel,
@@ -104,7 +104,7 @@ const columns = [
 
 /** In a failed part's place: one compact line, Retry (refreshes the route), and the request reference when there is one. */
 function PartFailed({ what, failure }: { what: string; failure: RetirementPartFailure }) {
-  const router = useRouter();
+  const router = useAppRouter();
   return (
     <div className="flex flex-wrap items-baseline gap-x-space-6 py-space-8">
       <Text variant="body" tone="ink-3" as="span">
@@ -126,7 +126,7 @@ function PartFailed({ what, failure }: { what: string; failure: RetirementPartFa
 
 /** The Retirement card: one row per EPF and NPS account (an upload line for what is missing). A row opens its screen. Shown on Accounts. */
 export function RetirementCard({ model }: { model: RetirementModel }) {
-  const router = useRouter();
+  const router = useAppRouter();
   return (
     <Card title="EPF & NPS" subtitle="EPF passbook + NPS statements">
       {model.failed?.epf ? <PartFailed what="EPF" failure={model.failed.epf} /> : null}

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
@@ -17,6 +16,7 @@ import { useSearchText } from '@/features/shell/useSearchText';
 import type { CategoryDef } from '@/lib/categoryList.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { CategoryRule } from '@/lib/rules.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { ChoiceChip } from '../list/FilterChips';
 import { TransactionsTabs } from '../TransactionsTabs';
@@ -76,10 +76,10 @@ export function RulesScreen({
   state,
   categoryList,
 }: RulesScreenProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [dialog, setDialog] = React.useState<Dialogs>(null);
   const [addingTag, setAddingTag] = React.useState(false);
-  const { Component: RuleDialog, run: runRule } = useLazyDialog(loadRuleDialog);
+  const { Component: RuleDialog, run: runRule, loading: ruleLoading } = useLazyDialog(loadRuleDialog);
   const { Component: FindMatchesDialog, run: runMatches } = useLazyDialog(
     loadFindMatchesDialog
   );
@@ -95,7 +95,7 @@ export function RulesScreen({
   });
 
   const go = (patch: Partial<RulesUrlState>, resetPage = true) =>
-    router.push(
+    router.replace(
       rulesUrl({ ...state, ...(resetPage ? { page: 0 } : {}), ...patch }),
       { scroll: false }
     );
@@ -217,6 +217,7 @@ export function RulesScreen({
                     ? undefined
                     : {
                         label: 'Add rule',
+                        loading: ruleLoading,
                         onSelect: () => openDialog({ kind: 'add' }),
                       }
               }

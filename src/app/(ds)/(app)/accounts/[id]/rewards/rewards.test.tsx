@@ -13,10 +13,11 @@ const notFound = vi.fn(() => {
   throw new NotFoundSignal('NEXT_NOT_FOUND');
 });
 const push = vi.fn();
+const replace = vi.fn();
 const refresh = vi.fn();
 vi.mock('next/navigation', () => ({ usePathname: () => '/',
   notFound: () => notFound(),
-  useRouter: () => ({ push, refresh }),
+  useRouter: () => ({ push, replace, refresh }),
 }));
 
 const loadAccount = vi.fn<(id: string) => Promise<Account | null>>();
@@ -149,6 +150,7 @@ describe('/accounts/[id]/rewards', () => {
     loadData.mockReset().mockResolvedValue(data());
     notFound.mockClear();
     push.mockReset();
+    replace.mockReset();
     refresh.mockReset();
   });
 
@@ -212,14 +214,15 @@ describe('/accounts/[id]/rewards', () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: 'All rules' }));
     fireEvent.click(screen.getByRole('option', { name: '5X' }));
-    expect(push).toHaveBeenCalledWith('/accounts/c1/rewards?rule=r1');
+    expect(replace).toHaveBeenCalledWith('/accounts/c1/rewards?rule=r1', { scroll: false });
 
     push.mockClear();
+    replace.mockClear();
     loadData.mockResolvedValue(data({ query: { ruleId: 'r1', page: 1, size: 25 } }));
     await renderPage({ rule: 'r1' });
     fireEvent.click(screen.getByRole('button', { name: '5X' }));
     fireEvent.click(screen.getByRole('option', { name: 'All rules' }));
-    expect(push).toHaveBeenCalledWith('/accounts/c1/rewards');
+    expect(replace).toHaveBeenCalledWith('/accounts/c1/rewards', { scroll: false });
   });
 
   it('shows the wallet empty state when no rule covers the account', async () => {

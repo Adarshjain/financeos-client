@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -83,6 +83,22 @@ describe('RegularPaymentsCard', () => {
     expect(actions.track).toHaveBeenCalledWith('r1', 'Netflix');
     await userEvent.click(screen.getByRole('button', { name: 'Not regular' }));
     expect(actions.dismiss).toHaveBeenCalledWith('r1', 'Netflix');
+  });
+
+  it('Track shows loading until the action settles, ignores a second press, and works again after', async () => {
+    let finish: (v: boolean) => void = () => {};
+    actions.track.mockReturnValueOnce(new Promise<boolean>((r) => (finish = r)));
+    render(<RegularPaymentsCard proposals={[series({})]} />);
+    const track = screen.getByRole('button', { name: 'Track' });
+    await userEvent.click(track);
+    expect(track).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Not regular' })).toBeDisabled();
+    await userEvent.click(track);
+    await act(async () => finish(false));
+    expect(actions.track).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Track' })).toBeEnabled();
+    await userEvent.click(screen.getByRole('button', { name: 'Track' }));
+    expect(actions.track).toHaveBeenCalledTimes(2);
   });
 
   it('Add loan opens the form prefilled and marks the series converted after create', async () => {

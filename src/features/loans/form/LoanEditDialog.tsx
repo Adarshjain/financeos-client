@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -12,6 +11,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import type { LoanResponse } from '@/lib/loan.types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { buildUpdateLoanRequest, type LoanFormValues, loanProblems, loanValuesFrom } from '../loanFormModel';
 import { useUpdateLoan } from '../useLoanMutations';
@@ -32,7 +32,7 @@ export interface LoanEditDialogProps {
 
 /** Edit loan: the Add loan fields, filled from the loan. Saving refreshes the page behind it. */
 export function LoanEditDialog({ loan, termsLocked, onClose }: LoanEditDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const today = todayInAppZone();
   const updateLoan = useUpdateLoan({
     onError: (e) => showToast(getErrorMessage(e, "Couldn't update loan. Try again."), { tone: 'danger' }),
@@ -53,6 +53,7 @@ export function LoanEditDialog({ loan, termsLocked, onClose }: LoanEditDialogPro
   };
 
   const submit = async () => {
+    if (updateLoan.isPending) return;
     const resolved = {
       ...values,
       principal: resolveAmountExpression(values.principal),

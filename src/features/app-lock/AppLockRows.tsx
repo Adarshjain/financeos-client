@@ -55,6 +55,7 @@ function announce() {
 export function AppLockRows({ status }: { status: AppLockStatus }) {
   const [armed, setArmed] = useState(status.armed);
   const [lockAfter, setLockAfter] = useState(String(status.lockAfterSeconds ?? DEFAULT_LOCK_AFTER));
+  const [savingAfter, setSavingAfter] = useState(false);
   const [support, setSupport] = useState<Support>('checking');
 
   useEffect(() => {
@@ -117,10 +118,12 @@ export function AppLockRows({ status }: { status: AppLockStatus }) {
 
   const onLockAfter = async (value: string | string[]) => {
     const next = Array.isArray(value) ? value[0] : value;
-    if (!next || next === lockAfter) return;
+    if (!next || next === lockAfter || savingAfter) return;
     const previous = lockAfter;
     setLockAfter(next);
+    setSavingAfter(true);
     const done = seen(await updateLockAfter(Number(next)));
+    setSavingAfter(false);
     if (!done.success) {
       setLockAfter(previous);
       return showToast(done.error.message, { tone: 'danger' });
@@ -154,6 +157,7 @@ export function AppLockRows({ status }: { status: AppLockStatus }) {
               size="sm"
               options={LOCK_AFTER_OPTIONS}
               value={lockAfter}
+              disabled={savingAfter}
               onValueChange={(v) => void onLockAfter(v)}
             />
           }

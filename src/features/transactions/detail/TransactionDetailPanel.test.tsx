@@ -571,4 +571,10 @@ describe('TransactionDetailPanel', () => {
       expect(p.onDeleted).not.toHaveBeenCalled();
     });
   });
+
+  it('Edit and Link to… show loading while their code loads', () => {
+    renderWithQuery(<TransactionDetailPanel {...props({ editLoading: true, linkLoading: true, onLink: vi.fn() })} />);
+    expect((screen.getByRole('button', { name: /Edit/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: /Link to/ }) as HTMLButtonElement).disabled).toBe(true);
+  });
 });

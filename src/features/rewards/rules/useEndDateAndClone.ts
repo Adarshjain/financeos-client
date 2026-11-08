@@ -4,12 +4,14 @@ import { useUpdateRewardRule } from '@/features/rewards/queries/useRewardRulesQu
 import { type RewardNotifier, sonnerRewardNotifier } from '@/features/rewards/rewardNotifier';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatDate } from '@/lib/format';
+import { notify as toasts } from '@/lib/notify';
 import { RewardRule } from '@/lib/rewards.types';
 
 /** Ends a rule today (activeTo) and hands the updated rule to onEnded so the caller can open a successor form. */
 export function useEndDateAndClone(onEnded: (updated: RewardRule) => void, notify: RewardNotifier = sonnerRewardNotifier) {
   const updateRule = useUpdateRewardRule();
   return (rule: RewardRule) => {
+    if (updateRule.isPending) return;
     const today = todayInAppZone();
     if (rule.activeFrom && rule.activeFrom >= today) {
       notify.error('Rule starts today or later — just edit it directly.');
@@ -19,6 +21,9 @@ export function useEndDateAndClone(onEnded: (updated: RewardRule) => void, notif
       notify.error('Rule already ended — use Clone to create a successor.');
       return;
     }
+    // The menu closes on press: a loading toast stands for the pending state until the result replaces it.
+    const loadingId = `end-clone-${rule.id}`;
+    toasts.loading(`Ending "${rule.name}"…`, { id: loadingId });
     updateRule.mutate(
       {
         id: rule.id,
@@ -61,6 +66,7 @@ export function useEndDateAndClone(onEnded: (updated: RewardRule) => void, notif
           onEnded(updated);
         },
         onError: (e) => notify.failure(e, "Couldn't update the reward rule. Try again."),
+        onSettled: () => toasts.dismiss(loadingId),
       }
     );
   };

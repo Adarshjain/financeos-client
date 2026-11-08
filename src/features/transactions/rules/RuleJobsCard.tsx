@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -11,6 +10,7 @@ import { JobsHistory } from '@/components/organisms/JobsHistory/JobsHistory';
 import { activityUrl } from '@/features/data-sources/sync/activityModel';
 import { useJobsHistory } from '@/features/jobs/useJobsHistory';
 import type { JobResponse } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { RULE_JOB_TYPE, RULE_JOBS_HREF, RULE_JOBS_SIZE } from './rulesModel';
 
@@ -18,7 +18,7 @@ const openHref = (job: JobResponse) => activityUrl({ statusFilter: '', typeFilte
 
 /** The latest jobs that applied a rule to its matches; the rest are in Activity. */
 export function RuleJobsCard() {
-  const router = useRouter();
+  const router = useAppRouter();
   const history = useJobsHistory({ page: 0, size: RULE_JOBS_SIZE, statusFilter: '', typeFilter: RULE_JOB_TYPE });
   return (
     <Card

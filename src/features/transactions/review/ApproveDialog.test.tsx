@@ -4,8 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const approve = vi.fn();
 let summary: unknown = null;
+let pending = false;
 vi.mock('./useApproveTransactions', () => ({
-  useApproveTransactions: () => ({ approve, isPending: false, summary, closeSummary: vi.fn() }),
+  useApproveTransactions: () => ({ approve, isPending: pending, summary, closeSummary: vi.fn() }),
 }));
 
 import { ApproveDialog } from './ApproveDialog';
@@ -22,6 +23,7 @@ describe('ApproveDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     summary = null;
+    pending = false;
   });
 
   it('shows title, a row per reason with n of N, ticks the present ones', () => {
@@ -45,6 +47,16 @@ describe('ApproveDialog', () => {
     await waitFor(() => expect(onDone).toHaveBeenCalled());
     expect(approve).toHaveBeenCalledWith(txns, ['DATE_CORRECTED']);
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('while approving, Approve and Cancel are disabled and the dialog cannot be dismissed', () => {
+    pending = true;
+    const onOpenChange = vi.fn();
+    render(<ApproveDialog transactions={txns} open onOpenChange={onOpenChange} />);
+    expect((screen.getByRole('button', { name: /Approve 3/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: 'Cancel' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(onOpenChange).not.toHaveBeenCalled();
   });
 
   it('disables Approve when nothing is ticked', () => {

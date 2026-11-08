@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds/Toast/Toast';
 import { batchReviewTransactions, undoApproveTransactions } from '@/features/transactions/transactionActions';
@@ -9,6 +8,7 @@ import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { components } from '@/lib/api/schema';
 import { keys } from '@/lib/query/keys';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import type { ClearableReason } from './reviewModel';
 
@@ -25,7 +25,7 @@ export interface BatchReviewInput {
  */
 export function useBatchReview() {
   const qc = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
   return useMutation({
     mutationFn: ({ ids, reviewType, reasons }: BatchReviewInput) =>
       unwrapAction(batchReviewTransactions({ transactionIds: ids, reviewType, reviewReasons: reasons })),
@@ -45,7 +45,7 @@ export type ClearedTransaction = components['schemas']['ClearedTransaction'];
  */
 export function useUndoApprove() {
   const qc = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
 
   const mutation = useMutation({
     mutationFn: ({ approved }: { approved: ClearedTransaction[] }) => unwrapAction(undoApproveTransactions({ approved })),

@@ -147,6 +147,21 @@ describe('NotificationsScreen', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
+  it('Clear all shows loading and disables Cancel while it saves', async () => {
+    serve(mockApi, feedPage([today2]), 0);
+    renderWithQuery(<NotificationsScreen />);
+    await screen.findByText('Sync done');
+    fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
+    const dialog = await screen.findByRole('dialog');
+    let finish: (v: unknown) => void = () => {};
+    mockApi.POST.mockReturnValue(new Promise((r) => (finish = r)));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Clear all' }));
+    await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled());
+    expect(within(dialog).getByRole('button', { name: 'Clear all' })).toBeDisabled();
+    finish({ data: {} });
+    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Notifications cleared'));
+  });
+
   it('Clear all with a single notification says so', async () => {
     serve(mockApi, feedPage([today2]), 0);
     renderWithQuery(<NotificationsScreen />);
@@ -163,6 +178,59 @@ describe('NotificationsScreen', () => {
     serve(mockApi, feedPage([], { totalElements: 20, totalPages: 1 }), 0);
     fireEvent.click(within(screen.getAllByTestId('notification-row')[0]).getByRole('button', { name: 'Clear' }));
     await waitFor(() => expect(replace).toHaveBeenCalledWith('/inbox/updates', { scroll: false }));
+  });
+
+  it('clearing the last row of page 3 of 3 moves to the new last page, which has items', async () => {
+    search = 'page=3';
+    serve(mockApi, feedPage([today2], { totalElements: 51, totalPages: 3 }), 0);
+    renderWithQuery(<NotificationsScreen />);
+    await screen.findByText('Sync done');
+    mockApi.GET.mockImplementation(async (path: string, opts?: { params?: { query?: { page?: number } } }) => {
+      if (path.endsWith('/summary')) return { data: { unread: 0 } };
+      const empty = (opts?.params?.query?.page ?? 0) >= 2;
+      return { data: feedPage(empty ? [] : [yest], { totalElements: 50, totalPages: 2 }) };
+    });
+    fireEvent.click(within(screen.getAllByTestId('notification-row')[0]).getByRole('button', { name: 'Clear' }));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/inbox/updates?page=2', { scroll: false }));
+    expect(screen.queryByText('No notifications yet')).not.toBeInTheDocument();
+    expect(await screen.findByText('Cap reached')).toBeInTheDocument();
+  });
+
+  it('clearing everything on page 1 while more exist shows the next items, never the empty state', async () => {
+    serve(mockApi, feedPage([today2], { totalElements: 30, totalPages: 2 }), 0);
+    renderWithQuery(<NotificationsScreen />);
+    await screen.findByText('Sync done');
+    serve(mockApi, feedPage([yest], { totalElements: 29, totalPages: 2 }), 0);
+    fireEvent.click(within(screen.getAllByTestId('notification-row')[0]).getByRole('button', { name: 'Clear' }));
+    expect(await screen.findByText('Cap reached')).toBeInTheDocument();
+    expect(screen.queryByText('No notifications yet')).not.toBeInTheDocument();
+    expect(screen.queryByText('Sync done')).not.toBeInTheDocument();
+  });
+
+  it('an empty page with a non-zero total refetches instead of showing the empty state', async () => {
+    serve(mockApi, feedPage([], { totalElements: 5, totalPages: 1 }), 0);
+    renderWithQuery(<NotificationsScreen />);
+    await waitFor(() => expect(screen.getByTestId('notifications-skeleton')).toBeInTheDocument());
+    expect(screen.queryByText('No notifications yet')).not.toBeInTheDocument();
+    serve(mockApi, feedPage([yest], { totalElements: 5, totalPages: 1 }), 0);
+    expect(await screen.findByText('Cap reached')).toBeInTheDocument();
+  });
+
+  it('a page that stays empty after one refetch shows the empty state, not an endless skeleton', async () => {
+    serve(mockApi, feedPage([], { totalElements: 5, totalPages: 1 }), 0);
+    renderWithQuery(<NotificationsScreen />);
+    expect(await screen.findByText('No notifications yet')).toBeInTheDocument();
+    await new Promise((r) => setTimeout(r, 100));
+    const feedCalls = mockApi.GET.mock.calls.filter(([path]) => String(path).endsWith('/feed'));
+    expect(feedCalls).toHaveLength(2);
+  });
+
+  it('a total of 0 on a later page shows the empty state and returns to page 1', async () => {
+    search = 'page=2';
+    serve(mockApi, feedPage([], { totalElements: 0, totalPages: 0 }), 0);
+    renderWithQuery(<NotificationsScreen />);
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/inbox/updates', { scroll: false }));
+    expect(await screen.findByText('No notifications yet')).toBeInTheDocument();
   });
 
   it('a failed clear of the last row of a later page stays on that page', async () => {
@@ -187,10 +255,10 @@ describe('NotificationsScreen', () => {
     expect(mockApi.GET).toHaveBeenCalledWith('/api/v1/notifications/feed', { params: { query: { page: 1, size: 25 } } });
     expect(screen.getAllByRole('button', { name: 'Next page' })).toHaveLength(2);
     fireEvent.click(screen.getAllByRole('button', { name: 'Previous page' })[0]);
-    expect(push).toHaveBeenCalledWith('/inbox/updates', { scroll: false });
-    push.mockClear();
+    expect(replace).toHaveBeenCalledWith('/inbox/updates', { scroll: false });
+    replace.mockClear();
     fireEvent.click((await screen.findAllByRole('button', { name: 'Next page' }))[1]);
-    expect(push).toHaveBeenCalledWith('/inbox/updates?page=2', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/inbox/updates?page=2', { scroll: false });
   });
 
   it('draws no app bar of its own: the Inbox shell frames it', async () => {

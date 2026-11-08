@@ -1,12 +1,13 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 
 import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { rewardEligibleAccounts } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { CapsSection } from './caps/CapsSection';
 import { CardSettings } from './CardSettings';
@@ -30,7 +31,7 @@ export interface RewardsRulesScreenProps {
  * side, then its settings. The card is chosen in the address, so a switch reloads the page's data on the server once.
  */
 export function RewardsRulesScreen({ accountId, usage, today }: RewardsRulesScreenProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const pathname = usePathname();
   const accounts = rewardEligibleAccounts(useAccounts().data ?? []);
 

@@ -219,4 +219,17 @@ describe('Toast', () => {
     // Toast message does NOT render in the root Toaster
     expect(within(rootToaster).queryByText('New system toast rendered in ds')).not.toBeInTheDocument();
   });
+
+  it('loading actions show the spinner and block onSelect', () => {
+    const onSelect = vi.fn();
+    render(
+      <Toast message="Failed" action={{ label: 'Copy ID', onSelect, loading: true }} secondaryAction={{ label: 'Debug', onSelect, loading: true }} />
+    );
+    expect(screen.getByRole('button', { name: 'Copy ID' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Debug' })).toBeDisabled();
+    expect(screen.getAllByTestId('spinner-icon').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Copy ID' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Debug' }));
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });

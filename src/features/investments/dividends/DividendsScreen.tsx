@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -9,6 +8,7 @@ import { GRID_GAP } from '@/components/ds/gridGap';
 import type { DividendFilters } from '@/lib/investments.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { Dividend } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import type { DividendPrefill } from './DividendFormDialog';
 import { DividendsHero, ReceiptTiles } from './DividendsFigures';
@@ -71,13 +71,13 @@ export function DividendsScreen({
   byInstrument,
   today,
 }: DividendsScreenProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [opened, setOpened] = React.useState<Dividend | null>(null);
   const [recording, setRecording] = React.useState<{ prefill: DividendPrefill; suggestionKey?: string } | null>(null);
   const [reconciling, setReconciling] = React.useState(false);
   // The dividend forms and Reconcile are not in the page: each loads when opened (see useLazyDialog).
   const { Component: forms, run: runForms } = useLazyDialog(loadDividendForms);
-  const { Component: DividendReconcileDialog, run: runReconcile } = useLazyDialog(loadReconcileDialog);
+  const { Component: DividendReconcileDialog, run: runReconcile, loading: reconcileLoading } = useLazyDialog(loadReconcileDialog);
 
   const unrecorded = useUnrecordedCredits();
   const { scan } = unrecorded;
@@ -97,7 +97,7 @@ export function DividendsScreen({
       <DividendsHero figures={figures} />
       {tiles ? <ReceiptTiles tiles={tiles} /> : null}
       {banner ? (
-        <Banner tone="warning" title={banner.title} action={{ label: 'Reconcile', onSelect: () => void runReconcile(() => setReconciling(true)) }}>
+        <Banner tone="warning" title={banner.title} action={{ label: 'Reconcile', loading: reconcileLoading, onSelect: () => void runReconcile(() => setReconciling(true)) }}>
           {banner.detail}
         </Banner>
       ) : null}
@@ -122,7 +122,7 @@ export function DividendsScreen({
       <div className={`grid grid-cols-1 desk:grid-cols-2 items-start ${GRID_GAP}`}>
         <ByInstrumentCard
           {...byInstrument}
-          onPageChange={(ipage) => router.push(dividendsUrl({ ...state, ipage }), { scroll: false })}
+          onPageChange={(ipage) => router.replace(dividendsUrl({ ...state, ipage }), { scroll: false })}
         />
         <SuggestionsCard
           brokerAccountId={brokerAccountId}

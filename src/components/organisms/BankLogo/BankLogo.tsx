@@ -13,16 +13,23 @@ export interface BankLogoProps {
   name: string;
   /** Shows the amber warning mark. Defaults to `true` when there is no `bankId`; pass `false` for accounts that have no bank, such as wallets and brokers. */
   warning?: boolean;
-  /** `md` (default) is the 24px Avatar-sized tile. `sm` is the plain 14px logo (the `sm` icon step) for inline use beside text; with no known logo it renders nothing. */
-  size?: 'md' | 'sm';
+  /** `lg` (default) is the 24px Avatar-sized tile. `md` is the same tile at 20px, beside a page title. `sm` is the plain 14px logo (the `sm` icon step) for inline use beside text; with no known logo it renders nothing. */
+  size?: 'sm' | 'md' | 'lg';
 }
 
 /** One bank's logo, cut from the shared bank sprite (public/banks, `SPRITE_URL`), in the small square Avatar frame. */
-export function BankLogo({ bankId, name, warning = !bankId, size = 'md' }: BankLogoProps) {
+export function BankLogo({ bankId, name, warning = !bankId, size = 'lg' }: BankLogoProps) {
   const bank = bankId ? bankById(bankId) : undefined;
   if (!bank) {
     if (size === 'sm') return null;
-    const tile = <Avatar variant="square" size="sm" initials={(name.trim().slice(0, 1) || '?').toUpperCase()} />;
+    const tile = (
+      <Avatar
+        variant="square"
+        size="sm"
+        initials={(name.trim().slice(0, 1) || '?').toUpperCase()}
+        className={size === 'md' ? 'h-space-20 w-space-20' : undefined}
+      />
+    );
     if (!warning) return tile;
     // No bank set on the account: an amber mark at the top right, placed like a count badge.
     return (
@@ -47,7 +54,7 @@ export function BankLogo({ bankId, name, warning = !bankId, size = 'md' }: BankL
       data-sprite-size={SPRITE_CELL}
       className={cn(
         'inline-block shrink-0 overflow-hidden bg-no-repeat dark:bg-ink',
-        size === 'sm' ? 'h-icon-sm w-icon-sm' : 'h-space-24 w-space-24',
+        size === 'sm' ? 'h-icon-sm w-icon-sm' : size === 'md' ? 'h-space-20 w-space-20' : 'h-space-24 w-space-24',
       )}
       style={{
         backgroundImage: `url(${SPRITE_URL})`,

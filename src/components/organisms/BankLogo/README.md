@@ -6,7 +6,7 @@ One bank's logo in the small square frame (24px, square corners; owner 2026-11-0
 - `bankId`: `string | null` (the server's id, such as `hdfc`)
 - `name`: `string` (first letter fills the fallback tile)
 - `warning`: `boolean`, default `!bankId` (shows the amber mark; pass `false` for accounts with no bank, such as wallets and brokers)
-- `size`: `'md' | 'sm'`, default `md`. `sm` is the plain 14px logo (icon `sm` step, no tile) for inline use beside text, such as the account name on a transaction row; with no known bank it renders nothing (no letter tile, no warning).
+- `size`: `'sm' | 'md' | 'lg'`, default `lg` (the 24px tile). `md` is the same tile at 20px, beside a page title (the account page's top bar). `sm` is the plain 14px logo (icon `sm` step, no tile) for inline use beside text, such as the account name on a transaction row; with no known bank it renders nothing (no letter tile, no warning).
 
 ## Variants
 - Known bank: its cell cut from the single sprite `public/banks/sprite-<hash>.png` (20 banks, 96px cells in one row; logos from github.com/praveenpuglia/indian-banks, Amex from `scripts/bank-logos`).

@@ -248,6 +248,8 @@ export interface FilterChipsProps {
   categoryList?: CategoryDef[] | null;
   onChange: (next: Change) => void;
   onOpenFilters: () => void;
+  /** The Filters dialog code is loading after a press: the chips that open it are disabled meanwhile. */
+  filtersLoading?: boolean;
   /** The search field: the row's first item, so the search and the chips share one sideways scroller. */
   search?: FilterBarSearch;
 }
@@ -267,6 +269,7 @@ export function FilterChips({
   categoryList = null,
   onChange,
   onOpenFilters,
+  filtersLoading = false,
   search,
 }: FilterChipsProps) {
   const typeLabel =
@@ -328,6 +331,7 @@ export function FilterChips({
         selected={activeCount > 0}
         count={activeCount > 0 ? activeCount : undefined}
         onClick={onOpenFilters}
+        disabled={filtersLoading}
       >
         All filters
       </FilterChip>
@@ -347,6 +351,7 @@ export function FilterChips({
           changed
           onReset={() => onChange(NO_CATEGORY_FILTER)}
           onClick={onOpenFilters}
+          disabled={filtersLoading}
         >
           {categoryChipLabel(categoryFilterOf(query), categoryList ?? [])}
         </FilterChip>
@@ -358,6 +363,7 @@ export function FilterChips({
           changed
           onReset={() => onChange({ untagged: false, tags: [] })}
           onClick={onOpenFilters}
+          disabled={filtersLoading}
         >
           {tagChipLabel({ untagged: query.untagged, tags: query.tags }, categories ?? [])}
         </FilterChip>
@@ -369,6 +375,7 @@ export function FilterChips({
           changed
           onReset={() => onChange({ amount: null })}
           onClick={onOpenFilters}
+          disabled={filtersLoading}
         >
           {query.amount ? amountLabel(query.amount) : 'Amount'}
         </FilterChip>
@@ -410,6 +417,7 @@ export function FilterChips({
           changed
           onReset={() => onChange({ review: null })}
           onClick={onOpenFilters}
+          disabled={filtersLoading}
         >
           {reviewLabel(query.review)}
         </FilterChip>
@@ -421,6 +429,7 @@ export function FilterChips({
           changed
           onReset={() => onChange({ source: null })}
           onClick={onOpenFilters}
+          disabled={filtersLoading}
         >
           {sourceLabel(query.source)}
         </FilterChip>
@@ -432,6 +441,7 @@ export function FilterChips({
           changed
           onReset={() => onChange({ excluded: false })}
           onClick={onOpenFilters}
+          disabled={filtersLoading}
         >
           Excluded only
         </FilterChip>
@@ -441,6 +451,7 @@ export function FilterChips({
         variant="dashed"
         className={`shrink-0 ${DESK_ONLY}`}
         onClick={onOpenFilters}
+        disabled={filtersLoading}
       >
         + More
       </FilterChip>

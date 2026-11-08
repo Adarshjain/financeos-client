@@ -14,6 +14,7 @@ import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { InstallmentDto, LoanDetailResponse, LoanEventType } from '@/lib/loan.types';
+import { notify } from '@/lib/notify';
 import { SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
@@ -51,7 +52,7 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
   // The loan's forms are not in the page: each loads when opened (see useLazyDialog).
   const { Component: LoanEditDialog, run: runEdit } = useLazyDialog(loadLoanEditDialog);
   const { Component: MarkPaidDialog, run: runPaid } = useLazyDialog(loadMarkPaidDialog);
-  const { Component: EventFormDialog, run: runEvent } = useLazyDialog(loadEventFormDialog);
+  const { Component: EventFormDialog, run: runEvent, loading: eventLoading } = useLazyDialog(loadEventFormDialog);
   const { Component: ChargeFormDialog, run: runCharge } = useLazyDialog(loadChargeFormDialog);
   const [fyChoice, setFyChoice] = React.useState<string | null>(null);
   const [editing, setEditing] = React.useState(false);
@@ -70,6 +71,17 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
   const fy = fyChoice ?? initialFy(schedule, today, highlightSeq);
   const entries = entryRows(events, charges);
   const closed = loan.status !== 'active';
+
+  // Close and Reopen run straight from the ⋮ menu, which closes: a toast shows the wait.
+  const changeStatus = async (message: string, run: () => Promise<void>) => {
+    if (actions.pending.status) return;
+    const id = notify.loading(message);
+    try {
+      await run();
+    } finally {
+      notify.dismiss(id);
+    }
+  };
 
   const openMarkPaid = React.useCallback(
     (inst: InstallmentDto) => {
@@ -101,6 +113,7 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
         backHref={appHref('/accounts')}
         addLabel="Add event"
         onAdd={() => void runEvent(() => setEventType('rate_change'))}
+        addLoading={eventLoading}
       >
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
           {detail.askClosed && !closed ? <LoanClosedPrompt loanId={loan.id} /> : null}
@@ -109,7 +122,11 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
             info={header.info}
             actions={
               closed ? null : (
-                <Button variant="secondary" onClick={() => void runEvent(() => setEventType('prepayment'))}>
+                <Button
+                  variant="secondary"
+                  loading={eventLoading}
+                  onClick={() => void runEvent(() => setEventType('prepayment'))}
+                >
                   Prepay
                 </Button>
               )
@@ -118,9 +135,9 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
               <>
                 <Menu.Item onSelect={() => void runEdit(() => setEditing(true))}>Edit loan</Menu.Item>
                 {closed ? (
-                  <Menu.Item onSelect={() => void actions.reopenLoan()}>Reopen loan</Menu.Item>
+                  <Menu.Item onSelect={() => void changeStatus('Reopening loan…', actions.reopenLoan)}>Reopen loan</Menu.Item>
                 ) : (
-                  <Menu.Item onSelect={() => void actions.closeLoan()}>Close loan</Menu.Item>
+                  <Menu.Item onSelect={() => void changeStatus('Closing loan…', actions.closeLoan)}>Close loan</Menu.Item>
                 )}
                 <Menu.Item tone="danger" onSelect={() => setDeleting(true)}>
                   Delete
@@ -152,6 +169,7 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
                 linked={linkedLine(schedule)}
                 matches={actions.matches}
                 loading={actions.matchLoading}
+                busy={actions.pending.matching}
                 onFind={() => void actions.findMatches()}
                 onLink={(seq, date, amount, id) => void actions.linkMatch(seq, date, amount, id)}
                 onConfirmAll={() => void actions.confirmAll()}
@@ -182,9 +200,11 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
       {linked ? (
         <LinkedEmiDialog
           installment={linked}
+          unlinking={actions.pending.unlink}
           onUnlink={() => {
-            void actions.unlink(linked);
-            setLinked(null);
+            void actions.unlink(linked).then((ok) => {
+              if (ok) setLinked(null);
+            });
           }}
           onClose={() => setLinked(null)}
         />

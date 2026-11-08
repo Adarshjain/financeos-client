@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Dialog } from '@/components/ds/Dialog/Dialog';
@@ -10,6 +9,7 @@ import { TextField } from '@/components/ds/TextField/TextField';
 import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { CatalogSearch } from './CatalogSearch';
 import {
@@ -40,7 +40,7 @@ export interface InstrumentEditDialogProps {
 
 /** Edit an instrument for your account only. After an identifier change the holdings move to that identifier's instrument. */
 export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: InstrumentEditDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const update = useUpdateInstrument(instrument.id);
   const [values, setValues] = React.useState<InstrumentEditValues>(() => editValuesOf(instrument));
   const [errors, setErrors] = React.useState<InstrumentFormErrors>(NO_ERRORS);

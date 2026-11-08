@@ -1,7 +1,9 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { OAUTH_PARAMS, type OauthReturn } from './connectionsModel';
 
@@ -10,7 +12,7 @@ import { OAUTH_PARAMS, type OauthReturn } from './connectionsModel';
  * state, then removes those params from the URL so a refresh does not show it again.
  */
 export function useOauthReturn(oauth: OauthReturn | null) {
-  const router = useRouter();
+  const router = useAppRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const key = oauth ? `${oauth.kind}|${oauth.email ?? ''}|${oauth.message ?? ''}` : '';

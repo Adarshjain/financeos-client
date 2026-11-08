@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { showToast } from '@/components/ds/Toast/Toast';
@@ -14,6 +13,7 @@ import type {
   InstallmentDto,
   MatchSuggestionsResponse,
 } from '@/lib/loan.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { loadLoanMatches } from './loanMatchActions';
 import {
@@ -33,7 +33,7 @@ const NO_MATCHES = 'No matching bank transactions (±7 days)';
  * (with Undo where an inverse exists), and refreshes the page. Failures surface the server's message.
  */
 export function useLoanDetailMutations(loanId: string) {
-  const router = useRouter();
+  const router = useAppRouter();
   const mutations = useLoanMutations(loanId, {
     onError: (e, fallback) => showToast(getErrorMessage(e, fallback), { tone: 'danger' }),
   });
@@ -41,7 +41,9 @@ export function useLoanDetailMutations(loanId: string) {
   const [matchLoading, setMatchLoading] = React.useState(false);
 
   // The suggestions go stale once a payment is recorded or removed: clear them so the card and the next form ask again.
-  const refresh = () => router.refresh();
+  // The refresh runs in a transition so a control stays pending until the page shows the new data.
+  const [navPending, startNav] = React.useTransition();
+  const refresh = () => startNav(() => router.refresh());
   const refreshPayments = () => {
     setMatches(null);
     refresh();
@@ -225,7 +227,7 @@ export function useLoanDetailMutations(loanId: string) {
     try {
       await mutations.deleteLoan.mutateAsync();
       showToast('Loan deleted');
-      router.push(appHref('/loans'));
+      startNav(() => router.replace(appHref('/loans')));
       return true;
     } catch {
       return false;
@@ -249,12 +251,16 @@ export function useLoanDetailMutations(loanId: string) {
     reopenLoan,
     deleteLoan,
     pending: {
-      payment: mutations.addPayment.isPending,
-      event: mutations.addEvent.isPending,
-      charge: mutations.addCharge.isPending,
-      deleteEvent: mutations.deleteEvent.isPending,
-      deleteCharge: mutations.deleteCharge.isPending,
-      deleteLoan: mutations.deleteLoan.isPending,
+      payment: mutations.addPayment.isPending || navPending,
+      event: mutations.addEvent.isPending || navPending,
+      charge: mutations.addCharge.isPending || navPending,
+      deleteEvent: mutations.deleteEvent.isPending || navPending,
+      deleteCharge: mutations.deleteCharge.isPending || navPending,
+      deleteLoan: mutations.deleteLoan.isPending || navPending,
+      unlink: mutations.deletePayment.isPending || navPending,
+      status: mutations.closeLoan.isPending || mutations.reopenLoan.isPending || navPending,
+      /** Linking a suggested debit or confirming all of them. */
+      matching: mutations.addPayment.isPending || mutations.addPaymentsBatch.isPending || navPending,
     },
   };
 }

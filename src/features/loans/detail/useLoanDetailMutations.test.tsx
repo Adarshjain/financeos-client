@@ -7,7 +7,7 @@ import type { Transaction } from '@/lib/transaction.types';
 import { installment } from './loanDetail.fixtures';
 import { useLoanDetailMutations } from './useLoanDetailMutations';
 
-const router = { push: vi.fn(), refresh: vi.fn() };
+const router = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn() };
 vi.mock('next/navigation', () => ({ useRouter: () => router }));
 
 const toast = vi.fn();
@@ -318,7 +318,7 @@ describe('the loan itself', () => {
     });
     expect(m.deleteLoan.mutateAsync).toHaveBeenCalled();
     expect(toast).toHaveBeenCalledWith('Loan deleted');
-    expect(router.push).toHaveBeenCalledWith('/loans');
+    expect(router.replace).toHaveBeenCalledWith('/loans');
   });
 
   it('stays on the page when the delete fails', async () => {
@@ -327,6 +327,6 @@ describe('the loan itself', () => {
     await act(async () => {
       expect(await actions.current.deleteLoan()).toBe(false);
     });
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
   });
 });

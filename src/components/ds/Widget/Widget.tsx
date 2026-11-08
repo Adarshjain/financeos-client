@@ -137,6 +137,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
                       size="sm"
                       href={action.href}
                       onSelect={action.onSelect}
+                      loading={action.loading}
                       className="text-label text-ink font-bold"
                     >
                       {action.label}
@@ -166,6 +167,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
                       size="sm"
                       href={action.href}
                       onSelect={action.onSelect}
+                      loading={action.loading}
                       className="text-label text-ink font-bold"
                     >
                       {action.label}

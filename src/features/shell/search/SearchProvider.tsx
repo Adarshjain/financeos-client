@@ -1,11 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { SearchPalette } from '@/components/ds/SearchPalette/SearchPalette';
 import { useAddTransaction } from '@/features/transactions/form/AddTransactionProvider';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { shellQuickAddItems } from '../navigation';
 import { useOpenQuickAddDialog, useQuickAddLoading } from '../quickAdd';
@@ -33,7 +33,7 @@ const PAGES: SearchPage[] = searchPages();
 
 /** Owns the search palette (open state and text) for the signed-in Dinero shell and renders it once; ⌘K / Ctrl+K toggles it. */
 export function SearchProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const openQuickAdd = useOpenQuickAddDialog();
   const quickAddLoading = useQuickAddLoading();
   const addTransaction = useAddTransaction();

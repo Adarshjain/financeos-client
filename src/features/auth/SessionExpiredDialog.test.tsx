@@ -123,4 +123,11 @@ describe('SessionExpiredDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
     expect(logoutToDinero).toHaveBeenCalledTimes(1);
   });
+
+  it('Sign out is disabled once pressed, so it cannot fire twice', async () => {
+    setup('a@example.test');
+    await expire();
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(screen.getByRole('button', { name: 'Sign out' })).toBeDisabled();
+  });
 });

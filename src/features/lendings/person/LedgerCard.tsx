@@ -29,6 +29,8 @@ export interface LedgerCardProps {
   /** The person's first name, for the subtitle and the empty state. */
   firstName: string;
   rows: LedgerRow[];
+  /** A page or size change is loading: the table dims. */
+  busy?: boolean;
   /** "Opening ₹0 · lent ₹26,800 · received ₹11,800 · closing ₹15,000" */
   totals: string;
   page: number;
@@ -46,6 +48,7 @@ export interface LedgerCardProps {
 export function LedgerCard({
   firstName,
   rows,
+  busy = false,
   totals,
   page,
   size,
@@ -135,6 +138,7 @@ export function LedgerCard({
       <DataTable
         columns={columns}
         data={rows}
+        busy={busy}
         getRowId={(row) => row.id}
         pager={pager}
         phoneSub={(row) => row.sub}

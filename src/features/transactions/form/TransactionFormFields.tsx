@@ -91,6 +91,8 @@ export interface TransactionFormFieldsProps {
   onOpenTags: () => void;
   onDescriptionBlur: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
   onAddAccount: () => void;
+  /** The Add account form's code is still loading. */
+  addAccountLoading?: boolean;
 }
 
 /** The fields of Add transaction and Edit transaction: one form for both. */
@@ -114,6 +116,7 @@ export function TransactionFormFields({
   onOpenTags,
   onDescriptionBlur,
   onAddAccount,
+  addAccountLoading,
 }: TransactionFormFieldsProps) {
   const noAccountYet = !isUpdate && !hasAccounts;
   const descriptionHelper = isUpdate
@@ -167,7 +170,7 @@ export function TransactionFormFields({
             value={values.accountId || null}
             disabled={isUpdate}
             onValueChange={(v) => onAccountChange(v ?? '')}
-            actions={isUpdate ? undefined : [{ label: 'Add account', onSelect: onAddAccount }]}
+            actions={isUpdate ? undefined : [{ label: 'Add account', loading: addAccountLoading, onSelect: onAddAccount }]}
             error={errors.accountId}
           />
         )}
@@ -177,7 +180,7 @@ export function TransactionFormFields({
           size="sm"
           title="No account to record this against yet"
           description="Add a bank account, credit card or wallet to save this transaction."
-          action={{ label: 'Add account', variant: 'secondary', onSelect: onAddAccount }}
+          action={{ label: 'Add account', variant: 'secondary', loading: addAccountLoading, onSelect: onAddAccount }}
         />
       ) : null}
 

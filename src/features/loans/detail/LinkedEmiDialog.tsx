@@ -9,12 +9,14 @@ import type { InstallmentDto } from '@/lib/loan.types';
 
 export interface LinkedEmiDialogProps {
   installment: InstallmentDto;
+  /** The unlink is saving: Unlink shows loading, Cancel waits. */
+  unlinking?: boolean;
   onUnlink: () => void;
   onClose: () => void;
 }
 
 /** What a paid EMI is linked to, with Unlink (which can be undone from the Toast). */
-export function LinkedEmiDialog({ installment, onUnlink, onClose }: LinkedEmiDialogProps) {
+export function LinkedEmiDialog({ installment, unlinking = false, onUnlink, onClose }: LinkedEmiDialogProps) {
   const payment = installment.payment;
   return (
     <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
@@ -22,8 +24,8 @@ export function LinkedEmiDialog({ installment, onUnlink, onClose }: LinkedEmiDia
         size="sm"
         title={`EMI #${installment.seq}`}
         description="Paid and linked to a bank transaction."
-        secondary={{ label: 'Cancel', onSelect: onClose }}
-        primary={{ label: 'Unlink', onSelect: onUnlink }}
+        secondary={{ label: 'Cancel', onSelect: onClose, disabled: unlinking }}
+        primary={{ label: 'Unlink', onSelect: onUnlink, loading: unlinking }}
       >
         <Dialog.Body>
           {payment ? (

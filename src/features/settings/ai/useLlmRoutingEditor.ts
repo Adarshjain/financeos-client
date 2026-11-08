@@ -181,7 +181,7 @@ export function useLlmRoutingEditor() {
 
   const handleSaveRouting = async (groupType: GroupType) => {
     const draft = drafts[groupType].draft;
-    if (draft.length === 0) return;
+    if (draft.length === 0 || pending) return;
     setRoutingError(null);
     setPending({ group: groupType, op: 'save' });
     try {
@@ -196,6 +196,7 @@ export function useLlmRoutingEditor() {
   };
 
   const handleResetRouting = async (groupType: GroupType) => {
+    if (pending) return;
     setRoutingError(null);
     setPending({ group: groupType, op: 'reset' });
     try {

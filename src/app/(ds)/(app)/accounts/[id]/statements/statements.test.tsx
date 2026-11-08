@@ -22,12 +22,13 @@ const notFound = vi.fn(() => {
   throw new NotFoundSignal('NEXT_NOT_FOUND');
 });
 const push = vi.fn();
+const replace = vi.fn();
 const refresh = vi.fn();
 vi.mock('next/navigation', () => ({
   unstable_rethrow: () => undefined,
   notFound: () => notFound(),
   usePathname: () => '/accounts/c1/statements',
-  useRouter: () => ({ push, refresh }),
+  useRouter: () => ({ push, replace, refresh }),
 }));
 
 const showToast = vi.fn();
@@ -327,7 +328,7 @@ describe('/accounts/[id]/statements', () => {
   it('opens another statement through the url, keeping the year', async () => {
     await renderPage();
     await user.click(screen.getByText('5 Sep 26'));
-    expect(push).toHaveBeenCalledWith('/accounts/c1/statements?statement=s2&fy=26-27', { scroll: false });
+    expect(replace).toHaveBeenCalledWith('/accounts/c1/statements?statement=s2&fy=26-27', { scroll: false });
   });
 
   it('switches the year through the url', async () => {
@@ -340,7 +341,7 @@ describe('/accounts/[id]/statements', () => {
     await renderPage();
     await user.click(screen.getByRole('button', { name: /FY 26-27/ }));
     await user.click(await screen.findByRole('option', { name: 'FY 25-26' }));
-    expect(push).toHaveBeenCalledWith('/accounts/c1/statements?fy=25-26');
+    expect(replace).toHaveBeenCalledWith('/accounts/c1/statements?fy=25-26', { scroll: false });
   });
 
   it('undoes a bill marked by hand', async () => {
@@ -356,6 +357,7 @@ describe('/accounts/[id]/statements', () => {
     await waitFor(() => expect(refresh).toHaveBeenCalled());
     expect(showToast).toHaveBeenCalledWith('Payment mark removed');
     expect(push).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 
   it('shows no Undo for a bill paid some other way', async () => {
@@ -516,7 +518,7 @@ describe('/accounts/[id]/statements', () => {
       }),
     );
     expect(showToast).toHaveBeenCalledWith('Statement deleted, 6 transactions removed');
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/accounts/c1/statements?fy=26-27'));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/accounts/c1/statements?fy=26-27'));
     expect(refresh).toHaveBeenCalled();
   });
 

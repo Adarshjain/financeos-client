@@ -127,7 +127,7 @@ function HeldRow({ held, accounts, highlighted, loadingForm, assign, onCreate, o
   }, [highlighted]);
 
   const submit = async () => {
-    if (!accountId) return;
+    if (!accountId || pending) return;
     setPending(true);
     try {
       const r = await assign(held.id, accountId, password ?? undefined);
@@ -181,7 +181,7 @@ function HeldRow({ held, accounts, highlighted, loadingForm, assign, onCreate, o
           <Button type="submit" size="sm" loading={pending} disabled={!accountId || (password !== null && !password)}>
             Import
           </Button>
-          <Button type="button" variant="secondary" size="sm" disabled={pending || loadingForm} onClick={onCreate}>
+          <Button type="button" variant="secondary" size="sm" loading={loadingForm} disabled={pending} onClick={onCreate}>
             Create account
           </Button>
           <Button type="button" variant="danger-ghost" size="sm" disabled={pending} onClick={onRemove}>

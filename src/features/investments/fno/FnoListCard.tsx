@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Badge } from '@/components/ds/Badge/Badge';
@@ -25,6 +24,7 @@ import { downloadCsv } from '@/lib/downloadCsv';
 import type { FnoSummary } from '@/lib/investments.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { AccountType, type FnoTradeResponse } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { FilterRowSkeleton } from '../FilterRowSkeleton';
 import { loadFnoAddDialog, loadFnoTradeDialog } from '../lazyDialogs';
@@ -160,13 +160,13 @@ export interface FnoListCardProps {
 
 /** The symbol search, contract chips, Broker, FY and sort over the paged trades. Every control is one URL change. */
 export function FnoListCard({ state, trades, totalElements, totalPages, brokers, summary }: FnoListCardProps) {
-  const router = useRouter();
-  const go = (next: Partial<FnoUrlState>) => router.push(fnoUrl({ ...state, ...next }), { scroll: false });
+  const router = useAppRouter();
+  const go = (next: Partial<FnoUrlState>) => router.replace(fnoUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
   const [editing, setEditing] = React.useState<FnoTradeResponse | null>(null);
   const [exporting, setExporting] = React.useState(false);
   const [adding, setAdding] = React.useState(false);
-  const { Component: FnoAddDialog, run: runAdd } = useLazyDialog(loadFnoAddDialog);
+  const { Component: FnoAddDialog, run: runAdd, loading: addLoading } = useLazyDialog(loadFnoAddDialog);
   const { Component: FnoTradeDialog, run: runEdit } = useLazyDialog(loadFnoTradeDialog);
 
   const rows = React.useMemo(() => trades.map(fnoListRow), [trades]);
@@ -303,7 +303,7 @@ export function FnoListCard({ state, trades, totalElements, totalPages, brokers,
               <EmptyState
                 title={state.fy == null ? 'No F&O trades yet' : `No F&O trades in ${fnoFyLabel(state.fy)}`}
                 description="Log a trade or import a broker Tax P&L statement."
-                action={{ label: 'Record F&O trade', variant: 'primary', onSelect: () => void runAdd(() => setAdding(true)) }}
+                action={{ label: 'Record F&O trade', variant: 'primary', loading: addLoading, onSelect: () => void runAdd(() => setAdding(true)) }}
               />
             )
           }

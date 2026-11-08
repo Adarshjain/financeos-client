@@ -10,11 +10,12 @@ import { AccountType } from '@/lib/types';
 import DsAccountRewardsPage from './page';
 
 const push = vi.fn();
+const replace = vi.fn();
 vi.mock('next/navigation', () => ({ usePathname: () => '/',
   notFound: () => {
     throw new Error('NEXT_NOT_FOUND');
   },
-  useRouter: () => ({ push, refresh: vi.fn() }),
+  useRouter: () => ({ push, replace, refresh: vi.fn() }),
 }));
 
 const card: Account = { id: 'c1', type: AccountType.CREDIT_CARD, name: 'HDFC Regalia', last4: '7741', creditLimit: 1, effectiveCreditLimit: 1, balance: 0, ingestFromDate: '2026-01-01' };
@@ -35,6 +36,7 @@ const report: RewardReport = {
 describe('Accounts → card → Rewards period', () => {
   beforeEach(() => {
     push.mockReset();
+    replace.mockReset();
     loadData.mockReset().mockResolvedValue({
       window: { from: '2026-03-15', to: '2027-03-14', calendarYear: false },
       report,
@@ -48,6 +50,6 @@ describe('Accounts → card → Rewards period', () => {
     render(await DsAccountRewardsPage({ params: Promise.resolve({ id: 'c1' }), searchParams: Promise.resolve({}) }));
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByRole('option', { name: 'This FY' }));
-    expect(push).toHaveBeenCalledWith('/accounts/c1/rewards?period=THIS_FY');
+    expect(replace).toHaveBeenCalledWith('/accounts/c1/rewards?period=THIS_FY', { scroll: false });
   });
 });

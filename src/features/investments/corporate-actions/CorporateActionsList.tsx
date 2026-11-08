@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Badge } from '@/components/ds/Badge/Badge';
@@ -19,6 +18,7 @@ import { loadCorporateActionDialog } from '@/features/investments/lazyDialogs';
 import { useSearchText } from '@/features/shell/useSearchText';
 import type { CorporateActionItem } from '@/lib/investments.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   APPLY_RULES,
@@ -113,11 +113,11 @@ export interface CorporateActionsListProps {
 
 /** The search, type chips and sort over the recorded actions, the rules card and the edit dialog. Every control is one URL change. */
 export function CorporateActionsList({ state, items, totalElements, totalPages }: CorporateActionsListProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [editing, setEditing] = React.useState<CorporateActionItem | null>(null);
   const [adding, setAdding] = React.useState(false);
-  const { Component: CorporateActionDialog, run } = useLazyDialog(loadCorporateActionDialog);
-  const go = (next: Partial<CorporateActionsUrlState>) => router.push(corporateActionsUrl({ ...state, ...next }), { scroll: false });
+  const { Component: CorporateActionDialog, run, loading: runLoading } = useLazyDialog(loadCorporateActionDialog);
+  const go = (next: Partial<CorporateActionsUrlState>) => router.replace(corporateActionsUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
 
   const rows = React.useMemo(() => items.map(corporateActionListRow), [items]);
@@ -189,7 +189,7 @@ export function CorporateActionsList({ state, items, totalElements, totalPages }
               <EmptyState
                 title="No corporate actions yet"
                 description="Splits, bonus issues, demergers and mergers show here."
-                action={{ label: 'Record corporate action', variant: 'primary', onSelect: () => void run(() => setAdding(true)) }}
+                action={{ label: 'Record corporate action', variant: 'primary', loading: runLoading, onSelect: () => void run(() => setAdding(true)) }}
               />
             )
           }

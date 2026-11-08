@@ -60,4 +60,16 @@ describe('NpsDetectedAccounts', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Ignore' }));
     await waitFor(() => expect(api.DELETE).toHaveBeenCalledWith('/api/v1/nps/gmail-detections/{key}', { params: { path: { key: 'k1' } } }));
   });
+
+  it('Ignore shows loading while saving and the buttons cannot be pressed twice', async () => {
+    let release: (v: unknown) => void = () => {};
+    vi.mocked(api.DELETE).mockReturnValue(new Promise((r) => (release = r)) as never);
+    renderWithQuery(<NpsDetectedAccounts detections={[detection]} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ignore' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Ignore' })).toBeDisabled());
+    expect(screen.getByRole('button', { name: 'Mine' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Ignore' }));
+    expect(api.DELETE).toHaveBeenCalledTimes(1);
+    release({ data: undefined });
+  });
 });

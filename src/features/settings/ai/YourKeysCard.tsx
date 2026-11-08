@@ -24,6 +24,10 @@ function KeyStatus({ row }: { row: KeyRow }) {
 interface YourKeysCardProps {
   keys: LlmKeyDto[];
   testingKeyId: string | null;
+  /** A key being moved: its row is inactive until the new order shows. */
+  movingKeyId?: string | null;
+  /** The add-key dialog's code is loading: Add and Add key show it. */
+  adding?: boolean;
   onAdd: (providerId?: string) => void;
   onTest: (key: LlmKeyDto) => void;
   onMove: (row: KeyRow, delta: number) => void;
@@ -31,7 +35,7 @@ interface YourKeysCardProps {
 }
 
 /** One row per key (and a "Not set" row per provider without one), with the key menu. */
-export function YourKeysCard({ keys, testingKeyId, onAdd, onTest, onMove, onDelete }: YourKeysCardProps) {
+export function YourKeysCard({ keys, testingKeyId, movingKeyId = null, adding = false, onAdd, onTest, onMove, onDelete }: YourKeysCardProps) {
   const rows = useMemo(() => buildKeyRows(keys), [keys]);
 
   const columns = useMemo(
@@ -82,7 +86,7 @@ export function YourKeysCard({ keys, testingKeyId, onAdd, onTest, onMove, onDele
           if (!key) {
             return (
               <Text variant="label" as="span">
-                <Button variant="link" size="sm" onClick={() => onAdd(provider.id)}>
+                <Button variant="link" size="sm" loading={adding} onClick={() => onAdd(provider.id)}>
                   Add
                 </Button>
               </Text>
@@ -116,7 +120,7 @@ export function YourKeysCard({ keys, testingKeyId, onAdd, onTest, onMove, onDele
         },
       }),
     ],
-    [onAdd, onTest, onMove, onDelete]
+    [onAdd, onTest, onMove, onDelete, adding]
   );
 
   return (
@@ -125,7 +129,7 @@ export function YourKeysCard({ keys, testingKeyId, onAdd, onTest, onMove, onDele
       subtitle="Encrypted at rest · tried in this order"
       action={
         <Text variant="label" as="span">
-          <Button variant="link" size="sm" onClick={() => onAdd()}>
+          <Button variant="link" size="sm" loading={adding} onClick={() => onAdd()}>
             Add key
           </Button>
         </Text>
@@ -140,7 +144,7 @@ export function YourKeysCard({ keys, testingKeyId, onAdd, onTest, onMove, onDele
             ? `${maskedKey(row.key.keyLast4)} · ${row.key.lastUsedAt ? `used ${formatLastUsed(row.key.lastUsedAt)}` : 'never used'}`
             : 'no key'
         }
-        rowState={(row) => (row.key && row.key.id === testingKeyId ? { disabled: true } : undefined)}
+        rowState={(row) => (row.key && (row.key.id === testingKeyId || row.key.id === movingKeyId) ? { disabled: true } : undefined)}
       />
     </Card>
   );

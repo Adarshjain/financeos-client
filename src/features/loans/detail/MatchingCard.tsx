@@ -15,13 +15,15 @@ export interface MatchingCardProps {
   linked: string;
   matches: MatchSuggestionsResponse | null;
   loading: boolean;
+  /** A suggested debit is being linked: the link and Confirm all buttons wait. */
+  busy?: boolean;
   onFind: () => void;
   onLink: (seq: number, date: string, amount: number, transactionId: string) => void;
   onConfirmAll: () => void;
 }
 
 /** EMIs against bank debits: how many paid EMIs are linked, and the debits that look like unpaid ones. */
-export function MatchingCard({ linked, matches, loading, onFind, onLink, onConfirmAll }: MatchingCardProps) {
+export function MatchingCard({ linked, matches, loading, busy = false, onFind, onLink, onConfirmAll }: MatchingCardProps) {
   const rows = suggestionRows(matches);
   return (
     <Card
@@ -30,11 +32,11 @@ export function MatchingCard({ linked, matches, loading, onFind, onLink, onConfi
       action={
         <Text variant="label" as="div" className="flex items-center gap-space-12">
           {rows.length > 0 ? (
-            <Button variant="link" size="sm" onClick={onConfirmAll}>
+            <Button variant="link" size="sm" loading={busy} onClick={onConfirmAll}>
               Confirm all
             </Button>
           ) : null}
-          <Button variant="link" size="sm" onClick={onFind} disabled={loading}>
+          <Button variant="link" size="sm" onClick={onFind} disabled={loading || busy}>
             {loading ? 'Searching…' : 'Find matches'}
           </Button>
         </Text>
@@ -52,6 +54,7 @@ export function MatchingCard({ linked, matches, loading, onFind, onLink, onConfi
               <Button
                 variant="link"
                 size="sm"
+                disabled={busy}
                 onClick={() => onLink(row.seq, row.tx.date, row.amount, row.tx.id)}
               >
                 link

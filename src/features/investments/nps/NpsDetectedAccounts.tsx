@@ -42,16 +42,16 @@ function DetectedAccount({ detection }: { detection: NpsDetection }) {
           <Card.Subtitle truncate={false}>{detectionDetails(detection)}</Card.Subtitle>
         </div>
         <div className="flex items-center gap-space-8">
-          <Button variant="secondary" disabled={busy} onClick={() => void add('SELF')}>
+          <Button variant="secondary" disabled={busy} loading={addDetection.isPending && addDetection.variables?.relation === 'SELF'} onClick={() => void add('SELF')}>
             Mine
           </Button>
-          <Button variant="link" disabled={busy} onClick={() => void add('CHILD')}>
+          <Button variant="link" disabled={busy} loading={addDetection.isPending && addDetection.variables?.relation === 'CHILD'} onClick={() => void add('CHILD')}>
             My child&apos;s
           </Button>
         </div>
       </div>
-      {busy ? null : (
-        <Button variant="link" onClick={() => void ignore()}>
+      {addDetection.isPending ? null : (
+        <Button variant="link" disabled={busy} loading={ignoreDetection.isPending} onClick={() => void ignore()}>
           Ignore
         </Button>
       )}

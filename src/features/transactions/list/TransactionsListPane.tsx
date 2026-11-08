@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { UncategorizedCard } from '@/components/organisms/UncategorizedCard/UncategorizedCard';
@@ -18,6 +17,7 @@ import type { CategoryDef } from '@/lib/categoryList.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { startFlow } from '@/lib/observability/flow';
 import type { Tag } from '@/lib/tags.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { FilterChips } from './FilterChips';
 import type { TransactionListRow } from './transactionRowsModel';
@@ -54,6 +54,8 @@ export interface TransactionsListPaneProps {
   onSortThem?: () => void;
   /** The pointer went down on "Sort them" (the screen starts its reads early). */
   onSortPress?: () => void;
+  /** The sort dialog's code is still loading after the press. */
+  sortLoading?: boolean;
   /** Everything that needs review; null when it could not be loaded. */
   needsReviewCount: number | null;
   /** The app bar's +: opens Add transaction (piece 3 wires it). */
@@ -92,6 +94,7 @@ export function TransactionsListPane({
   hasUncategorized,
   onSortThem,
   onSortPress,
+  sortLoading,
   needsReviewCount,
   onAdd = noop,
   addLoading,
@@ -104,12 +107,12 @@ export function TransactionsListPane({
   selectionHeader,
   wrapRow,
 }: TransactionsListPaneProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const queryClient = useQueryClient();
   const accountDialogs = useAccountDialogs();
   const [pending, startTransition] = React.useTransition();
   const [filtersOpen, setFiltersOpen] = React.useState(false);
-  const { Component: FiltersDialog, run: runFilters } = useLazyDialog(loadFiltersDialog);
+  const { Component: FiltersDialog, run: runFilters, loading: filtersLoading } = useLazyDialog(loadFiltersDialog);
 
   // The nav badge reads the same number, so it does not ask again. Seeded in render so it is there before the
   // rail's query subscribes; the effect keeps it current when the number changes later.
@@ -124,7 +127,7 @@ export function TransactionsListPane({
 
   const go = (patch: Partial<TransactionsQuery>, resetPage = true) =>
     startTransition(() => {
-      router.push(
+      router.replace(
         transactionsUrl({
           ...query,
           txn: null,
@@ -171,9 +174,10 @@ export function TransactionsListPane({
               categoryList={categoryList}
               onChange={go}
               onOpenFilters={() => void runFilters(() => setFiltersOpen(true))}
+              filtersLoading={filtersLoading}
               search={{ value: text, onValueChange: setText }}
             />
-            {hasUncategorized ? <UncategorizedCard onSort={onSortThem} onSortPress={onSortPress} /> : null}
+            {hasUncategorized ? <UncategorizedCard onSort={onSortThem} onSortPress={onSortPress} loading={sortLoading} /> : null}
             {list.ok ? (
               <TransactionsList
                 query={query}
@@ -184,6 +188,7 @@ export function TransactionsListPane({
                 noAccounts={accounts !== null && accounts.length === 0}
                 onChange={go}
                 onAddAccount={() => accountDialogs.open()}
+                addAccountLoading={accountDialogs.loading}
                 onImport={() => router.push(appHref('/transactions/import'))}
                 onOpenDetail={onOpenDetail}
                 openId={openId}

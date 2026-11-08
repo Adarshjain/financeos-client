@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Avatar } from '@/components/ds/Avatar/Avatar';
@@ -16,6 +15,7 @@ import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
 import { useAddLending } from '@/features/lendings/form/AddLendingProvider';
 import { useSearchText } from '@/features/shell/useSearchText';
+import { useAppRouter } from '@/lib/useAppRouter';
 import { RowTransition, SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
@@ -89,7 +89,7 @@ export interface LendingsListCardProps {
 
 /** Search, the direction dropdown, and the people table with its Pager. All of it is server-side. */
 export function LendingsListCard({ state, rows, totalElements, totalPages }: LendingsListCardProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const addLending = useAddLending();
   // The newest state asked for, so a change made while an earlier push is still travelling (a chip, then
   // a search typed straight after) builds on it instead of on the URL state the page has not caught up to.
@@ -97,9 +97,10 @@ export function LendingsListCard({ state, rows, totalElements, totalPages }: Len
   React.useEffect(() => {
     latest.current = state;
   }, [state]);
+  const [navPending, startNav] = React.useTransition();
   const go = (next: Partial<LendingsUrlState>) => {
     latest.current = { ...latest.current, ...next };
-    router.push(lendingsUrl(latest.current), { scroll: false });
+    startNav(() => router.replace(lendingsUrl(latest.current), { scroll: false }));
   };
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
   const filtered = state.q !== '' || state.filter !== 'all';
@@ -143,6 +144,7 @@ export function LendingsListCard({ state, rows, totalElements, totalPages }: Len
         <DataTable
           columns={columns}
           data={rows}
+          busy={navPending}
           getRowId={(row) => row.id}
           wrapRow={(row, node) => <RowTransition key={row.id}>{node}</RowTransition>}
           pager={pager}

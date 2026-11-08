@@ -89,12 +89,12 @@ export function SenderDialog({
               ? { label: 'Delete', tone: 'danger', disabled: submittingSender, onSelect: () => setConfirmingDelete(true) }
               : undefined
           }
-          secondary={{ label: 'Cancel', onSelect: () => onOpenChange(false) }}
+          secondary={{ label: 'Cancel', disabled: submittingSender, onSelect: () => onOpenChange(false) }}
           primary={{
             label: submittingSender ? 'Saving…' : editingSender ? 'Save sender' : 'Add sender',
             type: 'submit',
             form: FORM_ID,
-            disabled: submittingSender,
+            loading: submittingSender,
           }}
         >
           <Dialog.Body>

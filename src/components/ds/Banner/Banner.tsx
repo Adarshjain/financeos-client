@@ -78,6 +78,7 @@ export const Banner = forwardRef<HTMLDivElement, BannerProps>(
                 variant="link"
                 href={action.href}
                 onSelect={action.onSelect}
+                loading={action.loading}
                 className="text-inherit"
               >
                 {action.label}

@@ -233,36 +233,36 @@ describe('/investments/dividends: the list', () => {
     await renderPage({ fy: 'all' });
     expect(screen.getAllByText('/ 60').length).toBeGreaterThanOrEqual(2);
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/investments/dividends?fy=all&page=2', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/dividends?fy=all&page=2', { scroll: false });
   });
 
   it('narrows by receipt status, type and broker, each one URL change back to page 1', async () => {
     await renderPage({ page: '1' });
     fireEvent.click(screen.getByRole('button', { name: 'Receipt status' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Overdue' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?receipt=overdue', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/dividends?receipt=overdue', { scroll: false });
 
     fireEvent.click(screen.getByRole('button', { name: 'Type' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Interest' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?type=interest', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/dividends?type=interest', { scroll: false });
 
     fireEvent.click(screen.getByRole('button', { name: 'Broker' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Groww' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?broker=b2', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/dividends?broker=b2', { scroll: false });
   });
 
   it('changes the FY: another year is in the address, the current one is not, All FYs is "all"', async () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: 'FY 26-27' }));
     fireEvent.click(await screen.findByRole('option', { name: 'FY 25-26' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?fy=2025', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/dividends?fy=2025', { scroll: false });
   });
 
   it('shows the instrument the holding page linked to, and the x clears it', async () => {
     await renderPage({ instrumentId: IID });
     expect(screen.queryByText('Showing HDFCBANK')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/dividends', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/dividends', { scroll: false });
   });
 
   it('says what the empty list means: nothing yet, nothing in the FY, nothing matches', async () => {
@@ -274,13 +274,13 @@ describe('/investments/dividends: the list', () => {
     const second = await renderPage();
     expect(screen.getByText('No dividends in FY 26-27')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Show all FYs' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/dividends?fy=all', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/dividends?fy=all', { scroll: false });
     second.unmount();
 
     await renderPage({ receipt: 'overdue' });
     expect(screen.getByText('No dividends match')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/dividends', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/dividends', { scroll: false });
   });
 
   it('exports the filtered list as CSV', async () => {
@@ -357,7 +357,7 @@ describe('/investments/dividends: by instrument', () => {
     await renderPage();
     const card = screen.getByText('By instrument').closest('div[class*="border"]') as HTMLElement;
     fireEvent.click(within(card.parentElement as HTMLElement).getAllByRole('button', { name: /next/i }).at(-1)!);
-    expect(router.push).toHaveBeenCalledWith('/investments/dividends?ip=2', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/dividends?ip=2', { scroll: false });
   });
 });
 

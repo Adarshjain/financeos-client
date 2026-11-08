@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -16,6 +15,7 @@ import { showToast } from '@/components/ds/Toast/Toast';
 import { appHref } from '@/features/shell/routes';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { accountHref } from '../accountTabsModel';
 import { fyLabel, type StatementsListRow } from './listModel';
@@ -31,18 +31,24 @@ export interface StatementsListCardProps {
 
 /** The left pane: the year's statements, each one a bill. */
 export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: StatementsListCardProps) {
-  const router = useRouter();
+  const router = useAppRouter();
+  const [navPending, startNav] = React.useTransition();
+  const [undoingId, setUndoingId] = React.useState<string | null>(null);
   const { unmarkPaid } = useBillMutations();
   const statementSkip = useStatementSkip();
   const base = `${accountHref(accountId)}/statements`;
 
   const undo = async (statementId: string) => {
+    if (undoingId) return;
+    setUndoingId(statementId);
     try {
       await unmarkPaid.mutateAsync(statementId);
       showToast('Payment mark removed');
-      router.refresh();
+      startNav(() => router.refresh());
     } catch (e) {
       showToast(getErrorMessage(e, "Couldn't undo the payment. Try again."), { tone: 'danger' });
+    } finally {
+      setUndoingId(null);
     }
   };
 
@@ -54,7 +60,8 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
         <Select
           value={fy}
           options={fyOptions.map((value) => ({ value, label: fyLabel(value) }))}
-          onValueChange={(value) => router.push(`${base}?fy=${value as string}`)}
+          loading={navPending}
+          onValueChange={(value) => startNav(() => router.replace(`${base}?fy=${value as string}`, { scroll: false }))}
           trigger={<FilterChip hasDropdown>{fyLabel(fy)}</FilterChip>}
         />
       }
@@ -108,6 +115,7 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
                       <Button
                         variant="link"
                         size="sm"
+                        loading={statementSkip.undoing === entry.id}
                         onClick={() => entry.id && void statementSkip.undo(accountId, entry.id)}
                       >
                         Undo
@@ -133,6 +141,7 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
                     <Button
                       variant="link"
                       size="sm"
+                      loading={undoingId === row.id}
                       onClick={(e) => {
                         e.stopPropagation();
                         void undo(row.id);
@@ -151,7 +160,7 @@ export function StatementsListCard({ accountId, isCard, fy, fyOptions, rows }: S
                 {row.badge ? <StatusWord tone={row.badge.tone}>{row.badge.label}</StatusWord> : null}
               </>
             }
-            onClick={() => router.push(`${base}?statement=${row.id}&fy=${fy}`, { scroll: false })}
+            onClick={() => startNav(() => router.replace(`${base}?statement=${row.id}&fy=${fy}`, { scroll: false }))}
           />
           );
         })

@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 
 import { cn } from '@/components/ds/cn';
@@ -13,6 +13,7 @@ import { appHref } from '@/features/shell/routes';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { formatTime } from '@/lib/format';
 import { replaceUrl } from '@/lib/urlState';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { ChatAnswer } from './ChatAnswer';
 import { UNTITLED_CHAT, withNewChat, withoutChat, withQuestion, withTitle } from './chatHistoryModel';
@@ -61,7 +62,7 @@ function ChatSession({
   initial,
   autoSend,
 }: ChatScreenProps & { list: ConversationSummary[]; setList: React.Dispatch<React.SetStateAction<ConversationSummary[]>> }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const createdRef = React.useRef<string | null>(initial?.id ?? null);
   // The page this session started on: a chat created after the visitor left it must not rewrite another page's URL.
   const startPath = React.useRef<string | null>(null);
@@ -138,7 +139,7 @@ function ChatSession({
       return false;
     }
     setList((prev) => withoutChat(prev, id));
-    if (id === currentId) router.push(CHAT_HREF);
+    if (id === currentId) router.replace(CHAT_HREF);
     return true;
   };
 

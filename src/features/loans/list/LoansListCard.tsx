@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Card } from '@/components/ds/Card/Card';
@@ -18,6 +17,7 @@ import { closedBand, ClosedFooter, mutedWhenClosed } from '@/features/accounts/l
 import { useSearchText } from '@/features/shell/useSearchText';
 import { watchSession } from '@/lib/authExpiry';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import { useAppRouter } from '@/lib/useAppRouter';
 import { RowTransition, SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
@@ -108,10 +108,12 @@ export interface LoansListCardProps {
 
 /** The loans table under its search. Closed loans load into place when "Show" is pressed. */
 export function LoansListCard({ state, rows, totalElements, totalPages, closedLine }: LoansListCardProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [adding, setAdding] = React.useState(false);
   const { Component: LoanFormDialog, run: runLoan } = useLazyDialog(loadLoanFormDialog);
-  const go = (next: Partial<LoansUrlState>) => router.push(loansUrl({ ...state, ...next }), { scroll: false });
+  const [navPending, startNav] = React.useTransition();
+  const go = (next: Partial<LoansUrlState>) =>
+    startNav(() => router.replace(loansUrl({ ...state, ...next }), { scroll: false }));
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
   // The closed rows belong to the search and the server data they were loaded for: a new search or a
   // refresh (new `rows` from the server) makes them stale, and while they are shown they load again.
@@ -172,6 +174,7 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
         <DataTable
           columns={columns}
           data={visible}
+          busy={navPending}
           getRowId={(row) => row.id}
           wrapRow={(row, node) => <RowTransition key={row.id}>{node}</RowTransition>}
           pager={pager}
@@ -196,7 +199,7 @@ export function LoansListCard({ state, rows, totalElements, totalPages, closedLi
           }
           stickyHeader={false}
         />
-        <ClosedFooter line={closedLine} showing={showing} onToggle={toggle} />
+        <ClosedFooter line={closedLine} showing={showing} onToggle={toggle} loading={wantClosed && !loaded} />
       </Card>
       {adding && LoanFormDialog ? <LoanFormDialog onClose={() => setAdding(false)} /> : null}
     </div>

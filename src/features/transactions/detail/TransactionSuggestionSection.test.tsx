@@ -99,4 +99,19 @@ describe('TransactionSuggestionSection', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Link' }));
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' }));
   });
+
+  it('spins the pressed action while it saves, ignores a second press, and works again after an error', async () => {
+    let finish: (v: unknown) => void = () => {};
+    mocks.accept.mockReturnValueOnce(new Promise((r) => (finish = r)));
+    const s: Suggestion = { id: 's1', kind: 'TRANSFER', label: 'Looks like a transfer', candidates: [{ ...cand, transactionId: 'c1' }] };
+    renderWithQuery(<TransactionSuggestionSection transaction={txn(-5000, s)} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Link' }));
+    await waitFor(() => expect((screen.getByRole('button', { name: /Link/ }) as HTMLButtonElement).disabled).toBe(true));
+    expect((screen.getByRole('button', { name: 'Not this' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: /Link/ }));
+    expect(mocks.accept).toHaveBeenCalledTimes(1);
+    finish({ success: false, error: { message: 'no', status: 500 } });
+    await waitFor(() => expect((screen.getByRole('button', { name: 'Link' }) as HTMLButtonElement).disabled).toBe(false));
+    expect((screen.getByRole('button', { name: 'Not this' }) as HTMLButtonElement).disabled).toBe(false);
+  });
 });

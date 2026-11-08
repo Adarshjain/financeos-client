@@ -45,7 +45,8 @@ export function AssignDialog({ item, onClose }: { item: AttentionItem | null; on
           label: a.isPending ? 'Assigning…' : 'Assign & remember',
           type: 'submit',
           form: FORM_ID,
-          disabled: a.isPending || !a.effectiveAccountId,
+          loading: a.isPending,
+          disabled: !a.effectiveAccountId,
         }}
       >
         <Dialog.Body>
@@ -79,6 +80,7 @@ export function AssignDialog({ item, onClose }: { item: AttentionItem | null; on
                   variant="link"
                   size="sm"
                   type="button"
+                  loading={loadingForm}
                   disabled={a.isPending || loadingForm}
                   onClick={() => {
                     created.current = false;

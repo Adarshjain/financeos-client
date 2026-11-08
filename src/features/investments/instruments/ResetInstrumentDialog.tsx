@@ -1,12 +1,12 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
 import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Instrument } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { describeOverriddenFields } from './instrumentEditModel';
 import { useResetInstrumentOverrides } from './useInstrumentMutations';
@@ -18,7 +18,7 @@ export interface ResetInstrumentDialogProps {
 
 /** Drops the user's own edits to an instrument (confirmed first): it shows the catalog details again, for this account only. */
 export function ResetInstrumentDialog({ instrument, onClose }: ResetInstrumentDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const reset = useResetInstrumentOverrides();
   const fields = describeOverriddenFields(instrument.overriddenFields);
 

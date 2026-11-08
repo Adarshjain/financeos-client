@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -16,6 +15,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { CloseAccountSection, DeleteAccountSection } from './AccountLifecycleSections';
 
@@ -23,7 +23,7 @@ const ACCOUNTS_HREF = appHref('/accounts');
 
 /** Close (or reopen) and Delete: two cards that end the Overview. */
 export function AccountLifecycleCard({ account }: { account: Account }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const qc = useQueryClient();
   const mutations = useAccountFormMutations();
   const today = todayInAppZone();

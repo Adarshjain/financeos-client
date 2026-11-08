@@ -34,6 +34,8 @@ export interface JobsHistoryProps extends Omit<React.HTMLAttributes<HTMLDivEleme
   skeletonRows?: number;
   /** A narrow list: the job's name over one status line, and View. Without it: Job, Started, Took, Result, Status, View. */
   compact?: boolean;
+  /** View replaces the current history entry instead of adding one (the job opens on the same page, so Back leaves the page). */
+  replaceOnOpen?: boolean;
 }
 
 const ch = createDataTableColumnHelper<JobResponse>();
@@ -72,11 +74,11 @@ function CompactLine({ job }: { job: JobResponse }) {
   );
 }
 
-function ViewLink({ href }: { href: string }) {
+function ViewLink({ href, replace }: { href: string; replace?: boolean }) {
   return (
     <Text variant="label" as="span">
       <Button asChild variant="link" size="sm">
-        <Link href={href} scroll={false}>
+        <Link href={href} scroll={false} replace={replace}>
           View
         </Link>
       </Button>
@@ -86,7 +88,7 @@ function ViewLink({ href }: { href: string }) {
 
 /** A list of background jobs (Settings › Activity, Import › Recent imports). Put it in a Card. */
 export const JobsHistory = React.forwardRef<HTMLDivElement, JobsHistoryProps>(function JobsHistory(
-  { jobs, openHref, onOpen, pager, empty, loading, skeletonRows, compact, ...props },
+  { jobs, openHref, onOpen, pager, empty, loading, skeletonRows, compact, replaceOnOpen, ...props },
   ref,
 ) {
   const columns = React.useMemo(
@@ -112,7 +114,7 @@ export const JobsHistory = React.forwardRef<HTMLDivElement, JobsHistoryProps>(fu
               id: 'view',
               header: '',
               meta: { size: 'xs', align: 'end', phone: 'amount' },
-              cell: ({ row }) => <ViewLink href={openHref(row.original)} />,
+              cell: ({ row }) => <ViewLink href={openHref(row.original)} replace={replaceOnOpen} />,
             }),
           ]
         : [
@@ -185,10 +187,10 @@ export const JobsHistory = React.forwardRef<HTMLDivElement, JobsHistoryProps>(fu
               id: 'view',
               header: '',
               meta: { size: 'xs', align: 'end', phone: 'hidden' },
-              cell: ({ row }) => <ViewLink href={openHref(row.original)} />,
+              cell: ({ row }) => <ViewLink href={openHref(row.original)} replace={replaceOnOpen} />,
             }),
           ],
-    [compact, openHref],
+    [compact, openHref, replaceOnOpen],
   );
 
   return (

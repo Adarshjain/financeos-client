@@ -78,6 +78,7 @@ export function RuleDialog({ rule, categoryList, onClose }: RuleDialogProps) {
   const guard = useDiscardGuard({ dirty, onClose });
 
   const submit = () => {
+    if (saving) return;
     const found: Problems = {
       pattern: validatePattern(matchType, pattern) ?? undefined,
       categories: category ? undefined : 'Pick a category.',

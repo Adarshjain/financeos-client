@@ -35,3 +35,21 @@ describe('InboxRow menu', () => {
     expect(screen.queryByRole('button', { name: 'More options' })).toBeNull();
   });
 });
+
+describe('InboxRow bill loading', () => {
+  const markPaid = action({ type: 'mark_paid', label: 'Mark paid', payload: { statementId: 's1' } });
+  const renderBill = (billLoading: { type: 'mark_paid'; statementId: string } | null) => {
+    const row = item({ key: 'bill_due:s1', kind: 'bill_due', title: 'Card bill', actions: [markPaid, SNOOZE] });
+    render(<InboxRow item={row} highlighted={false} billLoading={billLoading} onBillButton={vi.fn()} onMenuAction={vi.fn()} onSnooze={vi.fn()} onDismiss={vi.fn()} />);
+  };
+
+  it('disables the pressed bill button while its bill loads', () => {
+    renderBill({ type: 'mark_paid', statementId: 's1' });
+    expect(screen.getByRole('button', { name: 'Mark paid' })).toBeDisabled();
+  });
+
+  it('leaves the button live for another statement or when nothing loads', () => {
+    renderBill({ type: 'mark_paid', statementId: 'other' });
+    expect(screen.getByRole('button', { name: 'Mark paid' })).toBeEnabled();
+  });
+});

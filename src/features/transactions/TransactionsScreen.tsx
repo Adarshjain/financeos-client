@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import { Icon } from '@/components/ds/Icon/Icon';
@@ -12,6 +12,7 @@ import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useCategoryList } from '@/lib/query/hooks/useCategoryList';
 import type { Transaction } from '@/lib/transaction.types';
 import { replaceUrl } from '@/lib/urlState';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { isApprovable } from './bulk/bulkModel';
 import { BulkBar, BulkSelectRow } from './bulk/BulkSelection';
@@ -24,7 +25,7 @@ import { parseTxn, transactionsUrl } from './list/transactionsUrl';
 import { OptimisticProvider, useOptimisticLayer } from './optimistic/OptimisticTransactions';
 import { prefetchSort } from './sort/sortQueries';
 
-export interface TransactionsScreenProps extends Omit<TransactionsListPaneProps, 'onAdd' | 'addLoading' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen' | 'selection' | 'onSelectionChange' | 'selectionHeader' | 'wrapRow' | 'onSortThem' | 'onSortPress'> {
+export interface TransactionsScreenProps extends Omit<TransactionsListPaneProps, 'onAdd' | 'addLoading' | 'onOpenDetail' | 'openId' | 'onEditCategories' | 'detailOpen' | 'selection' | 'onSelectionChange' | 'selectionHeader' | 'wrapRow' | 'onSortThem' | 'onSortPress' | 'sortLoading'> {
   /** The transactions of the open page, in full: the detail reads them instead of asking again. */
   transactions: Transaction[];
   /** The fixed category list, read once on the server; null when it could not be loaded (the picker then fetches it). */
@@ -109,7 +110,7 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
   const [linking, setLinking] = React.useState<Transaction[] | null>(null);
   const [tagging, setTagging] = React.useState<Transaction[] | null>(null);
   const [sorting, setSorting] = React.useState(false);
-  const router = useRouter();
+  const router = useAppRouter();
   const queryClient = useQueryClient();
   const prefetchedOnPress = React.useRef(false);
   const addTransaction = useAddTransaction();
@@ -147,6 +148,7 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
           prefetchedOnPress.current = true;
           prefetchSort(queryClient);
         }}
+        sortLoading={sortDialog.loading}
         onSortThem={() => {
           // A keyboard press has no pointer down: start the read here. The groups read runs while the dialog's code loads.
           if (!prefetchedOnPress.current) prefetchSort(queryClient);
@@ -191,6 +193,8 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
         onMerge={() => selected.length === 2 && actions.merge([selected[0], selected[1]])}
         onApprove={() => actions.approve(selected.filter(isApprovable))}
         onTag={() => void tagsSheet.run(() => setTagging(selected))}
+        linkLoading={linkDialog.loading}
+        tagLoading={tagsSheet.loading}
         onDelete={() => actions.remove(selected, true)}
       />
       {actions.dialogs}
@@ -207,6 +211,9 @@ function TransactionsBody({ transactions, categoryList, ...view }: TransactionsS
         onDeleted={() => setDetailId(null)}
         onLink={(t) => void linkDialog.run(() => setLinking([t]))}
         onReview={actions.reviewInDialog}
+        editLoading={formDialog.loading}
+        linkLoading={linkDialog.loading}
+        categoryLoading={categoryDialog.loading}
       />
       ) : null}
       {linking && linkDialog.Component ? (

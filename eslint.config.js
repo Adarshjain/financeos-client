@@ -94,6 +94,25 @@ const config = [
         rules: { "financeos/wrapped-server-actions": "error" },
     },
     {
+        // Push/replace go through useAppRouter so the top bar shows while the next page renders.
+        files: ["src/features/**", "src/components/organisms/**", "src/app/**"],
+        ignores: ["**/*.test.*", "**/*.stories.*"],
+        rules: {
+            "no-restricted-imports": [
+                "error",
+                {
+                    paths: [
+                        {
+                            name: "next/navigation",
+                            importNames: ["useRouter"],
+                            message: "Use useAppRouter from '@/lib/useAppRouter' so the top bar tracks page changes.",
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+    {
         ignores: [".next/*", "node_modules/*", "storybook-static/**"],
     }
 ];

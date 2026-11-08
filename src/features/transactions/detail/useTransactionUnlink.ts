@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { showToast } from '@/components/ds/Toast/Toast';
@@ -10,6 +9,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { invalidateInvestmentQueries, invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { ObligationRef, TransactionLinkResponse } from '@/lib/transaction.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   createTransactionLink,
@@ -30,8 +30,13 @@ import {
  */
 export function useTransactionUnlink(transactionId: string) {
   const queryClient = useQueryClient();
-  const router = useRouter();
-  const [busyKey, setBusyKey] = React.useState<string | null>(null);
+  const router = useAppRouter();
+  const [heldBusyKey, setBusyKey] = React.useState<string | null>(null);
+  // The page refresh runs in a transition: the row keeps spinning until the refreshed page is what shows.
+  const [refreshing, startTransition] = React.useTransition();
+  const lastKey = React.useRef<string | null>(null);
+  const running = React.useRef(false);
+  const busyKey = heldBusyKey ?? (refreshing ? lastKey.current : null);
 
   const fail = (fallback: string) => (e: unknown) => showToast(getErrorMessage(e, fallback), { tone: 'danger' });
   const linkLending = useLinkLendingTransaction({ onError: fail("Couldn't link the transaction. Try again.") });
@@ -42,7 +47,7 @@ export function useTransactionUnlink(transactionId: string) {
       queryClient.invalidateQueries({ queryKey: keys.transactions.all }),
       invalidateMoneyQueries(queryClient),
     ]);
-    router.refresh();
+    startTransition(() => router.refresh());
   };
 
   /** EPF dialogs and the Inbox suggestions read their own queries; a link or unlink makes them stale. */
@@ -59,6 +64,9 @@ export function useTransactionUnlink(transactionId: string) {
 
   /** Runs one change under the row's busy mark; true when it worked. The mutation hooks already toast their own failures. */
   const run = async (key: string, change: () => Promise<unknown>, failure?: string): Promise<boolean> => {
+    if (running.current) return false;
+    running.current = true;
+    lastKey.current = key;
     setBusyKey(key);
     try {
       await change();
@@ -68,6 +76,7 @@ export function useTransactionUnlink(transactionId: string) {
       if (failure) fail(failure)(e);
       return false;
     } finally {
+      running.current = false;
       setBusyKey(null);
     }
   };

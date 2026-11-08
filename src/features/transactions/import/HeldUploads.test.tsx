@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -97,6 +97,20 @@ describe('HeldUploads', () => {
     expect(await screen.findByText('prefill 1234')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Save account' }));
     await waitFor(() => expect(assignHeldUpload).toHaveBeenCalledWith('h1', 'new-acc', undefined));
+  });
+
+  it('ignores a second submit while the file is importing', async () => {
+    let resolve!: (v: unknown) => void;
+    vi.mocked(assignHeldUpload).mockReturnValueOnce(new Promise((r) => { resolve = r; }) as never);
+    renderIt();
+    const first = screen.getAllByTestId('held-file')[0];
+    fireEvent.change(within(first).getByLabelText('Account'), { target: { value: 'a1' } });
+    fireEvent.click(first.querySelector('button[type="submit"]')!);
+    await waitFor(() => expect(first.querySelector('button[type="submit"]')).toBeDisabled());
+    fireEvent.submit(first.querySelector('form')!);
+    expect(assignHeldUpload).toHaveBeenCalledTimes(1);
+    resolve(ok);
+    await waitFor(() => expect(first.querySelector('button[type="submit"]')).not.toBeDisabled());
   });
 
   it('asks before removing, and removes on confirm', async () => {

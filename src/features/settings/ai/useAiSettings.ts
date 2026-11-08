@@ -29,6 +29,7 @@ export function useAiSettings() {
 
   const [keyToDelete, setKeyToDelete] = useState<LlmKeyDto | null>(null);
   const [testingKeyId, setTestingKeyId] = useState<string | null>(null);
+  const [movingKeyId, setMovingKeyId] = useState<string | null>(null);
 
   const openAdd = (providerId?: string) => {
     setAddProviderId(providerId ?? PROVIDERS[0].id);
@@ -39,7 +40,7 @@ export function useAiSettings() {
   };
 
   const submitAdd = async () => {
-    if (!newKey.trim()) return;
+    if (!newKey.trim() || createMutation.isPending) return;
     setAddError(null);
     try {
       await createMutation.mutateAsync({
@@ -54,7 +55,7 @@ export function useAiSettings() {
   };
 
   const confirmDelete = async () => {
-    if (!keyToDelete) return;
+    if (!keyToDelete || deleteMutation.isPending) return;
     setActionError(null);
     try {
       await deleteMutation.mutateAsync(keyToDelete.id);
@@ -69,12 +70,15 @@ export function useAiSettings() {
   const moveKey = async (row: KeyRow, delta: number) => {
     if (!row.key) return;
     const position = row.index + 1 + delta;
-    if (position < 1 || position > row.count) return;
+    if (position < 1 || position > row.count || movingKeyId) return;
     setActionError(null);
+    setMovingKeyId(row.key.id);
     try {
       await updatePositionMutation.mutateAsync({ id: row.key.id, position });
     } catch (err) {
       setActionError(getErrorMessage(err, "Couldn't reorder the keys. Try again."));
+    } finally {
+      setMovingKeyId(null);
     }
   };
 
@@ -110,6 +114,7 @@ export function useAiSettings() {
     setKeyToDelete,
     deleting: deleteMutation.isPending,
     testingKeyId,
+    movingKeyId,
     openAdd,
     submitAdd,
     confirmDelete,

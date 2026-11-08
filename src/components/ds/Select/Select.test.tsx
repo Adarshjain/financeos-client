@@ -640,4 +640,15 @@ describe('Select warning', () => {
     expect(screen.queryByText('Closed last month')).not.toBeInTheDocument();
     expect(screen.getByRole('combobox')).toHaveClass('border-danger');
   });
+
+  it('a loading action shows the spinner and blocks onSelect', () => {
+    const onSelect = vi.fn();
+    render(
+      <SelectMenu options={sampleOptions} actions={[{ label: 'Add bank', onSelect, loading: true }]} />
+    );
+    expect(screen.getByRole('button', { name: 'Add bank' })).toBeDisabled();
+    expect(screen.getAllByTestId('spinner-icon').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Add bank' }));
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });

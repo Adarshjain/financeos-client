@@ -75,6 +75,7 @@ export function EditEntryDialog({
   const warning = settlementWarning(entryType, Number(amount), netPosition, personName);
 
   const submit = async () => {
+    if (submitting) return;
     const resolvedAmount = resolveAmountExpression(amount);
     if (resolvedAmount !== amount) setAmount(resolvedAmount);
     if (!resolvedAmount || !Number.isFinite(Number(resolvedAmount)) || Number(resolvedAmount) <= 0) {

@@ -1,7 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
+
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { isMarketOpen } from './marketHoursModel';
 
@@ -13,7 +14,7 @@ const CHECK_MS = 60_000;
 
 /** Keeps a price page fresh in market hours: never on mount, then on a timer, on return to the tab, and once when the market closes. */
 export function useLivePriceRefresh(): void {
-  const router = useRouter();
+  const router = useAppRouter();
   const routerRef = React.useRef(router);
 
   React.useEffect(() => {

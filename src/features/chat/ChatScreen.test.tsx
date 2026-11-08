@@ -7,7 +7,7 @@ import { renderWithQuery as render } from '@/test/renderWithQuery';
 
 import type { ChatRecord, Conversation, ConversationSummary } from './conversation.types';
 
-const router = vi.hoisted(() => ({ push: vi.fn(), back: vi.fn() }));
+const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }));
 const nav = vi.hoisted(() => ({ pathname: '/chat' }));
 vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => nav.pathname }));
 vi.mock('@/lib/query/hooks/useNotifications', () => ({
@@ -177,7 +177,8 @@ describe('ChatScreen, history', () => {
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Delete chat' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(actions.remove).toHaveBeenCalledWith('c1'));
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/chat'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/chat'));
+    expect(router.push).not.toHaveBeenCalledWith('/chat');
   });
 });
 

@@ -16,6 +16,9 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+// The real wrapper drops push's return value; here it is passed through so a test can hold the navigation pending.
+vi.mock('@/lib/useAppRouter', () => ({ useAppRouter: () => router }));
+
 const toast = vi.fn();
 vi.mock('@/components/ds/Toast/Toast', async (orig) => ({
   ...(await orig<typeof import('@/components/ds/Toast/Toast')>()),
@@ -236,6 +239,25 @@ describe('Add account', () => {
     await waitFor(() => expect(onCreated).toHaveBeenCalledWith(created));
     expect(onClose).toHaveBeenCalled();
     expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it('keeps the primary loading and blocks Cancel and close while the new page is still opening', async () => {
+    mutations.createAccountMutation.mutateAsync.mockResolvedValue({
+      account: { id: 'w9', type: AccountType.GENERIC, name: 'Paytm' },
+      failedIdentifiers: [],
+    });
+    // A navigation that has not committed yet: React keeps the transition pending until this settles.
+    router.push.mockReturnValueOnce(new Promise<void>(() => {}));
+    const onClose = vi.fn();
+    renderDialog({ initialType: AccountType.GENERIC, onClose });
+    fill('Account name', 'Paytm Wallet');
+    submit('Add account');
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/accounts/w9'));
+    // The API call is over (not pending in this mock), yet the dialog is still busy.
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add account/ })).toHaveAttribute('aria-busy', 'true'));
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    await user.keyboard('{Escape}');
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it('tells which identifiers failed after creating', async () => {

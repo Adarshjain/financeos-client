@@ -116,4 +116,15 @@ describe('Widget', () => {
     );
     expect(container.innerHTML).toBe(loading);
   });
+
+  it('a loading action shows the spinner and blocks onSelect', () => {
+    const onSelect = vi.fn();
+    render(
+      <Widget title="Portfolio" error="Prices unavailable" action={{ label: 'Retry', onSelect, loading: true }} />
+    );
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeDisabled();
+    expect(screen.getAllByTestId('spinner-icon').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });

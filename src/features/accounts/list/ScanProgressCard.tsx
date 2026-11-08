@@ -1,12 +1,12 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Card } from '@/components/ds/Card/Card';
 import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
 import { Text } from '@/components/ds/Text/Text';
 import type { ScanState } from '@/features/accounts/list/suggestionsModel';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { loadScanState } from './suggestionActions';
 import { isScanProgressShown, scanProgressLine, scanProgressValue } from './suggestionsModel';
@@ -18,7 +18,7 @@ const POLL_MS = 5000;
  * page is visible, and refreshes the page once the scan is done so the suggestions appear.
  */
 export function ScanProgressCard({ scan: initial, className }: { scan: ScanState; className?: string }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [scan, setScan] = React.useState(initial);
   const shown = isScanProgressShown(scan);
 

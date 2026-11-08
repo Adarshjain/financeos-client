@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -23,6 +22,7 @@ import { todayInAppZone } from '@/lib/date-range';
 import { formatMoney } from '@/lib/format';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType, type InvestmentTransactionResponse, type SettlementType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
 import { InstrumentAddDialog } from '../instruments/InstrumentAddDialog';
@@ -198,7 +198,7 @@ export interface RecordTradeDialogProps {
 
 /** Record a buy or a sell. Exported for the top bar's + on every Investments page. */
 export function RecordTradeDialog({ onClose, onSaved, initialInstrument = null, initialBrokerAccountId }: RecordTradeDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { data: accounts = [], isLoading } = useAccounts();
   const { createTrade } = useTradeMutations();
   const brokers = React.useMemo(() => accounts.filter(isAccountOfType(AccountType.BROKER)), [accounts]);
@@ -349,7 +349,7 @@ export interface EditTradeDialogProps {
 
 /** Change a trade's side, settlement, quantity, price, date, charges and notes, or delete it. The instrument and the broker are fixed. */
 export function EditTradeDialog({ trade, onClose }: EditTradeDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { updateTrade, deleteTrade } = useTradeMutations();
   const [side, setSide] = React.useState<TradeSide>(trade.type === 'sell' ? 'sell' : 'buy');
   const [settlement, setSettlement] = React.useState<SettlementType>(trade.settlementType === 'intraday' ? 'intraday' : 'delivery');

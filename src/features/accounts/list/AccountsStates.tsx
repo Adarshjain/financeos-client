@@ -6,13 +6,14 @@ import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 
 export function AccountsEmpty() {
-  const { open } = useAccountDialogs();
+  const { open, loading } = useAccountDialogs();
   return (
     <EmptyState
       title="No accounts connected yet"
       description="Add your first bank account, credit card, or cash wallet to monitor transactions and track net assets."
       action={{
         label: 'Add account',
+        loading,
         onSelect: () => open(),
       }}
     />

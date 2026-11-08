@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -18,6 +17,7 @@ import { Pager } from '@/components/ds/Pager/Pager';
 import { Select } from '@/components/ds/Select/Select';
 import { Text } from '@/components/ds/Text/Text';
 import { formatDate } from '@/lib/format';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { FilterRowSkeleton } from '../FilterRowSkeleton';
 import { INVESTMENTS_IMPORT_HREF } from '../investmentsTabs';
@@ -143,9 +143,9 @@ export function EpfPassbookCard({
   stale,
   onOpen,
 }: EpfPassbookCardProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const go = (next: Partial<EpfUrlState>) =>
-    router.push(epfUrl({ ...state, ...next }), { scroll: false });
+    router.replace(epfUrl({ ...state, ...next }), { scroll: false });
 
   const pager = (
     <Pager

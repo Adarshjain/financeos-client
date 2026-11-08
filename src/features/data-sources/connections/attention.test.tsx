@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -116,9 +116,28 @@ describe('AttentionCard', () => {
   it('retries and archives an item', async () => {
     const p = setup();
     fireEvent.click(await screen.findByRole('button', { name: 'Retry' }));
+    // The row's buttons are disabled until the retry settles.
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Archive' })).toBeEnabled());
     fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
     expect(p.retryItem).toHaveBeenCalledWith('i1');
     expect(p.onArchive).toHaveBeenCalledWith('i1');
+  });
+
+  it('holds the row pressed while its action runs, ignores other presses, and works again after a failure', async () => {
+    let settle!: (fail: boolean) => void;
+    const retryItem = vi.fn(() => new Promise<void>((resolve, reject) => { settle = (fail) => (fail ? reject(new Error('x')) : resolve()); }));
+    setup({ retryItem });
+    const retry = await screen.findByRole('button', { name: 'Retry' });
+    fireEvent.click(retry);
+    expect(retry).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Archive' })).toBeDisabled();
+    fireEvent.click(retry);
+    expect(retryItem).toHaveBeenCalledTimes(1);
+    await act(async () => settle(true));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Retry' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(retryItem).toHaveBeenCalledTimes(2);
+    await act(async () => settle(false));
   });
 
   it('opens and hides the details list with every field', async () => {

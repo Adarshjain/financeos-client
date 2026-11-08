@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { DateField } from '@/components/ds/DateField/DateField';
@@ -26,6 +25,7 @@ import {
   settlementWarning,
 } from '@/lib/lendingEntry';
 import type { Transaction } from '@/lib/transaction.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { useCreateLending } from '../useLendingMutations';
 import { PersonSelect } from './PersonSelect';
@@ -56,7 +56,7 @@ export function AddLendingDialog({
   onClose: () => void;
   initialPerson?: CounterpartyResponse;
 }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const today = todayInAppZone();
   const createLending = useCreateLending({
     onError: (e) => showToast(getErrorMessage(e, "Couldn't record lending. Try again."), { tone: 'danger' }),
@@ -78,6 +78,7 @@ export function AddLendingDialog({
   const warning = party ? settlementWarning(entryType, Number(amount), partyNet, selectionName(party)) : null;
 
   const submit = async () => {
+    if (createLending.isPending) return;
     const resolvedAmount = resolveAmountExpression(amount);
     if (resolvedAmount !== amount) setAmount(resolvedAmount);
     const problem = lendingEntryProblem(party, resolvedAmount);

@@ -68,14 +68,14 @@ describe('/investments/fno: All years', () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: /FY 26-27/ }));
     fireEvent.click(await screen.findByRole('option', { name: 'All years' }));
-    expect(router.push).toHaveBeenLastCalledWith(`${FNO_HREF}?fy=all`, { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith(`${FNO_HREF}?fy=all`, { scroll: false });
   });
 
   it('picking the current year from All years drops fy from the address', async () => {
     await renderPage({ fy: 'all' });
     fireEvent.click(screen.getByRole('button', { name: /All years/ }));
     fireEvent.click(await screen.findByRole('option', { name: 'FY 26-27' }));
-    expect(router.push).toHaveBeenLastCalledWith(FNO_HREF, { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith(FNO_HREF, { scroll: false });
   });
 
   it('says there are no trades without naming a year', async () => {

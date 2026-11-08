@@ -29,12 +29,14 @@ function MailboxRow({
   conn,
   showPrimary,
   loading,
+  connecting,
   onReconnect,
   onDisconnect,
 }: {
   conn: GmailConnection;
   showPrimary: boolean;
   loading: boolean;
+  connecting: boolean;
   onReconnect: () => void;
   onDisconnect: () => void;
 }) {
@@ -70,7 +72,7 @@ function MailboxRow({
           <StatusWord tone="success">Healthy</StatusWord>
         )}
         {conn.needsReconnect ? (
-          <Button variant="secondary" size="sm" disabled={loading} onClick={onReconnect}>
+          <Button variant="secondary" size="sm" loading={connecting} disabled={loading} onClick={onReconnect}>
             Reconnect
           </Button>
         ) : null}
@@ -135,7 +137,7 @@ export function MailboxesCard({ connections, loading, isSyncing, onConnect, onSy
             size="sm"
             title="No Gmail accounts yet"
             description="Connect a mailbox to import bank alerts and statements automatically."
-            action={{ label: 'Connect your first account', onSelect: onConnect, variant: 'primary' }}
+            action={{ label: 'Connect your first account', onSelect: onConnect, variant: 'primary', loading: loading === 'connect' }}
           />
         ) : (
           <>
@@ -145,6 +147,7 @@ export function MailboxesCard({ connections, loading, isSyncing, onConnect, onSy
                 conn={conn}
                 showPrimary={connections.length > 1}
                 loading={loading !== null}
+                connecting={loading === 'connect'}
                 onReconnect={onConnect}
                 onDisconnect={() => setDisconnecting(conn)}
               />

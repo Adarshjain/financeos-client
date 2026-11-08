@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { showToast } from '@/components/ds/Toast/Toast';
@@ -11,6 +10,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { keys } from '@/lib/query/keys';
 import type { Tag } from '@/lib/tags.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { patchChange } from '../optimistic/optimisticModel';
 import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
@@ -23,7 +23,7 @@ import { bulkAddedMessage, tagsRequest } from './tagsModel';
  * finishes behind it (a failure puts the old ones back). `addTags` puts tags on several transactions at once.
  */
 export function useTransactionTags(accounts: readonly Account[] | null) {
-  const router = useRouter();
+  const router = useAppRouter();
   const queryClient = useQueryClient();
   const optimistic = useOptimisticTransactions();
 

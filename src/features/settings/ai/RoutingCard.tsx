@@ -40,10 +40,12 @@ function OrderLine({ group }: { group: RoutingGroupEditor }) {
 interface RoutingCardProps {
   groups: RoutingGroupEditor[];
   error: string | null;
+  /** The group whose editor's code is loading: its Customise shows it. */
+  startingGroup?: RoutingGroupEditor['group'] | null;
 }
 
 /** The two routing groups: their order at a glance, with Reset (custom only) and Customise. */
-export function RoutingCard({ groups, error }: RoutingCardProps) {
+export function RoutingCard({ groups, error, startingGroup = null }: RoutingCardProps) {
   return (
     <Card>
       <Card.Header>
@@ -77,7 +79,7 @@ export function RoutingCard({ groups, error }: RoutingCardProps) {
                   </Button>
                 </Text>
               ) : null}
-              <Button variant="secondary" size="sm" onClick={g.onStart}>
+              <Button variant="secondary" size="sm" loading={startingGroup === g.group} disabled={g.resetting} onClick={g.onStart}>
                 Customise
               </Button>
             </>

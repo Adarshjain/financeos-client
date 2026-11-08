@@ -68,6 +68,7 @@ export function useAssignNumber(group: UnknownNumberGroup | null, onDone: () => 
       setErrorMessage('Select an account.');
       return;
     }
+    if (assignNumberMutation.isPending) return;
     setErrorMessage(null);
     let pastCard;
     if (asOldCard) {

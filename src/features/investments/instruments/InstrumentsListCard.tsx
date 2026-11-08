@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -19,6 +18,7 @@ import { loadInstrumentAddDialog, loadInstrumentEditDialog, loadResetInstrumentD
 import { useSearchText } from '@/features/shell/useSearchText';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import type { Instrument } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import type { InstrumentAddMode } from './InstrumentAddDialog';
 import {
@@ -192,8 +192,8 @@ export interface InstrumentsListCardProps {
 
 /** Search, type chips, Stale price and name order over the instruments table, with the Add, Edit and Reset dialogs. Every control is one URL change. */
 export function InstrumentsListCard({ state, items, totalElements, totalPages, catalogEmpty }: InstrumentsListCardProps) {
-  const router = useRouter();
-  const go = (next: Partial<InstrumentsUrlState>) => router.push(instrumentsUrl({ ...state, ...next }), { scroll: false });
+  const router = useAppRouter();
+  const go = (next: Partial<InstrumentsUrlState>) => router.replace(instrumentsUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
   const [dialog, setDialog] = React.useState<DialogState>(null);
   const { Component: InstrumentAddDialog, run: runAdd } = useLazyDialog(loadInstrumentAddDialog);

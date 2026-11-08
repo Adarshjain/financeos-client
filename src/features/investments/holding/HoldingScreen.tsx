@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { ActionBar } from '@/components/ds/ActionBar/ActionBar';
@@ -19,6 +18,7 @@ import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { formatMoney, formatQuantity } from '@/lib/format';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   type BrokerRowModel,
@@ -60,7 +60,7 @@ const EMPTY_SECTION = { rows: [], position: { page: 0, size: 1, totalElements: 0
 /** One holding: its figures, then every section; each list pages on its own. */
 export function HoldingScreen({ data, today, now }: HoldingScreenProps) {
   const { holding, instrument, estimate, trades, dividends, corporateActions, splits, history } = data;
-  const router = useRouter();
+  const router = useAppRouter();
   const [overriding, setOverriding] = React.useState(false);
   const [dialog, setDialog] = React.useState<HoldingDialog | null>(null);
   const closeDialog = () => setDialog(null);

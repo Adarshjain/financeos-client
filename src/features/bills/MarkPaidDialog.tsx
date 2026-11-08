@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { DateField } from '@/components/ds/DateField/DateField';
@@ -19,6 +18,7 @@ import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
 import { usePaymentCandidates } from '@/lib/query/hooks/usePaymentCandidates';
 import { AccountType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 const FORM_ID = 'bill-mark-paid-form';
@@ -62,7 +62,7 @@ export function MarkPaidDialog({
   remaining,
   onMarked,
 }: MarkPaidDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { markPaid, unmarkPaid } = useBillMutations();
   const today = todayInAppZone();
   const [mode, setMode] = React.useState<Mode>('full');

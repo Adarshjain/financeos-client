@@ -57,6 +57,7 @@ export function EditProfile({
   }, [open]);
 
   const save = async () => {
+    if (saving) return;
     if (!name.trim()) {
       setError('Enter your name.');
       return;

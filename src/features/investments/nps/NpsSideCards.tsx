@@ -27,14 +27,14 @@ function Line({ label, value, conceal, tone, subtitle }: { label: string; value:
 }
 
 /** The account: PRAN, sector, record keeper, choice and the emails switch. Edit opens it. */
-export function NpsAccountCardView({ card, onEdit, onStatements }: { card: NpsAccountCard; onEdit: () => void; onStatements: () => void }) {
+export function NpsAccountCardView({ card, onEdit, onStatements, editLoading }: { card: NpsAccountCard; onEdit: () => void; onStatements: () => void; editLoading?: boolean }) {
   return (
     <Card
       title="Account"
       action={
         <span className="flex items-center gap-space-8">
           <Text variant="label" as="span">
-            <Button variant="link" size="sm" onClick={onEdit}>
+            <Button variant="link" size="sm" loading={editLoading} onClick={onEdit}>
               Edit
             </Button>
           </Text>

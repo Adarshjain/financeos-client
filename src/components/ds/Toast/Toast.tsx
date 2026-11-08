@@ -63,6 +63,7 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
                   variant="link"
                   href={a.href}
                   onSelect={a.onSelect}
+                  loading={a.loading}
                   className={cn('shrink-0', isNeutral ? 'text-line hover:text-line-soft' : 'text-inherit')}
                 >
                   {a.label}

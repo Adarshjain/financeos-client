@@ -1,5 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { NAVIGATION_PROGRESS_DELAY_MS, resetBusy, useBusyShowing } from '@/lib/busy';
 
 import { useLazyDialog } from './useLazyDialog';
 
@@ -207,6 +209,69 @@ describe('useLazyDialog', () => {
         await done;
       });
       expect(onReady).not.toHaveBeenCalled();
+    });
+  });
+  describe('top bar busy state', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => {
+      resetBusy();
+      vi.useRealTimers();
+    });
+    const setup = (importer: () => Promise<string>) =>
+      renderHook(() => ({ lazy: useLazyDialog(importer), busy: useBusyShowing() }));
+    const wait = (ms: number) => act(() => void vi.advanceTimersByTime(ms));
+
+    it('holds the busy bar while loading and releases it when the code arrives', async () => {
+      const d = deferred<string>();
+      const { result } = setup(() => d.promise);
+      let done!: Promise<boolean>;
+      act(() => {
+        done = result.current.lazy.run(vi.fn());
+      });
+      wait(NAVIGATION_PROGRESS_DELAY_MS);
+      expect(result.current.busy).toBe(true);
+      await act(async () => {
+        d.resolve('x');
+        await done;
+      });
+      expect(result.current.busy).toBe(false);
+    });
+
+    it('releases the busy bar on a failed import', async () => {
+      const d = deferred<string>();
+      const { result } = setup(() => d.promise);
+      let done!: Promise<boolean>;
+      act(() => {
+        done = result.current.lazy.run(vi.fn());
+      });
+      wait(NAVIGATION_PROGRESS_DELAY_MS);
+      expect(result.current.busy).toBe(true);
+      await act(async () => {
+        d.reject(new Error('x'));
+        await done;
+      });
+      expect(result.current.busy).toBe(false);
+    });
+
+    it('releases the busy bar on cancel', () => {
+      const d = deferred<string>();
+      const { result } = setup(() => d.promise);
+      act(() => void result.current.lazy.run(vi.fn()));
+      wait(NAVIGATION_PROGRESS_DELAY_MS);
+      expect(result.current.busy).toBe(true);
+      act(() => result.current.lazy.cancel());
+      expect(result.current.busy).toBe(false);
+    });
+
+    it('releases the busy bar on unmount', () => {
+      const d = deferred<string>();
+      const probe = renderHook(() => useBusyShowing());
+      const { result, unmount } = setup(() => d.promise);
+      act(() => void result.current.lazy.run(vi.fn()));
+      wait(NAVIGATION_PROGRESS_DELAY_MS);
+      expect(probe.result.current).toBe(true);
+      unmount();
+      expect(probe.result.current).toBe(false);
     });
   });
 });

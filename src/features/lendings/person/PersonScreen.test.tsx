@@ -179,7 +179,7 @@ describe('ledger', () => {
     renderView({ ledger: { ...ledgerFixture(all, 3), entries: { ...ledgerFixture(all, 3).entries, totalElements: 60 } } });
     expect(screen.getAllByRole('button', { name: /next/i })).toHaveLength(2);
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/lending/p1?page=2', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/lending/p1?page=2', { scroll: false });
   });
 
   it('says so when the person has no entries', () => {
@@ -325,7 +325,7 @@ describe('delete person', () => {
     await user.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(m.deleteCp.mutateAsync).toHaveBeenCalled());
     expect(toast).toHaveBeenCalledWith('Person deleted');
-    expect(router.push).toHaveBeenCalledWith('/lending');
+    expect(router.replace).toHaveBeenCalledWith('/lending');
   });
 
   it('can be cancelled', async () => {
@@ -334,7 +334,7 @@ describe('delete person', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     await user.click(await screen.findByRole('button', { name: 'Cancel' }));
     expect(m.deleteCp.mutateAsync).not.toHaveBeenCalled();
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
   });
 });
 

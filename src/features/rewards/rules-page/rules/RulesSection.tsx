@@ -144,8 +144,8 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
   const [open, setOpen] = React.useState<Open>(null);
   // The rule editor, Reorder and Test transaction are not in the page: each loads when opened (see useLazyDialog).
   const { Component: RuleDialog, run: runRule } = useLazyDialog(loadRuleDialog);
-  const { Component: ReorderRulesDialog, run: runReorder } = useLazyDialog(loadReorderDialog);
-  const { Component: TestTransactionDialog, run: runTest } = useLazyDialog(loadTestDialog);
+  const { Component: ReorderRulesDialog, run: runReorder, loading: reorderLoading } = useLazyDialog(loadReorderDialog);
+  const { Component: TestTransactionDialog, run: runTest, loading: testLoading } = useLazyDialog(loadTestDialog);
   const openRule = (next: NonNullable<Open>) => void runRule(() => setOpen(next));
   const [reordering, setReordering] = React.useState(false);
   const [testing, setTesting] = React.useState(false);
@@ -205,12 +205,12 @@ export function RulesSection({ accountId, today, usage }: RulesSectionProps) {
       action={
         <div className="flex items-center gap-space-12">
           <Text variant="label" as="div">
-            <Button variant="link" size="sm" disabled={!accountId} onClick={() => void runTest(() => setTesting(true))}>
+            <Button variant="link" size="sm" disabled={!accountId} loading={testLoading} onClick={() => void runTest(() => setTesting(true))}>
               Test
             </Button>
           </Text>
           <Text variant="label" as="div">
-            <Button variant="link" size="sm" disabled={rules.length < 2} onClick={() => void runReorder(() => setReordering(true))}>
+            <Button variant="link" size="sm" disabled={rules.length < 2} loading={reorderLoading} onClick={() => void runReorder(() => setReordering(true))}>
               Reorder
             </Button>
           </Text>

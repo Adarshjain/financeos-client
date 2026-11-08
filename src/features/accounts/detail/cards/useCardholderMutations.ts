@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds/Toast/Toast';
 import { convertIdentifierToPastCard, deleteCardPlastic } from '@/features/accounts/accountActions';
@@ -18,6 +17,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { PastCardRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 import type { BulkReattributeCardRequest } from '@/lib/transaction.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import type { EditHolderBody } from './cardsFormsModel';
 
@@ -46,7 +46,7 @@ export interface CardholderActions {
  * on success, and returns the failure message otherwise so the caller can show it where it belongs.
  */
 export function useCardholderMutations(accountId: string, isBank: boolean): CardholderActions {
-  const router = useRouter();
+  const router = useAppRouter();
   const m = useCardsDialogMutations(accountId, false);
   const qc = useQueryClient();
 

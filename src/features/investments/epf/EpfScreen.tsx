@@ -68,7 +68,7 @@ export function EpfScreen({
   const [opened, setOpened] = React.useState<EpfEntry | null>(null);
   const [adding, setAdding] = React.useState(false);
   // The EPF forms are not in the page: each loads when opened (see useLazyDialog).
-  const { Component: EpfAddDialog, run: runAdd } = useLazyDialog(loadEpfAddDialog);
+  const { Component: EpfAddDialog, run: runAdd, loading: addLoading } = useLazyDialog(loadEpfAddDialog);
   const { Component: EpfEntryDialog, run: runEntry } = useLazyDialog(loadEpfEntryDialog);
   const { Component: EpfEmployerDialog, run: runEmployer } = useLazyDialog(loadEpfEmployerDialog);
   const [employer, setEmployer] = React.useState<EpfEmployer | 'new' | null>(
@@ -102,6 +102,7 @@ export function EpfScreen({
             }}
             secondaryAction={{
               label: 'Add opening balance',
+              loading: addLoading,
               onSelect: () => void runAdd(() => setAdding(true)),
             }}
           />

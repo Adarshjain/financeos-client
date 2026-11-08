@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -11,6 +10,7 @@ import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
 import { LoanClosedPrompt } from '@/features/loans/LoanClosedPrompt';
 import { appHref } from '@/features/shell/routes';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { daysText, obligationHref, type ObligationItem, obligationTitle } from './obligationsModel';
 import { canSkipStatementItem, rowAmount, rowDate, rowSubtitleParts } from './upcomingModel';
@@ -30,6 +30,8 @@ export interface UpcomingRowProps {
   onSettle: (item: ObligationItem) => void;
   /** Set details on an undated card bill; the link shows only when given. */
   onSetDetails?: (item: ObligationItem) => void;
+  /** Its bill is still loading after Set details: the link shows loading. */
+  setDetailsLoading?: boolean;
   /** Stop tracking a regular payment; its row menu shows only when given. */
   onStopTracking?: (item: ObligationItem) => void;
 }
@@ -45,9 +47,10 @@ export function UpcomingRow({
   onMarkPaid,
   onSettle,
   onSetDetails,
+  setDetailsLoading = false,
   onStopTracking,
 }: UpcomingRowProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const date = rowDate(item);
   const amount = rowAmount(item);
   const overdue = item.status === 'overdue';
@@ -136,7 +139,7 @@ export function UpcomingRow({
             {amount.text}
           </Text>
           {canSetDetails ? (
-            <Button variant="link" size="sm" onClick={() => onSetDetails?.(item)}>
+            <Button variant="link" size="sm" loading={setDetailsLoading} onClick={() => onSetDetails?.(item)}>
               Set details
             </Button>
           ) : null}

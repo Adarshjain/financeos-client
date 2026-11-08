@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -16,6 +16,7 @@ import { SettleDialog } from '@/features/lendings/SettleDialog';
 import { todayInAppZone } from '@/lib/date-range';
 import { useObligations } from '@/lib/query/hooks/useObligations';
 import { replaceUrl } from '@/lib/urlState';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   CALENDAR_MAX_OFFSET,
@@ -48,7 +49,7 @@ const monthTitle = (month: string) => formatMonth(`${month}-01`);
  */
 export function UpcomingCalendarScreen() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const router = useAppRouter();
   const billParam = searchParams.get('bill');
   const today = todayInAppZone();
   const [month, setMonth] = useUrlState(searchParams.toString(), (search) =>
@@ -58,7 +59,7 @@ export function UpcomingCalendarScreen() {
   const [paying, setPaying] = React.useState<{ item: ObligationItem; open: boolean } | null>(null);
   const [settling, setSettling] = React.useState<{ item: ObligationItem; open: boolean } | null>(null);
 
-  const { data, error, isFetched, isPending, refetch } = useObligations(monthsToCover(today, month));
+  const { data, error, isFetched, isFetching, isPending, refetch } = useObligations(monthsToCover(today, month));
   const items = React.useMemo(() => data ?? [], [data]);
   const byDay = React.useMemo(() => groupByDate(items), [items]);
   const monthItems = React.useMemo(() => itemsInMonth(items, month), [items, month]);
@@ -106,7 +107,7 @@ export function UpcomingCalendarScreen() {
   const recurring = useRecurringActions();
   const statementSkip = useStatementSkip();
   const failed = Boolean(error) && !data;
-  const retry = { label: 'Retry', onSelect: () => void refetch() };
+  const retry = { label: 'Retry', loading: isFetching, onSelect: () => void refetch() };
 
   const rowProps = (item: ObligationItem) => ({
     today,

@@ -54,6 +54,7 @@ vi.mock('./loanMatchActions', () => ({ loadLoanMatches }));
 
 import { api } from '@/lib/api/client';
 import type { InstallmentDto } from '@/lib/loan.types';
+import { notify } from '@/lib/notify';
 import type { Transaction } from '@/lib/transaction.types';
 import { pinClock } from '@/test/pinClock';
 import { renderWithQuery } from '@/test/renderWithQuery';
@@ -479,7 +480,7 @@ describe('Prepay, the top bar + and the menu', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     await user.click(await screen.findByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(m.deleteLoan.mutateAsync).toHaveBeenCalled());
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/loans'));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/loans'));
   });
 
   it('Edit opens the loan form, with the core terms locked once a payment or event exists', async () => {
@@ -492,5 +493,43 @@ describe('Prepay, the top bar + and the menu', () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Principal')).toBeDisabled();
     expect(screen.getByLabelText('Loan name')).not.toBeDisabled();
+  });
+});
+
+describe('pending states', () => {
+  it('Close loan shows a loading toast from the menu press until the close settles', async () => {
+    const loadingToast = vi.spyOn(notify, 'loading').mockReturnValue('lt1');
+    const dismiss = vi.spyOn(notify, 'dismiss').mockImplementation(() => 'x');
+    let settle: (v: unknown) => void = () => undefined;
+    m.closeLoan.mutateAsync.mockReturnValue(new Promise((resolve) => (settle = resolve)));
+    renderView();
+    await openMenu('More actions');
+    await user.click(await screen.findByRole('menuitem', { name: 'Close loan' }));
+    expect(loadingToast).toHaveBeenCalledWith('Closing loan…');
+    expect(dismiss).not.toHaveBeenCalled();
+    settle({});
+    await waitFor(() => expect(dismiss).toHaveBeenCalledWith('lt1'));
+    loadingToast.mockRestore();
+    dismiss.mockRestore();
+  });
+
+  it('Close loan shows no second loading toast while the first is pending', async () => {
+    const loadingToast = vi.spyOn(notify, 'loading').mockReturnValue('lt1');
+    m.closeLoan.isPending = true;
+    renderView();
+    await openMenu('More actions');
+    await user.click(await screen.findByRole('menuitem', { name: 'Close loan' }));
+    expect(loadingToast).not.toHaveBeenCalled();
+    expect(m.closeLoan.mutateAsync).not.toHaveBeenCalled();
+    loadingToast.mockRestore();
+  });
+
+  it('the Unlink dialog keeps Unlink loading and Cancel off while the unlink is saving', async () => {
+    m.deletePayment.isPending = true;
+    renderView();
+    await user.click(rowOf('5 Sep'));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('button', { name: 'Unlink' })).toBeDisabled();
+    expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeDisabled();
   });
 });

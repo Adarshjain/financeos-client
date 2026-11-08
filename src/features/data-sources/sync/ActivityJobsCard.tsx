@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React, { useMemo } from 'react';
 
 import { Card } from '@/components/ds/Card/Card';
@@ -9,6 +8,7 @@ import { Pager } from '@/components/ds/Pager/Pager';
 import { JobsHistory } from '@/components/organisms/JobsHistory/JobsHistory';
 import { useJobsHistory } from '@/features/jobs/useJobsHistory';
 import type { JobResponse } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { ACTIVITY_SIZE_OPTIONS, activityUrl, type ActivityUrlState } from './activityModel';
 
@@ -20,8 +20,9 @@ export function ActivityJobsCard({
   page,
   jobId,
 }: ActivityUrlState & { page: number; jobId: string | null }) {
-  const router = useRouter();
-  const { jobs, totalPages, totalElements, isPending } = useJobsHistory({ page, size, statusFilter, typeFilter });
+  const router = useAppRouter();
+  const [pagePending, startTransition] = React.useTransition();
+  const { jobs, totalPages, totalElements, isPending, isPlaceholderData } = useJobsHistory({ page, size, statusFilter, typeFilter });
   const state = useMemo(() => ({ statusFilter, typeFilter, size }), [statusFilter, typeFilter, size]);
 
   const openHref = React.useCallback(
@@ -38,8 +39,8 @@ export function ActivityJobsCard({
       unit="jobs"
       sizeOptions={ACTIVITY_SIZE_OPTIONS}
       sizeLabel={(n) => `${n} / page`}
-      onPageChange={(p) => router.push(activityUrl(state, { newPage: p, job: jobId }), { scroll: false })}
-      onSizeChange={(s) => router.push(activityUrl({ ...state, size: s }, { job: jobId }), { scroll: false })}
+      onPageChange={(p) => startTransition(() => router.replace(activityUrl(state, { newPage: p, job: jobId }), { scroll: false }))}
+      onSizeChange={(s) => startTransition(() => router.replace(activityUrl({ ...state, size: s }, { job: jobId }), { scroll: false }))}
     />
   );
 
@@ -48,8 +49,9 @@ export function ActivityJobsCard({
       <JobsHistory
         jobs={jobs}
         openHref={openHref}
-        onOpen={(job) => router.push(openHref(job), { scroll: false })}
-        loading={isPending}
+        replaceOnOpen
+        onOpen={(job) => router.replace(openHref(job), { scroll: false })}
+        loading={isPending || isPlaceholderData || pagePending}
         skeletonRows={size}
         pager={pager}
         empty={

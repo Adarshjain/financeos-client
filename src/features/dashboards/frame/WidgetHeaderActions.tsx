@@ -22,10 +22,12 @@ export interface WidgetHeaderActionsProps {
   items: WidgetMenuItemId[];
   /** A duplicate is being saved: that item waits. */
   duplicating?: boolean;
+  /** A dialog's code is loading after a pick: the trigger shows it (the menu has closed). */
+  loadingDialog?: boolean;
   onSelect: (item: WidgetMenuItemId) => void;
 }
 
-export function WidgetHeaderActions({ items, duplicating, onSelect }: WidgetHeaderActionsProps) {
+export function WidgetHeaderActions({ items, duplicating, loadingDialog, onSelect }: WidgetHeaderActionsProps) {
   // An item that opens a dialog runs once the menu has closed: opening a modal while the menu's own modal layer is
   // still going leaves the page with pointer events off after the dialog closes.
   const chosen = React.useRef<WidgetMenuItemId | null>(null);
@@ -45,7 +47,7 @@ export function WidgetHeaderActions({ items, duplicating, onSelect }: WidgetHead
             },
           }}
           trigger={
-            <Button type="button" size="sm" variant="ghost" iconOnly aria-label="Widget options">
+            <Button type="button" size="sm" variant="ghost" iconOnly loading={duplicating || loadingDialog} aria-label="Widget options">
               <Icon name="more" size="sm" />
             </Button>
           }

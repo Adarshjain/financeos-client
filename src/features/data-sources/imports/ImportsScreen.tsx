@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Card } from '@/components/ds/Card/Card';
@@ -15,6 +14,7 @@ import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
 import { appHref } from '@/features/shell/routes';
 import type { ImportRecordResponse } from '@/lib/api/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   type ImportRow,
@@ -54,8 +54,9 @@ function Row({ row }: { row: ImportRow }) {
 
 /** Data sources → Imports: what was imported and held, newest first, with a kind filter and the Pager above and below. */
 export function ImportsScreen({ rows, totalElements, totalPages, page, size, kind }: ImportsScreenProps) {
-  const router = useRouter();
-  const go = (href: string) => router.push(href, { scroll: false });
+  const router = useAppRouter();
+  const [pending, startTransition] = React.useTransition();
+  const go = (href: string) => startTransition(() => router.replace(href, { scroll: false }));
   const kindLabel = KIND_OPTIONS.find((o) => o.value === kind)?.label ?? 'Kind';
 
   const pager = (borderPosition: 'top' | 'bottom') => (
@@ -78,6 +79,7 @@ export function ImportsScreen({ rows, totalElements, totalPages, page, size, kin
       <FilterBar changed={kind !== ''} onReset={() => go(importsUrl({ kind: '', size }))}>
         <Select
           value={toValue(kind)}
+          loading={pending}
           options={KIND_OPTIONS.map((o) => ({ value: toValue(o.value), label: o.label }))}
           onValueChange={(v) => go(importsUrl({ kind: fromValue(v as string) as ImportsUrl['kind'], size }))}
           trigger={

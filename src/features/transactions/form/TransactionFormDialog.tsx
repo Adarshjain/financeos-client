@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Dialog } from '@/components/ds/Dialog/Dialog';
@@ -22,6 +21,7 @@ import { useCategoryRecent } from '@/lib/query/hooks/useCategoryRecent';
 import { useTags } from '@/lib/query/hooks/useTags';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { categoryPatch, pickOf } from '../category/categoryModel';
 import { mergeOntoLatest, patchChange, patchFromValues } from '../optimistic/optimisticModel';
@@ -73,7 +73,7 @@ export function TransactionFormDialog({
   accounts: initialAccounts,
   onClose,
 }: TransactionFormDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const accountDialogs = useAccountDialogs();
   const isUpdate = Boolean(transaction);
   const { data: accounts = [] } = useAccounts(initialAccounts ?? undefined);
@@ -179,6 +179,7 @@ export function TransactionFormDialog({
   const reviewError = isUpdate && reasonsMissing(values, transaction) ? REASONS_REQUIRED : undefined;
 
   const submit = async () => {
+    if (saving) return;
     // Enter submits without a blur: settle any typed arithmetic (120+45) first.
     const current: TransactionFormValues = {
       ...values,
@@ -285,6 +286,7 @@ export function TransactionFormDialog({
               onOpenTags={() => setPickingTags(true)}
               onDescriptionBlur={onDescriptionBlur}
               onAddAccount={addAccount}
+              addAccountLoading={accountDialogs.loading}
             />
           </form>
         </Dialog.Body>

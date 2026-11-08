@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -19,6 +19,7 @@ import { appHref } from '@/features/shell/routes';
 import { useUrlState } from '@/features/upcoming/useUrlState';
 import type { AppNotification } from '@/lib/api/types';
 import { useNotificationFeed, useNotificationMutations as useFeedMutations } from '@/lib/query/hooks/useNotifications';
+import { useAppRouter } from '@/lib/useAppRouter';
 import { ListTransition, RowTransition, useDeferredRows } from '@/lib/viewTransition';
 
 import { groupByDay, notificationHref, NOTIFICATIONS_PAGE_SIZE, pageFromSearch, timeLabel } from './notificationsModel';
@@ -27,7 +28,7 @@ import { useNotificationMutations } from './useNotificationMutations';
 
 /** /inbox/updates: the full feed by day, newest first, with clear one, clear all and a pager. */
 export function NotificationsScreen() {
-  const router = useRouter();
+  const router = useAppRouter();
   const searchParams = useSearchParams();
   const [page, setPage] = useUrlState(searchParams.toString(), pageFromSearch);
   const { data, isLoading, isFetching, error, refetch } = useNotificationFeed(page, NOTIFICATIONS_PAGE_SIZE);
@@ -59,19 +60,36 @@ export function NotificationsScreen() {
   }, [loaded, page, unreadCount, newestCreatedAt]);
 
   const goToPage = React.useCallback(
-    (p: number, replace = false) => {
+    (p: number) => {
       setPage(p);
       const url = appHref(pageHref('/inbox/updates', {}, p));
-      if (replace) router.replace(url, { scroll: false });
-      else router.push(url, { scroll: false });
+      router.replace(url, { scroll: false });
     },
     [router, setPage],
   );
 
-  // Clearing the last row of a later page leaves it empty: step back once the server agrees.
+  // An emptied page is not an empty feed. Past the last page, move to the last one that has items; on a page
+  // that should have items (the next ones shifted up), ask the server again once per page and fetch.
+  const refetchedFor = React.useRef<string | null>(null);
+  const [gaveUp, setGaveUp] = React.useState<string | null>(null);
   React.useEffect(() => {
-    if (loaded && !clearing && !isFetching && items.length === 0 && page > 0) goToPage(page - 1, true);
-  }, [loaded, clearing, isFetching, items.length, page, goToPage]);
+    if (!loaded || clearing || isFetching || items.length > 0) return;
+    if (totalElements === 0) {
+      if (page > 0) goToPage(0);
+      return;
+    }
+    const last = Math.max(totalPages - 1, 0);
+    if (page > last) {
+      goToPage(last);
+      return;
+    }
+    const stamp = `${page}:${totalElements}`;
+    if (refetchedFor.current !== stamp) {
+      refetchedFor.current = stamp;
+      // Still empty after the refetch (the count and the list disagree): show the normal empty state.
+      void refetch().then(() => setGaveUp(stamp));
+    }
+  }, [loaded, clearing, isFetching, items.length, totalElements, totalPages, page, goToPage, refetch]);
 
   const pager =
     totalPages > 1 ? (
@@ -87,12 +105,12 @@ export function NotificationsScreen() {
     ) : null;
 
   let body: React.ReactNode;
-  if (isLoading) {
+  if (isLoading || (!error && items.length === 0 && totalElements > 0 && gaveUp !== `${page}:${totalElements}`)) {
     body = <NotificationsSkeleton />;
   } else if (error) {
     body = (
       <Card>
-        <LoadError what="notifications" retry={() => void refetch()} />
+        <LoadError what="notifications" retry={() => void refetch()} retrying={isFetching} />
       </Card>
     );
   } else if (items.length === 0) {
@@ -148,16 +166,16 @@ export function NotificationsScreen() {
           size="sm"
           title="Clear all notifications?"
           description={`This removes ${totalElements === 1 ? '1 notification' : `all ${totalElements} notifications`}. New ones still show up here.`}
-          secondary={{ label: 'Cancel', onSelect: () => setConfirmOpen(false) }}
+          secondary={{ label: 'Cancel', onSelect: () => setConfirmOpen(false), disabled: clearingAll }}
           primary={{
             label: 'Clear all',
             tone: 'danger',
-            disabled: clearingAll,
+            loading: clearingAll,
             onSelect: () => {
               void clearEverything().then((ok) => {
                 if (ok) {
                   setConfirmOpen(false);
-                  goToPage(0, true);
+                  goToPage(0);
                 }
               });
             },

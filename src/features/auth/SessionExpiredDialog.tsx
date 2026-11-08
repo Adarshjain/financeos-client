@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React, { useActionState, useEffect, useState } from 'react';
 
 import { login, logoutToDinero } from '@/actions/auth';
@@ -10,6 +9,7 @@ import { Dialog } from '@/components/ds/Dialog/Dialog';
 import { TextField } from '@/components/ds/TextField/TextField';
 import { AUTH_EXPIRED_EVENT, claimAuthExpired, markSessionRenewed } from '@/lib/authExpiry';
 import type { ApiResult, UserResponse } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 const FORM_ID = 'session-expired-form';
 
@@ -20,7 +20,7 @@ const FORM_ID = 'session-expired-form';
  * the login page.
  */
 export function SessionExpiredDialog({ email }: { email?: string }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
@@ -66,6 +66,7 @@ export function SessionExpiredDialog({ email }: { email?: string }) {
         secondary={{
           label: 'Sign out',
           disabled: busy,
+          loading: signingOut,
           onSelect: () => {
             setSigningOut(true);
             void logoutToDinero();

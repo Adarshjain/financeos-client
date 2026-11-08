@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { showToast } from '@/components/ds/Toast/Toast';
@@ -14,6 +13,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import { invalidateMoneyQueries, invalidateUncategorizedQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { MergeTransactionsResponse,Transaction } from '@/lib/transaction.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { removeChange } from '../optimistic/optimisticModel';
 import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
@@ -28,7 +28,7 @@ type Deleted = Pick<Transaction, 'id' | 'description' | 'sourcedDescription'>;
  */
 export function useDeleteTransactions() {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
   const optimistic = useOptimisticTransactions();
   const [summary, setSummary] = useState<ReviewSummary | null>(null);
 
@@ -73,7 +73,7 @@ export function useDeleteTransactions() {
  */
 export function useMergeTransactions(onMerged: () => void) {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
   return useMutation({
     mutationFn: ({ keepId, deleteId }: { keepId: string; deleteId: string }): Promise<MergeTransactionsResponse> =>
       unwrapAction(mergeTransactions(keepId, deleteId)),

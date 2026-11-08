@@ -10,6 +10,7 @@ import type { IgnoredNumber, ImportOffGroup, UnknownNumberGroup } from '@/lib/ap
 
 import { ignoredDetail, importOffDetail, numberDetail, numberTitle, suggestionLine } from './attentionItemModel';
 import { EditAccountHint } from './EditAccountHint';
+import { usePendingAction } from './usePendingAction';
 
 /** One unknown number: what it is and how much mail it holds, the account it seems to belong to, "Add to account", and Ignore in the ⋯ menu. */
 export function UnknownNumberRow({
@@ -20,9 +21,10 @@ export function UnknownNumberRow({
 }: {
   group: UnknownNumberGroup;
   onAdd: (group: UnknownNumberGroup) => void;
-  onIgnore: (group: UnknownNumberGroup) => void;
+  onIgnore: (group: UnknownNumberGroup) => Promise<void> | void;
   onDetails: (group: UnknownNumberGroup) => void;
 }) {
+  const { run } = usePendingAction();
   const match = suggestionLine(group);
   return (
     <ListRow
@@ -47,7 +49,7 @@ export function UnknownNumberRow({
           Add to account
         </Button>
       }
-      actions={[{ id: 'ignore', label: 'Ignore this number', onSelect: () => onIgnore(group) }]}
+      actions={[{ id: 'ignore', label: 'Ignore this number', onSelect: () => run('ignore', () => onIgnore(group)) }]}
     />
   );
 }
@@ -66,7 +68,8 @@ export function ImportOffRow({ group }: { group: ImportOffGroup }) {
 }
 
 /** A number the user chose to ignore, with the way back. */
-export function IgnoredNumberRow({ row, onStop }: { row: IgnoredNumber; onStop: (row: IgnoredNumber) => void }) {
+export function IgnoredNumberRow({ row, onStop }: { row: IgnoredNumber; onStop: (row: IgnoredNumber) => Promise<void> | void }) {
+  const { pending, run } = usePendingAction();
   return (
     <ListRow
       wrap
@@ -74,7 +77,7 @@ export function IgnoredNumberRow({ row, onStop }: { row: IgnoredNumber; onStop: 
       title={numberTitle(row)}
       subtitle={ignoredDetail(row)}
       trailing={
-        <Button variant="secondary" size="sm" onClick={() => onStop(row)}>
+        <Button variant="secondary" size="sm" loading={pending === 'stop'} onClick={() => run('stop', () => onStop(row))}>
           Stop ignoring
         </Button>
       }

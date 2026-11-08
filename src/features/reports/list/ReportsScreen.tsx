@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import { Badge } from '@/components/ds/Badge/Badge';
@@ -18,6 +18,7 @@ import { Select } from '@/components/ds/Select/Select';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { Text } from '@/components/ds/Text/Text';
 import { replaceUrl } from '@/lib/urlState';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { AddToDashboardDialog } from './AddToDashboardDialog';
 import { ReportsAside } from './ReportsAside';
@@ -165,7 +166,7 @@ export interface ReportsScreenProps {
 
 /** The Reports list: tabs, then search and the type chips in one row over the grouped table, then templates and Ask instead. */
 export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const actions = useReportMutations();
   const [search, setSearch] = React.useState('');
   const [type, setTypeState] = React.useState<ReportKind | undefined>(initialType);
@@ -194,9 +195,9 @@ export function ReportsScreen({ type: initialType, rows }: ReportsScreenProps) {
       onDuplicate: (row) => actions.duplicate.mutate(row.id),
       onAddToDashboard: setAdding,
       onDelete: setDeleting,
-      duplicating: actions.duplicate.isPending,
+      duplicating: actions.duplicate.isPending || actions.refreshing,
     }),
-    [router, actions.duplicate],
+    [router, actions.duplicate, actions.refreshing],
   );
   const columns = React.useMemo(() => makeColumns(rowActions), [rowActions]);
 

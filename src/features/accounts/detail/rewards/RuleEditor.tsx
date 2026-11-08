@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { useRewardAccountConfig } from '@/features/rewards/queries/useRewardAccountConfigQueries';
@@ -11,6 +10,7 @@ import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useTags } from '@/lib/query/hooks/useTags';
 import type { RewardRule } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 /**
  * The Earning rules page's rule dialog, opened in place (Edit) on a card's rewards page. It loads its own lookups
@@ -30,7 +30,7 @@ export function RuleEditor({
   today?: string;
   onClose: () => void;
 }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const refresh = React.useCallback(() => router.refresh(), [router]);
   const categories = useTags().data ?? [];
   const bucketsQuery = useRewardCapBuckets(accountId);

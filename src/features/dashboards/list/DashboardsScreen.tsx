@@ -4,7 +4,6 @@
 // there is no Home, a search, then a table (name and description, widgets, Default badge, updated, a ⋯ menu).
 // A row opens the dashboard. Delete confirms first; set and clear default confirm with a toast.
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Badge } from '@/components/ds/Badge/Badge';
@@ -22,6 +21,7 @@ import { useDeleteDashboard, useRestoreHome, useToggleDefault } from '@/features
 import { ReportsTabs } from '@/features/reports/list/ReportsTabs';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 import { useDashboards } from '@/lib/query/hooks/useDashboards';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { editDashboardHref, NEW_DASHBOARD_HREF } from '../routes';
 import { canRestoreHome, type DashboardRow, dashboardRows, filterDashboardRows } from './dashboardsListModel';
@@ -131,7 +131,7 @@ function makeColumns(actions: RowActions) {
 }
 
 export function DashboardsScreen() {
-  const router = useRouter();
+  const router = useAppRouter();
   const { data: dashboards = [] } = useDashboards();
   const toggleDefault = useToggleDefault(noop);
   const remove = useDeleteDashboard();

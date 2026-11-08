@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
@@ -15,21 +15,24 @@ import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 import { absAmount } from '@/lib/transactionAmount';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { acceptLinkSuggestion, dismissLinkSuggestion } from '../link/linkActions';
 import { acceptedWord,acceptLabel, candidateIdFor, dismissLabel, isActionable } from './suggestionModel';
 
 /** The server's "Looks like …" proposal for a transaction: each candidate with its own Link/Settle, and one Not this. */
 export function TransactionSuggestionSection({ transaction: t }: { transaction: Transaction }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const queryClient = useQueryClient();
   const suggestion = t.suggestion;
+  const [refreshing, startTransition] = React.useTransition();
 
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: keys.transactions.all });
     void queryClient.invalidateQueries({ queryKey: keys.inbox.all });
     void invalidateMoneyQueries(queryClient);
-    router.refresh();
+    // Held in a transition so Link / Not this keep spinning until the refreshed page is what shows.
+    startTransition(() => router.refresh());
   };
 
   const accept = useMutation({
@@ -50,7 +53,7 @@ export function TransactionSuggestionSection({ transaction: t }: { transaction: 
   });
 
   if (!suggestion || !isActionable(suggestion.kind)) return null;
-  const busy = accept.isPending || dismiss.isPending;
+  const busy = accept.isPending || dismiss.isPending || refreshing;
 
   return (
     <div>
@@ -71,7 +74,7 @@ export function TransactionSuggestionSection({ transaction: t }: { transaction: 
             subtitle={`${formatDate(c.date, 'list')}${account} · ${formatMoney(absAmount(c.amount), { decimals: 'exact' })}`}
             trailing={
               candidateId ? (
-                <Button size="sm" loading={accept.isPending && accept.variables === candidateId} disabled={busy} onClick={() => accept.mutate(candidateId)}>
+                <Button size="sm" loading={(accept.isPending || (refreshing && accept.isSuccess)) && accept.variables === candidateId} disabled={busy} onClick={() => accept.mutate(candidateId)}>
                   {acceptLabel(suggestion.kind)}
                 </Button>
               ) : null
@@ -80,7 +83,7 @@ export function TransactionSuggestionSection({ transaction: t }: { transaction: 
         );
       })}
       <div className="px-space-16 desk:px-space-20 py-space-8">
-        <Button size="sm" variant="secondary" loading={dismiss.isPending} disabled={busy} onClick={() => dismiss.mutate()}>
+        <Button size="sm" variant="secondary" loading={dismiss.isPending || (refreshing && dismiss.isSuccess)} disabled={busy} onClick={() => dismiss.mutate()}>
           {dismissLabel(suggestion.kind)}
         </Button>
       </div>

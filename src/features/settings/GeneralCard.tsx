@@ -15,7 +15,7 @@ import { originOf, type RevealOrigin, revealTheme } from '@/lib/themeReveal';
 
 import { type ThemeChoice, useThemeChoice } from './profile/useThemeChoice';
 import { settingsSection } from './settingsSections';
-import { useRouterRefresh } from './useRouterRefresh';
+import { useRouterRefreshState } from './useRouterRefresh';
 
 const THEME_OPTIONS = [
   { value: 'light', label: 'Light', icon: <Icon name="sun" size="xs" /> },
@@ -33,7 +33,7 @@ const TAB_SLOT_OPTIONS = [
 /** Theme (saved by next-themes on this device), the phone bottom bar's second tab (a cookie, read by the server) and the Notifications link. */
 export function GeneralCard({ tabSlot = DEFAULT_TAB_SLOT }: { tabSlot?: TabSlot }) {
   const { theme, setTheme } = useThemeChoice();
-  const refresh = useRouterRefresh();
+  const { refresh, pending: refreshing } = useRouterRefreshState();
   const [slot, setSlot] = React.useState<TabSlot>(tabSlot);
   // The theme change grows from the segment that was clicked (or the control's centre for keyboard use).
   const origin = React.useRef<RevealOrigin | undefined>(undefined);
@@ -71,6 +71,7 @@ export function GeneralCard({ tabSlot = DEFAULT_TAB_SLOT }: { tabSlot?: TabSlot 
             aria-label="Phone bottom bar"
             options={TAB_SLOT_OPTIONS}
             value={slot}
+            disabled={refreshing}
             onValueChange={(next) => {
               const chosen = parseTabSlot(Array.isArray(next) ? next[0] : next);
               setSlot(chosen);

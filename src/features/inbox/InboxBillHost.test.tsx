@@ -45,6 +45,14 @@ describe('InboxBillHost', () => {
     expect(api.GET).not.toHaveBeenCalled();
   });
 
+  it('reports loading from the press until the bill is in, and not loading after a failed load', async () => {
+    const onLoadingChange = vi.fn();
+    renderWithQuery(<InboxBillHost pending={{ type: 'mark_paid', statementId: 's1' }} onClose={vi.fn()} onLoadingChange={onLoadingChange} />);
+    expect(onLoadingChange).toHaveBeenCalledWith(true);
+    await screen.findByText('Mark bill as paid');
+    await waitFor(() => expect(onLoadingChange).toHaveBeenLastCalledWith(false));
+  });
+
   it('mark paid opens with the loaded bill and records a full payment', async () => {
     vi.mocked(api.POST).mockResolvedValue({ data: { ...bill, status: 'PAID' } } as never);
     const onClose = vi.fn();

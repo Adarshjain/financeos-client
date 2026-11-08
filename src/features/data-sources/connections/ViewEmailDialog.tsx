@@ -51,7 +51,7 @@ export function ViewEmailDialog({ ledgerId, subject, onClose }: { ledgerId: stri
             </Banner>
           ) : null}
           {failure === 'generic' ? (
-            <Banner tone="danger" action={{ label: 'Retry', onSelect: () => void query.refetch() }}>
+            <Banner tone="danger" action={{ label: 'Retry', loading: query.isFetching, onSelect: () => void query.refetch() }}>
               {"Couldn't load this email."}
             </Banner>
           ) : null}

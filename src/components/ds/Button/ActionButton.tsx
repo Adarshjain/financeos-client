@@ -5,10 +5,10 @@ import React from 'react';
 import { useLinkComponent } from '../LinkProvider';
 import { Button, type ButtonProps } from './Button';
 
-/** What an action object carries to do something: a click handler, a destination, or both (the link also calls `onSelect`). */
+/** What an action object carries to do something: a click handler, a destination, or both (the link also calls `onSelect`). `loading` shows the spinner and blocks it. */
 export type ActionTarget =
-  | { onSelect: () => void; href?: string }
-  | { href: string; onSelect?: () => void };
+  | { onSelect: () => void; href?: string; loading?: boolean }
+  | { href: string; onSelect?: () => void; loading?: boolean };
 
 export interface ActionButtonProps extends Omit<ButtonProps, 'asChild' | 'onClick'> {
   /** With `href` the button renders a real link (the app's link through LinkProvider); `onSelect` still runs on click. */

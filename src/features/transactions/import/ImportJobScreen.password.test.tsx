@@ -85,4 +85,19 @@ describe('ImportJobScreen password retry', () => {
     expect(screen.getByText('Needs an account', { selector: 'span' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Pick an account' })).toHaveAttribute('href', '/transactions/import?held=h9');
   });
+
+  it('shows loading while retrying and ignores a second submit; works again after an error', async () => {
+    withFiles([locked]);
+    let resolve!: (v: unknown) => void;
+    vi.mocked(retryFileWithPassword).mockReturnValueOnce(new Promise((r) => { resolve = r; }) as never);
+    render(<ImportJobScreen jobId="j1" />);
+    submit('secret');
+    const btn = screen.getByRole('button', { name: /Try again/ });
+    await waitFor(() => expect(btn).toBeDisabled());
+    fireEvent.submit(btn.closest('form')!);
+    expect(retryFileWithPassword).toHaveBeenCalledTimes(1);
+    resolve({ success: false, status: 409, error: { code: 'X', message: 'Nope.' } });
+    expect(await screen.findByText('Nope.')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Try again' })).toBeEnabled());
+  });
 });

@@ -33,7 +33,7 @@ export function JobsTab() {
   });
 
   const items = data?.content ?? [];
-  const retry = (job: FailedJob) => run(retryJob(job.id), 'Retrying that job');
+  const retry = (job: FailedJob) => run(retryJob(job.id), 'Retrying that job', 'Retrying that job');
   const open = (job: FailedJob) => !job.dismissedAt;
 
   return (

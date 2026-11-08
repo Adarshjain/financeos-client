@@ -71,6 +71,7 @@ export function useAssignAccount(
       return;
     }
 
+    if (assignAttentionMutation.isPending) return;
     setErrorMessage(null);
     let pastCard;
     if (asOldCard) {

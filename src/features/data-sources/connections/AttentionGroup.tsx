@@ -12,16 +12,17 @@ import { keys } from '@/lib/query/keys';
 import type { AttentionGroupModel, AttentionItem } from './attentionItemModel';
 import { AttentionItemRow } from './AttentionItemRow';
 import { loadGmailUngrouped } from './gmailActions';
+import { usePendingAction } from './usePendingAction';
 
 const PAGE_SIZE = 10;
 
 interface AttentionGroupProps {
   group: AttentionGroupModel;
-  retryItem: (ledgerId: string) => void;
+  retryItem: (ledgerId: string) => Promise<void> | void;
   onAssign: (item: AttentionItem) => void;
-  onArchive: (ledgerId: string) => void;
-  onUnarchive: (ledgerId: string) => void;
-  onRetryAll: () => void;
+  onArchive: (ledgerId: string) => Promise<void> | void;
+  onUnarchive: (ledgerId: string) => Promise<void> | void;
+  onRetryAll: () => Promise<void> | void;
   onArchiveAll: () => void;
 }
 
@@ -29,7 +30,8 @@ interface AttentionGroupProps {
 export function AttentionGroup({ group, onRetryAll, onArchiveAll, ...rowHandlers }: AttentionGroupProps) {
   const [size, setSize] = useState(PAGE_SIZE);
   const params = { page: 0, size, includeRetryable: false, reason: group.reason };
-  const { data } = useQuery({
+  const { pending, run } = usePendingAction();
+  const { data, isPlaceholderData } = useQuery({
     queryKey: keys.settings.gmailAttention({ ungrouped: true, ...params }),
     queryFn: () => unwrapAction(loadGmailUngrouped(params)),
     placeholderData: keepPreviousData,
@@ -43,10 +45,10 @@ export function AttentionGroup({ group, onRetryAll, onArchiveAll, ...rowHandlers
           {group.label} · {group.count}
         </Text>
         <div className="flex items-center gap-space-8">
-          <Button variant="secondary" size="sm" onClick={onRetryAll}>
+          <Button variant="secondary" size="sm" loading={pending === 'retry-all'} disabled={pending !== null} onClick={() => run('retry-all', onRetryAll)}>
             Retry all
           </Button>
-          <Button variant="secondary" size="sm" onClick={onArchiveAll}>
+          <Button variant="secondary" size="sm" disabled={pending !== null} onClick={onArchiveAll}>
             Archive all
           </Button>
         </div>
@@ -57,7 +59,7 @@ export function AttentionGroup({ group, onRetryAll, onArchiveAll, ...rowHandlers
       {rows.length < group.count && rows.length > 0 ? (
         <Card.Row className="justify-center">
           <Text variant="label" as="span">
-            <Button variant="link" size="sm" onClick={() => setSize((s) => s + PAGE_SIZE)}>
+            <Button variant="link" size="sm" loading={isPlaceholderData} onClick={() => setSize((s) => s + PAGE_SIZE)}>
               Show more
             </Button>
           </Text>

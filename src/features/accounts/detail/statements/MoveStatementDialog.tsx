@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Dialog } from '@/components/ds/Dialog/Dialog';
@@ -15,6 +14,7 @@ import { useAccounts } from '@/lib/query';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { accountHref } from '../accountTabsModel';
 import { moveStatement } from './moveStatementAction';
@@ -34,7 +34,7 @@ export interface MoveStatementDialogProps {
 
 /** Moves a statement and its transactions to another account of the same type, keeping every edit. */
 export function MoveStatementDialog({ open, onOpenChange, accountId, statementId, periodEndLabel, fy }: MoveStatementDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const qc = useQueryClient();
   const { data: accounts = [], isLoading } = useAccounts();
   const [targetId, setTargetId] = React.useState<string | null>(null);
@@ -58,7 +58,7 @@ export function MoveStatementDialog({ open, onOpenChange, accountId, statementId
       await unwrapAction(moveStatement(accountId, statementId, targetId));
       showToast(`Moved to ${target?.name ?? 'the other account'}`);
       onOpenChange(false);
-      router.push(`${accountHref(accountId)}/statements?fy=${fy}`);
+      router.replace(`${accountHref(accountId)}/statements?fy=${fy}`);
       router.refresh();
       qc.removeQueries({ queryKey: keys.statements.detail(statementId) });
       void Promise.all([

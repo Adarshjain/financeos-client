@@ -8,7 +8,6 @@
 // report or an unknown built-in says so. One widget failing never touches the others. A widget loads (and a
 // component built-in mounts its body) only once it is near the viewport; until then it shows its loading state.
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Text } from '@/components/ds/Text/Text';
@@ -22,6 +21,7 @@ import { DEFAULT_QUERY, transactionsUrl } from '@/features/transactions/list/tra
 import { isBuiltinWidget, isWidgetAvailable, widgetParams, widgetTitle } from '@/lib/dashboards.helpers';
 import type { BuiltinWidgetResponse, WidgetResponse } from '@/lib/dashboards.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { builtinPieces } from '../builtins/registry';
 import { useReportWidgetLoad } from '../data/dashboardLoadFlow';
@@ -55,7 +55,7 @@ type Overlay = 'underlying' | 'settings' | null;
 const loadWidgetUnderlying = () => import('./WidgetUnderlying').then((m) => m.WidgetUnderlying);
 
 export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing = false, issue, onSaveSettings }: DashboardWidgetFrameProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { ref, inView } = useInView();
   const state = useReportWidget(widget, inView);
   const duplicate = useDuplicateBuiltinReport();
@@ -64,8 +64,8 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
   const [target, setTarget] = React.useState<UnderlyingTarget | null>(null);
   const close = React.useCallback(() => setOverlay(null), []);
   // The settings and underlying-data dialogs are not in the page: each loads when opened (see useLazyDialog).
-  const { Component: WidgetSettingsDialog, run: runSettings } = useLazyDialog(loadWidgetSettings);
-  const { Component: WidgetUnderlying, run: runUnderlying } = useLazyDialog(loadWidgetUnderlying);
+  const { Component: WidgetSettingsDialog, run: runSettings, loading: settingsLoading } = useLazyDialog(loadWidgetSettings);
+  const { Component: WidgetUnderlying, run: runUnderlying, loading: underlyingLoading } = useLazyDialog(loadWidgetUnderlying);
 
   const builtin = isBuiltinWidget(widget);
   const key = widgetBuiltinKey(widget);
@@ -162,6 +162,7 @@ export function DashboardWidgetFrame({ widget, catalog, dashboardName, editing =
             <WidgetHeaderActions
               items={items}
               duplicating={duplicate.isPending}
+              loadingDialog={settingsLoading || underlyingLoading}
               onSelect={select}
             />
           )

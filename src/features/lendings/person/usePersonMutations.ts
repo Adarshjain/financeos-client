@@ -1,12 +1,13 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import React from 'react';
 
 import { showToast } from '@/components/ds/Toast/Toast';
 import { LENDINGS_HREF } from '@/features/lendings/lendingsHref';
 import { useCounterpartyMutations } from '@/features/lendings/useCounterpartyMutations';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { UpdateLendingRequest } from '@/lib/lending.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 export interface EntryChange {
   body: UpdateLendingRequest;
@@ -20,16 +21,20 @@ export interface EntryChange {
  * happened in a Toast and refreshes the page. Failures surface the server's message. Each returns whether it worked.
  */
 export function usePersonMutations(counterpartyId: string) {
-  const router = useRouter();
+  const router = useAppRouter();
   const m = useCounterpartyMutations(counterpartyId, {
     onError: (e, fallback) => showToast(getErrorMessage(e, fallback), { tone: 'danger' }),
   });
+
+  // Refreshes run in a transition so a control stays pending until the page shows the new data.
+  const [navPending, startNav] = React.useTransition();
+  const refresh = () => startNav(() => router.refresh());
 
   const updatePerson = async (name: string, notes: string): Promise<boolean> => {
     try {
       await m.updateCp.mutateAsync({ name: name.trim(), notes: notes.trim() || undefined });
       showToast('Person updated');
-      router.refresh();
+      refresh();
       return true;
     } catch {
       return false;
@@ -40,7 +45,7 @@ export function usePersonMutations(counterpartyId: string) {
     try {
       await m.deleteCp.mutateAsync();
       showToast('Person deleted');
-      router.push(LENDINGS_HREF);
+      startNav(() => router.replace(LENDINGS_HREF));
       return true;
     } catch {
       return false;
@@ -58,7 +63,7 @@ export function usePersonMutations(counterpartyId: string) {
       await m.updateLending.mutateAsync({ id, body: change.body });
       if (moved && change.transactionId) await m.linkTransaction.mutateAsync({ id, transactionId: change.transactionId });
       showToast('Entry updated');
-      router.refresh();
+      refresh();
       return true;
     } catch {
       return false;
@@ -69,7 +74,7 @@ export function usePersonMutations(counterpartyId: string) {
     try {
       await m.deleteLending.mutateAsync(id);
       showToast('Entry deleted');
-      router.refresh();
+      refresh();
       return true;
     } catch {
       return false;
@@ -82,10 +87,10 @@ export function usePersonMutations(counterpartyId: string) {
     updateEntry,
     deleteEntry,
     pending: {
-      person: m.updateCp.isPending,
-      deletePerson: m.deleteCp.isPending,
-      entry: m.updateLending.isPending || m.linkTransaction.isPending || m.unlinkTransaction.isPending,
-      deleteEntry: m.deleteLending.isPending,
+      person: m.updateCp.isPending || navPending,
+      deletePerson: m.deleteCp.isPending || navPending,
+      entry: m.updateLending.isPending || m.linkTransaction.isPending || m.unlinkTransaction.isPending || navPending,
+      deleteEntry: m.deleteLending.isPending || navPending,
     },
   };
 }

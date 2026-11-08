@@ -59,7 +59,7 @@ function setup(over: Partial<TransactionsListPaneProps> = {}) {
 }
 
 beforeEach(() => {
-  router.push.mockClear();
+  router.replace.mockClear();
 });
 
 describe('TransactionsListPane Uncategorized card', () => {
@@ -94,6 +94,6 @@ describe('TransactionsListPane Category and Tags chips', () => {
     setup({ query: { ...DEFAULT_QUERY, categories: ['food'], tags: ['c1'], page: 2 }, categoryList: CATEGORY_LIST_FIXTURE });
     const chip = screen.getByRole('button', { name: /Category · Food/ });
     fireEvent.click(within(chip.closest('div') ?? chip).getAllByRole('button', { name: 'Reset filter' })[0]);
-    expect(String(router.push.mock.calls.at(-1)?.[0])).toBe('/transactions?tag=c1');
+    expect(String(router.replace.mock.calls.at(-1)?.[0])).toBe('/transactions?tag=c1');
   });
 });

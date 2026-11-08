@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -10,6 +9,7 @@ import { postLoanPaymentsBatch } from '@/features/loans/loanPaymentsBatchModel';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { LoanMatchSuggestions } from '@/lib/loan.types';
 import { keys } from '@/lib/query/keys';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { matchBanner, paidToast, singleCandidateBatches } from './loansListModel';
 
@@ -18,7 +18,7 @@ import { matchBanner, paidToast, singleCandidateBatches } from './loansListModel
  * records them loan by loan through the batch endpoint, then refreshes the page and says what was marked.
  */
 export function LoanMatchBanner({ matches }: { matches: LoanMatchSuggestions[] }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const qc = useQueryClient();
   const busy = React.useRef(false);
   const banner = matchBanner(matches);

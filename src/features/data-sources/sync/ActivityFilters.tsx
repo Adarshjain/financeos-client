@@ -1,12 +1,12 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
 import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
 import { Select } from '@/components/ds/Select/Select';
 import { TYPE_OPTIONS } from '@/features/jobs/jobsModel';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   activityUrl,
@@ -26,11 +26,14 @@ export function ActivityFilters({
   typeFilter,
   size,
 }: ActivityUrlState) {
-  const router = useRouter();
+  const router = useAppRouter();
+  const [pending, startTransition] = React.useTransition();
 
   const go = (overrides: { newStatus?: string; newType?: string }) =>
-    router.push(activityUrl({ statusFilter, typeFilter, size }, overrides), {
-      scroll: false,
+    startTransition(() => {
+      router.replace(activityUrl({ statusFilter, typeFilter, size }, overrides), {
+        scroll: false,
+      });
     });
 
   const statusOptions = STATUS_OPTIONS.map((o) => ({
@@ -50,6 +53,7 @@ export function ActivityFilters({
         <Select
           value={toValue(statusFilter)}
           options={statusOptions}
+          loading={pending}
           onValueChange={(v) => go({ newStatus: fromValue(v as string) })}
           trigger={
             <FilterChip className="shrink-0" hasDropdown changed={statusFilter !== ''} onReset={() => go({ newStatus: '' })}>
@@ -60,6 +64,7 @@ export function ActivityFilters({
         <Select
           value={toValue(typeFilter)}
           options={typeOptions}
+          loading={pending}
           onValueChange={(v) => go({ newType: fromValue(v as string) })}
           trigger={
             <FilterChip className="shrink-0" hasDropdown changed={typeFilter !== ''} onReset={() => go({ newType: '' })}>

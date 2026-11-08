@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Badge } from '@/components/ds/Badge/Badge';
@@ -22,6 +21,7 @@ import { INVESTMENTS_IMPORT_HREF } from '@/features/investments/investmentsTabs'
 import { loadEditTradeDialog } from '@/features/investments/lazyDialogs';
 import { useSearchText } from '@/features/shell/useSearchText';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   currentFy,
@@ -176,8 +176,8 @@ export interface TradebookScreenProps {
 
 /** The search, broker, side and FY controls over the paged tradebook. Every control is one URL change, answered by the server. */
 export function TradebookScreen({ state, rows, totalElements, totalPages, brokers, today, jobLines }: TradebookScreenProps) {
-  const router = useRouter();
-  const go = (next: Partial<TradebookUrlState>) => router.push(tradebookUrl({ ...state, ...next }), { scroll: false });
+  const router = useAppRouter();
+  const go = (next: Partial<TradebookUrlState>) => router.replace(tradebookUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
   const [editing, setEditing] = React.useState<TradebookRow | null>(null);
   const { Component: EditTradeDialog, run: runEdit } = useLazyDialog(loadEditTradeDialog);

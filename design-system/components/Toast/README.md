@@ -8,7 +8,7 @@ The same as Banner, so a toast reads the same as an inline message: `neutral` (t
 ## Props
 - `tone`: `'neutral' | 'success' | 'danger' | 'warning' | 'info'` (default `'neutral'`)
 - `message`: `ReactNode` (or `children`)
-- `action`: `{ label: ReactNode; onSelect: () => void }` (Button `link` on the right)
+- `action`: `{ label: ReactNode; onSelect: () => void; loading?: boolean }` (Button `link` on the right)
 - `secondaryAction`: same shape, a second `link` button left of `action`; only with `action`
 
 ## Use

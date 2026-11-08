@@ -20,11 +20,11 @@ export interface NotificationsDropdownProps {
 
 /** The bell's popover: the latest ten notifications, with a link to the full page. */
 export function NotificationsDropdown({ highlightedIds }: NotificationsDropdownProps) {
-  const { data, isLoading, error, refetch } = useNotificationFeed(0, DROPDOWN_SIZE);
+  const { data, isLoading, isFetching, error, refetch } = useNotificationFeed(0, DROPDOWN_SIZE);
   const items = data?.content ?? [];
 
   let body: React.ReactNode;
-  if (isLoading) {
+  if (isLoading || (!error && items.length === 0 && (data?.totalElements ?? 0) > 0)) {
     body = <NotificationsDropdownSkeleton />;
   } else if (error) {
     body = (
@@ -32,7 +32,7 @@ export function NotificationsDropdown({ highlightedIds }: NotificationsDropdownP
         <Text variant="body" tone="ink-3">
           Couldn&apos;t load notifications.
         </Text>
-        <Button variant="link" size="sm" onClick={() => void refetch()}>
+        <Button variant="link" size="sm" loading={isFetching} onClick={() => void refetch()}>
           Retry
         </Button>
       </div>

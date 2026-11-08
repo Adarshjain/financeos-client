@@ -62,9 +62,17 @@ export function CardsTab({
   const actions = useCardholderMutations(accountId, isBank);
   const [dialog, setDialogState] = React.useState<DialogState | null>(null);
   // The cardholder and card forms are not in the page: their code loads when one is opened (see useLazyDialog).
-  const { Component: dialogs, run: runDialog } = useLazyDialog(loadCardDialogs);
+  const { Component: dialogs, run: runDialog, loading: dialogLoading } = useLazyDialog(loadCardDialogs);
+  const [pressedId, setPressedId] = React.useState<string | null>(null);
+  const [reopeningId, setReopeningId] = React.useState<string | null>(null);
+  // The holder whose press is waiting: for the dialog's code, or for Reopen.
+  const busyId = reopeningId ?? (dialogLoading ? pressedId : null);
   const setDialog = React.useCallback(
-    (next: DialogState | null) => (next === null ? setDialogState(null) : void runDialog(() => setDialogState(next))),
+    (next: DialogState | null) => {
+      if (next === null) return setDialogState(null);
+      setPressedId('holderId' in next ? next.holderId : null);
+      void runDialog(() => setDialogState(next));
+    },
     [runDialog],
   );
 
@@ -115,8 +123,14 @@ export function CardsTab({
   };
 
   const reopen = async (holder: Cardholder) => {
-    const message = await actions.reopenHolder(holder);
-    if (message) showToast(message, { tone: 'danger' });
+    if (reopeningId) return;
+    setReopeningId(holder.id);
+    try {
+      const message = await actions.reopenHolder(holder);
+      if (message) showToast(message, { tone: 'danger' });
+    } finally {
+      setReopeningId(null);
+    }
   };
 
   const empty = model.open.length === 0 && model.closed.length === 0;
@@ -136,6 +150,7 @@ export function CardsTab({
         <Button
           variant="secondary"
           size="sm"
+          loading={dialogLoading && pressedId === null}
           onClick={() => setDialog({ kind: isBank && empty ? 'addPrimaryCard' : 'addHolder' })}
         >
           {isBank ? (empty ? 'Add your debit card' : 'Add joint holder') : 'Add add-on cardholder'}
@@ -159,6 +174,7 @@ export function CardsTab({
               onCloseCard={(holderId, cardId) => setDialog({ kind: 'closeCard', holderId, cardId })}
               onDeleteCard={(holderId, cardId) => setDialog({ kind: 'deleteCard', holderId, cardId })}
               onCloseHolder={(holderId) => setDialog({ kind: 'closeHolder', holderId })}
+              busy={busyId === m.id}
             />
           ))}
         </div>
@@ -170,6 +186,7 @@ export function CardsTab({
         rows={model.closed}
         onMenu={onMenu}
         onReopen={(holderId) => onMenu(holderId, 'reopen')}
+        busyId={busyId}
       />
 
       {dialogs ? (

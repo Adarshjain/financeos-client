@@ -69,4 +69,21 @@ describe('BankLogo', () => {
     rerender(<BankLogo bankId="nope" name="Nova" size="sm" />);
     expect(container).toBeEmptyDOMElement();
   });
+  it('draws the 20px logo at size md', () => {
+    render(<BankLogo bankId="hdfc" name="Salary" size="md" />);
+    expect(screen.getByRole('img', { name: 'HDFC Bank' })).toHaveClass('h-space-20', 'w-space-20');
+  });
+
+  it('draws the 20px letter tile at size md with no known bank', () => {
+    const { container } = render(<BankLogo bankId={null} name="Nova" size="md" />);
+    const tile = screen.getByText('N');
+    expect(tile.closest('.h-space-20')).not.toBeNull();
+    expect(container.querySelector('.h-space-24')).toBeNull();
+    expect(screen.getByTestId('bank-missing')).toBeInTheDocument();
+  });
+
+  it('draws the 24px logo by default', () => {
+    render(<BankLogo bankId="hdfc" name="Salary" />);
+    expect(screen.getByRole('img', { name: 'HDFC Bank' })).toHaveClass('h-space-24', 'w-space-24');
+  });
 });

@@ -102,4 +102,15 @@ describe('KpiTile', () => {
     expect(tile.className).not.toMatch(/\bp[xy]?-space/);
     expect(container.querySelector('[class*="px-space-16"]')).toBeNull();
   });
+
+  it('a loading action shows the spinner and blocks onSelect', () => {
+    const onSelect = vi.fn();
+    render(
+      <KpiTile label="Portfolio" error="Prices unavailable" action={{ label: 'Retry', onSelect, loading: true }} />
+    );
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeDisabled();
+    expect(screen.getAllByTestId('spinner-icon').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });

@@ -1,11 +1,12 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 
 import { handleGoogleCallbackAction } from '@/actions/auth';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { Illustration } from '@/components/organisms/Illustration/Illustration';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 function Authenticating({ done }: { done?: boolean }) {
   return (
@@ -23,7 +24,7 @@ function Authenticating({ done }: { done?: boolean }) {
 
 function GoogleCallbackContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const router = useAppRouter();
   const [status, setStatus] = useState<'loading' | 'error' | 'success'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
   // An OAuth authorization code is single-use. This effect keys on
@@ -49,7 +50,7 @@ function GoogleCallbackContent() {
 
         // Redirect to login after a short delay
         setTimeout(() => {
-          router.push(`/login?error=${encodeURIComponent(error)}`);
+          router.replace(`/login?error=${encodeURIComponent(error)}`);
         }, 2000);
         return;
       }
@@ -58,7 +59,7 @@ function GoogleCallbackContent() {
         setStatus('error');
         setErrorMessage('No authorization code received');
         setTimeout(() => {
-          router.push('/login?error=no_code');
+          router.replace('/login?error=no_code');
         }, 2000);
         return;
       }
@@ -74,14 +75,14 @@ function GoogleCallbackContent() {
           setStatus('error');
           setErrorMessage(result.error.message);
           setTimeout(() => {
-            router.push(`/login?error=${encodeURIComponent(result.error.message)}`);
+            router.replace(`/login?error=${encodeURIComponent(result.error.message)}`);
           }, 3000);
         }
       } catch {
         setStatus('error');
         setErrorMessage('An unexpected error occurred');
         setTimeout(() => {
-          router.push('/login?error=unknown');
+          router.replace('/login?error=unknown');
         }, 3000);
       }
     };

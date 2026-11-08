@@ -114,7 +114,7 @@ describe('/investments/instruments: rows', () => {
     await renderPage({ type: 'stock' });
     expect(screen.getAllByText('/ 120').length).toBeGreaterThanOrEqual(2);
     fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.push).toHaveBeenCalledWith('/investments/instruments?type=stock&page=2', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/instruments?type=stock&page=2', { scroll: false });
   });
 
   it('explains an empty catalog and opens Add instrument from it', async () => {
@@ -130,7 +130,7 @@ describe('/investments/instruments: rows', () => {
     await renderPage({ q: 'zzz', type: 'etf', stale: '1' });
     expect(screen.getByText('No instruments match')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/instruments', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/instruments', { scroll: false });
   });
 });
 
@@ -142,23 +142,23 @@ describe('/investments/instruments: filters go to the URL', () => {
     expect(await screen.findByRole('option', { name: 'Stocks' })).toHaveTextContent(/^Stocks$/);
     expect(screen.getByRole('option', { name: 'ETFs' })).toHaveTextContent(/^ETFs$/);
     fireEvent.click(screen.getByRole('option', { name: 'Funds' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/instruments?type=mutual_fund', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/instruments?type=mutual_fund', { scroll: false });
   });
 
   it('clears the type with the x of its chip, keeping the other filters', async () => {
     await renderPage({ type: 'etf', stale: '1' });
     fireEvent.click(screen.getAllByRole('button', { name: 'Reset filter' })[0]);
-    expect(router.push).toHaveBeenCalledWith('/investments/instruments?stale=1', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/instruments?stale=1', { scroll: false });
   });
 
   it('toggles Stale price on and off', async () => {
     const { unmount } = await renderPage();
     fireEvent.click(screen.getByRole('button', { name: 'Stale price' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/instruments?stale=1', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/instruments?stale=1', { scroll: false });
     unmount();
     await renderPage({ stale: '1' });
     fireEvent.click(screen.getByRole('button', { name: 'Stale price' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/instruments', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/instruments', { scroll: false });
   });
 
   it('searches the server once typing pauses, from the first page', async () => {
@@ -166,19 +166,19 @@ describe('/investments/instruments: filters go to the URL', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     await renderPage({ page: '3' });
     fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'tata' } });
-    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(400);
     });
-    expect(router.push).toHaveBeenCalledTimes(1);
-    expect(router.push).toHaveBeenCalledWith('/investments/instruments?q=tata', { scroll: false });
+    expect(router.replace).toHaveBeenCalledTimes(1);
+    expect(router.replace).toHaveBeenCalledWith('/investments/instruments?q=tata', { scroll: false });
   });
 
   it('orders by name, A–Z first, Z–A from the dropdown', async () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: /Name A–Z/ }));
     fireEvent.click(await screen.findByRole('option', { name: 'Name Z–A' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/instruments?sort=desc', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/instruments?sort=desc', { scroll: false });
   });
 });
 

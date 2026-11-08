@@ -190,4 +190,15 @@ describe('AppLockRows', () => {
     fireEvent.click(screen.getByText('5 minutes'));
     await waitFor(() => expect(actions.updateLockAfter).toHaveBeenCalledWith(300));
   });
+
+  it('keeps Lock after inactive while the new value saves, then works again', async () => {
+    let settle: (v: unknown) => void = () => undefined;
+    actions.updateLockAfter.mockReturnValue(new Promise((resolve) => (settle = resolve)));
+    render(<AppLockRows status={on} />);
+    fireEvent.click(screen.getByRole('combobox', { name: 'Lock after' }));
+    fireEvent.click(screen.getByText('5 minutes'));
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Lock after' })).toBeDisabled());
+    settle({ success: true, data: undefined });
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Lock after' })).not.toBeDisabled());
+  });
 });

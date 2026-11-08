@@ -65,7 +65,7 @@ describe('/investments/corporate-actions', () => {
     await renderPage({ page: '2' });
     fireEvent.click(screen.getByRole('button', { name: 'Type' }));
     fireEvent.click(await screen.findByRole('option', { name: 'Demerger' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/corporate-actions?type=demerger', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/corporate-actions?type=demerger', { scroll: false });
   });
 
   it('shows a changed type as just its value with a x that resets it, and a Reset filters link', async () => {
@@ -73,22 +73,22 @@ describe('/investments/corporate-actions', () => {
     await renderPage({ type: 'demerger' });
     expect(screen.queryByText('Type: Demerger')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Reset filter' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/corporate-actions', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/corporate-actions', { scroll: false });
     fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
-    expect(router.push).toHaveBeenLastCalledWith('/investments/corporate-actions', { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith('/investments/corporate-actions', { scroll: false });
   });
 
   it('puts a sort choice in the address', async () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: /Newest/ }));
     fireEvent.click(await screen.findByRole('option', { name: 'Oldest' }));
-    expect(router.push).toHaveBeenCalledWith('/investments/corporate-actions?sort=oldest', { scroll: false });
+    expect(router.replace).toHaveBeenCalledWith('/investments/corporate-actions?sort=oldest', { scroll: false });
   });
 
   it('puts the search in the address once typing has paused', async () => {
     await renderPage();
     fireEvent.change(screen.getByPlaceholderText('Search'), { target: { value: 'itc' } });
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith('/investments/corporate-actions?q=itc', { scroll: false }));
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/investments/corporate-actions?q=itc', { scroll: false }));
   });
 
   it('shows a page past the end as the last page', async () => {

@@ -22,13 +22,14 @@ afterAll(() => vi.useRealTimers());
 
 class NotFoundSignal extends Error {}
 const push = vi.fn();
+const replace = vi.fn();
 const refresh = vi.fn();
 let pathname = '/rewards';
 vi.mock('next/navigation', () => ({
   notFound: () => {
     throw new NotFoundSignal('NEXT_NOT_FOUND');
   },
-  useRouter: () => ({ push, refresh }),
+  useRouter: () => ({ push, replace, refresh }),
   usePathname: () => pathname,
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -77,6 +78,7 @@ const model = {
 describe('/rewards', () => {
   beforeEach(() => {
     push.mockReset();
+    replace.mockReset();
     refresh.mockReset();
     pathname = '/rewards';
     loadOverview.mockReset().mockResolvedValue({ model });
@@ -224,6 +226,7 @@ const tabData = (over: Partial<RewardsTabData> = {}): RewardsTabData => ({
 describe('/rewards/cards/[accountId]', () => {
   beforeEach(() => {
     push.mockReset();
+    replace.mockReset();
     loadAccount.mockReset().mockResolvedValue(card);
     loadData.mockReset().mockResolvedValue(tabData());
   });
@@ -244,7 +247,7 @@ describe('/rewards/cards/[accountId]', () => {
     expect(screen.queryByRole('button', { name: '5X' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'All rules' }));
     fireEvent.click(screen.getByRole('option', { name: '5X' }));
-    expect(push).toHaveBeenCalledWith('/rewards/cards/c1?rule=r1');
+    expect(replace).toHaveBeenCalledWith('/rewards/cards/c1?rule=r1', { scroll: false });
   });
 
   it('hides the pager while the lines fit one page', async () => {
@@ -275,10 +278,10 @@ describe('/rewards/cards/[accountId]', () => {
     await renderCard();
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByRole('option', { name: 'Last month' }));
-    expect(push).toHaveBeenLastCalledWith('/rewards/cards/c1?rule=r1&period=LAST_MONTH');
+    expect(replace).toHaveBeenLastCalledWith('/rewards/cards/c1?rule=r1&period=LAST_MONTH', { scroll: false });
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByRole('option', { name: 'Custom range' }));
-    expect(push).toHaveBeenLastCalledWith('/rewards/cards/c1?rule=r1&period=CUSTOM&from=2026-03-15&to=2027-03-14');
+    expect(replace).toHaveBeenLastCalledWith('/rewards/cards/c1?rule=r1&period=CUSTOM&from=2026-03-15&to=2027-03-14', { scroll: false });
   });
 
   it('puts the Custom range From and To fields in two equal columns', async () => {
@@ -340,7 +343,7 @@ describe('/rewards/cards/[accountId]', () => {
     const from = screen.getByLabelText('From');
     fireEvent.change(from, { target: { value: '10/05/2026' } });
     fireEvent.blur(from);
-    expect(push).toHaveBeenLastCalledWith('/rewards/cards/c1?period=CUSTOM&from=2026-05-10&to=2026-06-30');
+    expect(replace).toHaveBeenLastCalledWith('/rewards/cards/c1?period=CUSTOM&from=2026-05-10&to=2026-06-30', { scroll: false });
   });
 
   it('shows the amber notes, with Manage cards opening the account’s Cards tab', async () => {
@@ -396,7 +399,7 @@ describe('/rewards/cards/[accountId]', () => {
     expect(screen.getByText("Couldn't load rewards")).toBeDefined();
     fireEvent.click(screen.getByRole('combobox'));
     fireEvent.click(screen.getByRole('option', { name: 'This month' }));
-    expect(push).toHaveBeenLastCalledWith('/rewards/cards/c1?period=THIS_MONTH');
+    expect(replace).toHaveBeenLastCalledWith('/rewards/cards/c1?period=THIS_MONTH', { scroll: false });
   });
 
   it('draws a cap bar on the rule, and a plain note on one that earned nothing', async () => {

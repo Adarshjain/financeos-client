@@ -80,6 +80,13 @@ export const Failed: Story = {
   },
 };
 
+export const FailedRetrying: Story = {
+  args: {
+    ...Failed.args,
+    action: { label: 'Retry', onSelect: fn(), loading: true },
+  },
+};
+
 export const Unavailable: Story = {
   args: {
     title: 'Card spend by month',

@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Badge } from '@/components/ds/Badge/Badge';
@@ -28,6 +27,7 @@ import { ActionError, unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatCount, pluralize } from '@/lib/format';
 import type { FileSummary, JobResponse } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { retryFileWithPassword } from './importActions';
 import { IMPORT_HREF, importFailureSummary, importHeldHref, importJobHref, importJobTitle, importTotals, ingestResult } from './importModel';
@@ -41,21 +41,24 @@ const FILE_STATUS = {
 
 /** The password box for a file that is locked or opened with the wrong password; "Try again" starts a new import. */
 function PasswordRetry({ jobId, fileIndex, wrong }: { jobId: string; fileIndex: number; wrong: boolean }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const id = React.useId();
   const [password, setPassword] = React.useState('');
   const [save, setSave] = React.useState(true);
   const [pending, setPending] = React.useState(false);
+  const [navigating, startNavigation] = React.useTransition();
   const [error, setError] = React.useState<string | undefined>(wrong ? "That password didn't work." : undefined);
 
   const submit = async () => {
-    if (!password) return;
+    if (!password || pending || navigating) return;
     setPending(true);
     setError(undefined);
     try {
       const next = await unwrapAction(retryFileWithPassword(jobId, fileIndex, password, save));
       emitJobStarted(next.id);
-      router.push(importJobHref(next.id));
+      // The spinner holds until the new job's page shows.
+      startNavigation(() => router.push(importJobHref(next.id)));
+      setPending(false);
     } catch (e) {
       setError(
         e instanceof ActionError && e.status === 422 && e.code === 'WRONG_PASSWORD'
@@ -83,10 +86,10 @@ function PasswordRetry({ jobId, fileIndex, wrong }: { jobId: string; fileIndex: 
           setError(undefined);
         }}
         error={error}
-        disabled={pending}
+        disabled={pending || navigating}
       />
       <div className="flex items-center gap-space-8">
-        <Checkbox id={id} checked={save} onCheckedChange={(c) => setSave(c === true)} disabled={pending} />
+        <Checkbox id={id} checked={save} onCheckedChange={(c) => setSave(c === true)} disabled={pending || navigating} />
         <label htmlFor={id}>
           <Text variant="body" as="span">
             Save to this account
@@ -94,7 +97,7 @@ function PasswordRetry({ jobId, fileIndex, wrong }: { jobId: string; fileIndex: 
         </label>
       </div>
       <div>
-        <Button type="submit" size="sm" loading={pending} disabled={!password}>
+        <Button type="submit" size="sm" loading={pending || navigating} disabled={!password}>
           Try again
         </Button>
       </div>
@@ -150,7 +153,8 @@ export function ImportJobScreen({ jobId }: { jobId: string }) {
 }
 
 function Body({ job }: { job: JobResponse }) {
-  const router = useRouter();
+  const router = useAppRouter();
+  const [opening, startOpening] = React.useTransition();
   const result = ingestResult(job);
   const failure = importFailureSummary(job);
   const totals = result ? importTotals(result) : null;
@@ -165,7 +169,7 @@ function Body({ job }: { job: JobResponse }) {
         subtitle={[job.accountName, `started ${startedLabel(job.createdAt)}`, took === '—' ? null : `took ${took}`].filter(Boolean).join(' · ')}
         action={
           <div className="flex items-center gap-space-8">
-            <JobActions job={job} onRetried={(retried) => router.push(importJobHref(retried.id))} />
+            <JobActions job={job} pending={opening} onRetried={(retried) => startOpening(() => router.push(importJobHref(retried.id)))} />
             <Badge tone={badge.tone}>{badge.label}</Badge>
           </div>
         }

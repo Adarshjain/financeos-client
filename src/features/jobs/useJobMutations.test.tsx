@@ -43,6 +43,19 @@ describe('useJobMutations router', () => {
     expect(routerRefresh).not.toHaveBeenCalled();
   });
 
+  it('is busy until the call settles, then usable again after a failure', async () => {
+    let fail!: () => void;
+    vi.mocked(api.POST).mockImplementation(() => new Promise((_, reject) => { fail = () => reject(new Error('boom')); }) as never);
+    const { result } = setup();
+    act(() => result.current.retry('j1'));
+    await waitFor(() => expect(result.current.busy).toBe(true));
+    act(() => fail());
+    await waitFor(() => expect(result.current.busy).toBe(false));
+    vi.mocked(api.POST).mockResolvedValue({ data: { id: 'j2' } } as never);
+    act(() => result.current.retry('j1'));
+    await waitFor(() => expect(api.POST).toHaveBeenCalledTimes(2));
+  });
+
   it('does not refresh when the call fails', async () => {
     vi.mocked(api.POST).mockRejectedValue(new Error('boom'));
     const { result } = setup();

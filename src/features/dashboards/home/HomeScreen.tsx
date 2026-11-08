@@ -6,7 +6,6 @@
 // to restore Home or pick another.
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -27,6 +26,7 @@ import { useBuiltins } from '@/lib/query/hooks/useBuiltins';
 import { useDashboards } from '@/lib/query/hooks/useDashboards';
 import { useReportsList } from '@/lib/query/hooks/useReports';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { DASHBOARDS_HREF, editDashboardHref, NEW_DASHBOARD_HREF } from '../routes';
 import { DashboardWidgets } from '../view/DashboardWidgets';
@@ -34,17 +34,18 @@ import { DashboardWidgets } from '../view/DashboardWidgets';
 const noop = () => undefined;
 
 export function HomeScreen({ scan }: { scan?: ScanState | null }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { data: dashboards = [] } = useDashboards();
   const catalog = useBuiltins().data;
   // The pick is tracked by id so the shown dashboard follows the cache (Widget settings, Add widget).
   const [currentId, setCurrentId] = React.useState<string | null>(null);
   const [picking, setPicking] = React.useState(false);
-  const { Component: WidgetPicker, run: runPicker } = useLazyDialog(loadWidgetPicker);
+  const { Component: WidgetPicker, run: runPicker, loading: pickerLoading } = useLazyDialog(loadWidgetPicker);
   const openPicker = () => void runPicker(() => setPicking(true));
   const reports = useReportsList({ enabled: picking }).data;
   const add = useAddWidgetNow();
-  const restoreHome = useRestoreHome(() => router.refresh());
+  const [refreshing, startRefresh] = React.useTransition();
+  const restoreHome = useRestoreHome(() => startRefresh(() => router.refresh()));
   const toggleDefault = useToggleDefault(noop);
 
   const progress = scan && isScanProgressShown(scan) ? <ScanProgressCard scan={scan} className="mb-space-12 desk:mb-space-16" /> : null;
@@ -57,7 +58,7 @@ export function HomeScreen({ scan }: { scan?: ScanState | null }) {
         {progress}
         <EmptyState title="No default dashboard" description="Home shows your default dashboard. Restore the built-in Home or pick another.">
           <div className="flex w-full max-w-container-sm flex-col gap-space-8">
-            <Button variant="primary" loading={restoreHome.pending} onClick={restoreHome.restore}>
+            <Button variant="primary" loading={restoreHome.pending || refreshing} onClick={restoreHome.restore}>
               Restore default Home
             </Button>
             <Button asChild variant="secondary">
@@ -110,7 +111,7 @@ export function HomeScreen({ scan }: { scan?: ScanState | null }) {
         <EmptyState
           title="No widgets yet"
           description="Use Add widget to put built-ins or your saved reports here."
-          action={{ label: 'Add widget', onSelect: () => !add.isPending && openPicker() }}
+          action={{ label: 'Add widget', loading: pickerLoading, onSelect: () => !add.isPending && openPicker() }}
         />
       ) : (
         <DashboardWidgets widgets={active.widgets} catalog={catalog} dashboardName={active.name} onSaveSettings={add.isPending ? undefined : saveSettings} />

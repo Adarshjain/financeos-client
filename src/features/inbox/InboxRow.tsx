@@ -10,14 +10,17 @@ import { ContextMenu } from '@/components/ds/Menu/ContextMenu';
 import { SwipeActions } from '@/components/ds/SwipeActions/SwipeActions';
 import type { InboxItemResponse } from '@/lib/api/types';
 
+import type { PendingBillAction } from './inboxBillActions';
 import { appTodayPlus, canDismiss, canSnooze, inboxRowId } from './inboxModel';
-import { type RowButton, rowButtons, type RowMenuAction, rowMenuActions, type RowOptions } from './inboxRowsModel';
+import { pendingFor, type RowButton, rowButtons, type RowMenuAction, rowMenuActions, type RowOptions } from './inboxRowsModel';
 import { InboxSnoozeMenu } from './InboxSnoozeMenu';
 
 export interface InboxRowProps {
   item: InboxItemResponse;
   highlighted: boolean;
   rowOptions?: RowOptions;
+  /** The bill action whose bill is still loading: its button shows loading. */
+  billLoading?: PendingBillAction | null;
   onBillButton: (item: InboxItemResponse, button: RowButton) => void;
   onMenuAction: (item: InboxItemResponse, action: RowMenuAction) => void;
   onSnooze: (item: InboxItemResponse, until: string) => void;
@@ -29,7 +32,7 @@ export interface InboxRowProps {
  * snooze and dismiss icons the server allows. On phone, swiping right snoozes until tomorrow and
  * swiping left dismisses.
  */
-export function InboxRow({ item, highlighted, rowOptions, onBillButton, onMenuAction, onSnooze, onDismiss }: InboxRowProps) {
+export function InboxRow({ item, highlighted, rowOptions, billLoading, onBillButton, onMenuAction, onSnooze, onDismiss }: InboxRowProps) {
   const snoozable = canSnooze(item);
   const dismissable = canDismiss(item);
   const buttons = rowButtons(item, rowOptions);
@@ -99,6 +102,7 @@ export function InboxRow({ item, highlighted, rowOptions, onBillButton, onMenuAc
                   variant={button.variant}
                   size="sm"
                   disabled={button.disabled}
+                  loading={isBillLoading(item, button, billLoading)}
                   onClick={() => onBillButton(item, button)}
                 >
                   {button.label}
@@ -124,4 +128,10 @@ export function InboxRow({ item, highlighted, rowOptions, onBillButton, onMenuAc
     </SwipeActions>
     </ContextMenu>
   );
+}
+
+function isBillLoading(item: InboxItemResponse, button: RowButton, billLoading: PendingBillAction | null | undefined) {
+  if (!billLoading || !button.bill) return false;
+  const pending = pendingFor(item, button);
+  return pending?.statementId === billLoading.statementId && pending.type === billLoading.type;
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -25,6 +24,7 @@ import { downloadCsv } from '@/lib/downloadCsv';
 import type { DividendFilters } from '@/lib/investments.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { AccountType } from '@/lib/types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { FilterRowSkeleton } from '../FilterRowSkeleton';
 import { loadDividendAddDialog } from '../lazyDialogs';
@@ -156,11 +156,11 @@ export function DividendsListCard({
   exportFilters,
   onEdit,
 }: DividendsListCardProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [exporting, setExporting] = React.useState(false);
   const [adding, setAdding] = React.useState(false);
-  const { Component: DividendAddDialog, run: runAdd } = useLazyDialog(loadDividendAddDialog);
-  const go = (next: Partial<DividendsUrlState>) => router.push(dividendsUrl({ ...state, ...next }), { scroll: false });
+  const { Component: DividendAddDialog, run: runAdd, loading: addLoading } = useLazyDialog(loadDividendAddDialog);
+  const go = (next: Partial<DividendsUrlState>) => router.replace(dividendsUrl({ ...state, ...next }), { scroll: false });
 
   const columns = React.useMemo(() => buildColumns(), []);
 
@@ -214,7 +214,7 @@ export function DividendsListCard({
     <EmptyState
       title="No dividends yet"
       description="Record a dividend to see what you have received."
-      action={{ label: 'Record dividend', variant: 'primary', onSelect: () => void runAdd(() => setAdding(true)) }}
+      action={{ label: 'Record dividend', variant: 'primary', loading: addLoading, onSelect: () => void runAdd(() => setAdding(true)) }}
     />
   );
 

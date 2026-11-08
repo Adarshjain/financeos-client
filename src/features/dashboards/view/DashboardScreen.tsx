@@ -8,7 +8,6 @@
 // `?edit=1` opens straight into editing (the list's Edit link). The draft is one reducer; Save writes it with the
 // widgets re-flowed into the server's 100-column layout.
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { ActionBar } from '@/components/ds/ActionBar/ActionBar';
@@ -33,6 +32,7 @@ import { useBuiltins } from '@/lib/query/hooks/useBuiltins';
 import { useReportsList } from '@/lib/query/hooks/useReports';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { replaceUrl } from '@/lib/urlState';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { dashboardHref, DASHBOARDS_HREF } from '../routes';
 import { DashboardEditActions } from './DashboardEditActions';
@@ -57,7 +57,7 @@ export interface DashboardScreenProps {
 
 export function DashboardScreen({ dashboard, startEditing = false }: DashboardScreenProps) {
   const creating = dashboard === undefined;
-  const router = useRouter();
+  const router = useAppRouter();
   const [saved, setSaved] = React.useState(dashboard);
   const [editing, setEditing] = React.useState(creating || startEditing);
   const [initial] = React.useState(() => initialEditorState(dashboard));
@@ -67,13 +67,15 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
   const [focusTick, setFocusTick] = React.useState(0);
   const [headerTick, setHeaderTick] = React.useState(0);
   const [picking, setPicking] = React.useState(false);
-  const { Component: WidgetPicker, run: runPicker } = useLazyDialog(loadWidgetPicker);
+  const { Component: WidgetPicker, run: runPicker, loading: pickerLoading } = useLazyDialog(loadWidgetPicker);
   const { Component: WidgetSettingsDialog, run: runSettings } = useLazyDialog(loadWidgetSettings);
   const openPicker = () => void runPicker(() => setPicking(true));
   const [settingsFor, setSettingsFor] = React.useState<string | null>(null);
   const [discarding, setDiscarding] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const remove = useDeleteDashboard();
+  // A move to another page after a save or delete keeps the button loading until the new page is on screen.
+  const [navigating, startNavigation] = React.useTransition();
   // True from a successful delete until the page navigates away: the confirm stays disabled so it cannot delete twice.
   const [deleted, setDeleted] = React.useState(false);
   const body = React.useRef<HTMLDivElement>(null);
@@ -146,7 +148,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
           if (creating) {
             // What was typed is now saved: nothing is left to guard when the page moves on.
             setBaseline(editorSignature(state));
-            router.replace(dashboardHref(data.id));
+            startNavigation(() => router.replace(dashboardHref(data.id)));
             return;
           }
           setSaved(data);
@@ -226,7 +228,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
                 footer={
                   <div className="flex justify-center py-space-12">
                     <Text variant="label" as="span">
-                      <Button variant="link" size="sm" onClick={() => openPicker()}>
+                      <Button variant="link" size="sm" loading={pickerLoading} onClick={() => openPicker()}>
                         Add a widget
                       </Button>
                     </Text>
@@ -278,7 +280,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
       ) : null}
 
       {editing ? (
-        <DashboardEditActions creating={creating} dirty={dirty} saving={saveMutation.isPending} onDiscard={discard} onSave={save} />
+        <DashboardEditActions creating={creating} dirty={dirty} saving={saveMutation.isPending || navigating} onDiscard={discard} onSave={save} />
       ) : null}
 
       {picking && WidgetPicker ? (
@@ -314,7 +316,7 @@ export function DashboardScreen({ dashboard, startEditing = false }: DashboardSc
             remove.mutate(saved.id, {
               onSuccess: () => {
                 setDeleted(true);
-                router.replace(DASHBOARDS_HREF);
+                startNavigation(() => router.replace(DASHBOARDS_HREF));
               },
             })
           }

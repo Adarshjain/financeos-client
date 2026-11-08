@@ -52,6 +52,7 @@ export function EventFormDialog({ today, initialType, submitting, onSubmit, onCl
   };
 
   const submit = async () => {
+    if (submitting) return;
     const resolved = {
       ...values,
       amount: resolveAmountExpression(values.amount),

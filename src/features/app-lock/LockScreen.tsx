@@ -29,6 +29,7 @@ const UNLOCK_KEY = ['app-lock', 'unlock'];
 export function LockScreen({ from }: { from: string }) {
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
 
   const toSignIn = () => window.location.replace(appHref('/login'));
 
@@ -119,7 +120,17 @@ export function LockScreen({ from }: { from: string }) {
         <Button variant="primary" size="xl" fullWidth loading={busy} loadingLabel="Checking…" onClick={() => unlock()}>
           Unlock
         </Button>
-        <Button variant="link" size="sm" onClick={() => void logoutToDinero()}>
+        <Button
+          variant="link"
+          size="sm"
+          loading={signingOut}
+          disabled={busy}
+          onClick={() => {
+            if (signingOut) return;
+            setSigningOut(true);
+            void logoutToDinero();
+          }}
+        >
           Sign out
         </Button>
       </div>

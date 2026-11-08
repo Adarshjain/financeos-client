@@ -30,13 +30,13 @@ interface AttentionCardProps {
   archivedData: PagedAttention | null;
   archivedPage: number;
   onArchivedPageChange: (page: number) => void;
-  retryItem: (ledgerId: string) => void;
-  onArchive: (ledgerId: string) => void;
-  onUnarchive: (ledgerId: string) => void;
-  onRetryAll: (reason: AttentionReason) => void;
-  onArchiveAll: (reason: AttentionReason) => void;
-  onIgnoreNumber: (group: UnknownNumberGroup) => void;
-  onUnignoreNumber: (row: IgnoredNumber) => void;
+  retryItem: (ledgerId: string) => Promise<void> | void;
+  onArchive: (ledgerId: string) => Promise<void> | void;
+  onUnarchive: (ledgerId: string) => Promise<void> | void;
+  onRetryAll: (reason: AttentionReason) => Promise<void> | void;
+  onArchiveAll: (reason: AttentionReason) => Promise<void> | void;
+  onIgnoreNumber: (group: UnknownNumberGroup) => Promise<void> | void;
+  onUnignoreNumber: (row: IgnoredNumber) => Promise<void> | void;
   /** Opened from the "needs attention" push: scroll the card into view. */
   autoScroll?: boolean;
 }
@@ -92,6 +92,7 @@ export function AttentionCard({
   const ungroupedCount = reasonGroups.reduce((n, g) => n + g.count, 0);
   const activeCount = groups.unknownNumbers.length + groups.importOff.length + ungroupedCount;
   const [confirmArchive, setConfirmArchive] = useState<AttentionReason | null>(null);
+  const [archivingAll, setArchivingAll] = useState(false);
   const archivedCount = archivedData?.totalElements ?? 0;
   const ignoredCount = groups.ignored.length;
   const hasArchive = archivedCount > 0 || ignoredCount > 0;
@@ -188,14 +189,21 @@ export function AttentionCard({
 
       <ConfirmDialog
         open={confirmArchive !== null}
-        onOpenChange={(open) => (open ? undefined : setConfirmArchive(null))}
+        onOpenChange={(open) => (open || archivingAll ? undefined : setConfirmArchive(null))}
         title={confirmArchive ? `Archive all "${REASON_LABELS[confirmArchive]}" items?` : 'Archive all?'}
         description="They move to Archived and can be unarchived one by one."
         confirmLabel="Archive all"
         tone="danger"
-        onConfirm={() => {
-          if (confirmArchive) onArchiveAll(confirmArchive);
-          setConfirmArchive(null);
+        confirmLoading={archivingAll}
+        onConfirm={async () => {
+          if (!confirmArchive || archivingAll) return;
+          setArchivingAll(true);
+          try {
+            await onArchiveAll(confirmArchive);
+          } finally {
+            setArchivingAll(false);
+            setConfirmArchive(null);
+          }
         }}
       />
 

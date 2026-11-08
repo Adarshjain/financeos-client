@@ -1,10 +1,10 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import React, { startTransition } from 'react';
+import React, { useTransition } from 'react';
 
 import { ErrorState } from '@/components/organisms/ErrorState/ErrorState';
 import { Illustration } from '@/components/organisms/Illustration/Illustration';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { ShellPage, type ShellPageProps } from './ShellPage';
 
@@ -23,10 +23,11 @@ export interface PageErrorProps {
 
 /** A route's error boundary: says what failed, how to fix it, and offers Try again. Keeps the app shell. */
 export function PageError({ error, reset, unstable_retry, what = 'this page', shell }: PageErrorProps) {
-  const router = useRouter();
+  const router = useAppRouter();
+  const [retrying, startRetry] = useTransition();
   const retry = () => {
-    if (unstable_retry) return unstable_retry();
-    startTransition(() => {
+    if (unstable_retry) return startRetry(() => unstable_retry());
+    startRetry(() => {
       router.refresh();
       reset();
     });
@@ -36,7 +37,7 @@ export function PageError({ error, reset, unstable_retry, what = 'this page', sh
       illustration={<Illustration variant="error" />}
       title={`Couldn't load ${what}`}
       description="Quote the reference if it keeps failing."
-      action={{ label: 'Retry', onSelect: retry }}
+      action={{ label: 'Retry', loading: retrying, onSelect: retry }}
       reference={error.digest}
     />
   );

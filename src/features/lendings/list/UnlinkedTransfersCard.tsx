@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -9,6 +8,7 @@ import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { showToast } from '@/components/ds/Toast/Toast';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { useDeleteLending, useRecordSettlement } from '../useLendingMutations';
 import type { TransferRow, UnrecordedRow } from './lendingsListModel';
@@ -21,7 +21,7 @@ import { useTransferLink } from './useTransferLink';
  * the row disappears and the toast's Undo deletes the new entry.
  */
 export function UnlinkedTransfersCard({ rows, unrecorded = [] }: { rows: TransferRow[]; unrecorded?: UnrecordedRow[] }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const onError = (fallback: string) => (e: unknown) => showToast(getErrorMessage(e, fallback), { tone: 'danger' });
   const record = useRecordSettlement({ onError: onError("Couldn't record settlement. Try again.") });
   const deleteEntry = useDeleteLending({ onError: onError("Couldn't undo settlement. Try again.") });

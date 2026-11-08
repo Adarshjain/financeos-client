@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { TopBar, type TopBarAction, type TopBarMenuItem } from '@/components/ds/TopBar/TopBar';
 import { Logo } from '@/components/organisms/Logo/Logo';
 import { useNotificationsAction } from '@/features/notifications/useNotificationMutations';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { crumbParentHref, trimCrumb } from './crumbTrail';
 import { hasInAppHistory } from './navigationStore';
@@ -36,10 +36,10 @@ export interface ShellPageProps {
  * The router is optional so the page still renders outside an app router (tests, Storybook).
  */
 function useBack(backHref?: string) {
-  let router: ReturnType<typeof useRouter> | null = null;
+  let router: ReturnType<typeof useAppRouter> | null = null;
   try {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    router = useRouter();
+    router = useAppRouter();
   } catch {
     router = null;
   }

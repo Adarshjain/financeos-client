@@ -1,7 +1,6 @@
 'use client';
 
 import { type QueryClient, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { skipStatementPeriod, undoStatementSkip } from '@/features/accounts/detail/statements/statementSkipActions';
@@ -13,6 +12,7 @@ import type { InboxItemResponse, InboxResponse, InboxSummaryResponse } from '@/l
 import { formatDate } from '@/lib/format';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
   addNpsPendingAccount,
@@ -116,7 +116,7 @@ function restore(qc: QueryClient, snapshot: Snapshot | undefined) {
  */
 export function useInboxMutations(notifier: InboxNotifier = sonnerInboxNotifier) {
   const qc = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
   // The list and the badge counts are query-backed (server-prefetched into the same keys), so a refetch is the refresh.
   // Only after the last overlapping action settles (the settling one still counts as mutating): an earlier refetch
   // could land while another action is in flight and bring back the row it has optimistically hidden.

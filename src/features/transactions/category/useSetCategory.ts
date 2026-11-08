@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { dismissToast, showToast } from '@/components/ds/Toast/Toast';
@@ -11,6 +10,7 @@ import type { CategoryDef, CategoryPick } from '@/lib/categoryList.types';
 import { invalidateUncategorizedQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { SetCategoryResponse, Transaction } from '@/lib/transaction.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { patchChange } from '../optimistic/optimisticModel';
 import { useOptimisticTransactions } from '../optimistic/OptimisticTransactions';
@@ -29,7 +29,7 @@ type SettableTransaction = Pick<Transaction, 'id'>;
  * The toast says "Set to Food · Delivery" with Undo, which sends the response's `previous` back as `restore`.
  */
 export function useSetCategory(list: readonly CategoryDef[]) {
-  const router = useRouter();
+  const router = useAppRouter();
   const queryClient = useQueryClient();
   const optimistic = useOptimisticTransactions();
 

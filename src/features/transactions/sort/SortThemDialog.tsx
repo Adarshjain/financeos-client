@@ -1,7 +1,6 @@
 'use client';
 
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Avatar } from '@/components/ds/Avatar/Avatar';
@@ -33,6 +32,7 @@ import { useCategoryRecent } from '@/lib/query/hooks/useCategoryRecent';
 import { invalidateUncategorizedQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { ApplyUncategorizedResponse, UncategorizedGroup } from '@/lib/uncategorized.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import { SortGroupDialog } from './SortGroupDialog';
@@ -91,7 +91,7 @@ function GroupRow({ group, onOpen }: { group: UncategorizedGroup; onOpen: () => 
  * the card re-checks whether anything is left. Search narrows the groups by name on the server.
  */
 export function SortThemDialog({ onClose }: SortThemDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const queryClient = useQueryClient();
   const { list } = useCategoryList();
   const [search, setSearch] = React.useState('');

@@ -153,4 +153,15 @@ describe('Banner action href', () => {
     render(<Banner action={{ label: 'Open upcoming', href: '/upcoming' }}>Heads up</Banner>);
     expect(screen.getByRole('link', { name: 'Open upcoming' })).toHaveAttribute('href', '/upcoming');
   });
+
+  it('a loading action shows the spinner and blocks onSelect', () => {
+    const onSelect = vi.fn();
+    render(
+      <Banner action={{ label: 'Retry', onSelect, loading: true }}>Failed</Banner>
+    );
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeDisabled();
+    expect(screen.getAllByTestId('spinner-icon').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });

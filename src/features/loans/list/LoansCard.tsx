@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -14,6 +13,7 @@ import { closedBand, ClosedFooter, mutedWhenClosed } from '@/features/accounts/l
 import { appHref } from '@/features/shell/routes';
 import { watchSession } from '@/lib/authExpiry';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import { useAppRouter } from '@/lib/useAppRouter';
 import { RowTransition } from '@/lib/viewTransition';
 
 import { loadLoanFormDialog } from '../lazyDialogs';
@@ -25,7 +25,7 @@ const LOANS_HREF = appHref('/loans');
 
 /** The Loans card on Accounts: one row per open loan (the same rows as the Loans page), "All loans" to the full page. */
 export function LoansCard({ rows, closedLine }: { rows: LoanRow[]; closedLine: string | null }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [adding, setAdding] = React.useState(false);
   const { Component: LoanFormDialog, run: runLoan } = useLazyDialog(loadLoanFormDialog);
   const [closed, setClosed] = React.useState<LoanRow[] | null>(null);
@@ -75,7 +75,7 @@ export function LoansCard({ rows, closedLine }: { rows: LoanRow[]; closedLine: s
         }
         stickyHeader={false}
       />
-      <ClosedFooter line={closedLine} showing={showing} onToggle={toggle} />
+      <ClosedFooter line={closedLine} showing={showing} onToggle={toggle} loading={fetching} />
       {adding && LoanFormDialog ? <LoanFormDialog onClose={() => setAdding(false)} /> : null}
     </Card>
   );

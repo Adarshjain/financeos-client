@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { DateField } from '@/components/ds/DateField/DateField';
@@ -10,6 +9,7 @@ import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { ActionError } from '@/lib/actionResult';
 import { amountExpressionProps, resolveAmountExpression } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { usePriceMutations } from '../usePriceMutations';
 import type { PriceRowModel } from './holdingModel';
@@ -33,7 +33,7 @@ export interface PriceDialogProps {
 
 /** A manual price: its date and amount. Both can be changed on an existing price; a date already taken by another of your prices is shown on the date field. */
 export function PriceDialog({ instrumentId, name, target, onSaved, onClose }: PriceDialogProps) {
-  const router = useRouter();
+  const router = useAppRouter();
   const { setPrice, updatePrice } = usePriceMutations(instrumentId);
   const editing = target.kind === 'edit';
   const [date, setDate] = React.useState(editing ? target.row.asOf : target.today);

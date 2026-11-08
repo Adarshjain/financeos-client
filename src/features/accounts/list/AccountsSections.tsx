@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React, { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -19,6 +18,7 @@ import { loadAccountForm, useAccountDialogs } from '@/features/accounts/form/ds/
 import { bankById } from '@/features/banks/banks';
 import { appHref } from '@/features/shell/routes';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import { useAppRouter } from '@/lib/useAppRouter';
 import { SharedName } from '@/lib/viewTransition';
 import { transitionName } from '@/lib/viewTransitionNames';
 
@@ -95,12 +95,13 @@ function RowControls({ children }: { children: React.ReactNode }) {
   );
 }
 
-function EditButton({ onEdit }: { onEdit: () => void }) {
+function EditButton({ onEdit, loading }: { onEdit: () => void; loading?: boolean }) {
   return (
     <Button
       variant="ghost"
       size="sm"
       iconOnly
+      loading={loading}
       aria-label="Edit"
       onClick={onEdit}
       icon={<Icon name="pencil-simple" size="sm" />}
@@ -122,13 +123,15 @@ export function useSectionBands() {
 export function ClosedToggleButton({
   showing,
   onToggle,
+  loading,
 }: {
   showing: boolean;
   onToggle: () => void;
+  loading?: boolean;
 }) {
   return (
     <Text variant="label" as="span">
-      <Button variant="link" size="sm" className="shrink-0 whitespace-nowrap" onClick={onToggle}>
+      <Button variant="link" size="sm" className="shrink-0 whitespace-nowrap" loading={loading} onClick={onToggle}>
         {/* A fixed-width box, text right-aligned: the button keeps its size when the label flips. */}
         <span className="inline-block min-w-space-40 text-right">{showing ? 'Hide' : 'Show'}</span>
       </Button>
@@ -158,16 +161,19 @@ export function ClosedFooter({
   line,
   showing,
   onToggle,
+  loading,
 }: {
   line: string | null;
   showing: boolean;
   onToggle: () => void;
+  /** The closed rows are still being fetched. */
+  loading?: boolean;
 }) {
   if (!line || showing) return null;
   return (
     <SectionHeader
       variant="band"
-      action={<ClosedToggleButton showing={false} onToggle={onToggle} />}
+      action={<ClosedToggleButton showing={false} onToggle={onToggle} loading={loading} />}
     >
       {line}
     </SectionHeader>
@@ -256,7 +262,7 @@ const bankBaseColumns = [
   }),
 ];
 
-function makeBankColumns(onEdit: (row: BankRow) => void) {
+function makeBankColumns(onEdit: (row: BankRow) => void, loadingId?: string | null) {
   return [
     ...bankBaseColumns,
     bankCh.display({
@@ -265,7 +271,7 @@ function makeBankColumns(onEdit: (row: BankRow) => void) {
       meta: { size: 'sm', align: 'end', phone: 'hidden' },
       cell: ({ row }) => (
         <RowControls>
-          <EditButton onEdit={() => onEdit(row.original)} />
+          <EditButton loading={loadingId === row.original.id} onEdit={() => onEdit(row.original)} />
         </RowControls>
       ),
     }),
@@ -274,11 +280,19 @@ function makeBankColumns(onEdit: (row: BankRow) => void) {
 const bankColumns = makeBankColumns(() => undefined);
 
 export function BankSection(props: SectionProps<BankRow> & { emptyText?: string }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const closed = useClosedToggle();
   const [editing, setEditing] = useState<BankRow | null>(null);
-  const { Component: AccountFormDialog, run } = useLazyDialog(loadAccountForm);
-  const columns = useMemo(() => makeBankColumns((row) => void run(() => setEditing(row))), [run]);
+  const { Component: AccountFormDialog, run, loading: editLoading } = useLazyDialog(loadAccountForm);
+  const [pressedId, setPressedId] = useState<string | null>(null);
+  const columns = useMemo(
+    () =>
+      makeBankColumns((row) => {
+        setPressedId(row.id);
+        void run(() => setEditing(row));
+      }, editLoading ? pressedId : null),
+    [run, editLoading, pressedId],
+  );
   return (
     <Card
       title="Bank accounts"
@@ -431,7 +445,7 @@ function cardPhoneSub(row: CardListRow): React.ReactNode {
 export function CardsSection(
   props: SectionProps<CardListRow> & { subtitle: React.ReactNode; emptyText?: string }
 ) {
-  const router = useRouter();
+  const router = useAppRouter();
   const closed = useClosedToggle();
   const grouped = useMemo(() => groupByBank(props.rows), [props.rows]);
   const closedBandFn = closedBand<CardListRow>(props.closedLine, closed.toggle);
@@ -499,7 +513,7 @@ const brokerColumns = [
 ];
 
 export function BrokersSection(props: SectionProps<BrokerRow> & { emptyText?: string }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const closed = useClosedToggle();
   return (
     <Card
@@ -565,7 +579,7 @@ const walletColumns = [
 ];
 
 export function WalletsSection(props: SectionProps<WalletRow>) {
-  const router = useRouter();
+  const router = useAppRouter();
   const closed = useClosedToggle();
   return (
     <Card

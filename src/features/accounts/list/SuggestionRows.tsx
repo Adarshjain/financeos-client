@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
@@ -9,6 +8,7 @@ import { loadCardholders } from '@/features/accounts/accountActions';
 import { loadAccountForm, useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import type { Account } from '@/lib/account.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { answerIsThis, declineOlderNumber, hideSuggestion, saveBelongs, undoHideSuggestion } from './suggestionActions';
 import { SuggestionBelongsDialog } from './SuggestionBelongsDialog';
@@ -30,13 +30,24 @@ export function addTarget(row: Pick<SuggestionRow, 'kind' | 'parentAccountId'>, 
  * Render `dialog` once in the section: it holds the card dialogs (and the Edit account fallback) that Add opens for a card on an account.
  */
 export function useSuggestionActions(parents: readonly Account[], accounts: readonly Account[] = []) {
-  const router = useRouter();
-  const { open, preload } = useAccountDialogs();
-  const { Component: AccountFormDialog, run } = useLazyDialog(loadAccountForm);
-  const { Component: CardDialog, run: runCard } = useLazyDialog(loadSuggestionCardDialog);
+  const router = useAppRouter();
+  const { open, preload, loading: dialogLoading } = useAccountDialogs();
+  const { Component: AccountFormDialog, run, loading: formLoading } = useLazyDialog(loadAccountForm);
+  const { Component: CardDialog, run: runCard, loading: cardLoading } = useLazyDialog(loadSuggestionCardDialog);
   const [editing, setEditing] = React.useState<Account | null>(null);
   const [cardTarget, setCardTarget] = React.useState<SuggestionCardTarget | null>(null);
-  const [pendingId, setPendingId] = React.useState<string | null>(null);
+  const [pending, setPending] = React.useState<{ id: string; action: string } | null>(null);
+  const [refreshing, startRefresh] = React.useTransition();
+  const [last, setLast] = React.useState<{ id: string; action: string } | null>(null);
+  // Busy from the press until the refreshed page shows the result.
+  const active = pending ?? (refreshing ? last : null);
+  const pendingId = active?.id ?? null;
+  const setPendingId = (id: string | null, action = '') => {
+    const next = id ? { id, action } : null;
+    setPending(next);
+    if (next) setLast(next);
+  };
+  const refresh = () => startRefresh(() => router.refresh());
   const [belongsRow, setBelongsRow] = React.useState<SuggestionRow | null>(null);
 
   const fail = (message: string) => showToast(message, { tone: 'danger' });
@@ -44,15 +55,16 @@ export function useSuggestionActions(parents: readonly Account[], accounts: read
   const undo = async (id: string) => {
     const result = await undoHideSuggestion(id);
     if (!result.success) fail(result.error.message);
-    router.refresh();
+    refresh();
   };
 
   const notMine = async (row: SuggestionRow) => {
-    setPendingId(row.id);
+    if (pendingId) return;
+    setPendingId(row.id, 'notMine');
     try {
       const result = await hideSuggestion(row.id);
       if (!result.success) return fail(result.error.message);
-      router.refresh();
+      refresh();
       showToast(`Hidden ${row.name}${row.last4 ? ` ••${row.last4}` : ''}`, {
         action: { label: 'Undo', onSelect: () => void undo(row.id) },
         duration: 10_000,
@@ -63,12 +75,12 @@ export function useSuggestionActions(parents: readonly Account[], accounts: read
   };
 
   const answer = async (row: SuggestionRow, yes: boolean) => {
-    if (!row.isThis) return;
-    setPendingId(row.id);
+    if (!row.isThis || pendingId) return;
+    setPendingId(row.id, yes ? 'yes' : 'no');
     try {
       const result = await answerIsThis(row.id, row.isThis.accountId, yes);
       if (!result.success) return fail(result.error.message);
-      router.refresh();
+      refresh();
     } finally {
       setPendingId(null);
     }
@@ -79,14 +91,14 @@ export function useSuggestionActions(parents: readonly Account[], accounts: read
 
   /** "Older number on {account}?": Yes files it as a closed card there, No declines the link. */
   const answerOlder = async (row: SuggestionRow, yes: boolean) => {
-    if (!row.olderOn) return;
-    setPendingId(row.id);
+    if (!row.olderOn || pendingId) return;
+    setPendingId(row.id, yes ? 'yes' : 'no');
     try {
       const result = yes
         ? await saveBelongs(row.id, { accountId: row.olderOn.accountId, as: 'OLDER_NUMBER' })
         : await declineOlderNumber(row.id);
       if (!result.success) return fail(result.error.message);
-      router.refresh();
+      refresh();
       if (yes) showToast(`Saved ${row.last4 ? `••${row.last4} ` : ''}on ${row.olderOn.accountName}`);
     } finally {
       setPendingId(null);
@@ -114,6 +126,7 @@ export function useSuggestionActions(parents: readonly Account[], accounts: read
   };
 
   const add = (row: SuggestionRow) => {
+    setLast({ id: row.id, action: 'add' });
     const target = addTarget(row, new Set(parents.map((p) => p.id)));
     if ('open' in target) {
       // An add-on or replacement card without its account in the list has nothing to prefill: the plain Add dialog.
@@ -123,7 +136,8 @@ export function useSuggestionActions(parents: readonly Account[], accounts: read
     const account = parents.find((p) => p.id === target.edit);
     if (!account) return;
     if (!row.item) return void run(() => setEditing(account));
-    setPendingId(row.id);
+    if (pendingId) return;
+    setPendingId(row.id, 'add');
     void addCardTo(row.item, account).finally(() => setPendingId(null));
   };
 
@@ -137,7 +151,7 @@ export function useSuggestionActions(parents: readonly Account[], accounts: read
           accounts={accounts}
           onClose={() => setBelongsRow(null)}
           onSaved={(account) => {
-            router.refresh();
+            refresh();
             savedToast(belongsRow, account);
           }}
         />
@@ -145,7 +159,9 @@ export function useSuggestionActions(parents: readonly Account[], accounts: read
     </>
   );
 
-  return { pendingId, notMine, answer, answerOlder, canBelong, openBelongs: setBelongsRow, add, preload, dialog };
+  return { pendingId, pendingAction: active?.action ?? null,
+    /** The row whose Add is waiting for a dialog's code to load. */
+    addLoadingId: dialogLoading || formLoading || cardLoading ? (last?.action === 'add' ? last.id : null) : null, notMine, answer, answerOlder, canBelong, openBelongs: setBelongsRow, add, preload, dialog };
 }
 
 export type SuggestionActionsApi = ReturnType<typeof useSuggestionActions>;
@@ -163,10 +179,10 @@ export function SuggestionButtons({ row }: { row: SuggestionRow }) {
   if (row.olderOn) {
     return (
       <div className="flex items-center justify-end gap-space-4">
-        <Button variant="ghost" size="sm" disabled={busy} onClick={() => void actions.answerOlder(row, false)}>
+        <Button variant="ghost" size="sm" disabled={busy} loading={busy && actions.pendingAction === 'no'} onClick={() => void actions.answerOlder(row, false)}>
           No
         </Button>
-        <Button variant="secondary" size="sm" disabled={busy} onClick={() => void actions.answerOlder(row, true)}>
+        <Button variant="secondary" size="sm" disabled={busy} loading={busy && actions.pendingAction === 'yes'} onClick={() => void actions.answerOlder(row, true)}>
           Yes
         </Button>
       </div>
@@ -175,10 +191,10 @@ export function SuggestionButtons({ row }: { row: SuggestionRow }) {
   if (row.isThis) {
     return (
       <div className="flex items-center justify-end gap-space-4">
-        <Button variant="ghost" size="sm" disabled={busy} onClick={() => void actions.answer(row, false)}>
+        <Button variant="ghost" size="sm" disabled={busy} loading={busy && actions.pendingAction === 'no'} onClick={() => void actions.answer(row, false)}>
           No
         </Button>
-        <Button variant="secondary" size="sm" disabled={busy} onClick={() => void actions.answer(row, true)}>
+        <Button variant="secondary" size="sm" disabled={busy} loading={busy && actions.pendingAction === 'yes'} onClick={() => void actions.answer(row, true)}>
           Yes
         </Button>
       </div>
@@ -186,7 +202,7 @@ export function SuggestionButtons({ row }: { row: SuggestionRow }) {
   }
   return (
     <div className="flex items-center justify-end gap-space-4">
-      <Button variant="ghost" size="sm" disabled={busy} onClick={() => void actions.notMine(row)}>
+      <Button variant="ghost" size="sm" disabled={busy} loading={busy && actions.pendingAction === 'notMine'} onClick={() => void actions.notMine(row)}>
         Not mine
       </Button>
       {actions.canBelong(row) ? (
@@ -194,7 +210,7 @@ export function SuggestionButtons({ row }: { row: SuggestionRow }) {
           Part of another account
         </Button>
       ) : null}
-      <Button variant="primary" size="sm" disabled={busy} onPointerDown={actions.preload} onClick={() => actions.add(row)}>
+      <Button variant="primary" size="sm" disabled={busy} loading={(busy && actions.pendingAction === 'add') || actions.addLoadingId === row.id} onPointerDown={actions.preload} onClick={() => actions.add(row)}>
         Add
       </Button>
     </div>

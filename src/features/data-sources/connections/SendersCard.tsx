@@ -96,6 +96,16 @@ export function SendersCard({ senders, onOpenAddSender, onOpenEditSender, onTogg
   const [openBankId, setOpenBankId] = React.useState<string | null>(null);
   const [removing, setRemoving] = React.useState<GmailSenderResponse | null>(null);
   const [removeBusy, setRemoveBusy] = React.useState(false);
+  const [togglingId, setTogglingId] = React.useState<string | null>(null);
+  const toggle = async (s: GmailSenderResponse, next: boolean) => {
+    if (togglingId) return;
+    setTogglingId(s.id);
+    try {
+      await onToggleSender?.(s, next);
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   const rows = React.useMemo(() => groupSenderRows(senders), [senders]);
   const openRow = openBankId ? rows.find((r) => r.kind === 'bank' && r.bankId === openBankId) : undefined;
@@ -168,7 +178,8 @@ export function SendersCard({ senders, onOpenAddSender, onOpenEditSender, onTogg
                         <Switch
                           checked={s.enabled}
                           aria-label={`Read mail from ${s.senderAddress}`}
-                          onCheckedChange={(next) => void onToggleSender?.(s, next)}
+                          disabled={togglingId !== null}
+                          onCheckedChange={(next) => void toggle(s, next)}
                         />
                         <Text variant="label" as="span">
                           <Button variant="danger-link" size="sm" onClick={() => setRemoving(s)}>

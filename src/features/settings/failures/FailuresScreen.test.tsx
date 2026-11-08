@@ -19,7 +19,7 @@ const a = vi.hoisted(() => ({
 }));
 vi.mock('./failuresActions', () => a);
 
-const notify = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
+const notify = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), loading: vi.fn(() => "t1"), dismiss: vi.fn() }));
 vi.mock('@/lib/notify', () => ({ notify }));
 vi.mock('@/lib/toastError', () => ({ toastErrorResult: (e: { message: string }) => notify.error(e.message) }));
 
@@ -88,6 +88,19 @@ describe('FailuresScreen', () => {
     );
     expect(screen.getByText('Nothing has failed in the last 30 days.')).toBeInTheDocument();
     expect(screen.getByText('No failed emails.')).toBeInTheDocument();
+  });
+
+  it('shows a loading toast from the menu press until the retry settles, then the result replaces it', async () => {
+    let settle: (v: unknown) => void = () => undefined;
+    a.retryEmail.mockReturnValue(new Promise((resolve) => (settle = resolve)));
+    renderScreen();
+    await user.click(screen.getAllByRole('button', { name: 'More options' })[0]);
+    await user.click(await screen.findByRole('menuitem', { name: 'Retry now' }));
+    expect(notify.loading).toHaveBeenCalledWith('Retrying that email');
+    expect(notify.dismiss).not.toHaveBeenCalled();
+    settle({ success: true, data: { jobId: 'j' } });
+    await waitFor(() => expect(notify.dismiss).toHaveBeenCalledWith('t1'));
+    expect(notify.success).toHaveBeenCalledWith('Retrying that email');
   });
 
   it('retries an email from its menu, toasts and refreshes', async () => {

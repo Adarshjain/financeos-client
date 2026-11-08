@@ -1,13 +1,13 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds/Toast/Toast';
 import { ActionError, unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { keys } from '@/lib/query/keys';
 import type { Tag } from '@/lib/tags.types';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { createTag } from '../form/tagActions';
 import { deleteTag, renameTag } from './tagActions';
@@ -27,7 +27,7 @@ export function useTagMutations(
   handlers: { onCreated?: (tag: Tag) => void; onDeleted?: (tag: Tag) => void; /** The caller shows a failed rename itself (inline), so no toast. */ quietRename?: boolean } = {},
 ) {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const router = useAppRouter();
   const refreshTags = () => void queryClient.invalidateQueries({ queryKey: keys.tags.all });
   const refreshRows = () => {
     void queryClient.invalidateQueries({ queryKey: keys.transactions.all });

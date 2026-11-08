@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import { Banner } from '@/components/ds/Banner/Banner';
@@ -14,6 +14,7 @@ import { todayInAppZone } from '@/lib/date-range';
 import { useObligations } from '@/lib/query/hooks/useObligations';
 import { useRecurringProposals } from '@/lib/query/hooks/useRecurringProposals';
 import { replaceUrl } from '@/lib/urlState';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 import { DEFAULT_OBLIGATION_MONTHS, type ObligationItem, type ObligationKindFilter, obligationTitle } from './obligationsModel';
 import { RegularPaymentsCard } from './RegularPaymentsCard';
@@ -38,7 +39,7 @@ import { useUrlState } from './useUrlState';
  */
 export function UpcomingScreen() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const router = useAppRouter();
   const billParam = searchParams.get('bill');
   const [{ kind, months }, setState] = useUrlState(searchParams.toString(), (search) => {
     const params = new URLSearchParams(search);
@@ -47,12 +48,14 @@ export function UpcomingScreen() {
   const [paying, setPaying] = React.useState<{ item: ObligationItem; open: boolean } | null>(null);
   const [settling, setSettling] = React.useState<{ item: ObligationItem; open: boolean } | null>(null);
   const [detailsFor, setDetailsFor] = React.useState<string | null>(null);
+  const [detailsLoading, setDetailsLoading] = React.useState(false);
+  const detailsLoadingFor = detailsLoading ? detailsFor : null;
   const today = todayInAppZone();
 
   const recurring = useRecurringActions();
   const statementSkip = useStatementSkip();
   const { data: proposals } = useRecurringProposals();
-  const { data, error, isFetched, isPending, refetch } = useObligations(months);
+  const { data, error, isFetched, isFetching, isPending, refetch } = useObligations(months);
   const items = React.useMemo(
     () => (data ?? []).filter((i) => kind === 'all' || i.type === kind),
     [data, kind],
@@ -85,7 +88,7 @@ export function UpcomingScreen() {
   };
 
   const failed = Boolean(error) && !data;
-  const retry = { label: 'Retry', onSelect: () => void refetch() };
+  const retry = { label: 'Retry', loading: isFetching, onSelect: () => void refetch() };
 
   let body: React.ReactNode;
   if (isPending && !failed) {
@@ -131,6 +134,7 @@ export function UpcomingScreen() {
             onMarkPaid={(item) => setPaying({ item, open: true })}
             onSettle={(item) => setSettling({ item, open: true })}
             onSetDetails={(item) => setDetailsFor(item.statementId ?? null)}
+            setDetailsLoadingFor={detailsLoadingFor}
             onSkipStatement={(item) =>
               item.accountId && item.date ? void statementSkip.skip(item.accountId, item.date) : undefined
             }
@@ -158,6 +162,7 @@ export function UpcomingScreen() {
       {detailsFor ? (
         <InboxBillHost
           pending={{ type: 'set_details', statementId: detailsFor }}
+          onLoadingChange={setDetailsLoading}
           onClose={() => setDetailsFor(null)}
         />
       ) : null}

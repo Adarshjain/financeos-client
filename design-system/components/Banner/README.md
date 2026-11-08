@@ -14,7 +14,7 @@ The one inline message. It replaces the old Callout and Note: a failed request a
 - `rounded`: `'none' | 'sm' | 'md' | 'lg'` (default `'lg'`): `radius-sm/md/lg`, or square
 - `title?: ReactNode` (bold lead-in)
 - `children`: `ReactNode` (the message; supports block-level elements like `<p>`)
-- `action?: { label: ReactNode; onSelect: () => void }` (link-styled button on the right)
+- `action?: { label: ReactNode; onSelect: () => void; loading?: boolean }` (link-styled button on the right; `loading` shows the spinner and blocks it)
 - `onDismiss?: () => void` (optional close button at far right)
 
 ## Layout
