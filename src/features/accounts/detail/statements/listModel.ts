@@ -1,4 +1,4 @@
-import { billStatusLabel } from '@/features/bills/billsModel';
+import { billStatusLabel, paidFromCaption } from '@/features/bills/billsModel';
 import type { CardBillResponse, StatementSkipsResponse } from '@/lib/api/types';
 import { todayInAppZone } from '@/lib/date-range';
 import { formatDate,formatMoney } from '@/lib/format';
@@ -158,11 +158,12 @@ export function buildStatementRow(
     if (s.closingBalance != null) parts.push(`closing ${signedRupees(s.closingBalance)}`);
   } else if (bill?.status === 'PAID') {
     if (bill.totalAmountDue != null) parts.push(formatMoney(bill.totalAmountDue, { decimals: 'exact' }));
-    if (bill.paidMarkedOn) parts.push(`paid ${formatDate(bill.paidMarkedOn, 'list')}`);
-    if (bill.paidSource === 'MANUAL') {
-      parts.push('marked by you');
-      undo = true;
-    }
+    const from = paidFromCaption(bill);
+    if (from) parts.push(from.charAt(0).toLowerCase() + from.slice(1));
+    else if (bill.paidMarkedOn) parts.push(`paid ${formatDate(bill.paidMarkedOn, 'list')}`);
+    if (bill.paidSource === 'MANUAL') parts.push('marked by you');
+    // Undo also removes recorded payments, whoever made them.
+    if (bill.paidSource === 'MANUAL' || (bill.payments ?? []).length > 0) undo = true;
   } else {
     if (s.openingBalance != null) parts.push(`opening ${formatMoney(Math.abs(s.openingBalance), { decimals: 'exact' })}`);
     if (bill?.totalAmountDue != null) parts.push(`due ${formatMoney(bill.totalAmountDue, { decimals: 'exact' })}`);

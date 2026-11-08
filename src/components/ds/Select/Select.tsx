@@ -367,7 +367,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           <div className="flex-1 min-w-0">
             <span
               className={cn(
-                'block font-text font-medium text-body truncate',
+                'block font-text font-medium text-body break-words',
                 isDisabled
                   ? 'text-ink-faint'
                   : isSelected && !multiple && !showRadio
@@ -378,7 +378,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
               {opt.label}
             </span>
             {opt.description ? (
-              <span className={cn('block font-text font-medium text-caption truncate', isDisabled ? 'text-ink-faint' : 'text-ink-3')}>
+              <span className={cn('block font-text font-medium text-caption break-words', isDisabled ? 'text-ink-faint' : 'text-ink-3')}>
                 {opt.description}
               </span>
             ) : null}

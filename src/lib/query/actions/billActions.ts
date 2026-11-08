@@ -1,7 +1,12 @@
 'use server';
 
 import { serverApi } from '@/lib/api/server';
-import type { CardBillResponse, MarkBillPaidRequest, UpdateBillDetailsRequest } from '@/lib/api/types';
+import type {
+  CardBillResponse,
+  MarkBillPaidRequest,
+  PaymentCandidateResponse,
+  UpdateBillDetailsRequest,
+} from '@/lib/api/types';
 import { createDomainAction } from '@/lib/domainApi';
 
 /** Every open card's current bill, or one card's when `accountId` is given. */
@@ -51,5 +56,16 @@ export const updateBillDetails = createDomainAction(
       body,
     });
     return data!;
+  },
+);
+
+/** Unlinked bank debits that could be this bill's payment: equal to `amount` (default: what is left) near the due date. */
+export const loadPaymentCandidates = createDomainAction(
+  { fallbackError: "Couldn't look for the payment. Try again." },
+  async (statementId: string, amount: number | null): Promise<PaymentCandidateResponse[]> => {
+    const { data } = await serverApi.GET('/api/v1/bills/{statementId}/payment-candidates', {
+      params: { path: { statementId }, query: amount != null ? { amount } : {} },
+    });
+    return data ?? [];
   },
 );

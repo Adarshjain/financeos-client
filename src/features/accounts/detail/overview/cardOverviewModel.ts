@@ -1,5 +1,6 @@
 import { currentMilestones } from '@/features/accounts/detail/milestonesModel';
 import { deriveBillCardState } from '@/features/bills/billCardStateModel';
+import { billPaidDate, paidFromCaption } from '@/features/bills/billsModel';
 import {
   type Cardholder,
   type CreditCard,
@@ -115,9 +116,11 @@ export function buildLimitCycle(
   if (bill && state && state.phase !== 'awaiting') {
     billValue = state.toPay != null ? formatMoney(state.toPay, { decimals: 'exact' }) : '—';
     billCaption = dueCaption(bill) || 'Due date missing';
-  } else if (bill?.status === 'PAID' && bill.paidMarkedOn) {
-    const timing = paidTiming(bill.paidMarkedOn, bill.paymentDueDate);
-    billCaption = `Paid ${formatDate(bill.paidMarkedOn, 'list')}${timing ? ` · ${timing}` : ''}`;
+  } else if (bill?.status === 'PAID') {
+    const paidOn = billPaidDate(bill);
+    const timing = paidTiming(paidOn, bill.paymentDueDate);
+    const from = paidFromCaption(bill);
+    billCaption = `${from ?? (paidOn ? `Paid ${formatDate(paidOn, 'list')}` : 'Paid')}${timing ? ` · ${timing}` : ''}`;
   }
 
   return {

@@ -40,6 +40,9 @@ export function useBillMutations() {
     if (bill.statementId) qc.setQueryData(keys.bills.byStatement(bill.statementId), bill);
     return Promise.all([
       qc.invalidateQueries({ queryKey: keys.bills.all }),
+      // A recorded payment (or its Undo) creates or deletes transactions and moves balances.
+      qc.invalidateQueries({ queryKey: keys.transactions.all }),
+      qc.invalidateQueries({ queryKey: keys.accounts.all }),
       qc.invalidateQueries({ queryKey: keys.inbox.all }),
       qc.invalidateQueries({ queryKey: keys.obligations.all }),
       qc.invalidateQueries({ queryKey: [...keys.dashboards.all, 'widget'] }),

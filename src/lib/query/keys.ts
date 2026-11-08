@@ -221,6 +221,9 @@ export const keys = {
       [...keys.bills.all, 'list', params] as const,
     /** A bill is keyed by its statement. */
     byStatement: (statementId: string) => [...keys.bills.all, 'detail', statementId] as const,
+    /** Bank debits that could be a statement's payment, for one amount (null = what is left). */
+    paymentCandidates: (statementId: string, amount: number | null) =>
+      [...keys.bills.all, 'paymentCandidates', statementId, amount] as const,
   },
 
   statements: {

@@ -24,6 +24,11 @@ vi.mock('@/lib/query/hooks/useBills', () => ({
   }),
 }));
 
+vi.mock('@/lib/query/hooks/usePaymentCandidates', () => ({
+  usePaymentCandidates: () => ({ data: [] }),
+}));
+vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: [] }) }));
+
 vi.mock('@/lib/date-range', () => ({ todayInAppZone: () => '2026-10-13' }));
 
 function renderDialog(onOpenChange = vi.fn()) {

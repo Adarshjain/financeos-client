@@ -1,5 +1,5 @@
 import type { BillStatus, CardBillResponse } from '@/lib/api/types';
-import { formatCount } from '@/lib/format';
+import { formatCount, formatDate } from '@/lib/format';
 
 export type BadgeTone = 'destructive' | 'warning' | 'success' | 'slate' | 'info';
 
@@ -76,4 +76,24 @@ export function billCardLabel(bill: Pick<CardBillResponse, 'accountName' | 'last
  */
 export function countActionable(bills: CardBillResponse[]): number {
   return bills.filter((b) => b.status === 'OVERDUE' || b.status === 'OPEN' || b.status === 'PARTIAL' || b.status === 'DUE_UNKNOWN').length;
+}
+
+/** When a bill was paid: the latest recorded payment's date, else the manual mark's date; null when neither. */
+export function billPaidDate(bill: Pick<CardBillResponse, 'payments' | 'paidMarkedOn'>): string | null {
+  const dates = (bill.payments ?? []).map((p) => p.date).sort();
+  return dates.at(-1) ?? bill.paidMarkedOn ?? null;
+}
+
+/**
+ * Where a paid bill was paid from, for the row's secondary text: the first payment's bank account
+ * and date, "Paid · <date>" when that payment has no bank account, "Paid in <n> payments" for several.
+ * Null when the bill carries no recorded payment.
+ */
+export function paidFromCaption(bill: Pick<CardBillResponse, 'payments'>): string | null {
+  const payments = bill.payments ?? [];
+  if (payments.length === 0) return null;
+  if (payments.length > 1) return `Paid in ${payments.length} payments`;
+  const [first] = payments;
+  const date = formatDate(first.date, 'list');
+  return first.bankAccountName ? `Paid from ${first.bankAccountName} · ${date}` : `Paid · ${date}`;
 }
