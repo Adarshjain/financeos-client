@@ -16,6 +16,7 @@ import { Text } from '@/components/ds/Text/Text';
 import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
 import { beginAccountOpen } from '@/features/accounts/detail/accountOpenFlow';
 import { loadAccountForm, useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
+import { bankById } from '@/features/banks/banks';
 import { appHref } from '@/features/shell/routes';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { SharedName } from '@/lib/viewTransition';
@@ -27,11 +28,8 @@ import type {
   CardBaseRow,
   WalletRow,
 } from './accountsListModel';
+import { bankGroupLabel, groupByBank } from './accountsListModel';
 import {
-  maybeBandLabel,
-  olderBandLabel,
-  type SuggestionBands,
-  type SuggestionSection,
 } from './suggestionsModel';
 
 const ACCOUNTS_HREF = appHref('/accounts');
@@ -116,35 +114,9 @@ function useClosedToggle() {
   return { showing, toggle: () => setShowing((v) => !v) };
 }
 
-type BandToggle = ReturnType<typeof useClosedToggle>;
-
-/** The collapsed bands of the Found in your email card: older, maybe and closed each show and hide on their own. */
+/** The collapsed bands of the Found in your email card: older and maybe each show and hide on their own. */
 export function useSectionBands() {
-  return { older: useClosedToggle(), maybe: useClosedToggle(), closed: useClosedToggle() };
-}
-
-/** The "Show" line of each collapsed band that has rows, in row order. */
-export function BandFooters({
-  section,
-  bands,
-  closedLine: closedText,
-  toggles,
-}: {
-  section: SuggestionSection;
-  bands: SuggestionBands;
-  closedLine: string | null;
-  toggles: ReturnType<typeof useSectionBands>;
-}) {
-  const line = (count: number, label: string, toggle: BandToggle) => (
-    <ClosedFooter line={count > 0 ? label : null} showing={toggle.showing} onToggle={toggle.toggle} />
-  );
-  return (
-    <>
-      {line(bands.older.length, olderBandLabel(section, bands.older.length), toggles.older)}
-      {line(bands.maybe.length, maybeBandLabel(bands.maybe.length), toggles.maybe)}
-      <ClosedFooter line={closedText} showing={toggles.closed.showing} onToggle={toggles.closed.toggle} />
-    </>
-  );
+  return { older: useClosedToggle(), maybe: useClosedToggle() };
 }
 
 export function ClosedToggleButton({
@@ -461,6 +433,15 @@ export function CardsSection(
 ) {
   const router = useRouter();
   const closed = useClosedToggle();
+  const grouped = useMemo(() => groupByBank(props.rows), [props.rows]);
+  const closedBandFn = closedBand<CardListRow>(props.closedLine, closed.toggle);
+  const bankBand = (row: CardListRow) =>
+    grouped.multiBank
+      ? {
+          key: `bank:${bankById(row.bank)?.id ?? 'other'}`,
+          label: bankGroupLabel(row.bank),
+        }
+      : null;
   return (
     <Card>
       {/* The bills-due line wraps on phone rather than cutting off. */}
@@ -475,8 +456,8 @@ export function CardsSection(
       </Card.Header>
       <DataTable
         columns={cardColumns}
-        data={withClosed(props, closed.showing)}
-        band={closedBand<CardListRow>(props.closedLine, closed.toggle)}
+        data={withClosed({ ...props, rows: grouped.rows }, closed.showing)}
+        band={(row) => (row.closed ? closedBandFn(row) : bankBand(row))}
         getRowId={(row) => row.id}
         rowState={mutedWhenClosed}
         onRowSelect={(row) => openRow(router, row)}

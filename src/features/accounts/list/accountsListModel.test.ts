@@ -6,6 +6,7 @@ import { AccountType } from '@/lib/types';
 import { pinClock } from '@/test/pinClock';
 
 import {
+  bankGroupLabel,
   bankRow,
   brokerRow,
   cardBaseRow,
@@ -16,6 +17,7 @@ import {
   closedLine,
   gapLabel,
   groupAccounts,
+  groupByBank,
   investmentsKpi,
   limitUsed,
   nextBillBadge,
@@ -389,5 +391,24 @@ describe('Gmail fetch line on rows', () => {
     expect(unpaidBillsDue([bills[1], bills[2]], open, TODAY)).toBeNull();
     expect(unpaidBillsDue(null, open, TODAY)).toBeNull();
     expect(cardsSubtitle(open, null)).toBe('Owed today · ₹1,00,000 limit, 1 card');
+  });
+});
+
+describe('groupByBank', () => {
+  const r = (id: string, bank: string | null) => ({ id, bank });
+  it('sorts banks A-Z by display name, stable within a bank, unknown last', () => {
+    const out = groupByBank([r('1', 'hdfc'), r('2', null), r('3', 'axis'), r('4', 'hdfc'), r('5', 'nope'), r('6', 'axis')]);
+    expect(out.rows.map((x) => x.id)).toEqual(['3', '6', '1', '4', '2', '5']);
+    expect(out.multiBank).toBe(true);
+  });
+  it('is single-group for one bank, or only unknown banks', () => {
+    expect(groupByBank([r('1', 'hdfc'), r('2', 'hdfc')]).multiBank).toBe(false);
+    expect(groupByBank([r('1', null), r('2', 'nope')]).multiBank).toBe(false);
+    expect(groupByBank([]).multiBank).toBe(false);
+  });
+  it('labels banks by name and falls back to Other', () => {
+    expect(bankGroupLabel('hdfc')).toBe('HDFC Bank');
+    expect(bankGroupLabel(null)).toBe('Other');
+    expect(bankGroupLabel('nope')).toBe('Other');
   });
 });

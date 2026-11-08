@@ -1,3 +1,4 @@
+import { bankById } from '@/features/banks/banks';
 import { deriveBillCardState } from '@/features/bills/billCardStateModel';
 import {
   type Account,
@@ -455,4 +456,30 @@ export function walletRow(wallet: GenericAccount, today: string): WalletRow {
     balance: formatMoney(sumBalances([wallet]), { decimals: 'exact', symbol: false }),
     closed: isAccountClosed(wallet, today),
   };
+}
+
+const OTHER_BANK = 'Other';
+
+/** Display name of a card's bank; unknown or missing banks read 'Other'. */
+export function bankGroupLabel(bank: string | null): string {
+  return bankById(bank)?.name ?? OTHER_BANK;
+}
+
+/** Orders rows by bank name A-Z (stable), unknown/missing banks last; multiBank = 2+ groups. */
+export function groupByBank<Row extends { bank: string | null }>(
+  rows: readonly Row[],
+): { rows: Row[]; multiBank: boolean } {
+  const known = (r: Row) => bankById(r.bank) !== undefined;
+  const sorted = rows
+    .map((row, i) => ({ row, i }))
+    .sort((a, b) => {
+      const ak = known(a.row);
+      const bk = known(b.row);
+      if (ak !== bk) return ak ? -1 : 1;
+      const byName = ak ? bankGroupLabel(a.row.bank).localeCompare(bankGroupLabel(b.row.bank)) : 0;
+      return byName || a.i - b.i;
+    })
+    .map((x) => x.row);
+  const groups = new Set(sorted.map((r) => (known(r) ? r.bank : null)));
+  return { rows: sorted, multiBank: groups.size > 1 };
 }
