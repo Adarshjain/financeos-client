@@ -2,14 +2,12 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { emitJobStarted } from '@/features/jobs/jobsBus';
 import { useJobStatusPolling } from '@/features/jobs/useJobStatusPolling';
 import { Broker as BrokerAccount } from '@/lib/account.types';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
-import { toastError } from '@/lib/toastError';
 import { ImportCommitResult, ReconciliationBroker } from '@/lib/types';
 
 import {
@@ -23,7 +21,7 @@ import { getCasConfirmableCount, getCasUnresolvedRows, getConfirmableCount, getU
 import { useImportWizardMutations } from './useImportWizardMutations';
 import { useImportWizardState } from './useImportWizardState';
 
-/** How the wizard tells the user things. Defaults to sonner toasts. */
+/** How the wizard tells the user things. */
 export interface ImportWizardNotify {
   error: (message: string) => void;
   info: (message: string) => void;
@@ -31,21 +29,15 @@ export interface ImportWizardNotify {
   caught: (error: unknown, fallback: string) => void;
 }
 
-export const defaultImportNotify: ImportWizardNotify = {
-  error: (message) => void toast.error(message),
-  info: (message) => void toast.info(message),
-  caught: (error, fallback) => toastError(error, fallback),
-};
-
 interface UseImportWizardProps {
   brokerAccounts: BrokerAccount[];
   onSuccess?: () => void;
-  notify?: ImportWizardNotify;
+  notify: ImportWizardNotify;
   /** The import type the page opens with. */
   initialMode?: ImportMode;
 }
 
-export function useImportWizard({ brokerAccounts, onSuccess, notify = defaultImportNotify, initialMode }: UseImportWizardProps) {
+export function useImportWizard({ brokerAccounts, onSuccess, notify, initialMode }: UseImportWizardProps) {
   const qc = useQueryClient();
   const {
     open,

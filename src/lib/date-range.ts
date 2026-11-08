@@ -10,7 +10,7 @@
 // Always pair the label with formatDateRangeFull() in a `title` so the exact
 // dates stay one hover away.
 
-import { formatDate, parseCalendarDate } from '@/lib/utils';
+import { parseCalendarDate } from '@/lib/utils';
 
 /** Mirrors the server's `financeos.reports.fiscal-year-start-month` (default April). */
 export const FY_START_MONTH = 4;
@@ -286,21 +286,6 @@ export function formatDateRangeForFilename(
   if (!start) return `until ${dayLabel(end, null)}`;
   if (sameDay(start, end)) return dayLabel(start, null);
   return namedPeriod(start, end, null) ?? compressed(start, end, null);
-}
-
-/** Both ends written out in full, for a tooltip behind formatDateRange(). */
-export function formatDateRangeFull(
-  from: DateInput,
-  to: DateInput,
-  options?: Pick<DateRangeOptions, 'endExclusive'>,
-): string {
-  const start = toDay(from);
-  const end = lastDay(to, options);
-  if (!start && !end) return 'All time';
-  if (!end) return `since ${formatDate(start)}`;
-  if (!start) return `until ${formatDate(end)}`;
-  if (sameDay(start, end)) return formatDate(start);
-  return `${formatDate(start)} – ${formatDate(end)}`;
 }
 
 /**

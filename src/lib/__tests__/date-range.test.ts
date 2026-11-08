@@ -4,10 +4,8 @@ import {
   formatComparedRange,
   formatDateRange,
   formatDateRangeCompressed,
-  formatDateRangeFull,
   todayInAppZone,
 } from '../date-range';
-import { formatDate } from '../utils';
 
 // Every case pins "today" so the suite does not depend on the run date.
 const today = '2026-10-03';
@@ -192,33 +190,6 @@ describe('endExclusive (reward rule activeTo)', () => {
 
   it('leaves an open end alone', () => {
     expect(exclusive('2024-04-05', null)).toBe('since 5 Apr 24');
-  });
-
-  it('shifts the full-dates hover the same way', () => {
-    expect(formatDateRangeFull('2024-04-01', '2025-04-01', { endExclusive: true })).toBe(
-      `${formatDate('2024-04-01')} – ${formatDate('2025-03-31')}`,
-    );
-    expect(formatDateRangeFull(null, '2025-04-01', { endExclusive: true })).toBe(
-      `until ${formatDate('2025-03-31')}`,
-    );
-  });
-});
-
-describe('formatDateRangeFull', () => {
-  it('writes both ends out in full', () => {
-    expect(formatDateRangeFull('2026-09-01', '2026-09-30')).toBe(
-      `${formatDate('2026-09-01')} – ${formatDate('2026-09-30')}`,
-    );
-  });
-
-  it('writes a single day once', () => {
-    expect(formatDateRangeFull('2026-09-01', '2026-09-01')).toBe(formatDate('2026-09-01'));
-  });
-
-  it('handles open ends', () => {
-    expect(formatDateRangeFull('2026-08-01', null)).toBe(`since ${formatDate('2026-08-01')}`);
-    expect(formatDateRangeFull(null, '2026-08-01')).toBe(`until ${formatDate('2026-08-01')}`);
-    expect(formatDateRangeFull(null, null)).toBe('All time');
   });
 });
 
