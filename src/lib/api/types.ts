@@ -35,6 +35,18 @@ export type AccountIdentifierKind = NonNullable<Schemas['AccountIdentifierRespon
 export type AssignAttentionRequest = Schemas['AssignAttentionRequest'];
 export type AttentionBulkRequest = Schemas['AttentionBulkRequest'];
 export type AssignAttentionResponse = Schemas['AssignAttentionResponse'];
+export type AttentionGroupsResponse = Schemas['AttentionGroupsResponse'];
+export type UnknownNumberGroup = Schemas['UnknownNumberGroup'];
+export type ImportOffGroup = Schemas['ImportOffGroup'];
+export type IgnoredNumber = Schemas['IgnoredNumberResponse'];
+export type PastCardRequest = Schemas['PastCardRequest'];
+export type PastCardResponse = Schemas['PastCardResponse'];
+/** A mail's content read live from Gmail for "View email" (sanitized HTML or plain text, attachment names). */
+export type GmailMessageContent = Schemas['GmailMessageContentResponse'];
+export type AssignNumberGroupRequest = Schemas['AssignNumberGroupRequest'];
+export type AssignNumberGroupResponse = Schemas['AssignNumberGroupResponse'];
+export type NumberGroupRequest = Schemas['NumberGroupRequest'];
+export type CardSeenDates = Schemas['CardSeenDatesResponse'];
 
 // Transactions
 export type TransactionResponse = Schemas['TransactionResponse'];

@@ -281,6 +281,7 @@ describe('/accounts/[id]/cards', () => {
       expect(screen.getAllByRole('menuitem').map((i) => i.textContent)).toEqual([
         'Edit details',
         'Reassign transactions',
+        'Add a past card',
       ]);
     });
 
@@ -293,6 +294,7 @@ describe('/accounts/[id]/cards', () => {
       expect(screen.getAllByRole('menuitem').map((i) => i.textContent)).toEqual([
         'Edit details',
         'Reassign transactions',
+        'Add a past card',
         'Close cardholder',
         'Delete cardholder',
       ]);
@@ -449,6 +451,23 @@ describe('/accounts/[id]/cards', () => {
         })
       );
       expect(showToast).toHaveBeenCalledWith('Card issued');
+    });
+
+    it('adds a past card beside the active one, with both dates, and toasts', async () => {
+      await renderPage();
+      pickMenu(1, 'Add a past card');
+      expect(await screen.findByText('Add a past card', { selector: '*' })).toBeInTheDocument();
+      fireEvent.change(screen.getByLabelText('Last 4 digits'), { target: { value: '5555' } });
+      fireEvent.change(screen.getByLabelText('Opened on'), { target: { value: '01/05/2021' } });
+      fireEvent.change(screen.getByLabelText('Closed on'), { target: { value: '20/04/2025' } });
+      press('Add past card');
+      await waitFor(() =>
+        expect(mutate.addCardMutation).toHaveBeenCalledWith({
+          cardholderId: 'h2',
+          body: { last4: '5555', issuedOn: '2021-05-01', closedOn: '2025-04-20' },
+        })
+      );
+      expect(showToast).toHaveBeenCalledWith('Past card added');
     });
 
     it('reassigns transactions to the holder card, with a plain Reassign button', async () => {

@@ -7,8 +7,9 @@ import { Text } from '@/components/ds/Text/Text';
 import { TextField } from '@/components/ds/TextField/TextField';
 import { FROM_EMAIL_CAPTION } from '@/features/accounts/form/ds/suggestionPrefill';
 import type { Card, CreateCardRequest, ReplaceCardRequest } from '@/lib/account.types';
+import type { CardSeenDates, PastCardRequest } from '@/lib/api/types';
 
-import { buildAddCard, buildClose, buildReplaceCard, digitsOnly, futureDateError } from './cardsFormsModel';
+import { buildAddCard, buildClose, buildPastCard, buildReplaceCard, digitsOnly, futureDateError, seenHint } from './cardsFormsModel';
 import { DialogFrame, useDialogSubmit } from './DialogFrame';
 import type { ActionResult } from './useCardholderMutations';
 
@@ -83,6 +84,125 @@ export function AddCardDialog({
         value={issuedOn}
         onValueChange={(v) => setIssuedOn(iso(v))}
         error={errors.issuedOn ?? futureDateError('issued', issuedOn, today) ?? undefined}
+      />
+    </DialogFrame>
+  );
+}
+
+const SAVED_NUMBER_HELPER = 'Saved as another number on this account; it will become this card';
+
+/** Add a card that is already closed (an earlier number): when its 4 digits are typed, the dates it was seen fill the opened and closed dates. */
+export function AddPastCardDialog({
+  description,
+  today,
+  holderId,
+  loadSeenDates,
+  loadIdentifiers,
+  onSubmit,
+  onConvert,
+  onClose,
+}: {
+  description: string;
+  today: string;
+  /** The holder the card goes on (sent with a converted number). */
+  holderId: string;
+  /** Looks up when this number was seen in the account's mail and transactions; null when nothing is known. */
+  loadSeenDates: (last4: string) => Promise<CardSeenDates | null>;
+  /** The account's saved other numbers; a typed number that is one of them becomes this card instead of being created. */
+  loadIdentifiers: () => Promise<{ id: string; value: string }[]>;
+  onSubmit: (body: CreateCardRequest) => ActionResult;
+  onConvert: (identifierId: string, body: PastCardRequest) => ActionResult;
+  onClose: () => void;
+}) {
+  const [last4, setLast4] = React.useState('');
+  const [issuedOn, setIssuedOn] = React.useState('');
+  const [closedOn, setClosedOn] = React.useState('');
+  const [hint, setHint] = React.useState<string | null>(null);
+  const [saved, setSaved] = React.useState<{ id: string; value: string }[]>([]);
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const { pending, error, submit } = useDialogSubmit(onClose);
+  const savedNumber = last4.length === 4 ? saved.find((i) => i.value === last4) : undefined;
+
+  React.useEffect(() => {
+    let current = true;
+    loadIdentifiers()
+      .then((list) => current && setSaved(list))
+      .catch(() => {});
+    return () => {
+      current = false;
+    };
+    // The list is read once when the dialog opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // A date the user typed is theirs: a later lookup never overwrites it.
+  const touched = React.useRef({ issuedOn: false, closedOn: false });
+
+  React.useEffect(() => {
+    setHint(null);
+    if (last4.length !== 4) return;
+    let current = true;
+    loadSeenDates(last4)
+      .then((seen) => {
+        if (!current || !seen) return;
+        setHint(seenHint(seen));
+        if (seen.firstSeen && !touched.current.issuedOn) setIssuedOn(seen.firstSeen);
+        if (seen.lastSeen && !touched.current.closedOn) setClosedOn(seen.lastSeen);
+      })
+      .catch(() => {});
+    return () => {
+      current = false;
+    };
+    // loadSeenDates is a new closure each render of the parent; the number is what triggers a lookup.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [last4]);
+
+  const handle = () => {
+    const built = buildPastCard({ last4, issuedOn, closedOn }, today);
+    if (!built.ok) {
+      setErrors(built.errors);
+      return;
+    }
+    setErrors({});
+    if (savedNumber) {
+      void submit(() => onConvert(savedNumber.id, { cardholderId: holderId, issuedOn: built.body.issuedOn as string, closedOn: built.body.closedOn as string }));
+      return;
+    }
+    void submit(() => onSubmit(built.body));
+  };
+
+  return (
+    <DialogFrame title="Add a past card" description={description} submitLabel="Add past card" onSubmit={handle} onClose={onClose} loading={pending} error={error}>
+      <TextField
+        label="Last 4 digits"
+        placeholder="1234"
+        inputMode="numeric"
+        maxLength={4}
+        value={last4}
+        onValueChange={(v) => setLast4(digitsOnly(v))}
+        helper={savedNumber ? (hint ? `${hint} · ${SAVED_NUMBER_HELPER.charAt(0).toLowerCase()}${SAVED_NUMBER_HELPER.slice(1)}` : SAVED_NUMBER_HELPER) : (hint ?? undefined)}
+        error={errors.last4}
+      />
+      <DateField
+        label="Opened on"
+        today={today}
+        maxDate={today}
+        value={issuedOn}
+        onValueChange={(v) => {
+          touched.current.issuedOn = true;
+          setIssuedOn(iso(v));
+        }}
+        error={errors.issuedOn ?? futureDateError('opened', issuedOn, today) ?? undefined}
+      />
+      <DateField
+        label="Closed on"
+        today={today}
+        maxDate={today}
+        value={closedOn}
+        onValueChange={(v) => {
+          touched.current.closedOn = true;
+          setClosedOn(iso(v));
+        }}
+        error={errors.closedOn ?? futureDateError('closed', closedOn, today) ?? undefined}
       />
     </DialogFrame>
   );

@@ -190,6 +190,7 @@ export const keys = {
     gmailConnection: () => [...keys.settings.all, 'gmailConnection'] as const,
     gmailBankDomains: () => [...keys.settings.all, 'gmailBankDomains'] as const,
     gmailSenders: () => [...keys.settings.all, 'gmailSenders'] as const,
+    gmailEmailContent: (ledgerId: string) => [...keys.settings.all, 'gmailEmailContent', ledgerId] as const,
     /** Every Gmail attention query, whatever its params (for invalidation). */
     gmailAttentionAll: () => [...keys.settings.all, 'gmailAttention'] as const,
     gmailAttention: (params: Record<string, unknown> = {}) => [...keys.settings.all, 'gmailAttention', params] as const,

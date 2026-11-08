@@ -59,6 +59,51 @@ export function buildAddCard(
   return result(errors, { last4: v.last4.trim(), issuedOn: v.issuedOn || undefined, ...fromSuggestion(v.fromSuggestionId) });
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** "May 2021" for a yyyy-mm-dd date (read as written, no time zone). */
+function monthYearOf(date: string): string {
+  const [y, m] = date.split('-');
+  return `${MONTHS[Number(m) - 1] ?? ''} ${y}`.trim();
+}
+
+/** "Seen in 63 emails and 100 transactions, May 2021 – Apr 2025"; null when the number was never seen. */
+export function seenHint(d: { firstSeen?: string | null; lastSeen?: string | null; mailCount: number; transactionCount: number }): string | null {
+  if (d.mailCount === 0 && d.transactionCount === 0) return null;
+  const n = (c: number, one: string, many: string) => `${c} ${c === 1 ? one : many}`;
+  const counts = [d.mailCount > 0 ? n(d.mailCount, 'email', 'emails') : null, d.transactionCount > 0 ? n(d.transactionCount, 'transaction', 'transactions') : null]
+    .filter(Boolean)
+    .join(' and ');
+  const first = d.firstSeen ? monthYearOf(d.firstSeen) : '';
+  const last = d.lastSeen ? monthYearOf(d.lastSeen) : '';
+  const span = first && last ? (first === last ? first : `${first} – ${last}`) : first || last;
+  return `Seen in ${counts}${span ? `, ${span}` : ''}`;
+}
+
+export interface PastCardValues {
+  last4: string;
+  issuedOn: string;
+  closedOn: string;
+}
+
+/** A card that was already closed: both dates are needed, opened on or before closed, neither in the future. */
+export function buildPastCard(v: PastCardValues, today: string, last4Message = 'Last 4 digits must be exactly 4 digits.'): Built<CreateCardRequest> {
+  const errors: Record<string, string> = {};
+  if (v.last4.length !== 4) errors.last4 = last4Message;
+  if (!v.issuedOn) errors.issuedOn = 'Enter when the card was opened.';
+  else {
+    const opened = futureDateError('opened', v.issuedOn, today);
+    if (opened) errors.issuedOn = opened;
+  }
+  if (!v.closedOn) errors.closedOn = 'Enter when the card was closed.';
+  else {
+    const closed = futureDateError('closed', v.closedOn, today);
+    if (closed) errors.closedOn = closed;
+    else if (v.issuedOn && v.closedOn < v.issuedOn) errors.closedOn = 'Pick a closed date on or after the opened date.';
+  }
+  return result(errors, { last4: v.last4.trim(), issuedOn: v.issuedOn || undefined, closedOn: v.closedOn || undefined });
+}
+
 export interface AddHolderValues {
   name: string;
   /** '' until one is picked (an add-on from a suggestion has no default). */

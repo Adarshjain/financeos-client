@@ -25,7 +25,7 @@ const columns = [
   ch.display({
     id: 'account',
     header: 'Account',
-    meta: { size: 'fill', grow: 2, phone: 'main' },
+    meta: { size: 'fill', grow: 2, phone: 'main', wrap: true },
     cell: ({ row }) => <NameCell name={row.original.name} sub={foundRowSub(row.original)} />,
   }),
   ch.display({

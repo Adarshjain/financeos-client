@@ -352,3 +352,17 @@ export function extractionFor(
 export async function scriptExtractions(api: ApiClient, entries: ScriptResponseEntry[]): Promise<void> {
   await scriptLlm(api, 'email-extract', entries);
 }
+
+/** A parked alert whose body also has an HTML alternative with an image, a tracking pixel, a script and a link. */
+export function htmlAlertMail(opts: Parameters<typeof alertMail>[0]): MailMessage {
+  return {
+    ...alertMail(opts),
+    html:
+      `<html><head><style>@import url(https://tracker.example.test/x.css);</style></head><body>` +
+      `<p style="color:#333">Dear <b>Customer</b>, INR ${opts.amount.toFixed(2)} was debited from your account ending ${opts.last4}.</p>` +
+      `<img src="https://tracker.example.test/logo.png" alt="E2E Bank logo">` +
+      `<img src="https://tracker.example.test/pixel.gif" width="1" height="1">` +
+      `<script>document.title = 'pwned'</script>` +
+      `<a href="https://bank.example.test/help" onclick="alert(1)">Help centre</a></body></html>`,
+  };
+}

@@ -13,6 +13,7 @@ import { formatDate, formatDateTime } from '@/lib/format';
 import { attentionEditTarget, attentionHintLink, type AttentionItem, describeAttentionItem, gmailMessageUrl } from './attentionItemModel';
 import { EditAccountHint } from './EditAccountHint';
 import { LockedStatementHint } from './LockedStatementHint';
+import { ViewEmailDialog } from './ViewEmailDialog';
 
 interface AttentionItemRowProps {
   item: AttentionItem;
@@ -22,7 +23,9 @@ interface AttentionItemRowProps {
   onUnarchive: (ledgerId: string) => void;
 }
 
-function Details({ item, archived }: { item: AttentionItem; archived: boolean }) {
+/** The detail card of one email: mailbox, sender, dates, error and the links to view it here or open it in Gmail. */
+export function Details({ item, archived }: { item: AttentionItem; archived: boolean }) {
+  const [viewing, setViewing] = useState(false);
   return (
     <Card variant="inset" data-testid="attention-details">
       <ListField label="Mailbox" value={item.connectionEmail} />
@@ -45,13 +48,19 @@ function Details({ item, archived }: { item: AttentionItem; archived: boolean })
       <ListField
         label="Email"
         value={
-          <Button asChild variant="link">
-            <a href={gmailMessageUrl(item)} target="_blank" rel="noopener noreferrer">
-              Open in Gmail
-            </a>
-          </Button>
+          <span className="inline-flex flex-wrap items-center gap-x-space-12 gap-y-space-4">
+            <Button variant="link" onClick={() => setViewing(true)}>
+              View email
+            </Button>
+            <Button asChild variant="link">
+              <a href={gmailMessageUrl(item)} target="_blank" rel="noopener noreferrer">
+                Open in Gmail
+              </a>
+            </Button>
+          </span>
         }
       />
+      {viewing ? <ViewEmailDialog ledgerId={item.id} subject={item.subject} onClose={() => setViewing(false)} /> : null}
     </Card>
   );
 }

@@ -28,9 +28,12 @@ import { useFailureRunner } from './useFailureRunner';
 export function FailuresScreen({
   summary: initialSummary,
   emails,
+  currentUserId,
 }: {
   summary: FailureSummary;
   emails: Schemas['PageFailedGmailItemResponse'];
+  /** The signed-in admin: "View email" shows only for mail from their own mailboxes. */
+  currentUserId?: string;
 }) {
   const [tab, setTab] = React.useState<FailureKind>('gmail');
   const [confirming, setConfirming] = React.useState(false);
@@ -78,7 +81,7 @@ export function FailuresScreen({
           Retry all
         </Button>
       </div>
-      {tab === 'gmail' ? <EmailsTab initial={emails} /> : <JobsTab />}
+      {tab === 'gmail' ? <EmailsTab initial={emails} currentUserId={currentUserId} /> : <JobsTab />}
 
       {confirming ? (
         <Dialog open onOpenChange={(open) => (open || busy ? undefined : setConfirming(false))}>

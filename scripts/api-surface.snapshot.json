@@ -101,6 +101,7 @@
       "reopen",
       "replace",
       "replaceCard",
+      "seenDates",
       "update"
     ],
     "accountCardsApi": [
@@ -118,6 +119,7 @@
       "reopen",
       "replace",
       "replaceCard",
+      "seenDates",
       "update"
     ],
     "tagsApi": [
@@ -400,6 +402,8 @@
       "deleteSender",
       "disconnectConnection",
       "getAttentionItems",
+      "getAttentionTotal",
+      "getMessageContent",
       "listConnections",
       "listSenders",
       "rescan",

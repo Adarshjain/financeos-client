@@ -5,7 +5,7 @@ import { loginContext } from '../fixtures/browser';
 import { resetLlm } from '../fixtures/control';
 import type { GoogleIdentity } from '../fixtures/google-stubs';
 import { cleanupIdentity, registerIdentity, registerMailbox } from '../fixtures/google-stubs';
-import { createBankAccount } from '../fixtures/seed/accounts';
+import { createBankAccount, ensurePrimaryCardholder } from '../fixtures/seed/accounts';
 import {
   alertMail,
   attentionItems,
@@ -128,72 +128,108 @@ test.describe('Gmail settings UI (@ui)', () => {
     await expect(page.getByText(/succeeded/i).first()).toBeVisible();
 
     await page.reload();
+    // Mail that names an unknown number is one row per number, not one row per email.
     await expect(page.getByText('Needs attention · 2')).toBeVisible();
-    await expect(page.getByText('No matching account', { exact: true })).toHaveCount(2);
-    await expect(page.getByText(/account or card ending ••9999/)).toBeVisible();
-    await expect(page.getByText(/account or card ending ••7741/)).toBeVisible();
+    await expect(page.getByTestId('attention-number')).toHaveCount(2);
+    const uberNumber = page.getByTestId('attention-number').filter({ hasText: '••9999' });
+    const customerIdNumber = page.getByTestId('attention-number').filter({ hasText: '••7741' });
+    await expect(uberNumber).toContainText('1 email');
+    await expect(customerIdNumber).toContainText('1 email');
+    await expect(page.getByTestId('attention-item')).toHaveCount(0);
+    // The Settings badge counts the same things as the card header.
+    await page.goto('/settings');
+    await expect(page.getByText('2 needs attention')).toBeVisible();
+    await page.goto('/settings/connections');
 
-    // Details show the raw ledger fields behind the plain-words summary.
-    const uberRow = page.getByTestId('attention-item').filter({ hasText: /ending ••9999/ });
-    await uberRow.getByRole('button', { name: 'Details' }).click();
-    await expect(uberRow.getByText(BANK_SENDER).first()).toBeVisible();
-    await expect(uberRow.getByRole('link', { name: 'Open in Gmail' })).toHaveAttribute('href', /^https:\/\/mail\.google\.com\/mail\/\?authuser=/);
+    // Details on a group lists its emails (newest first) with the same per-email details and the Gmail link.
+    await uberNumber.getByRole('button', { name: 'Details' }).click();
+    const numberEmails = page.getByRole('dialog', { name: 'Emails for this number' });
+    await expect(numberEmails).toBeVisible();
+    await expect(numberEmails.getByTestId('number-email')).toHaveCount(1);
+    await expect(numberEmails.getByTestId('number-email')).toContainText('Alert');
+    await numberEmails.getByRole('button', { name: 'Details' }).click();
+    await expect(numberEmails.getByRole('link', { name: 'Open in Gmail' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(numberEmails).toBeHidden();
 
-    // Assign & Remember: the customer-ID alert is mapped to the bank account and re-processed.
-    const customerIdRow = page.getByTestId('attention-item').filter({ hasText: /ending ••7741/ });
-    await customerIdRow.getByRole('button', { name: 'Assign' }).click();
-    const assignDialog = page.getByRole('dialog', { name: 'Assign account identifier' });
+    // Add to account: the customer-ID alert's number is mapped to the bank account and its mail is settled.
+    await customerIdNumber.getByRole('button', { name: 'Add to account' }).click();
+    const assignDialog = page.getByRole('dialog', { name: 'Add number to account' });
     await expect(assignDialog).toBeVisible();
     await assignDialog.getByRole('combobox', { name: 'Target account' }).click();
     await page.getByRole('option', { name: /UI Gmail Bank/ }).click();
-    await assignDialog.getByRole('button', { name: 'Assign & remember' }).click();
-    await expectToast(page, 'Re-processing 1 parked emails');
+    await assignDialog.getByRole('button', { name: 'Add to account' }).click();
+    await expectToast(page, /Added ••7741 to UI Gmail Bank · 1 email settled/);
     await waitForGmailJobsIdle(api);
     await page.reload();
     await expect(page.getByText('Needs attention · 1')).toBeVisible();
-    await expect(page.getByText(/ending ••7741/)).not.toBeVisible();
+    await expect(page.getByText(/••7741/)).not.toBeVisible();
     const aliased = await searchAll(api, [{ field: 'accountId', operator: 'is', value: bankAccountId }]);
     expect(aliased.map((t) => t.sourcedDescription)).toEqual(['CUSTOMER ID ALERT']);
+
+    // Ignore this number: it leaves Needs attention for Archived · Ignored numbers, and Stop ignoring brings it back.
+    await uberNumber.getByRole('button', { name: 'More options' }).click();
+    await page.getByRole('menuitem', { name: 'Ignore this number' }).click();
+    await expectToast(page, /Ignoring .*••9999 · 1 email moved to Archived/);
+    await expect(page.getByText('Nothing needs attention right now.')).toBeVisible();
+    await page.getByRole('button', { name: 'Archived · 1' }).click();
+    await expect(page.getByText('Ignored numbers · 1')).toBeVisible();
+    await expect(page.getByTestId('attention-ignored')).toContainText('••9999');
+    await page.getByRole('button', { name: 'Stop ignoring' }).click();
+    await expectToast(page, /Stopped ignoring .*••9999 · 1 email back in Needs attention/);
+    await expect(page.getByText('Needs attention · 1')).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Archived/ })).not.toBeVisible();
 
     // The card the alert names now exists — but is not opted in yet.
     await createBankAccount(api, { name: 'UI Late Account', last4: '9999' });
     await waitForGmailJobsIdle(api);
 
-    // Retry re-extracts the mail, and so does the opt-in re-activation in the next test.
+    // The alert's number now matches an account that is not opted in: its mail waits behind that account.
+    // The opt-in re-activation in the next test re-extracts it.
     const uberAnswer = extractionFor(parkedMail, { json: extractedTxn({ amount: 640, date: isoDaysAgo(3), last4: '9999', merchant: 'UBER' }) });
-    await scriptExtractions(api, [uberAnswer, uberAnswer]);
-
-    await page.getByRole('button', { name: 'Retry', exact: true }).click();
-    await expectToast(page, 'Item queued for retry');
-    await waitForGmailJobsIdle(api);
+    await scriptExtractions(api, [uberAnswer]);
     await page.reload();
+    // Import off is one row per account, with the waiting count; the per-email list stays empty.
     await expect(page.getByText('Needs attention · 1')).toBeVisible();
-    await expect(page.getByText('Gmail import off', { exact: true })).toBeVisible();
-    await expect(page.getByText('Matched UI Late Account, but Gmail import is not turned on for it.')).toBeVisible();
-    expect((await attentionItems(api))[0].status).toBe('ACCOUNT_NOT_OPTED_IN');
+    const importOff = page.getByTestId('attention-import-off');
+    await expect(importOff).toContainText('Gmail import is off for UI Late Account');
+    await expect(importOff).toContainText('1 email waiting');
+    await expect(page.getByTestId('attention-item')).toHaveCount(0);
+    expect(await attentionItems(api)).toHaveLength(0);
 
     // Set import date opens the account's Edit dialog in place, on the import date; the page stays put.
     const attentionUrl = page.url();
-    await page.getByRole('button', { name: 'Set import date' }).click();
+    await importOff.getByRole('button', { name: 'Set import date' }).click();
     const editDialog = page.getByRole('dialog', { name: 'Edit account' });
     await expect(editDialog).toBeVisible();
     await expect(editDialog.getByLabel(/^Import emails from/)).toBeFocused();
     expect(page.url()).toBe(attentionUrl);
     await editDialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(editDialog).toBeHidden();
+  });
 
-    // Archive tucks the item away behind its own collapsed section; Unarchive brings it back.
-    await page.getByRole('button', { name: 'Archive', exact: true }).click();
-    await expectToast(page, 'Item archived');
-    await expect(page.getByText('Needs attention', { exact: true })).toBeVisible();
-    await expect(page.getByText('Nothing needs attention right now.')).toBeVisible();
-    await page.getByRole('button', { name: 'Archived · 1' }).click();
-    await expect(page.getByText('Matched UI Late Account, but Gmail import is not turned on for it.')).toBeVisible();
-    await page.getByRole('button', { name: 'Unarchive' }).click();
-    await expectToast(page, 'Item moved back to Needs attention');
-    await expect(page.getByText('Needs attention · 1')).toBeVisible();
-    await expect(page.getByRole('button', { name: /^Archived/ })).not.toBeVisible();
-    expect((await attentionItems(api)).map((i) => i.archivedAt)).toEqual([null]);
+  test('Add a past card prefills its dates from where the number was seen in mail', async ({ page }) => {
+    test.slow();
+    // ••7741 was settled into UI Gmail Bank above, so its mail shows when the number was seen.
+    const primary = await ensurePrimaryCardholder(api, bankAccountId, '1234');
+    expect(primary.role).toBe('PRIMARY');
+    await page.goto(`/accounts/${bankAccountId}/cards`);
+    await page.getByRole('button', { name: 'Cardholder actions' }).first().click();
+    await page.getByRole('menuitem', { name: 'Add a past card' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Add a past card' });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('textbox', { name: /^Last 4 digits/ }).fill('7741');
+    await expect(dialog.getByText(/^Seen in 1 email/)).toBeVisible();
+    await expect(dialog.getByRole('textbox', { name: 'Opened on' })).toHaveValue(/^\d{2}\/\d{2}\/\d{4}$/);
+    await expect(dialog.getByRole('textbox', { name: 'Closed on' })).toHaveValue(/^\d{2}\/\d{2}\/\d{4}$/);
+    await dialog.getByRole('button', { name: 'Add past card' }).click();
+    await expectToast(page, 'Past card added');
+    await expect(dialog).not.toBeVisible();
+    await expect(page.getByText('••7741').first()).toBeVisible();
+    // A past card beside the active one reads as Closed (Replaced is only for the Replace flow); the dates come from the mail.
+    await expect(page.getByText('Closed', { exact: true })).toBeVisible();
+    // The active card is untouched.
+    await expect(page.getByText('Active', { exact: true }).first()).toBeVisible();
   });
 
   test('opting the account in clears Needs Attention; the sender can be edited to Off', async ({ page }) => {
@@ -277,6 +313,9 @@ test.describe('Gmail settings UI (@ui)', () => {
     // Bank account 1234 only ever received the alert assigned to it via the alias.
     expect(await searchAll(api, [{ field: 'accountId', operator: 'is', value: bankAccountId }])).toHaveLength(1);
     const identifiers = await api.GET('/api/v1/accounts/{id}/identifiers', { params: { path: { id: bankAccountId } } });
-    expect(identifiers.data?.map((i) => i.value)).toEqual(['7741']);
+    // The past-card test above turned the saved number ••7741 into a closed card on this account.
+    expect(identifiers.data?.map((i) => i.value)).toEqual([]);
+    const holders = await api.GET('/api/v1/accounts/{accountId}/cardholders', { params: { path: { accountId: bankAccountId } } });
+    expect(holders.data?.flatMap((h) => h.cards).find((c) => c.last4 === '7741')).toMatchObject({ isOpen: false });
   });
 });

@@ -1,13 +1,16 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const actions = vi.hoisted(() => ({ saveBelongs: vi.fn() }));
 vi.mock('./suggestionActions', () => actions);
+const loaders = vi.hoisted(() => ({ loadCardholders: vi.fn(), loadCardSeenDates: vi.fn() }));
+vi.mock('@/features/accounts/accountActions', () => loaders);
 
 import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
+import { renderWithQuery as render } from '@/test/renderWithQuery';
 
 import { SuggestionBelongsDialog } from './SuggestionBelongsDialog';
 import { fittingAccounts, type SuggestionItem, suggestionRow } from './suggestionsModel';
@@ -48,6 +51,8 @@ const pick = async (label: RegExp, option: RegExp | string) => {
 beforeEach(() => {
   vi.clearAllMocks();
   actions.saveBelongs.mockResolvedValue({ success: true, data: undefined });
+  loaders.loadCardholders.mockResolvedValue({ success: true, data: [] });
+  loaders.loadCardSeenDates.mockResolvedValue({ success: true, data: null });
 });
 
 describe('fittingAccounts', () => {
@@ -84,6 +89,7 @@ describe('SuggestionBelongsDialog', () => {
     expect(screen.getByRole('option', { name: 'HDFC Savings' })).toBeInTheDocument();
     await user.keyboard('{Escape}');
     await user.click(screen.getByRole('combobox', { name: /^It's/ }));
+    expect(screen.getByRole('option', { name: /An old debit card/ })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'A debit card on this account' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'The same account (another number for it)' })).toBeInTheDocument();
   });
@@ -97,12 +103,45 @@ describe('SuggestionBelongsDialog', () => {
   });
 
   it('sends an older number and reports the account', async () => {
-    const { onSaved } = open();
+    const { onSaved } = open(row({ firstSeenOn: '2023-01-10', lastSeenOn: '2024-03-05' }));
     await pick(/^Account/, 'HDFC Regalia');
     await pick(/^It's/, /An older number/);
     await user.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(actions.saveBelongs).toHaveBeenCalledWith('s1', { accountId: 'c1', as: 'OLDER_NUMBER' }));
+    await waitFor(() =>
+      expect(actions.saveBelongs).toHaveBeenCalledWith('s1', {
+        accountId: 'c1',
+        as: 'OLDER_NUMBER',
+        pastCard: { issuedOn: '2023-01-10', closedOn: '2024-03-05' },
+      }),
+    );
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(accounts[0]));
+  });
+
+  it('lists the old debit card first for a bank-side number and sends it with the closed card dates', async () => {
+    open(row({ kind: 'DEBIT_CARD', last4: '3003', firstSeenOn: '2022-06-01', lastSeenOn: '2023-02-15' }));
+    await pick(/^Account/, 'HDFC Savings');
+    await user.click(screen.getByRole('combobox', { name: /^It's/ }));
+    expect(screen.getAllByRole('option')[0]).toHaveTextContent('An old debit card');
+    await user.click(screen.getByRole('option', { name: /An old debit card/ }));
+    expect(screen.getByRole('textbox', { name: /^Opened on/ })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /^Closed on/ })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(actions.saveBelongs).toHaveBeenCalledWith('s1', {
+        accountId: 'b1',
+        as: 'OLDER_NUMBER',
+        pastCard: { issuedOn: '2022-06-01', closedOn: '2023-02-15' },
+      }),
+    );
+  });
+
+  it('asks for the dates and does not send when they are missing', async () => {
+    open(row({ kind: 'DEBIT_CARD', last4: '3003' }));
+    await pick(/^Account/, 'HDFC Savings');
+    await pick(/^It's/, /An old debit card/);
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(await screen.findByText('Enter when the card was opened.')).toBeInTheDocument();
+    expect(actions.saveBelongs).not.toHaveBeenCalled();
   });
 
   it('needs a relationship for an add-on and sends it with the holder name', async () => {

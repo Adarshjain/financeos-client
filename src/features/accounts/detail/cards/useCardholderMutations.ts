@@ -1,10 +1,10 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { showToast } from '@/components/ds/Toast/Toast';
-import { deleteCardPlastic } from '@/features/accounts/accountActions';
+import { convertIdentifierToPastCard, deleteCardPlastic } from '@/features/accounts/accountActions';
 import { useCardsDialogMutations } from '@/features/accounts/cards/useCardsDialogMutations';
 import type {
   Card,
@@ -15,6 +15,8 @@ import type {
 } from '@/lib/account.types';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import type { PastCardRequest } from '@/lib/api/types';
+import { keys } from '@/lib/query/keys';
 import type { BulkReattributeCardRequest } from '@/lib/transaction.types';
 
 import type { EditHolderBody } from './cardsFormsModel';
@@ -30,6 +32,9 @@ export interface CardholderActions {
   reopenHolder: (holder: Cardholder) => ActionResult;
   deleteHolder: (holder: Cardholder) => ActionResult;
   addCard: (holder: Cardholder, body: CreateCardRequest) => ActionResult;
+  addPastCard: (holder: Cardholder, body: CreateCardRequest) => ActionResult;
+  /** The number is one of the account's other numbers: it becomes this closed card (the identifier goes). */
+  convertToPastCard: (identifierId: string, body: PastCardRequest) => ActionResult;
   replaceCard: (holder: Cardholder, card: Card, body: ReplaceCardRequest) => ActionResult;
   closeCard: (holder: Cardholder, card: Card, body: { closedOn?: string }) => ActionResult;
   deleteCard: (holder: Cardholder, card: Card) => ActionResult;
@@ -43,6 +48,7 @@ export interface CardholderActions {
 export function useCardholderMutations(accountId: string, isBank: boolean): CardholderActions {
   const router = useRouter();
   const m = useCardsDialogMutations(accountId, false);
+  const qc = useQueryClient();
 
   // The live hook's "delete plastic" closes the card; the server now has a real DELETE.
   const deleteCardMutation = useMutation({
@@ -103,6 +109,25 @@ export function useCardholderMutations(accountId: string, isBank: boolean): Card
         () => m.addCardMutation.mutateAsync({ cardholderId: holder.id, body }),
         'Card issued',
         "Couldn't issue the card. Try again."
+      ),
+    addPastCard: (holder, body) =>
+      run(
+        () => m.addCardMutation.mutateAsync({ cardholderId: holder.id, body }),
+        'Past card added',
+        "Couldn't add the past card. Try again."
+      ),
+    convertToPastCard: (identifierId, body) =>
+      run(
+        async () => {
+          const result = await unwrapAction(convertIdentifierToPastCard(accountId, identifierId, body));
+          await Promise.all([
+            qc.invalidateQueries({ queryKey: keys.accounts.all }),
+            qc.invalidateQueries({ queryKey: keys.accounts.identifiers(accountId) }),
+          ]);
+          return result;
+        },
+        'Past card added',
+        "Couldn't add the past card. Try again."
       ),
     replaceCard: (holder, card, body) =>
       run(

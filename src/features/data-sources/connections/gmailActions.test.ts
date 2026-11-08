@@ -15,6 +15,7 @@ import {
   loadGmailAttentionSummary,
   loadGmailConnections,
   loadGmailSenders,
+  loadGmailUngrouped,
   retryAllGmailAttention,
   retryGmailAttention,
   startGmailOAuth,
@@ -107,6 +108,18 @@ describe('attention bulk and summary', () => {
   it('loads the summary with includeRetryable and defaults to an empty list', async () => {
     expect(await loadGmailAttentionSummary(false)).toEqual({ success: true, data: [] });
     expect(m.get).toHaveBeenCalledWith('/api/v1/gmail/attention/summary', { params: { query: { includeRetryable: false } } });
+  });
+
+  it('asks for the summary of the ungrouped emails only when told to', async () => {
+    await loadGmailAttentionSummary(false, true);
+    expect(m.get).toHaveBeenCalledWith('/api/v1/gmail/attention/summary', { params: { query: { includeRetryable: false, ungroupedOnly: true } } });
+  });
+
+  it('lists the ungrouped emails of one reason', async () => {
+    await loadGmailUngrouped({ page: 0, size: 10, includeRetryable: false, reason: 'NO_AI_KEY' });
+    expect(m.get).toHaveBeenCalledWith('/api/v1/gmail/attention/ungrouped', {
+      params: { query: { page: 0, size: 10, includeRetryable: false, reason: 'NO_AI_KEY' } },
+    });
   });
 
   it('retries and archives a whole reason through their own endpoints', async () => {

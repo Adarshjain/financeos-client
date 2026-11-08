@@ -52,9 +52,10 @@ export function ConnectionsScreen({
             onSync={g.handleSync}
             onDisconnect={g.handleDisconnect}
           />
-          {g.attentionSummary ? (
+          {g.attentionGroups ? (
             <AttentionCard
-              summary={g.attentionSummary}
+              groups={g.attentionGroups}
+              ungroupedSummary={g.ungroupedSummary ?? []}
               archivedData={g.archivedData}
               archivedPage={g.archivedPage}
               onArchivedPageChange={g.setArchivedPage}
@@ -63,6 +64,8 @@ export function ConnectionsScreen({
               onUnarchive={g.handleUnarchiveAttentionItem}
               onRetryAll={g.handleRetryAll}
               onArchiveAll={g.handleArchiveAll}
+              onIgnoreNumber={g.handleIgnoreNumber}
+              onUnignoreNumber={g.handleUnignoreNumber}
               autoScroll={focusAttention}
             />
           ) : null}

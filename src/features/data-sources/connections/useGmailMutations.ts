@@ -6,19 +6,22 @@ import {
   archiveAllGmailAttention,
   archiveGmailAttention,
   assignGmailAttention,
+  assignGmailNumber,
   createGmailSender,
   deleteGmailSender,
   disconnectGmail,
+  ignoreGmailNumber,
   retryAllGmailAttention,
   retryGmailAttention,
   startGmailOAuth,
   syncGmail,
   unarchiveGmailAttention,
+  unignoreGmailNumber,
   updateGmailSender,
 } from '@/features/data-sources/connections/gmailActions';
 import { useRouterRefresh } from '@/features/settings/useRouterRefresh';
 import { unwrapAction } from '@/lib/actionResult';
-import type { AssignAttentionRequest, AttentionBulkRequest, GmailSenderRequest } from '@/lib/api/types';
+import type { AssignAttentionRequest, AssignNumberGroupRequest, AttentionBulkRequest, GmailSenderRequest, NumberGroupRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 
 /** Every write GmailConnect needs, grouped so the orchestrator hook stays thin. */
@@ -87,10 +90,28 @@ export function useGmailMutations() {
   const assignAttentionMutation = useMutation({
     mutationFn: ({ ledgerId, body }: { ledgerId: string; body: AssignAttentionRequest }) =>
       unwrapAction(assignGmailAttention(ledgerId, body)),
-    onSuccess: async () => {
-      await invalidateAttention();
+    onSuccess: async (_data, { body }) => {
+      // An old card is a new card on the account: its Cards tab and card lists reload.
+      await Promise.all([invalidateAttention(), body.pastCard ? qc.invalidateQueries({ queryKey: keys.accounts.all }) : undefined]);
       refreshLayout();
     },
+  });
+
+  const assignNumberMutation = useMutation({
+    mutationFn: (body: AssignNumberGroupRequest) => unwrapAction(assignGmailNumber(body)),
+    onSuccess: async (_data, body) => {
+      await Promise.all([invalidateAttentionAndInbox(), body.pastCard ? qc.invalidateQueries({ queryKey: keys.accounts.all }) : undefined]);
+    },
+  });
+
+  const ignoreNumberMutation = useMutation({
+    mutationFn: (body: NumberGroupRequest) => unwrapAction(ignoreGmailNumber(body)),
+    onSuccess: invalidateAttentionAndInbox,
+  });
+
+  const unignoreNumberMutation = useMutation({
+    mutationFn: (id: string) => unwrapAction(unignoreGmailNumber(id)),
+    onSuccess: invalidateAttentionAndInbox,
   });
 
   const retryAllMutation = useMutation({
@@ -129,6 +150,9 @@ export function useGmailMutations() {
     archiveAttentionMutation,
     unarchiveAttentionMutation,
     assignAttentionMutation,
+    assignNumberMutation,
+    ignoreNumberMutation,
+    unignoreNumberMutation,
     retryAllMutation,
     archiveAllMutation,
     createSenderMutation,

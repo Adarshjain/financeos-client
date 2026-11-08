@@ -33,7 +33,7 @@ import { useFailureRunner } from './useFailureRunner';
 type EmailPage = Schemas['PageFailedGmailItemResponse'];
 
 /** The Emails tab: status filter, rows with a ⋯ menu, Details, Skip… and the Pager. */
-export function EmailsTab({ initial }: { initial: EmailPage }) {
+export function EmailsTab({ initial, currentUserId }: { initial: EmailPage; currentUserId?: string }) {
   const [filter, setFilter] = React.useState<EmailFilter>('failed');
   const [page, setPage] = React.useState(0);
   const [details, setDetails] = React.useState<FailedEmail | null>(null);
@@ -114,6 +114,7 @@ export function EmailsTab({ initial }: { initial: EmailPage }) {
       {details ? (
         <EmailDetailsDialog
           item={details}
+          currentUserId={currentUserId}
           onClose={() => setDetails(null)}
           retry={
             canRetry(details)

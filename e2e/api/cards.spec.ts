@@ -229,6 +229,103 @@ test.describe('Cards and Cardholders API (@api)', () => {
     expect(genericCardRes.response.status).toBe(400);
   });
 
+  test('past card: a closed card with its dates sits beside the active card; seen-dates is empty for an unseen number', async ({ api }) => {
+    const cc = await createCreditCard(api, { name: 'Past Card CC' });
+    const primary = await ensurePrimaryCardholder(api, cc.id, '1111', '2025-01-01');
+
+    const past = await api.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards', {
+      params: { path: { accountId: cc.id, cardholderId: primary.id } },
+      body: { last4: '2020', issuedOn: '2021-05-04', closedOn: '2024-12-20' },
+    });
+    expect(past.response.status).toBe(201);
+    const cards = past.data!.cards;
+    expect(cards.find((c) => c.last4 === '2020')).toMatchObject({ isOpen: false, issuedOn: '2021-05-04', closedOn: '2024-12-20' });
+    expect(cards.filter((c) => c.isOpen)).toHaveLength(1);
+
+    // A past card still follows the date rules: closed before opened is refused.
+    const backwards = await api.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards', {
+      params: { path: { accountId: cc.id, cardholderId: primary.id } },
+      body: { last4: '2021', issuedOn: '2024-05-04', closedOn: '2021-12-20' },
+    });
+    expect(backwards.response.status).toBe(400);
+
+    const unseen = await api.GET('/api/v1/accounts/{accountId}/cards/seen-dates', {
+      params: { path: { accountId: cc.id }, query: { last4: '8080' } },
+    });
+    expect(unseen.response.status).toBe(200);
+    expect(unseen.data).toMatchObject({ mailCount: 0, transactionCount: 0 });
+    expect(unseen.data?.firstSeen ?? null).toBeNull();
+
+    const bad = await api.GET('/api/v1/accounts/{accountId}/cards/seen-dates', {
+      params: { path: { accountId: cc.id }, query: { last4: '80' } },
+    });
+    expect(bad.response.status).toBe(400);
+  });
+
+  test('past card on a closed account: allowed up to its closed date, an active card is not', async ({ api }) => {
+    const cc = await createCreditCard(api, { name: 'Closed Past Card CC' });
+    const primary = await ensurePrimaryCardholder(api, cc.id, '1111', '2024-01-01');
+    const closed = await api.POST('/api/v1/accounts/{id}/close', { params: { path: { id: cc.id } }, body: { closedOn: '2025-06-30' } });
+    expect(closed.response.status).toBe(200);
+    const path = { params: { path: { accountId: cc.id, cardholderId: primary.id } } };
+
+    const past = await api.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards', {
+      ...path,
+      body: { last4: '2020', issuedOn: '2021-05-04', closedOn: '2025-03-01' },
+    });
+    expect(past.response.status).toBe(201);
+    expect(past.data!.cards.find((c) => c.last4 === '2020')).toMatchObject({ isOpen: false, closedOn: '2025-03-01' });
+
+    const afterClose = await api.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards', {
+      ...path,
+      body: { last4: '2021', issuedOn: '2021-05-04', closedOn: '2025-07-15' },
+    });
+    expect(afterClose.response.status).toBe(400);
+    const active = await api.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards', {
+      ...path,
+      body: { last4: '2022', issuedOn: '2025-01-01' },
+    });
+    expect(active.response.status).toBe(400);
+  });
+
+  test('identifier to old card: the identifier becomes a closed card in one call; bad dates, non-digits and foreign ids are refused', async ({ api, request }) => {
+    const bank = await createBankAccount(api, { name: 'Identifier Old Card Bank' });
+    await ensurePrimaryCardholder(api, bank.id, '3333', '2025-01-01');
+    const identifier = await api.POST('/api/v1/accounts/{id}/identifiers', { params: { path: { id: bank.id } }, body: { value: '3003' } });
+    expect(identifier.response.status).toBe(201);
+    const crn = await api.POST('/api/v1/accounts/{id}/identifiers', { params: { path: { id: bank.id } }, body: { value: 'CRN88213' } });
+    const path = (identifierId: string) => ({ params: { path: { id: bank.id, identifierId } } });
+
+    const backwards = await api.POST('/api/v1/accounts/{id}/identifiers/{identifierId}/to-past-card', {
+      ...path(identifier.data!.id),
+      body: { issuedOn: '2024-05-04', closedOn: '2021-12-20' },
+    });
+    expect(backwards.response.status).toBe(400);
+    const text = await api.POST('/api/v1/accounts/{id}/identifiers/{identifierId}/to-past-card', {
+      ...path(crn.data!.id),
+      body: { issuedOn: '2021-05-04', closedOn: '2024-12-20' },
+    });
+    expect(text.response.status).toBe(400);
+
+    const { api: other } = await secondUser(request, 'cards-id-old');
+    const foreign = await other.POST('/api/v1/accounts/{id}/identifiers/{identifierId}/to-past-card', {
+      ...path(identifier.data!.id),
+      body: { issuedOn: '2021-05-04', closedOn: '2024-12-20' },
+    });
+    expect([400, 404]).toContain(foreign.response.status);
+
+    const ok = await api.POST('/api/v1/accounts/{id}/identifiers/{identifierId}/to-past-card', {
+      ...path(identifier.data!.id),
+      body: { issuedOn: '2021-05-04', closedOn: '2024-12-20' },
+    });
+    expect(ok.response.status).toBe(200);
+    expect(ok.data?.cardId).toBeTruthy();
+    const identifiers = await api.GET('/api/v1/accounts/{id}/identifiers', { params: { path: { id: bank.id } } });
+    expect(identifiers.data?.map((i) => i.value)).toEqual(['CRN88213']);
+    const holders = await api.GET('/api/v1/accounts/{accountId}/cardholders', { params: { path: { accountId: bank.id } } });
+    expect(holders.data![0].cards.find((c) => c.last4 === '3003')).toMatchObject({ isOpen: false, issuedOn: '2021-05-04', closedOn: '2024-12-20' });
+  });
+
   test('delete card: only a closed card can go, an open card or the only card is refused, an unknown card is 404', async ({
     api,
   }) => {

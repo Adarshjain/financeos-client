@@ -4,10 +4,13 @@ import React from 'react';
 
 import { Select } from '@/components/ds/Select/Select';
 import { TextField } from '@/components/ds/TextField/TextField';
+import { OldCardFields } from '@/features/accounts/cards/OldCardFields';
+import { useOldCard } from '@/features/accounts/cards/useOldCard';
 import { DialogFrame, useDialogSubmit } from '@/features/accounts/detail/cards/DialogFrame';
 import { RELATIONSHIP_OPTIONS } from '@/features/accounts/detail/cards/HolderFormDialogs';
 import type { Account } from '@/lib/account.types';
 import type { Schemas } from '@/lib/api/types';
+import { todayInAppZone } from '@/lib/date-range';
 
 import { saveBelongs } from './suggestionActions';
 import { fittingAccounts, sectionOfKind, type SuggestionRow } from './suggestionsModel';
@@ -20,7 +23,8 @@ const CARD_OPTIONS: { value: BelongsAs; label: string; description?: string }[] 
   { value: 'OPEN_CARD', label: 'Another card of mine on this account', description: 'Saved as an open card under you' },
 ];
 
-const BANK_OPTIONS: { value: BelongsAs; label: string }[] = [
+const BANK_OPTIONS: { value: BelongsAs; label: string; description?: string }[] = [
+  { value: 'OLDER_NUMBER', label: 'An old debit card', description: 'Saved as a closed card. Old mail lands here.' },
   { value: 'DEBIT_CARD', label: 'A debit card on this account' },
   { value: 'ALIAS', label: 'The same account (another number for it)' },
 ];
@@ -45,7 +49,17 @@ export function SuggestionBelongsDialog({
   const [as, setAs] = React.useState<BelongsAs | ''>('');
   const [relationship, setRelationship] = React.useState('');
   const [holderName, setHolderName] = React.useState('');
+  const [oldCardErrors, setOldCardErrors] = React.useState<Record<string, string>>({});
   const { pending, error, submit } = useDialogSubmit(onClose);
+  const today = todayInAppZone();
+  const older = as === 'OLDER_NUMBER';
+  const oldCard = useOldCard({
+    accountId: older && accountId ? accountId : null,
+    last4: row.last4 && row.last4.length === 4 ? row.last4 : null,
+    isBank: !isCard,
+    today,
+    fallback: { firstSeen: row.item?.firstSeenOn, lastSeen: row.item?.lastSeenOn },
+  });
 
   const ready = !!accountId && !!as && (as !== 'ADDON' || !!relationship);
 
@@ -55,6 +69,15 @@ export function SuggestionBelongsDialog({
     if (as === 'ADDON') {
       body.relationship = relationship as Schemas['BelongsRequest']['relationship'];
       if (holderName.trim()) body.holderName = holderName.trim();
+    }
+    if (as === 'OLDER_NUMBER') {
+      const built = oldCard.build();
+      if (!built.ok) {
+        setOldCardErrors(built.errors);
+        return;
+      }
+      setOldCardErrors({});
+      body.pastCard = built.body;
     }
     void submit(async () => {
       const result = await saveBelongs(row.id, body);
@@ -93,6 +116,7 @@ export function SuggestionBelongsDialog({
         onValueChange={(v) => setAs(String(v) as BelongsAs)}
         options={isCard ? CARD_OPTIONS : BANK_OPTIONS}
       />
+      {older && accountId ? <OldCardFields state={oldCard} today={today} errors={oldCardErrors} disabled={pending} /> : null}
       {as === 'ADDON' ? (
         <>
           <Select label="Relationship" placeholder="Pick one" value={relationship} onValueChange={(v) => setRelationship(String(v))} options={RELATIONSHIP_OPTIONS} />
