@@ -1,3 +1,4 @@
+import { needsCardLast6 } from '@/features/banks/banks';
 import {
   type Account,
   type AccountRequest,
@@ -76,6 +77,7 @@ export interface AccountFormValues {
   cashBalance: string;
   openingBalance: string;
   last4: string;
+  last6: string;
   anniversaryDate: string;
   statementPassword: string;
   limitPoolChoice: string;
@@ -116,6 +118,7 @@ const FIELDS_BY_TYPE: Record<AccountType, readonly FieldKey[]> = {
     'description',
     'bank',
     'last4',
+    'last6',
     'anniversaryDate',
     'statementPassword',
     'limitPoolChoice',
@@ -168,6 +171,7 @@ export function emptyValues(type: AccountType | null): AccountFormValues {
     cashBalance: '',
     openingBalance: '',
     last4: '',
+    last6: '',
     anniversaryDate: '',
     statementPassword: '',
     limitPoolChoice: LIMIT_POOL_NONE,
@@ -209,6 +213,7 @@ export function valuesFromAccount(account: Account): AccountFormValues {
         ...base,
         bank: account.bank ?? '',
         last4: account.last4 ?? '',
+        last6: account.last6 ?? '',
         anniversaryDate: account.anniversaryDate ?? '',
         creditLimit: str(account.creditLimit),
         limitPoolChoice: account.limitPool ? account.limitPool.id : LIMIT_POOL_NONE,
@@ -275,6 +280,7 @@ export interface CardRowErrors {
 export type FormErrors = Partial<Record<FieldKey, string>> & Partial<Record<CardListKey, CardRowErrors[]>>;
 
 const FOUR_DIGITS = /^\d{4}$/;
+const SIX_DIGITS = /^\d{6}$/;
 const INVALID_AMOUNT = 'Enter a valid amount.';
 export const DUPLICATE_LAST4 = 'This number is already listed above.';
 
@@ -323,6 +329,14 @@ export function validateAccountForm(values: AccountFormValues): FormErrors {
 
   if (type === AccountType.CREDIT_CARD) {
     if (!FOUR_DIGITS.test(values.last4.trim())) errors.last4 = 'Enter the last 4 digits of the card.';
+    if (needsCardLast6(values.bank)) {
+      const last6 = values.last6.trim();
+      if (!last6) errors.last6 = 'Enter the last 6 digits of the card';
+      else if (!SIX_DIGITS.test(last6)) errors.last6 = 'Last 6 digits must be 6 digits';
+      else if (FOUR_DIGITS.test(values.last4.trim()) && !last6.endsWith(values.last4.trim())) {
+        errors.last6 = "Last 6 digits must end with the card's last 4 digits";
+      }
+    }
     const taken = new Set<string>(FOUR_DIGITS.test(values.last4.trim()) ? [values.last4.trim()] : []);
     const earlier = cardRowErrors(values.earlierCards, taken, false);
     if (earlier) errors.earlierCards = earlier;
@@ -388,6 +402,7 @@ export function buildAccountRequest(values: AccountFormValues): AccountRequest {
         bank: values.bank,
         ingestFromDate,
         last4: values.last4.trim(),
+        ...(needsCardLast6(values.bank) && values.last6.trim() ? { last6: values.last6.trim() } : {}),
         creditLimit: pooled ? null : (parseAmount(values.creditLimit) ?? null),
         limitPool: pooled
           ? {

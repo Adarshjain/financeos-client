@@ -55,6 +55,7 @@ const CREDIT_CARD_KEYS = new Set([
   'ingestFromDate',
   'bank',
   'last4',
+  'last6',
   'creditLimit',
   'anniversaryDate',
   'issuer',

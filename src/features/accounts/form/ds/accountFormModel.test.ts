@@ -492,3 +492,61 @@ describe('cards saved with a new account', () => {
     expect(validateAccountForm({ ...bank(), debitCardLast4: '5555' })).toEqual({});
   });
 });
+
+describe('card last 6 digits (HSBC)', () => {
+  const hsbc = (over: Partial<ReturnType<typeof emptyValues>> = {}) =>
+    card({ bank: 'hsbc', last4: '4321', last6: '654321', ...over });
+
+  it('is required for an HSBC card', () => {
+    expect(validateAccountForm(hsbc({ last6: '' })).last6).toBe('Enter the last 6 digits of the card');
+  });
+
+  it('must be exactly 6 digits', () => {
+    expect(validateAccountForm(hsbc({ last6: '54321' })).last6).toBe('Last 6 digits must be 6 digits');
+    expect(validateAccountForm(hsbc({ last6: '65432a' })).last6).toBe('Last 6 digits must be 6 digits');
+  });
+
+  it("must end with the card's last 4", () => {
+    expect(validateAccountForm(hsbc({ last6: '654322' })).last6).toBe(
+      "Last 6 digits must end with the card's last 4 digits"
+    );
+  });
+
+  it('passes when valid', () => {
+    expect(validateAccountForm(hsbc()).last6).toBeUndefined();
+  });
+
+  it('is not required for another bank card or an HSBC bank account', () => {
+    expect(validateAccountForm(card({ bank: 'hdfc', last4: '4321', last6: '' })).last6).toBeUndefined();
+    const bankAccount = {
+      ...emptyValues(AccountType.BANK_ACCOUNT),
+      name: 'HSBC Savings',
+      bank: 'hsbc',
+    };
+    expect(validateAccountForm(bankAccount).last6).toBeUndefined();
+  });
+
+  it('is sent only for an HSBC card with a value', () => {
+    expect(buildAccountRequest(hsbc())).toMatchObject({ last6: '654321' });
+    expect('last6' in buildAccountRequest(hsbc({ last6: '' }))).toBe(false);
+    expect('last6' in buildAccountRequest(card({ bank: 'hdfc', last4: '4321', last6: '654321' }))).toBe(false);
+    const bankAccount = { ...emptyValues(AccountType.BANK_ACCOUNT), name: 'HSBC Savings', bank: 'hsbc', last6: '654321' };
+    expect('last6' in buildAccountRequest(bankAccount)).toBe(false);
+  });
+
+  it('is prefilled on edit from the stored value', () => {
+    const account: CreditCard = {
+      id: 'c9',
+      type: AccountType.CREDIT_CARD,
+      name: 'HSBC Travel One',
+      bank: 'hsbc',
+      last4: '4321',
+      last6: '654321',
+      creditLimit: 100000,
+      anniversaryDate: '2024-03-15',
+      financialPosition: 'liability',
+    };
+    expect(valuesFromAccount(account).last6).toBe('654321');
+    expect(valuesFromAccount({ ...account, last6: null }).last6).toBe('');
+  });
+});

@@ -62,7 +62,8 @@ export function CreditCardsFields({
   prefilled,
   prefilledLast4,
   onChange,
-}: CardsProps & { today: string; prefilledLast4?: string }) {
+  last6Field,
+}: CardsProps & { today: string; prefilledLast4?: string; last6Field?: React.ReactNode }) {
   const { addonCards } = values;
   return (
     <>
@@ -86,6 +87,7 @@ export function CreditCardsFields({
             onValueChange={(v) => onChange({ anniversaryDate: v as string })}
           />
         </Pair>
+        {last6Field}
       </Block>
 
       {addonCards.map((card, i) => (

@@ -6627,6 +6627,7 @@ export interface components {
             ingestFromDate?: string | null;
             issuer?: string | null;
             last4?: string | null;
+            last6?: string | null;
             /** Format: date */
             lastStatementDate?: string | null;
             /** Format: date */
@@ -6667,6 +6668,7 @@ export interface components {
             ingestFromDate?: string;
             issuer?: string;
             last4: string;
+            last6?: string | null;
             limitPool?: components["schemas"]["CreditLimitPoolRequest"];
             name: string;
             productName?: string;

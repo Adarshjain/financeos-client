@@ -43,6 +43,11 @@ export const BANKS: readonly Bank[] = BANK_DATA.map((b) => ({
   spriteIndex: (SPRITE_IDS as readonly string[]).indexOf(b.id),
 }));
 
+/** Banks whose statement password is built from the card's last 6 digits. */
+export function needsCardLast6(bankId: string): boolean {
+  return bankId === 'hsbc';
+}
+
 export function bankById(id: string | null | undefined): Bank | undefined {
   return id ? BANKS.find((b) => b.id === id) : undefined;
 }

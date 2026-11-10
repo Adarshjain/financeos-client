@@ -64,6 +64,8 @@ export type CreditCardRequest = AccountRequestBase & {
   type: AccountType.CREDIT_CARD;
   bank?: string | null;
   last4: string;
+  /** Last 6 digits of the card; blank on update keeps the stored one. */
+  last6?: string;
   /** Required unless `limitPool` is set; for a pooled account an optional cap inside the pool. */
   creditLimit?: number | null;
   limitPool?: CreditLimitPoolRequest | null;
@@ -253,6 +255,8 @@ export type CreditCard = AccountBase & {
   last4: string;
   /** The account's own limit; null for a pooled account that can use the whole pool. */
   creditLimit: number | null;
+  /** Last 6 digits of the card, kept for banks whose statement password needs them. */
+  last6?: string | null;
   anniversaryDate?: string | null;
   lastStatementDate?: string | null;
   cardholders?: Cardholder[];

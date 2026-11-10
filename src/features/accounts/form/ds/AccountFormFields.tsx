@@ -9,7 +9,7 @@ import { Text } from '@/components/ds/Text/Text';
 import { TextField } from '@/components/ds/TextField/TextField';
 import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
 import { SettingsToggle } from '@/components/organisms/SettingsToggle/SettingsToggle';
-import { BANKS } from '@/features/banks/banks';
+import { BANKS, needsCardLast6 } from '@/features/banks/banks';
 import type { CreditLimitPool } from '@/lib/account.types';
 import { resolveAmountExpression } from '@/lib/amountExpression';
 import { formatCount, formatMoney } from '@/lib/format';
@@ -162,20 +162,24 @@ export function AccountFormFields({
   focusField,
 }: AccountFormFieldsProps) {
   const passwordRef = React.useRef<HTMLInputElement>(null);
+  const last6Ref = React.useRef<HTMLInputElement>(null);
+  const focusLast6 =
+    values.type === AccountType.CREDIT_CARD && needsCardLast6(values.bank) && values.last6 === '';
   const ingestFromRef = React.useRef<HTMLInputElement>(null);
   const focusedRef = React.useRef(false);
   React.useEffect(() => {
     if (!focusField || focusedRef.current) return;
     // Deferred: the dialog's focus trap moves focus on open and would otherwise win.
     const t = setTimeout(() => {
-      const el = (focusField === 'statementPassword' ? passwordRef : ingestFromRef).current;
+      const passwordTarget = focusLast6 && last6Ref.current ? last6Ref : passwordRef;
+      const el = (focusField === 'statementPassword' ? passwordTarget : ingestFromRef).current;
       if (!el) return;
       focusedRef.current = true;
       el.scrollIntoView({ block: 'center' });
       el.focus({ preventScroll: true });
     }, 0);
     return () => clearTimeout(t);
-  }, [focusField]);
+  }, [focusField, focusLast6]);
   const type = values.type;
   if (!type) return null;
   const isBank = type === AccountType.BANK_ACCOUNT;
@@ -198,6 +202,20 @@ export function AccountFormFields({
   const providerOptions: SelectOption[] = [
     ...new Set([...(values.provider ? [values.provider] : []), ...BROKER_PROVIDERS]),
   ].map((p) => ({ value: p, label: p }));
+
+  const last6Field = isCard && needsCardLast6(values.bank) ? (
+    <TextField
+      ref={last6Ref}
+      label="Last 6 digits of the card"
+      inputMode="numeric"
+      maxLength={6}
+      placeholder="123456"
+      helper="With your date of birth, this opens your HSBC statements."
+      error={errors.last6}
+      value={values.last6}
+      onValueChange={(v) => onChange({ last6: v.replaceAll(/\D/g, '') })}
+    />
+  ) : null;
 
   const password = (
     <TextField
@@ -329,13 +347,14 @@ export function AccountFormFields({
               onValueChange={(v) => onChange({ anniversaryDate: v as string })}
             />
           </Pair>
+          {last6Field}
           {password}
         </Section>
       ) : null}
 
       {isCard && !isEdit ? (
         <Section title="Cards">
-          <CreditCardsFields values={values} errors={errors} today={today} prefilled={prefilled} prefilledLast4={prefilledValues?.last4} onChange={onChange} />
+          <CreditCardsFields values={values} errors={errors} today={today} prefilled={prefilled} prefilledLast4={prefilledValues?.last4} last6Field={last6Field} onChange={onChange} />
           {password}
         </Section>
       ) : null}
