@@ -199,7 +199,7 @@ test.describe('Instruments API (@api)', () => {
         type: 'stock',
         name: updatedName,
         symbol: created.symbol ?? undefined,
-        exchange: 'BSE',
+        exchange: 'XNSE',
         isin: created.isin ?? undefined,
         currency: 'INR',
         yahooSymbol: created.yahooSymbol ?? undefined,
@@ -207,7 +207,7 @@ test.describe('Instruments API (@api)', () => {
     });
     expectStatus(putRes, 200);
     expect(putRes.data?.name).toBe(updatedName);
-    expect(putRes.data?.exchange).toBe('BSE');
+    expect(putRes.data?.exchange).toBe('XNSE');
 
     // GET /instruments/{id}
     const getRes = await api.GET('/api/v1/instruments/{id}', {

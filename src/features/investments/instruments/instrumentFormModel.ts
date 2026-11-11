@@ -81,3 +81,38 @@ export function assetClassChange(instrument: Instrument, selected: string): Asse
   if (selected === assetClassSelection(instrument)) return undefined;
   return selected === AUTO_ASSET_CLASS ? null : (selected as AssetClass);
 }
+
+/** The two listings a stock can move between. */
+export const SWITCHABLE_EXCHANGES = ['NSE', 'BSE'] as const;
+export const EXCHANGE_OPTIONS = SWITCHABLE_EXCHANGES.map((value) => ({ value, label: value }));
+
+const upper = (v: string | null | undefined) => (v ?? '').trim().toUpperCase();
+const isSwitchableExchange = (v: string | null | undefined) => (SWITCHABLE_EXCHANGES as readonly string[]).includes(upper(v));
+
+/** True when the Exchange field is a NSE / BSE choice: the instrument has an ISIN and sits on one of the two (any case). */
+export function exchangeSwitchable(instrument: Instrument): boolean {
+  return Boolean(instrument.isin) && isSwitchableExchange(instrument.exchange);
+}
+
+/** The Exchange select's value: the form's exchange, upper-cased. */
+export function exchangeChoice(exchange: string): string {
+  return upper(exchange);
+}
+
+/** True when the chosen exchange is the other NSE / BSE listing than the one the form started with. */
+export function isExchangeSwitch(instrument: Instrument, values: InstrumentEditValues): boolean {
+  return exchangeSwitchable(instrument) && isSwitchableExchange(values.exchange) && upper(values.exchange) !== upper(instrument.exchange);
+}
+
+/** The ISIN, AMFI code and Yahoo symbol fields are disabled while an exchange switch is pending. */
+export function identifiersLocked(instrument: Instrument, values: InstrumentEditValues): boolean {
+  return isExchangeSwitch(instrument, values);
+}
+
+/** The Edit request: on an exchange switch the identifiers go as they started, so the server sees a pure switch. */
+export function instrumentEditRequest(instrument: Instrument, values: InstrumentEditValues): CreateInstrumentRequest {
+  const body = instrumentRequest(values);
+  if (!isExchangeSwitch(instrument, values)) return body;
+  const start = editValuesOf(instrument);
+  return instrumentRequest({ ...values, exchange: upper(values.exchange), isin: start.isin, amfiCode: start.amfiCode, yahooSymbol: start.yahooSymbol });
+}

@@ -21,7 +21,17 @@ import {
   instrumentFormErrors,
   isOverridden,
 } from './instrumentEditModel';
-import { assetClassChange, candidatePatch, editValuesOf, type InstrumentEditValues, instrumentRequest } from './instrumentFormModel';
+import {
+  assetClassChange,
+  candidatePatch,
+  editValuesOf,
+  EXCHANGE_OPTIONS,
+  exchangeChoice,
+  exchangeSwitchable,
+  identifiersLocked,
+  instrumentEditRequest,
+  type InstrumentEditValues,
+} from './instrumentFormModel';
 import { TYPE_OPTIONS } from './instrumentsModel';
 import { type UpdateInstrumentResult, useUpdateInstrument } from './useInstrumentMutations';
 
@@ -45,10 +55,12 @@ export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: 
   const [values, setValues] = React.useState<InstrumentEditValues>(() => editValuesOf(instrument));
   const [errors, setErrors] = React.useState<InstrumentFormErrors>(NO_ERRORS);
   const submitting = update.isPending;
+  const locked = identifiersLocked(instrument, values);
   const change = (patch: Partial<InstrumentEditValues>) => setValues((v) => ({ ...v, ...patch }));
 
   const picked = (c: InstrumentCandidate) => {
-    change(candidatePatch(c));
+    const { exchange, ...patch } = candidatePatch(c);
+    change(exchangeSwitchable(instrument) ? patch : { ...patch, exchange });
     showToast(`Filled from “${c.name}”. Review and save`);
   };
 
@@ -57,7 +69,7 @@ export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: 
       setErrors({ fields: { name: 'Enter a name.' }, form: null });
       return;
     }
-    const clearError = identifierClearError(instrument, values);
+    const clearError = locked ? null : identifierClearError(instrument, values);
     if (clearError) {
       setErrors({ fields: { [clearError.field]: clearError.message }, form: null });
       return;
@@ -65,7 +77,7 @@ export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: 
     setErrors(NO_ERRORS);
     try {
       const result = await update.mutateAsync({
-        body: instrumentRequest(values),
+        body: instrumentEditRequest(instrument, values),
         assetClass: assetClassChange(instrument, values.assetClass),
       });
       const { instrument: updated, moved, merged, mergeNote } = result;
@@ -114,18 +126,22 @@ export function InstrumentEditDialog({ instrument, onClose, onReset, onSaved }: 
               <TextField label="Name" value={values.name} maxLength={LIMITS.name} error={errors.fields.name} onValueChange={(name) => change({ name })} />
               <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                 <TextField label="Symbol" placeholder="Optional" value={values.symbol} maxLength={LIMITS.symbol} error={errors.fields.symbol} onValueChange={(symbol) => change({ symbol })} />
-                <TextField label="Exchange" placeholder="e.g. NSE, BSE" value={values.exchange} maxLength={LIMITS.exchange} error={errors.fields.exchange} onValueChange={(exchange) => change({ exchange })} />
+                {exchangeSwitchable(instrument) ? (
+                  <Select label="Exchange" value={exchangeChoice(values.exchange)} options={EXCHANGE_OPTIONS} onValueChange={(v) => change({ exchange: v as string })} />
+                ) : (
+                  <TextField label="Exchange" placeholder="e.g. NSE, BSE" value={values.exchange} maxLength={LIMITS.exchange} error={errors.fields.exchange} onValueChange={(exchange) => change({ exchange })} />
+                )}
               </div>
               <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
-                <TextField label="ISIN" value={values.isin} maxLength={LIMITS.isin} error={errors.fields.isin} onValueChange={(isin) => change({ isin })} />
+                <TextField label="ISIN" disabled={locked} value={values.isin} maxLength={LIMITS.isin} error={locked ? undefined : errors.fields.isin} onValueChange={(isin) => change({ isin })} />
                 <TextField label="Currency" value={values.currency} maxLength={LIMITS.currency} error={errors.fields.currency} onValueChange={(currency) => change({ currency })} />
               </div>
               <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
-                <TextField label="Yahoo symbol" placeholder="Stocks and ETFs" value={values.yahooSymbol} maxLength={LIMITS.yahooSymbol} error={errors.fields.yahooSymbol} onValueChange={(yahooSymbol) => change({ yahooSymbol })} />
-                <TextField label="AMFI code" value={values.amfiCode} maxLength={LIMITS.amfiCode} error={errors.fields.amfiCode} onValueChange={(amfiCode) => change({ amfiCode })} />
+                <TextField label="Yahoo symbol" disabled={locked} placeholder="Stocks and ETFs" value={values.yahooSymbol} maxLength={LIMITS.yahooSymbol} error={locked ? undefined : errors.fields.yahooSymbol} onValueChange={(yahooSymbol) => change({ yahooSymbol })} />
+                <TextField label="AMFI code" disabled={locked} value={values.amfiCode} maxLength={LIMITS.amfiCode} error={locked ? undefined : errors.fields.amfiCode} onValueChange={(amfiCode) => change({ amfiCode })} />
               </div>
               <Text variant="label" tone="ink-3" as="div">
-                Changing the ISIN, AMFI code or Yahoo symbol moves your holdings, trades and prices to the instrument with that identifier. Your corporate actions on it move with the holding.
+                Changing the ISIN, AMFI code or Yahoo symbol moves your holdings, trades and prices to the instrument with that identifier. Your corporate actions on it move with the holding. Changing the exchange moves your holding to that exchange&apos;s listing.
               </Text>
               {errors.form ? (
                 <Text variant="label" tone="danger" as="div">

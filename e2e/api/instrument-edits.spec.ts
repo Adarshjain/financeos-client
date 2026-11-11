@@ -156,11 +156,11 @@ test.describe('Instrument edits per account (@api)', () => {
     expect(inst.overriddenFields).toEqual([]);
 
     const myName = `My name ${uniqueSeedSuffix()}`;
-    const res = await put(api, inst.id, bodyOf(inst, { name: myName, exchange: 'BSE' }));
+    const res = await put(api, inst.id, bodyOf(inst, { name: myName, exchange: 'XNSE' }));
     expectStatus(res, 200);
     expect(res.data!.id).toBe(inst.id);
     expect(res.data!.name).toBe(myName);
-    expect(res.data!.exchange).toBe('BSE');
+    expect(res.data!.exchange).toBe('XNSE');
     expect(res.data!.overridden).toBe(true);
     expect([...res.data!.overriddenFields].sort()).toEqual(['exchange', 'name']);
 
@@ -184,7 +184,7 @@ test.describe('Instrument edits per account (@api)', () => {
     expect(bByCatalogName.data!.items.find((i) => i.id === inst.id)?.name).toBe(inst.name);
 
     // A type override is the caller's too, and the type filter follows it for them only.
-    const retyped = await put(api, inst.id, bodyOf(inst, { name: myName, exchange: 'BSE', type: 'etf' }));
+    const retyped = await put(api, inst.id, bodyOf(inst, { name: myName, exchange: 'XNSE', type: 'etf' }));
     expectStatus(retyped, 200);
     expect(retyped.data!.type).toBe('etf');
     expect(retyped.data!.overriddenFields).toContain('type');
@@ -761,5 +761,55 @@ test.describe('Instrument edits per account (@api)', () => {
     });
     expect(bySymbol.id).toBe(noIsin.id);
     expect((await getInstrument(api, noIsin.id)).isin ?? null).toBeNull();
+  });
+  test('exchange switch: NSE to BSE moves my holding to the BSE listing and back; no BSE price is a 400', async ({ api }) => {
+    const ticker = `E2EXS${uniqueSeedSuffix()}`;
+    const inst = await resolveInstrument(api, {
+      type: 'stock',
+      name: `Exchange Switch ${uniqueSeedSuffix()}`,
+      isin: generateIsin(),
+      symbol: ticker,
+      exchange: 'NSE',
+      yahooSymbol: `${ticker}.NS`,
+      currency: 'INR',
+    });
+    const holdingId = await holdingOf(api, inst.id);
+
+    const res = await put(api, inst.id, bodyOf(inst, { exchange: 'BSE' }));
+    expectStatus(res, 200);
+    const bse = res.data!;
+    expect(bse.id).not.toBe(inst.id);
+    expect(bse.isin).toBe(inst.isin);
+    expect(bse.exchange).toBe('BSE');
+    expect(bse.yahooSymbol).toMatch(/\.BO$/);
+    const pos = await positionOf(api, holdingId);
+    expect(pos?.instrument.id).toBe(bse.id);
+    expect(pos?.quantity).toBe(10);
+
+    const back = await put(api, bse.id, bodyOf(bse, { exchange: 'NSE' }));
+    expectStatus(back, 200);
+    expect(back.data!.id).toBe(inst.id);
+    expect((await positionOf(api, holdingId))?.instrument.id).toBe(inst.id);
+  });
+
+  test('exchange switch: a stock with no BSE price is refused and the holding stays', async ({ api }) => {
+    const ticker = `DEAD${uniqueSeedSuffix()}`;
+    const inst = await resolveInstrument(api, {
+      type: 'stock',
+      name: `No BSE Instrument ${uniqueSeedSuffix()}`,
+      isin: generateIsin(),
+      symbol: ticker,
+      exchange: 'NSE',
+      yahooSymbol: `${ticker}.NS`,
+      currency: 'INR',
+    });
+    const holdingId = await holdingOf(api, inst.id);
+
+    const res = await put(api, inst.id, bodyOf(inst, { exchange: 'BSE' }));
+    expectStatus(res, 400);
+    expect(JSON.stringify(res.error)).toContain('No BSE listing');
+    const pos = await positionOf(api, holdingId);
+    expect(pos?.instrument.id).toBe(inst.id);
+    expect(pos?.quantity).toBe(10);
   });
 });

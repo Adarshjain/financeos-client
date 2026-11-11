@@ -137,4 +137,47 @@ test.describe('Instrument edits per account UI (@ui)', () => {
     await expect(dialog.getByText(/321\.50/)).toHaveCount(0);
     await expect(dialog.getByRole('button', { name: 'Edit' })).toHaveCount(0);
   });
+  test('exchange switch: picking BSE in the Exchange dropdown moves my holding to the BSE listing', async ({ page }) => {
+    const userApi = makeApi(currentUser.cookie);
+    const ticker = `UIX${uniqueSeedSuffix()}`;
+    const symbol = ticker;
+    const name = `Exchange Switch ${uniqueSeedSuffix()}`;
+    const inst = await resolveInstrument(userApi, {
+      type: 'stock',
+      name,
+      isin: generateIsin(),
+      symbol,
+      exchange: 'NSE',
+      yahooSymbol: `${ticker}.NS`,
+    });
+    const broker = await createBroker(userApi);
+    await trade(userApi, {
+      brokerAccountId: broker.id,
+      instrumentId: inst.id,
+      type: 'buy',
+      quantity: 2,
+      price: 100,
+      tradeDate: '2026-08-01',
+    });
+
+    await page.goto(`/investments/instruments?q=${symbol}`);
+    await expect(page.getByText(name, { exact: true }).filter({ visible: true })).toHaveCount(1);
+    const dialog = await openDialogWith(
+      page,
+      () => page.getByText(name, { exact: true }).filter({ visible: true }).first().click(),
+      'Edit instrument'
+    );
+    await dialog.getByRole('combobox', { name: 'Exchange' }).click();
+    await page.getByRole('option', { name: 'BSE' }).click();
+    await expect(dialog.getByLabel('Yahoo symbol')).toBeDisabled();
+    await dialog.getByRole('button', { name: 'Save instrument' }).click();
+    await expectToast(page, `Moved your holdings to ${name}`);
+    await expect(dialog).not.toBeVisible();
+
+    const pos = await userApi.GET('/api/v1/investments/positions');
+    const moved = pos.data!.positions.find((p) => p.brokerAccountId === broker.id);
+    expect(moved?.instrument.id).not.toBe(inst.id);
+    await page.goto(`/investments/${moved!.instrument.id}`);
+    await expect(page.getByText(/BSE/).filter({ visible: true }).first()).toBeVisible();
+  });
 });
