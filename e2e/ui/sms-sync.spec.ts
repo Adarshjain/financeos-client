@@ -31,16 +31,15 @@ async function sessionCall<T>(cookie: string, method: 'GET' | 'POST', path: stri
   return (res.status === 204 ? undefined : await res.json()) as T;
 }
 
-/** Plays a phone: pairs with a code from the session API, then uploads a per-line summary with the device token. */
-async function pairPhoneAndSummarise(cookie: string, lines: object[]): Promise<void> {
-  const { code } = await sessionCall<{ code: string }>(cookie, 'POST', '/api/v1/sms/pairing-code');
-  const pair = await fetch(`${E2E_API_URL}/api/v1/sms/pair`, {
+/** Plays a phone: signs in with the user's own credentials to get a device token, then uploads a per-line summary. */
+async function signInPhoneAndSummarise(user: CreatedUser, lines: object[]): Promise<void> {
+  const login = await fetch(`${E2E_API_URL}/api/v1/sms/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code, deviceName: 'Test phone' }),
+    body: JSON.stringify({ email: user.email, password: user.password, deviceName: 'Test phone' }),
   });
-  expect(pair.status).toBe(200);
-  const { token } = (await pair.json()) as { token: string };
+  expect(login.status).toBe(200);
+  const { token } = (await login.json()) as { token: string };
   const summary = await fetch(`${E2E_API_URL}/api/v1/sms/device/summary`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -61,7 +60,7 @@ test.describe('SMS sync (@ui)', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     // A bank account the first line matches by bank and ending, and a line of a bank the user has no account at.
     await createBankAccount(api, { name: accountName, bank: 'hdfc', last4: '4321' });
-    await pairPhoneAndSummarise(user.cookie, [
+    await signInPhoneAndSummarise(user, [
       { sender: 'HDFCBK', ending: '4321', family: null, msgCount: 5, txnCount: 4, firstMsgAt: '2026-09-25T08:00:00Z', lastMsgAt: '2026-11-10T08:00:00Z' },
       { sender: 'AXISBK', ending: '9999', family: null, msgCount: 6, txnCount: 5, firstMsgAt: '2026-10-01T08:00:00Z', lastMsgAt: '2026-11-09T08:00:00Z' },
     ]);

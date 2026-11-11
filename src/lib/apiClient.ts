@@ -71,7 +71,6 @@ import type {
   SmsMessage,
   SmsMessagesPage,
   SmsMessageStatus,
-  SmsPairingCode,
   SmsReport,
 } from '@/lib/sms.types';
 import type { CardCycleSummary, StatementSummary } from '@/lib/statement.types';
@@ -1104,10 +1103,6 @@ interface LooseClient {
 const smsHttp = serverApi as unknown as LooseClient;
 
 export const smsApi = {
-  pairingCode: async (): Promise<SmsPairingCode> => {
-    const { data } = await smsHttp.POST('/api/v1/sms/pairing-code');
-    return data as SmsPairingCode;
-  },
   devices: async (): Promise<SmsDevice[]> => {
     const { data } = await smsHttp.GET('/api/v1/sms/devices');
     return (data as SmsDevice[]) || [];

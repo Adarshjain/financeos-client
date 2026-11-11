@@ -5,11 +5,6 @@ import { createDomainAction } from '@/lib/domainApi';
 import { action } from '@/lib/observability/action';
 import type { SmsConfirmBody, SmsMessageStatus } from '@/lib/sms.types';
 
-export const createPairingCode = action('sms.createPairingCode', createDomainAction(
-  { fallbackError: "Couldn't get a pairing code. Try again." },
-  async () => smsApi.pairingCode(),
-));
-
 export const pauseDevice = action('sms.pauseDevice', createDomainAction(
   { fallbackError: "Couldn't pause the phone. Try again." },
   async (id: string): Promise<void> => smsApi.pauseDevice(id),

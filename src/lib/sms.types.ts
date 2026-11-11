@@ -1,10 +1,5 @@
 /** Shapes of the SMS sync web endpoints (see the server's SmsDtos and the sms-sync API contract). Dates are yyyy-mm-dd, instants ISO strings. */
 
-export interface SmsPairingCode {
-  code: string;
-  expiresAt: string;
-}
-
 export interface SmsDevice {
   id: string;
   name: string;
