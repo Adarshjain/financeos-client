@@ -30,6 +30,7 @@ export function longDate(day: string): string {
 
 const SOURCE_WORDS: Record<TransactionSource, string> = {
   gmail_transaction_alert: 'Gmail alert',
+  sms_alert: 'SMS alert',
   gmail_statement: 'Gmail statement',
   manual: 'Manual entry',
   file_upload: 'File upload',

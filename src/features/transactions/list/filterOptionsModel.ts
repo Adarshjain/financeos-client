@@ -71,6 +71,7 @@ export const REVIEW_OPTIONS: SelectOption[] = [
 export const SOURCE_OPTIONS: SelectOption[] = [
   { value: ANY, label: 'Any' },
   { value: 'gmail_transaction_alert', label: 'Gmail alert' },
+  { value: 'sms_alert', label: 'SMS alert' },
   { value: 'gmail_statement', label: 'Gmail statement' },
   { value: 'manual', label: 'Manual' },
   { value: 'file_upload', label: 'File upload' },

@@ -59,7 +59,7 @@ test.describe('Report filter fields API (@api)', () => {
     const res = await api.GET('/api/v1/report/datasource');
     const tx = res.data!.datasources.find((d) => d.name === 'transactions')!.fields;
     const field = (name: string) => tx.find((f) => f.name === name)!;
-    expect(field('source').values).toEqual(['gmail_transaction_alert', 'gmail_statement', 'manual', 'file_upload']);
+    expect(field('source').values).toEqual(['gmail_transaction_alert', 'gmail_statement', 'manual', 'file_upload', 'sms_alert']);
     expect(field('channel').values).toEqual(['ONLINE', 'POS', 'UPI', 'CONTACTLESS', 'ATM', 'OTHER']);
     expect(field('cardholder')).toMatchObject({ type: 'enum', dynamic: true });
     expect(res.data!.datasources.find((d) => d.name === 'loan_tax_summary')!.fields.find((f) => f.name === 'financialYear'))

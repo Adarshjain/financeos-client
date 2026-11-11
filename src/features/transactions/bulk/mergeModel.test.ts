@@ -12,6 +12,8 @@ describe('computeDefaultKeepId', () => {
     ['gmail_statement', 'file_upload'],
     ['file_upload', 'gmail_transaction_alert'],
     ['gmail_transaction_alert', 'manual'],
+    ['file_upload', 'sms_alert'],
+    ['sms_alert', 'manual'],
   ] as const)('keeps %s over %s, whichever comes first', (better, worse) => {
     const good = txn({ id: 'good', source: better });
     const bad = txn({ id: 'bad', source: worse });
@@ -53,6 +55,7 @@ describe('mergeSourceLabel', () => {
   it("uses the board's words", () => {
     expect(mergeSourceLabel('gmail_statement')).toBe('Statement');
     expect(mergeSourceLabel('gmail_transaction_alert')).toBe('Gmail alert');
+    expect(mergeSourceLabel('sms_alert')).toBe('SMS alert');
     expect(mergeSourceLabel('file_upload')).toBe('Upload');
     expect(mergeSourceLabel('manual')).toBe('Manual');
   });

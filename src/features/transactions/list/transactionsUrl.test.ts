@@ -59,6 +59,10 @@ describe('parseTransactionsUrl', () => {
     expect(q).toEqual(DEFAULT_QUERY);
   });
 
+  it('reads the sms_alert source filter', () => {
+    expect(parseTransactionsUrl({ source: 'sms_alert' }).source).toBe('sms_alert');
+  });
+
   it('drops a reason the server does not know, such as other', () => {
     expect(parseTransactionsUrl({ reason: 'other' }).reason).toBeNull();
     expect(parseTransactionsUrl({ reason: 'date_corrected' }).reason).toBe('DATE_CORRECTED');

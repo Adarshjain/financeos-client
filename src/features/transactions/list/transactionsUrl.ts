@@ -55,7 +55,7 @@ export const REASON_PARAMS: Record<string, ReviewReason> = {
   date_corrected: 'DATE_CORRECTED',
 };
 
-const SOURCES: TransactionSource[] = ['gmail_transaction_alert', 'gmail_statement', 'manual', 'file_upload'];
+const SOURCES: TransactionSource[] = ['gmail_transaction_alert', 'sms_alert', 'gmail_statement', 'manual', 'file_upload'];
 
 export const SORTS = [
   { id: 'newest', label: 'Newest', server: 'date,desc' },

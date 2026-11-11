@@ -80,6 +80,7 @@ const BROKER_KEYS = new Set([
 
 const GENERIC_KEYS = new Set([
   ...COMMON_ACCOUNT_KEYS,
+  'openingBalance',
 ]);
 
 test.describe('Accounts API (@api)', () => {
@@ -511,6 +512,39 @@ test.describe('Accounts API (@api)', () => {
     });
     expect(getRes.response.status).toBe(200);
     expect(getRes.data?.balance).toBe(12345.67);
+  });
+
+  test('balance: a generic account takes an opening balance; leaving it out keeps it and null clears it', async ({ api }) => {
+    const created = await api.POST('/api/v1/accounts', {
+      body: { type: 'generic', name: 'Opening Balance Wallet', openingBalance: 750.5 } as any,
+    });
+    expect(created.response.status).toBe(201);
+    expect((created.data as any).openingBalance).toBe(750.5);
+    const id = created.data!.id;
+    await createTransaction(api, id, { amount: -50.5, date: istToday(-1) });
+
+    const read = async () => {
+      const res = await api.GET('/api/v1/accounts/{id}', { params: { path: { id } } });
+      expect(res.response.status).toBe(200);
+      return res.data as any;
+    };
+    expect((await read()).balance).toBe(700);
+
+    const renamed = await api.PUT('/api/v1/accounts/{id}', {
+      params: { path: { id } },
+      body: { type: 'generic', name: 'Opening Balance Wallet 2' } as any,
+    });
+    expect(renamed.response.status).toBe(200);
+    expect((renamed.data as any).openingBalance).toBe(750.5);
+    expect((await read()).balance).toBe(700);
+
+    const cleared = await api.PUT('/api/v1/accounts/{id}', {
+      params: { path: { id } },
+      body: { type: 'generic', name: 'Opening Balance Wallet 2', openingBalance: null } as any,
+    });
+    expect(cleared.response.status).toBe(200);
+    expect((cleared.data as any).openingBalance ?? null).toBeNull();
+    expect((await read()).balance).toBe(-50.5);
   });
 
   test('lastTransactionDate: the latest transaction date on single and list; null when the account has none', async ({

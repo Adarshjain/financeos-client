@@ -74,7 +74,7 @@ export const TRANSACTIONS_CATALOG: DatasourceCatalog = {
     { name: 'amount', label: 'Amount', type: 'number', role: 'filter', allowedInReports: [] },
     { name: 'date', label: 'Date', type: 'date', role: 'filter', allowedInReports: [] },
     { name: 'type', label: 'Type', type: 'enum', role: 'filter', values: ['DEBIT', 'CREDIT'], allowedInReports: [] },
-    { name: 'source', label: 'Source', type: 'enum', role: 'filter', values: ['gmail_transaction_alert', 'gmail_statement', 'manual', 'file_upload'], allowedInReports: [] },
+    { name: 'source', label: 'Source', type: 'enum', role: 'filter', values: ['gmail_transaction_alert', 'sms_alert', 'gmail_statement', 'manual', 'file_upload'], allowedInReports: [] },
     { name: 'accountId', label: 'Account', type: 'enum', role: 'filter', dynamic: true, valueKey: 'id', allowedInReports: [] },
     { name: 'accountType', label: 'Account type', type: 'enum', role: 'filter', values: ['bank_account', 'credit_card', 'broker', 'generic'], allowedInReports: [] },
     { name: 'category', label: 'Category', type: 'enum', role: 'filter', dynamic: true, allowedInReports: [] },

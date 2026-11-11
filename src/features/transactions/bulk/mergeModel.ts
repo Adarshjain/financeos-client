@@ -1,6 +1,6 @@
 import type { Transaction, TransactionSource } from '@/lib/transaction.types';
 
-/** How far a source is trusted when two copies of one transaction are merged: statement > upload > Gmail alert > manual. */
+/** How far a source is trusted when two copies of one transaction are merged: statement > upload > Gmail or SMS alert > manual. */
 export function getSourcePriorityScore(source: TransactionSource): number {
   switch (source) {
     case 'gmail_statement':
@@ -8,6 +8,7 @@ export function getSourcePriorityScore(source: TransactionSource): number {
     case 'file_upload':
       return 3;
     case 'gmail_transaction_alert':
+    case 'sms_alert':
       return 2;
     case 'manual':
       return 1;
@@ -86,6 +87,7 @@ const SOURCE_LABELS: Record<TransactionSource, string> = {
   gmail_statement: 'Statement',
   file_upload: 'Upload',
   gmail_transaction_alert: 'Gmail alert',
+  sms_alert: 'SMS alert',
   manual: 'Manual',
 };
 

@@ -83,6 +83,7 @@ describe('field words', () => {
 
   it('writes the source in words', () => {
     expect(sourceWords('gmail_statement')).toBe('Gmail statement');
+    expect(sourceWords('sms_alert')).toBe('SMS alert');
     expect(sourceWords('manual')).toBe('Manual entry');
   });
 

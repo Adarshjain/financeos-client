@@ -9,7 +9,7 @@ export interface TransactionSearchRequest {
   search?: string | null;
 }
 
-export type TransactionSource = 'gmail_transaction_alert' | 'gmail_statement' | 'manual' | 'file_upload';
+export type TransactionSource = 'gmail_transaction_alert' | 'sms_alert' | 'gmail_statement' | 'manual' | 'file_upload';
 
 export type ReviewType = 'NEEDS_REVIEW' | 'AUTO_REVIEWED' | 'MANUALLY_REVIEWED' | 'NA';
 

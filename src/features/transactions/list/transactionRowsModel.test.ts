@@ -73,6 +73,7 @@ describe('transactionRow', () => {
   it('shows where it came from only when asked; uploads show nothing', () => {
     expect(transactionRow(t({ source: 'gmail_statement' }), { accounts, showSource: true }).provenance).toBe('Statement');
     expect(transactionRow(t({ source: 'gmail_transaction_alert' }), { accounts, showSource: true }).provenance).toBe('Gmail');
+    expect(transactionRow(t({ source: 'sms_alert' }), { accounts, showSource: true }).provenance).toBe('SMS');
     expect(transactionRow(t({ source: 'file_upload' }), { accounts, showSource: true }).provenance).toBeUndefined();
     expect(transactionRow(t({ source: 'manual' }), ctx).provenance).toBeUndefined();
   });

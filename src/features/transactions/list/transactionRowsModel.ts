@@ -65,6 +65,7 @@ export const REASON_WORDS: Record<ReviewReason, string> = {
 
 const SOURCE_WORDS: Partial<Record<TransactionSource, string>> = {
   gmail_transaction_alert: 'Gmail',
+  sms_alert: 'SMS',
   gmail_statement: 'Statement',
   manual: 'Manual',
 };
