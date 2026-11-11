@@ -69,7 +69,7 @@ describe('fieldsFor', () => {
     const broker = fieldsFor(AccountType.BROKER);
     expect(broker).toEqual(expect.arrayContaining(['provider', 'clientId', 'cashBalance']));
     expect(broker).not.toContain('ingestFromDate');
-    expect(fieldsFor(AccountType.GENERIC)).toEqual(['name', 'description', 'financialPosition', 'excludeFromNetAsset']);
+    expect(fieldsFor(AccountType.GENERIC)).toEqual(['name', 'description', 'openingBalance', 'financialPosition', 'excludeFromNetAsset']);
   });
 
   it('shows the pool name and amount only once a shared limit is picked', () => {
@@ -275,6 +275,13 @@ describe('buildAccountRequest', () => {
       financialPosition: 'asset',
       type: AccountType.GENERIC,
     });
+  });
+
+  it('sends a wallet opening balance, and validates it', () => {
+    const values = { ...emptyValues(AccountType.GENERIC), name: 'Paytm', openingBalance: '1,250.50' };
+    expect(buildAccountRequest(values)).toMatchObject({ type: AccountType.GENERIC, openingBalance: 1250.5 });
+    expect(validateAccountForm({ ...values, openingBalance: 'abc' }).openingBalance).toBe('Enter a valid amount.');
+    expect(valuesFromAccount({ id: 'w', type: AccountType.GENERIC, name: 'Paytm', openingBalance: '500' }).openingBalance).toBe('500');
   });
 
   it('refuses to build without a type', () => {

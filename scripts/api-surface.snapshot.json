@@ -32,6 +32,7 @@
     "reportsApi",
     "rewardsApi",
     "rulesApi",
+    "smsApi",
     "statementsApi",
     "tagsApi",
     "transactionsApi"
@@ -251,6 +252,26 @@
       "getHealth",
       "getRouting",
       "getRoutingOptions"
+    ],
+    "smsApi": [
+      "confirmMessage",
+      "devices",
+      "lineAccount",
+      "lineNotMine",
+      "lineOff",
+      "lineOn",
+      "lineUndo",
+      "lines",
+      "linesNotMine",
+      "linesSeen",
+      "linesUndo",
+      "messages",
+      "pairingCode",
+      "pauseDevice",
+      "rejectMessage",
+      "report",
+      "resumeDevice",
+      "revokeDevice"
     ]
   }
 }

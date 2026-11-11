@@ -91,6 +91,7 @@ export type BrokerRequest = AccountRequestBase & {
 
 export type GenericAccountRequest = AccountRequestBase & {
   type: AccountType.GENERIC;
+  openingBalance?: number;
 };
 
 export type AccountRequest = BankAccountRequest | CreditCardRequest | BrokerRequest | GenericAccountRequest;
@@ -286,6 +287,7 @@ export type Broker = AccountBase & {
 
 export type GenericAccount = AccountBase & {
   type: AccountType.GENERIC;
+  openingBalance?: string;
 };
 
 export type Account = BankAccount | CreditCard | Broker | GenericAccount;

@@ -63,6 +63,17 @@ import type {
   RewardRule,
 } from '@/lib/rewards.types';
 import type { PagedRules } from '@/lib/rules.types';
+import type {
+  SmsConfirmBody,
+  SmsDevice,
+  SmsLine,
+  SmsLines,
+  SmsMessage,
+  SmsMessagesPage,
+  SmsMessageStatus,
+  SmsPairingCode,
+  SmsReport,
+} from '@/lib/sms.types';
 import type { CardCycleSummary, StatementSummary } from '@/lib/statement.types';
 import type { Tag, TagRequest } from '@/lib/tags.types';
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
@@ -1082,5 +1093,81 @@ export const llmRoutingApi = {
   getHealth: async (): Promise<LlmBucketHealthDto[]> => {
     const { data } = await serverApi.GET('/api/v1/llm/health');
     return (data as LlmBucketHealthDto[]) || [];
+  },
+};
+
+// The SMS sync endpoints are not in the generated schema yet, so they go through a path-typed-by-hand view of the client.
+interface LooseClient {
+  GET(path: string, init?: { params?: { query?: Record<string, unknown> } }): Promise<{ data?: unknown }>;
+  POST(path: string, init?: { body?: unknown }): Promise<{ data?: unknown }>;
+}
+const smsHttp = serverApi as unknown as LooseClient;
+
+export const smsApi = {
+  pairingCode: async (): Promise<SmsPairingCode> => {
+    const { data } = await smsHttp.POST('/api/v1/sms/pairing-code');
+    return data as SmsPairingCode;
+  },
+  devices: async (): Promise<SmsDevice[]> => {
+    const { data } = await smsHttp.GET('/api/v1/sms/devices');
+    return (data as SmsDevice[]) || [];
+  },
+  pauseDevice: async (id: string): Promise<void> => {
+    await smsHttp.POST(`/api/v1/sms/devices/${id}/pause`);
+  },
+  resumeDevice: async (id: string): Promise<void> => {
+    await smsHttp.POST(`/api/v1/sms/devices/${id}/resume`);
+  },
+  revokeDevice: async (id: string): Promise<void> => {
+    await smsHttp.POST(`/api/v1/sms/devices/${id}/revoke`);
+  },
+  lines: async (): Promise<SmsLines> => {
+    const { data } = await smsHttp.GET('/api/v1/sms/lines');
+    return data as SmsLines;
+  },
+  lineOn: async (id: string, accountId: string, syncFrom?: string): Promise<SmsLine> => {
+    const { data } = await smsHttp.POST(`/api/v1/sms/lines/${id}/on`, { body: { accountId, syncFrom } });
+    return data as SmsLine;
+  },
+  lineOff: async (id: string): Promise<SmsLine> => {
+    const { data } = await smsHttp.POST(`/api/v1/sms/lines/${id}/off`);
+    return data as SmsLine;
+  },
+  lineNotMine: async (id: string): Promise<SmsLine> => {
+    const { data } = await smsHttp.POST(`/api/v1/sms/lines/${id}/not-mine`);
+    return data as SmsLine;
+  },
+  linesNotMine: async (ids: string[]): Promise<void> => {
+    await smsHttp.POST('/api/v1/sms/lines/not-mine', { body: { ids } });
+  },
+  linesUndo: async (ids: string[]): Promise<void> => {
+    await smsHttp.POST('/api/v1/sms/lines/undo', { body: { ids } });
+  },
+  lineUndo: async (id: string): Promise<SmsLine> => {
+    const { data } = await smsHttp.POST(`/api/v1/sms/lines/${id}/undo`);
+    return data as SmsLine;
+  },
+  lineAccount: async (id: string, accountId: string): Promise<SmsLine> => {
+    const { data } = await smsHttp.POST(`/api/v1/sms/lines/${id}/account`, { body: { accountId } });
+    return data as SmsLine;
+  },
+  linesSeen: async (): Promise<void> => {
+    await smsHttp.POST('/api/v1/sms/lines/seen');
+  },
+  report: async (): Promise<SmsReport> => {
+    const { data } = await smsHttp.GET('/api/v1/sms/report');
+    return data as SmsReport;
+  },
+  messages: async (status: SmsMessageStatus, page: number, size: number): Promise<SmsMessagesPage> => {
+    const { data } = await smsHttp.GET('/api/v1/sms/messages', { params: { query: { status, page, size } } });
+    return data as SmsMessagesPage;
+  },
+  confirmMessage: async (id: string, body: SmsConfirmBody = {}): Promise<SmsMessage> => {
+    const { data } = await smsHttp.POST(`/api/v1/sms/messages/${id}/confirm`, { body });
+    return data as SmsMessage;
+  },
+  rejectMessage: async (id: string): Promise<SmsMessage> => {
+    const { data } = await smsHttp.POST(`/api/v1/sms/messages/${id}/reject`);
+    return data as SmsMessage;
   },
 };

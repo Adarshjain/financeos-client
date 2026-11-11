@@ -1,12 +1,16 @@
+import Link from 'next/link';
 import React, { Suspense } from 'react';
 
+import { Button } from '@/components/ds/Button/Button';
 import { GRID_GAP } from '@/components/ds/gridGap';
 import { Hero } from '@/components/ds/Hero/Hero';
 import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
+import { Text } from '@/components/ds/Text/Text';
 import type { AccountSuggestions } from '@/features/accounts/list/suggestionsModel';
 import { RetirementCardSkeleton } from '@/features/investments/retirement/RetirementCard';
 import { LoansCardSkeleton } from '@/features/loans/list/LoansCard';
 import { LoadError } from '@/features/shell/LoadError';
+import { appHref } from '@/features/shell/routes';
 
 import type { AccountsListData, AccountsResult } from './accountsListData';
 import {
@@ -84,6 +88,13 @@ export function AccountsScreen({
 
     body = (
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
+        <div className="flex justify-end">
+          <Text variant="label" as="span">
+            <Button variant="link" size="sm" asChild>
+              <Link href={appHref('/accounts/sms-sync')}>SMS sync</Link>
+            </Button>
+          </Text>
+        </div>
         {progressShown && scan ? <ScanProgressCard scan={scan} /> : null}
         {mode === 'full' ? (
         <Hero

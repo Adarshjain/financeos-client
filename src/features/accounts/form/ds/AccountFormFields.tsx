@@ -185,6 +185,7 @@ export function AccountFormFields({
   const isBank = type === AccountType.BANK_ACCOUNT;
   const isCard = type === AccountType.CREDIT_CARD;
   const isBroker = type === AccountType.BROKER;
+  const isGeneric = type === AccountType.GENERIC;
   const syncs = isBank || isCard;
   const pooled = values.limitPoolChoice !== LIMIT_POOL_NONE;
   const noun = isCard ? 'card' : 'account';
@@ -293,6 +294,16 @@ export function AccountFormFields({
               onValueChange={(v) => onChange({ last4: v })}
             />
           </Pair>
+        ) : null}
+        {isGeneric ? (
+          <AmountField
+            label="Opening balance"
+            optional
+            placeholder="0.00"
+            value={values.openingBalance}
+            error={errors.openingBalance}
+            onValueChange={(v) => onChange({ openingBalance: v })}
+          />
         ) : null}
         {isBroker ? (
           <>

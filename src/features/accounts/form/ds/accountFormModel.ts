@@ -139,7 +139,7 @@ const FIELDS_BY_TYPE: Record<AccountType, readonly FieldKey[]> = {
     'financialPosition',
     'excludeFromNetAsset',
   ],
-  [AccountType.GENERIC]: ['name', 'description', 'financialPosition', 'excludeFromNetAsset'],
+  [AccountType.GENERIC]: ['name', 'description', 'openingBalance', 'financialPosition', 'excludeFromNetAsset'],
 };
 
 /** The fields a type shows; limit pool name/amount only appear once a shared limit is picked. */
@@ -228,6 +228,8 @@ export function valuesFromAccount(account: Account): AccountFormValues {
         clientId: account.clientId ?? '',
         cashBalance: str(account.cashBalance ?? 0),
       };
+    case AccountType.GENERIC:
+      return { ...base, openingBalance: str(account.openingBalance) };
     default:
       return base;
   }
@@ -453,6 +455,8 @@ export function buildAccountRequest(values: AccountFormValues): AccountRequest {
         clientId: values.clientId.trim() || undefined,
         cashBalance: parseAmount(values.cashBalance) ?? 0,
       };
+    case AccountType.GENERIC:
+      return { ...common, type, openingBalance: parseAmount(values.openingBalance) };
     default:
       return { ...common, type };
   }
