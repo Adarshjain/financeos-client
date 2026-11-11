@@ -353,8 +353,7 @@ export function validateAccountForm(values: AccountFormValues): FormErrors {
     const cardLast4 = cardLast4Of(values);
     if (needsCardLast6(values.bank)) {
       const last6 = values.last6.trim();
-      if (!last6) errors.last6 = 'Enter the last 6 digits of the card';
-      else if (!SIX_DIGITS.test(last6)) errors.last6 = 'Last 6 digits must be 6 digits';
+      if (!SIX_DIGITS.test(last6)) errors.last6 = 'Enter the last 6 digits of the card.';
     } else if (!FOUR_DIGITS.test(cardLast4)) {
       errors.last4 = 'Enter the last 4 digits of the card.';
     }

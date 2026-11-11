@@ -510,12 +510,12 @@ describe('card last 6 digits (HSBC)', () => {
   };
 
   it('is required for an HSBC card', () => {
-    expect(validateAccountForm(hsbc({ last6: '' })).last6).toBe('Enter the last 6 digits of the card');
+    expect(validateAccountForm(hsbc({ last6: '' })).last6).toBe('Enter the last 6 digits of the card.');
   });
 
   it('must be exactly 6 digits', () => {
-    expect(validateAccountForm(hsbc({ last6: '4321' })).last6).toBe('Last 6 digits must be 6 digits');
-    expect(validateAccountForm(hsbc({ last6: '65432a' })).last6).toBe('Last 6 digits must be 6 digits');
+    expect(validateAccountForm(hsbc({ last6: '4321' })).last6).toBe('Enter the last 6 digits of the card.');
+    expect(validateAccountForm(hsbc({ last6: '65432a' })).last6).toBe('Enter the last 6 digits of the card.');
   });
 
   it('passes when valid and does not ask for the last 4', () => {

@@ -130,7 +130,7 @@ test.describe('Accounts UI (@ui)', () => {
 
     await last6.fill('4321');
     await dialog.getByRole('button', { name: 'Add account' }).click();
-    await expect(dialog.getByText('Last 6 digits must be 6 digits')).toBeVisible();
+    await expect(dialog.getByText('Enter the last 6 digits of the card.')).toBeVisible();
 
     await last6.fill('654321');
     await dialog.getByRole('button', { name: 'Add account' }).click();
