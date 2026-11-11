@@ -41,6 +41,8 @@ import {
   otherPoolMembers,
   validateAccountForm,
   valuesFromAccount,
+  withBankSwitch,
+  withLast6Seed,
   withLimitPoolChoice,
 } from './accountFormModel';
 import { buildSuggestionPrefill, FROM_EMAIL_SUBTITLE } from './suggestionPrefill';
@@ -83,7 +85,7 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
 
   const [prefill] = React.useState(() => (!account && fromSuggestion ? buildSuggestionPrefill(fromSuggestion) : null));
   const [values, setValues] = React.useState<AccountFormValues>(() =>
-    account ? valuesFromAccount(account) : (prefill?.values ?? {
+    account ? valuesFromAccount(account) : withLast6Seed(prefill?.values ?? {
         ...emptyValues(initialType),
         ingestFromDate: defaultIngestFromDate(today),
         bank: BANKS.some((b) => b.id === prefillBank) ? (prefillBank ?? '') : '',
@@ -122,7 +124,11 @@ export function AccountFormDialog({ account, initialType = null, onClose, onCrea
   const busy = saving || navigating;
 
   const change = (patch: Partial<AccountFormValues>) => {
-    setValues((v) => ({ ...v, ...patch }));
+    setValues((v) => {
+      const { bank, ...rest } = patch;
+      const base = bank === undefined ? v : withBankSwitch(v, bank);
+      return { ...base, ...rest };
+    });
     setErrors((e) => {
       const next = { ...e };
       for (const key of Object.keys(patch) as (keyof FormErrors)[]) delete next[key];

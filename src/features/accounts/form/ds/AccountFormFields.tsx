@@ -164,7 +164,7 @@ export function AccountFormFields({
   const passwordRef = React.useRef<HTMLInputElement>(null);
   const last6Ref = React.useRef<HTMLInputElement>(null);
   const focusLast6 =
-    values.type === AccountType.CREDIT_CARD && needsCardLast6(values.bank) && values.last6 === '';
+    values.type === AccountType.CREDIT_CARD && needsCardLast6(values.bank) && values.last6.length !== 6;
   const ingestFromRef = React.useRef<HTMLInputElement>(null);
   const focusedRef = React.useRef(false);
   React.useEffect(() => {
@@ -203,7 +203,7 @@ export function AccountFormFields({
     ...new Set([...(values.provider ? [values.provider] : []), ...BROKER_PROVIDERS]),
   ].map((p) => ({ value: p, label: p }));
 
-  const last6Field = isCard && needsCardLast6(values.bank) ? (
+  const last6Input = isCard && needsCardLast6(values.bank) ? (
     <TextField
       ref={last6Ref}
       label="Last 6 digits of the card"
@@ -330,15 +330,17 @@ export function AccountFormFields({
       {isCard && isEdit ? (
         <Section title="Card details">
           <Pair>
-            <TextField
-              label="Last 4 digits"
-              inputMode="numeric"
-              maxLength={4}
-              placeholder="1234"
-              error={errors.last4}
-              value={values.last4}
-              onValueChange={(v) => onChange({ last4: v })}
-            />
+            {last6Input ?? (
+              <TextField
+                label="Last 4 digits"
+                inputMode="numeric"
+                maxLength={4}
+                placeholder="1234"
+                error={errors.last4}
+                value={values.last4}
+                onValueChange={(v) => onChange({ last4: v })}
+              />
+            )}
             <DateField
               label="Card anniversary"
               today={today}
@@ -347,14 +349,13 @@ export function AccountFormFields({
               onValueChange={(v) => onChange({ anniversaryDate: v as string })}
             />
           </Pair>
-          {last6Field}
           {password}
         </Section>
       ) : null}
 
       {isCard && !isEdit ? (
         <Section title="Cards">
-          <CreditCardsFields values={values} errors={errors} today={today} prefilled={prefilled} prefilledLast4={prefilledValues?.last4} last6Field={last6Field} onChange={onChange} />
+          <CreditCardsFields values={values} errors={errors} today={today} prefilled={prefilled} prefilledLast4={prefilledValues?.last4} last6Input={last6Input} onChange={onChange} />
           {password}
         </Section>
       ) : null}

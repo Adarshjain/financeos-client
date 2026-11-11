@@ -60,12 +60,14 @@ function renderDialog(account: CreditCard) {
 }
 
 describe('AccountFormDialog focusField with last 6 digits', () => {
-  it('focuses the last 6 digits for an HSBC card that has none stored', async () => {
+  it('focuses the last 6 digits when only the last 4 is stored', async () => {
     renderDialog(hsbcCard);
-    await waitFor(() => expect(screen.getByRole('textbox', { name: /^Last 6 digits of the card/ })).toHaveFocus());
+    const input = screen.getByRole('textbox', { name: /^Last 6 digits of the card/ });
+    expect(input).toHaveValue('4321');
+    await waitFor(() => expect(input).toHaveFocus());
   });
 
-  it('focuses the statement password once the last 6 digits are stored', async () => {
+  it('focuses the statement password once the 6 digits are stored', async () => {
     renderDialog({ ...hsbcCard, last6: '654321' });
     await waitFor(() => expect(screen.getByLabelText(/^Statement PDF password/)).toHaveFocus());
   });

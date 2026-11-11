@@ -62,23 +62,25 @@ export function CreditCardsFields({
   prefilled,
   prefilledLast4,
   onChange,
-  last6Field,
-}: CardsProps & { today: string; prefilledLast4?: string; last6Field?: React.ReactNode }) {
+  last6Input,
+}: CardsProps & { today: string; prefilledLast4?: string; last6Input?: React.ReactNode }) {
   const { addonCards } = values;
   return (
     <>
       <Block title="Your card" action={<Badge tone="neutral">Primary</Badge>}>
         <Pair>
-          <TextField
-            label="Last 4 digits"
-            inputMode="numeric"
-            maxLength={4}
-            placeholder="1234"
-            helper={prefilled?.last4 && values.last4 === prefilledLast4 ? FROM_EMAIL_CAPTION : undefined}
-            error={errors.last4}
-            value={values.last4}
-            onValueChange={(v) => onChange({ last4: v })}
-          />
+          {last6Input ?? (
+            <TextField
+              label="Last 4 digits"
+              inputMode="numeric"
+              maxLength={4}
+              placeholder="1234"
+              helper={prefilled?.last4 && values.last4 === prefilledLast4 ? FROM_EMAIL_CAPTION : undefined}
+              error={errors.last4}
+              value={values.last4}
+              onValueChange={(v) => onChange({ last4: v })}
+            />
+          )}
           <DateField
             label="Card anniversary"
             today={today}
@@ -87,7 +89,6 @@ export function CreditCardsFields({
             onValueChange={(v) => onChange({ anniversaryDate: v as string })}
           />
         </Pair>
-        {last6Field}
       </Block>
 
       {addonCards.map((card, i) => (

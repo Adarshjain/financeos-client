@@ -115,31 +115,31 @@ test.describe('Accounts UI (@ui)', () => {
     await expect(page.getByText('••5566').first()).toBeVisible();
   });
 
-  test('an HSBC credit card asks for its last 6 digits, checks them against the last 4, and shows them again on edit', async ({
-    page,
-  }) => {
+  test('an HSBC credit card asks for one input, its last 6 digits, and shows them again on edit', async ({ page }) => {
     await page.goto('/accounts');
     await page.getByRole('button', { name: 'Add account', exact: true }).first().click();
     const dialog = dialogOf(page, 'Add account');
     await dialog.getByRole('radio', { name: 'Credit card' }).click();
     await dialog.getByRole('textbox', { name: /^Account name/ }).fill('HSBC Travel One');
     await pickBank(page, dialog, 'HSBC');
-    await dialog.getByRole('textbox', { name: /^Last 4 digits/ }).fill('4321');
+    await expect(dialog.getByRole('textbox', { name: /^Last 4 digits/ })).toHaveCount(0);
+    const last6 = dialog.getByRole('textbox', { name: /^Last 6 digits of the card/ });
+    await expect(last6).toHaveCount(1);
     await dialog.getByRole('textbox', { name: /^Card anniversary/ }).fill('01042024');
     await dialog.getByRole('textbox', { name: /^Credit limit/ }).fill('500000');
 
-    const last6 = dialog.getByRole('textbox', { name: /^Last 6 digits of the card/ });
+    await last6.fill('4321');
     await dialog.getByRole('button', { name: 'Add account' }).click();
-    await expect(dialog.getByText('Enter the last 6 digits of the card')).toBeVisible();
-
-    await last6.fill('654322');
-    await dialog.getByRole('button', { name: 'Add account' }).click();
-    await expect(dialog.getByText("Last 6 digits must end with the card's last 4 digits")).toBeVisible();
+    await expect(dialog.getByText('Last 6 digits must be 6 digits')).toBeVisible();
 
     await last6.fill('654321');
     await dialog.getByRole('button', { name: 'Add account' }).click();
     await page.waitForURL(/\/accounts\/[0-9a-f-]{36}$/);
+    const detailUrl = page.url();
 
+    await page.goto('/accounts');
+    await expect(page.getByText('••4321').first()).toBeVisible();
+    await page.goto(detailUrl);
     await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
     const edit = dialogOf(page, 'Edit account');
     await expect(edit.getByRole('textbox', { name: /^Last 6 digits of the card/ })).toHaveValue('654321');
