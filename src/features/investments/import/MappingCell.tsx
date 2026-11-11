@@ -62,11 +62,13 @@ export function MappingCell({ label, matchedName, duplicate, state, type, disabl
       <>
         <StatusWord tone="neutral">New</StatusWord>
         <Text variant="body-strong" as="span">
-          {label}
+          {state.newInstrument?.name || label}
         </Text>
-        <Text variant="label" tone="ink-3" as="span">
-          no live price
-        </Text>
+        {!state.newInstrument?.yahooSymbol && (
+          <Text variant="label" tone="ink-3" as="span">
+            no live price
+          </Text>
+        )}
         <Button type="button" variant="link" size="sm" disabled={disabled} onClick={() => onCreateNew(false)}>
           undo
         </Button>

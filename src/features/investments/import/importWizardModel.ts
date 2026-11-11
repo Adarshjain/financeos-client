@@ -18,18 +18,29 @@ export function buildInitialReconcileRowStates(
 ): Record<number, RowState> {
   const initialStates: Record<number, RowState> = {};
   for (const exec of executions) {
+    const suggestion = !exec.matchedInstrument ? exec.suggestedInstrument : undefined;
     initialStates[exec.rowIndex] = {
       skip: exec.isDuplicate,
       selectedInstrumentId: exec.matchedInstrument?.id,
-      createNew: false,
-      newInstrument: {
-        type: 'stock',
-        name: exec.symbol || 'New instrument',
-        symbol: exec.symbol || '',
-        exchange: exec.exchange || 'NSE',
-        isin: exec.isin || undefined,
-        yahooSymbol: undefined,
-      },
+      createNew: !!suggestion,
+      newInstrument: suggestion
+        ? {
+            type: suggestion.type,
+            name: suggestion.name,
+            symbol: suggestion.symbol ?? undefined,
+            exchange: suggestion.exchange ?? undefined,
+            isin: suggestion.isin ?? undefined,
+            amfiCode: suggestion.amfiCode ?? undefined,
+            yahooSymbol: suggestion.yahooSymbol ?? undefined,
+          }
+        : {
+            type: 'stock',
+            name: exec.symbol || 'New instrument',
+            symbol: exec.symbol || '',
+            exchange: exec.exchange || 'NSE',
+            isin: exec.isin || undefined,
+            yahooSymbol: undefined,
+          },
     };
   }
   return initialStates;

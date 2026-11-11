@@ -570,7 +570,7 @@ test.describe('Zerodha Reconciliation API (@api)', () => {
     expect(execAug3!.isDuplicate).toBe(false);
   });
 
-  test('8. Unresolved instruments: preview flags UNRESOLVED_INSTRUMENT, commit with mapped & new instrument succeeds', async ({
+  test('8. Unresolved instruments: preview carries suggestions (no UNRESOLVED_INSTRUMENT), commit with mapped & new instrument succeeds', async ({
     api,
   }) => {
     const broker = await createBroker(api);
@@ -604,7 +604,18 @@ test.describe('Zerodha Reconciliation API (@api)', () => {
     expect(status).toBe(200);
     expect(preview!.summaryStats.unresolvedInstruments).toBe(2);
     const unresWarns = preview!.warnings.filter((w) => w.type === 'UNRESOLVED_INSTRUMENT');
-    expect(unresWarns).toHaveLength(2);
+    expect(unresWarns).toHaveLength(0);
+    // Each unknown scrip carries a ready-to-create instrument built from the file row.
+    const suggested = preview!.executions.find((e) => e.symbol === unknownSym1)!;
+    expect(suggested.matchedInstrument ?? null).toBeNull();
+    expect(suggested.suggestedInstrument).toMatchObject({
+      type: 'stock',
+      name: unknownSym1,
+      symbol: unknownSym1,
+      exchange: 'NSE',
+      isin: unknownIsin1,
+      yahooSymbol: `${unknownSym1.toUpperCase()}.NS`,
+    });
 
     // Commit mapping:
     // Row 1 mapped to knownInst.id

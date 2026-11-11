@@ -9839,6 +9839,7 @@ export interface components {
             rowIndex: number;
             /** @enum {string} */
             settlementType: "delivery" | "intraday";
+            suggestedInstrument?: components["schemas"]["CreateInstrumentDto"];
             symbol?: string | null;
             totalValue: number;
             /** Format: date */

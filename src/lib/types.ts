@@ -692,6 +692,7 @@ export interface ReconciledExecution {
   strikePrice?: string;
   lotSize?: number;
   tradingSymbol?: string;
+  suggestedInstrument?: CreateInstrumentRequest | null;
 }
 
 export interface DerivedHolding {

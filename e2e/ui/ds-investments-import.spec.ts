@@ -104,12 +104,14 @@ for (const viewport of VIEWPORTS) {
       for (const label of ['Executions', 'CNC / MIS', 'Warns / gaps', 'Duplicates']) {
         await expect(shown(page.getByText(label, { exact: true }))).toBeVisible();
       }
-      await expect(page.getByText(/have no instrument mapped and will NOT be imported/)).toBeVisible();
-      await expect(page.getByText(/Reconciliation alerts & flags/)).toBeVisible();
+      // Unknown instruments start as "create new", so nothing blocks the import.
+      await expect(page.getByText(/have no instrument mapped and will NOT be imported/)).toHaveCount(0);
+      // No unmapped-instrument warnings any more, so this import has no alerts to list.
+      await expect(page.getByText(/Reconciliation alerts & flags/)).toHaveCount(0);
       await expect(page.getByText('F&O closed trades')).toBeVisible();
       await expect(shown(page.getByText(fnoSymbol))).toBeVisible();
       await expect(shown(page.getByText('Duplicate').first())).toBeVisible();
-      await expect(page.getByRole('button', { name: /Import trades \(\d+\)/ })).toBeDisabled();
+      await expect(page.getByRole('button', { name: /Import trades \(\d+\)/ })).toBeEnabled();
 
       // Selection mode is already on: every row but the duplicates is selected, and a tap or a box toggles it.
       const before = await selectedRows(page).count();
@@ -122,13 +124,14 @@ for (const viewport of VIEWPORTS) {
       else await toggledRow.click({ position: { x: 20, y: 12 } });
       await expect(selectedRows(page)).toHaveCount(before);
 
-      // Map one unmatched row to an instrument, create the other.
+      // Both unknown rows start as new; undo one, then map it to an existing instrument.
+      await expect(shown(page.getByText('New', { exact: true })).first()).toBeVisible();
+      await shown(page.getByRole('button', { name: 'undo' }).first()).click();
       await shown(page.getByRole('button', { name: 'Map instrument' })).click();
       await page.getByPlaceholder('Search by name or symbol').fill(symTarget.slice(0, 5));
       await page.getByRole('option', { name: new RegExp(symTarget, 'i') }).first().click();
       await expect(shown(page.getByText('Mapped', { exact: true }))).toBeVisible();
-      await shown(page.getByRole('button', { name: 'Create new' })).click();
-      await expect(shown(page.getByText('no live price'))).toBeVisible();
+      await expect(shown(page.getByText('New', { exact: true })).first()).toBeVisible();
       await expect(page.getByText(/have no instrument mapped/)).toHaveCount(0);
 
       const importButton = page.getByRole('button', { name: /Import trades \(\d+\)/ });
@@ -146,7 +149,7 @@ for (const viewport of VIEWPORTS) {
       await expect(shown(page.getByText(/NIFTY .*24800 CE/))).toBeVisible({ timeout: 15000 });
     });
 
-    test('Groww: validation, the unmapped banner and Skip unmapped rows, then import', async ({ page }) => {
+    test('Groww: validation, then an unknown instrument imports without manual mapping', async ({ page }) => {
       test.slow();
       const api = makeApi(currentUser.cookie);
       const broker = await createBroker(api);
@@ -179,8 +182,8 @@ for (const viewport of VIEWPORTS) {
       await upload(page, 'taxpnl-zone', { name: 'groww-cg.xlsx', mimeType: XLSX, buffer: await genGrowwCapitalGainsXlsx({ shortTerm: [] }) });
       await page.getByRole('button', { name: 'Preview reconciliation' }).click();
 
-      await expect(page.getByText(/no instrument mapped and will NOT be imported/)).toBeVisible({ timeout: 20000 });
-      await page.getByRole('button', { name: 'Skip unmapped rows' }).click();
+      // The unknown instrument starts as "create new": no unmapped banner, import is ready with no mapping.
+      await expect(shown(page.getByText('New', { exact: true })).first()).toBeVisible({ timeout: 20000 });
       await expect(page.getByText(/no instrument mapped/)).toHaveCount(0);
       const importButton = page.getByRole('button', { name: /Import trades \(\d+\)/ });
       await expect(importButton).toBeEnabled({ timeout: 5000 });
