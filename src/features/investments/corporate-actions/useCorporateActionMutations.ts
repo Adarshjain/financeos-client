@@ -5,8 +5,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { unwrapAction } from '@/lib/actionResult';
 import type { CreateCorporateActionRequest, UpdateCorporateActionRequest } from '@/lib/api/types';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
+import { keys } from '@/lib/query/keys';
 
-import { createCorporateAction, deleteCorporateAction, updateCorporateAction } from './corporateActionActions';
+import { acceptCorporateActionSuggestion, createCorporateAction, deleteCorporateAction, updateCorporateAction } from './corporateActionActions';
 
 /** Create, update and delete of one instrument's corporate actions; each refreshes every investment query on success. */
 export function useCorporateActionMutations(instrumentId: string | undefined) {
@@ -27,5 +28,16 @@ export function useCorporateActionMutations(instrumentId: string | undefined) {
     onSuccess,
   });
 
-  return { createMutation, updateMutation, deleteMutation };
+  // Recording a detected suggestion: the inbox row for it goes too.
+  const acceptMutation = useMutation({
+    mutationFn: (vars: { suggestionId: string; body: CreateCorporateActionRequest }) =>
+      unwrapAction(acceptCorporateActionSuggestion(vars.suggestionId, vars.body)),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.shell.counts() });
+      void qc.invalidateQueries({ queryKey: keys.inbox.all });
+      return invalidateInvestmentQueries(qc);
+    },
+  });
+
+  return { createMutation, updateMutation, deleteMutation, acceptMutation };
 }

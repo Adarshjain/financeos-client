@@ -12,6 +12,8 @@ export function holdingRow(over: Partial<HoldingRow> = {}): HoldingRow {
     priceAsOf: '2026-10-13',
     manualPrice: false,
     noPrice: false,
+    delisted: false,
+    notTrading: false,
     currentValue: 69704,
     invested: 63200,
     unrealised: 6504,

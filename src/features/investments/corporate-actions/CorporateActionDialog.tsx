@@ -26,6 +26,8 @@ import { loadCorporateActionPreview } from './corporateActionActions';
 import {
   type CorporateActionForm,
   type FormErrors,
+  type FormPrefill,
+  hasRatio,
   hasTarget,
   initialForm,
   instrumentLabel,
@@ -50,6 +52,10 @@ export interface CorporateActionDialogProps {
   type?: CorporateActionKind;
   /** A saved action to change or delete. */
   action?: CorporateActionItem;
+  /** Values a detected suggestion starts the form with (ex-date, ratio). */
+  prefill?: FormPrefill;
+  /** The pending suggestion this records: saving accepts it instead of creating a new action. */
+  suggestionId?: string;
 }
 
 type PreviewState =
@@ -60,19 +66,19 @@ type PreviewState =
  * Records, edits or deletes a corporate action. While a new action is being filled in, its effect on the
  * holdings (quantity and cost, rolled back on the server) is shown as "After saving".
  */
-export function CorporateActionDialog({ onClose, instrument, type, action }: CorporateActionDialogProps) {
+export function CorporateActionDialog({ onClose, instrument, type, action, prefill, suggestionId }: CorporateActionDialogProps) {
   const router = useAppRouter();
   const editing = Boolean(action);
   const [today] = React.useState(() => todayInAppZone());
-  const [form, setForm] = React.useState<CorporateActionForm>(() => initialForm({ today, instrument, type, action }));
+  const [form, setForm] = React.useState<CorporateActionForm>(() => initialForm({ today, instrument, type, action, prefill }));
   const [errors, setErrors] = React.useState<FormErrors>({});
   const [resolvingMain, setResolvingMain] = React.useState(false);
   const [resolvingTarget, setResolvingTarget] = React.useState(false);
   const resolving = resolvingMain || resolvingTarget;
   const [formError, setFormError] = React.useState<string | undefined>();
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
-  const { createMutation, updateMutation, deleteMutation } = useCorporateActionMutations(form.instrument?.id);
-  const saving = createMutation.isPending || updateMutation.isPending;
+  const { createMutation, updateMutation, deleteMutation, acceptMutation } = useCorporateActionMutations(form.instrument?.id);
+  const saving = createMutation.isPending || updateMutation.isPending || acceptMutation.isPending;
   const deleting = deleteMutation.isPending;
 
   const change = (patch: Partial<CorporateActionForm>, clear?: keyof FormErrors) => {
@@ -115,6 +121,9 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
       if (action) {
         await updateMutation.mutateAsync({ id: action.id, body: request });
         showToast('Corporate action updated');
+      } else if (suggestionId) {
+        await acceptMutation.mutateAsync({ suggestionId, body: request });
+        showToast('Corporate action recorded');
       } else {
         await createMutation.mutateAsync(request);
         showToast('Corporate action recorded');
@@ -157,6 +166,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
 
   const copy = ratioCopy(form.type);
   const merging = hasTarget(form.type);
+  const ratioShown = hasRatio(form.type);
   const kindLabel = KIND_LABELS[form.type].toLowerCase();
   const shownPreview = previewKey && preview?.key === previewKey ? preview : null;
   const settling = previewKey !== null && shownPreview === null;
@@ -195,7 +205,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
                 <InstrumentSelect
                   label="Instrument"
                   value={form.instrument}
-                  disabled={editing}
+                  disabled={editing || Boolean(suggestionId)}
                   resolveExisting={false}
                   error={errors.instrument}
                   onValueChange={(i) => change({ instrument: i }, 'instrument')}
@@ -229,6 +239,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
                   />
                 ) : null}
               </div>
+              {ratioShown ? (
               <div className="flex flex-col gap-space-8">
                 <Text variant="label" tone="ink-3" as="div">
                   {copy.heading}
@@ -251,6 +262,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action }: Cor
                   />
                 </div>
               </div>
+              ) : null}
               {merging ? (
                 <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                   {form.type === 'demerger' ? (

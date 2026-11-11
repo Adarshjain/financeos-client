@@ -10,6 +10,7 @@ import type {
   AppLockStatus,
   BuiltinWidgetResponse,
   CardBillResponse,
+  CorporateActionSuggestion,
   ErrorResponse,
   GmailMessageContent,
   ImportKind,
@@ -602,6 +603,26 @@ export const corporateActionsApi = {
   preview: async (instrumentId: string, data: CreateCorporateActionRequest & { excludeActionId?: string }): Promise<CorporateActionPreview> =>
     investmentsApi.previewCorporateAction(instrumentId, data),
   list: async (instrumentId: string): Promise<CorporateAction[]> => investmentsApi.getCorporateActions(instrumentId),
+};
+
+/** A detected corporate action: read it, take it back, or settle a pending one. */
+export const corporateActionSuggestionsApi = {
+  get: async (id: string): Promise<CorporateActionSuggestion> => {
+    const { data } = await serverApi.GET('/api/v1/corporate-action-suggestions/{id}', { params: { path: { id } } });
+    return data! as CorporateActionSuggestion;
+  },
+  undo: async (id: string): Promise<CorporateActionSuggestion> => {
+    const { data } = await serverApi.POST('/api/v1/corporate-action-suggestions/{id}/undo', { params: { path: { id } } });
+    return data! as CorporateActionSuggestion;
+  },
+  accept: async (id: string, body: Schemas['CreateCorporateActionRequest']): Promise<CorporateActionSuggestion> => {
+    const { data } = await serverApi.POST('/api/v1/corporate-action-suggestions/{id}/accept', { params: { path: { id } }, body });
+    return data! as CorporateActionSuggestion;
+  },
+  dismiss: async (id: string): Promise<CorporateActionSuggestion> => {
+    const { data } = await serverApi.POST('/api/v1/corporate-action-suggestions/{id}/dismiss', { params: { path: { id } } });
+    return data! as CorporateActionSuggestion;
+  },
 };
 
 export const dividendsApi = {

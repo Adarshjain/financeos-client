@@ -70,14 +70,17 @@ export function holdingFigures(holding: HoldingDetail, instrument: Instrument | 
   const day = holding.priceAsOf ? formatDate(holding.priceAsOf, 'list') : '';
   const timed = holding.manualPrice || !day ? '' : priceTimeLabel(day, holding.priceAt, now);
   const asOf = timed || (day ? [day, formatTime(holding.priceAt)].filter(Boolean).join(', ') : '');
+  // A delisted holding is a priced row worth zero, never "no price".
+  const unpriced = holding.noPrice && !holding.delisted;
+  const status = holding.delisted ? 'Delisted' : holding.notTrading ? 'Not trading' : '';
   return [
     { id: 'quantity', label: 'Quantity', value: formatQuantity(holding.quantity) },
     { id: 'avgCost', label: 'Avg cost', value: formatMoney(holding.avgCost, { decimals: 'exact' }) },
     {
       id: 'ltp',
       label: 'LTP',
-      value: holding.ltp != null && !holding.noPrice ? formatMoney(holding.ltp, { decimals: 'exact' }) : '—',
-      context: (timed ? [asOf] : [source, asOf]).filter(Boolean).join(' · ') || undefined,
+      value: holding.ltp != null && !unpriced ? formatMoney(holding.ltp, { decimals: 'exact' }) : '—',
+      context: [status, ...(timed ? [asOf] : [source, asOf])].filter(Boolean).join(' · ') || undefined,
       override: true,
     },
     {
@@ -95,9 +98,9 @@ export function holdingFigures(holding: HoldingDetail, instrument: Instrument | 
     {
       id: 'return',
       label: '₹ return',
-      value: holding.noPrice ? '—' : formatMoney(holding.unrealised, { sign: 'always' }),
-      tone: holding.noPrice ? undefined : moveTone(holding.unrealised),
-      context: holding.noPrice ? 'no price' : holding.unrealisedPct == null ? undefined : formatPercent(holding.unrealisedPct, { sign: 'always' }),
+      value: unpriced ? '—' : formatMoney(holding.unrealised, { sign: 'always' }),
+      tone: unpriced ? undefined : moveTone(holding.unrealised),
+      context: unpriced ? 'no price' : holding.unrealisedPct == null ? undefined : formatPercent(holding.unrealisedPct, { sign: 'always' }),
     },
     {
       id: 'realised',

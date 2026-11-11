@@ -29,7 +29,7 @@ export interface CorporateActionsUrlState {
   size: number;
 }
 
-export const KINDS: CorporateActionKind[] = ['split', 'bonus', 'demerger', 'merger'];
+export const KINDS: CorporateActionKind[] = ['split', 'bonus', 'demerger', 'merger', 'delisted'];
 const SORTS: CorporateActionSort[] = ['newest', 'oldest', 'name'];
 
 export function parseCorporateActionsUrl(params: SearchParamsRecord): CorporateActionsUrlState {
@@ -64,6 +64,7 @@ export const TYPE_CHIPS: { value: CorporateActionKind | ''; label: string }[] = 
   { value: 'bonus', label: 'Bonus' },
   { value: 'demerger', label: 'Demerger' },
   { value: 'merger', label: 'Merger' },
+  { value: 'delisted', label: 'Delisted' },
 ];
 
 export const SORT_OPTIONS: { value: CorporateActionSort; label: string }[] = [
@@ -77,6 +78,7 @@ export const KIND_LABELS: Record<CorporateActionKind, string> = {
   bonus: 'Bonus',
   demerger: 'Demerger',
   merger: 'Merger',
+  delisted: 'Delisted',
 };
 
 /** The rules card under the list: how the server applies each kind. */
@@ -131,9 +133,10 @@ function detailLine(a: CorporateActionItem): string {
 }
 
 export function corporateActionListRow(a: CorporateActionItem): CorporateActionListRow {
-  const ratio = ratioText(a.type, a.ratioFrom, a.ratioTo) || '—';
+  // A delisting has no ratio (the server stores 1 : 1).
+  const ratio = a.type === 'delisted' ? '—' : ratioText(a.type, a.ratioFrom, a.ratioTo) || '—';
   const effect = a.quantityBefore != null && a.quantityAfter != null ? `${formatQuantity(a.quantityBefore)} → ${formatQuantity(a.quantityAfter)}` : '';
-  const compactRatio = ratioText(a.type, a.ratioFrom, a.ratioTo, true);
+  const compactRatio = a.type === 'delisted' ? '' : ratioText(a.type, a.ratioFrom, a.ratioTo, true);
   const money = (v: number) => (Number.isInteger(v) ? formatMoney(v) : formatMoney(v, { decimals: 'exact' }));
   const cost = a.costPerUnitBefore != null && a.costPerUnitAfter != null ? `cost ${money(a.costPerUnitBefore)} → ${money(a.costPerUnitAfter)}` : '';
   return {

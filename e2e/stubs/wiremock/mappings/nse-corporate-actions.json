@@ -1,0 +1,18 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/nse/api/corporates-corporateActions"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": [
+      { "symbol": "E2EBONUS", "isin": "INE2E0000011", "comp": "E2E Bonus Industries Limited", "series": "EQ", "exDate": "15-Jan-2025", "subject": "Bonus 1:1" },
+      { "symbol": "E2EMISS", "isin": "INE2E0000029", "comp": "E2E Missing Split Limited", "series": "EQ", "exDate": "15-Jan-2025", "subject": "Bonus 1:1" },
+      { "symbol": "E2EDEMERGE", "isin": "INE2E0000037", "comp": "E2E Demerger Limited", "series": "EQ", "exDate": "15-Jan-2025", "subject": "Demerger" }
+    ]
+  }
+}

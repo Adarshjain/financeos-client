@@ -21,6 +21,8 @@ export interface InboxRowProps {
   rowOptions?: RowOptions;
   /** The bill action whose bill is still loading: its button shows loading. */
   billLoading?: PendingBillAction | null;
+  /** The corporate-action button (`<row key>|<button id>`) whose suggestion or instrument is still loading. */
+  caLoading?: string | null;
   onBillButton: (item: InboxItemResponse, button: RowButton) => void;
   onMenuAction: (item: InboxItemResponse, action: RowMenuAction) => void;
   onSnooze: (item: InboxItemResponse, until: string) => void;
@@ -32,7 +34,7 @@ export interface InboxRowProps {
  * snooze and dismiss icons the server allows. On phone, swiping right snoozes until tomorrow and
  * swiping left dismisses.
  */
-export function InboxRow({ item, highlighted, rowOptions, billLoading, onBillButton, onMenuAction, onSnooze, onDismiss }: InboxRowProps) {
+export function InboxRow({ item, highlighted, rowOptions, billLoading, caLoading, onBillButton, onMenuAction, onSnooze, onDismiss }: InboxRowProps) {
   const snoozable = canSnooze(item);
   const dismissable = canDismiss(item);
   const buttons = rowButtons(item, rowOptions);
@@ -102,7 +104,7 @@ export function InboxRow({ item, highlighted, rowOptions, billLoading, onBillBut
                   variant={button.variant}
                   size="sm"
                   disabled={button.disabled}
-                  loading={isBillLoading(item, button, billLoading)}
+                  loading={isBillLoading(item, button, billLoading) || caLoading === `${item.key}|${button.id}`}
                   onClick={() => onBillButton(item, button)}
                 >
                   {button.label}

@@ -1284,6 +1284,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/corporate-action-suggestions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCorporateActionSuggestion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/corporate-action-suggestions/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["acceptCorporateActionSuggestion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/corporate-action-suggestions/{id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["dismissCorporateActionSuggestion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/corporate-action-suggestions/{id}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["undoCorporateActionSuggestion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/corporate-actions": {
         parameters: {
             query?: never;
@@ -6278,7 +6342,7 @@ export interface components {
             targetInstrumentName?: string | null;
             targetInstrumentSymbol?: string | null;
             /** @enum {string} */
-            type: "split" | "bonus" | "demerger" | "merger";
+            type: "split" | "bonus" | "demerger" | "merger" | "delisted";
         };
         CorporateActionRowResponse: {
             costAllocationPct?: number | null;
@@ -6307,7 +6371,27 @@ export interface components {
             targetInstrumentName?: string | null;
             targetInstrumentSymbol?: string | null;
             /** @enum {string} */
-            type: "split" | "bonus" | "demerger" | "merger";
+            type: "split" | "bonus" | "demerger" | "merger" | "delisted";
+        };
+        CorporateActionSuggestionResponse: {
+            /** Format: uuid */
+            corporateActionId?: string | null;
+            /** Format: date */
+            exDate: string;
+            /** Format: uuid */
+            id: string;
+            instrument: components["schemas"]["InstrumentRef"];
+            /** @enum {string} */
+            kind: "split" | "bonus" | "demerger" | "merger" | "other" | "oversold";
+            /** Format: int32 */
+            ratioFrom?: number | null;
+            /** Format: int32 */
+            ratioTo?: number | null;
+            /** @enum {string|null} */
+            reason?: "COMBINED_SAME_DAY" | "NEEDS_DETAILS" | "UNCLEAR_TEXT" | "NO_PRICE_SYMBOL" | "YAHOO_MISSING" | "YAHOO_MISMATCH" | "POSSIBLE_DUPLICATE" | null;
+            /** @enum {string} */
+            status: "auto_applied" | "pending" | "accepted" | "dismissed" | "undone";
+            subject?: string | null;
         };
         CounterpartyLedgerResponse: {
             entries: components["schemas"]["PageLedgerEntryResponse"];
@@ -6405,7 +6489,7 @@ export interface components {
             /** Format: uuid */
             targetInstrumentId?: string;
             /** @enum {string} */
-            type: "split" | "bonus" | "demerger" | "merger";
+            type: "split" | "bonus" | "demerger" | "merger" | "delisted";
         };
         CreateCounterpartyRequest: {
             name: string;
@@ -7685,6 +7769,7 @@ export interface components {
             currentValue: number;
             dayChange?: number | null;
             dayChangePct?: number | null;
+            delisted: boolean;
             dividends: number;
             /** Format: date */
             firstBuyDate?: string | null;
@@ -7698,6 +7783,7 @@ export interface components {
             mergedIntoName?: string | null;
             name: string;
             noPrice: boolean;
+            notTrading: boolean;
             /** Format: date */
             priceAsOf?: string | null;
             /** Format: date-time */
@@ -7858,6 +7944,8 @@ export interface components {
             /** Format: uuid */
             epfEntryId?: string | null;
             /** Format: uuid */
+            instrumentId?: string | null;
+            /** Format: uuid */
             jobId?: string | null;
             /** Format: uuid */
             loanId?: string | null;
@@ -7867,6 +7955,8 @@ export interface components {
             npsPendingId?: string | null;
             /** Format: uuid */
             statementId?: string | null;
+            /** Format: uuid */
+            suggestionId?: string | null;
             /** Format: uuid */
             transactionId?: string | null;
         };
@@ -7956,6 +8046,12 @@ export interface components {
             priceAt?: string | null;
             /** @enum {string} */
             source: "AMFI" | "YAHOO" | "MANUAL" | "NPS_TRUST";
+        };
+        InstrumentRef: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            symbol: string;
         };
         InstrumentRequest: {
             amfiCode?: string;
@@ -8101,7 +8197,7 @@ export interface components {
             /** @enum {string} */
             triggerSource: "USER" | "CRON";
             /** @enum {string} */
-            type: "STATEMENT_INGEST" | "GMAIL_SYNC" | "PRICE_REFRESH" | "INVESTMENT_IMPORT_COMMIT" | "BROKER_RECONCILE_COMMIT" | "RULE_APPLY" | "CATEGORY_BACKFILL" | "ACCOUNT_DETECT" | "NPS_GMAIL_IMPORT";
+            type: "STATEMENT_INGEST" | "GMAIL_SYNC" | "PRICE_REFRESH" | "INVESTMENT_IMPORT_COMMIT" | "BROKER_RECONCILE_COMMIT" | "RULE_APPLY" | "CATEGORY_BACKFILL" | "ACCOUNT_DETECT" | "NPS_GMAIL_IMPORT" | "CORPORATE_ACTION_DETECT";
         };
         Keys: {
             auth: string;
@@ -9662,6 +9758,7 @@ export interface components {
             currentValue?: number | null;
             dayChange?: number | null;
             dayChangePct?: number | null;
+            delisted: boolean;
             dividends?: number | null;
             /** Format: uuid */
             holdingId: string;
@@ -9679,6 +9776,7 @@ export interface components {
             mergedIntoDate?: string | null;
             mergedIntoName?: string | null;
             netQty?: number | null;
+            notTrading: boolean;
             notes?: string | null;
             previousClose?: number | null;
             /** Format: date */
@@ -9717,7 +9815,7 @@ export interface components {
             /** Format: uuid */
             targetInstrumentId?: string;
             /** @enum {string} */
-            type: "split" | "bonus" | "demerger" | "merger";
+            type: "split" | "bonus" | "demerger" | "merger" | "delisted";
         };
         PreviewMatchesRequest: {
             matchType?: string;
@@ -10401,6 +10499,7 @@ export interface components {
             currentValue: number;
             dayChange?: number | null;
             dayChangePct?: number | null;
+            delisted: boolean;
             /** Format: uuid */
             instrumentId: string;
             invested: number;
@@ -10411,6 +10510,7 @@ export interface components {
             mergedIntoName?: string | null;
             name: string;
             noPrice: boolean;
+            notTrading: boolean;
             /** Format: date */
             priceAsOf?: string | null;
             /** Format: date-time */
@@ -10602,6 +10702,7 @@ export interface components {
             bookedOtherLongTermGain?: number | null;
             bookedShortTermGain?: number | null;
             cost: number;
+            delisted: boolean;
             equity: boolean;
             exemptionLeftAfter?: number | null;
             exemptionLeftBefore?: number | null;
@@ -10616,6 +10717,7 @@ export interface components {
             ltcgRate?: number | null;
             ltcgTax?: number | null;
             noPrice: boolean;
+            notTrading: boolean;
             price?: number | null;
             proceeds: number;
             quantity: number;
@@ -11324,7 +11426,7 @@ export interface components {
             /** Format: uuid */
             targetInstrumentId?: string;
             /** @enum {string} */
-            type: "split" | "bonus" | "demerger" | "merger";
+            type: "split" | "bonus" | "demerger" | "merger" | "delisted";
         };
         UpdateCounterpartyRequest: {
             name?: string;
@@ -14414,6 +14516,134 @@ export interface operations {
             };
         };
     };
+    getCorporateActionSuggestion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CorporateActionSuggestionResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    acceptCorporateActionSuggestion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCorporateActionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CorporateActionSuggestionResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismissCorporateActionSuggestion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CorporateActionSuggestionResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    undoCorporateActionSuggestion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CorporateActionSuggestionResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getAllCorporateActions: {
         parameters: {
             query?: never;
@@ -14446,7 +14676,7 @@ export interface operations {
     getCorporateActionPage: {
         parameters: {
             query?: {
-                type?: "split" | "bonus" | "demerger" | "merger";
+                type?: "split" | "bonus" | "demerger" | "merger" | "delisted";
                 search?: string;
                 sort?: string;
                 page?: number;

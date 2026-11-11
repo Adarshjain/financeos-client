@@ -30,3 +30,19 @@ describe('corporateActionsActions writes', () => {
     expect(await createCorporateAction('i1', {} as never)).toMatchObject({ success: false, error: { code: 'VALIDATION_ERROR' } });
   });
 });
+
+describe('corporate action suggestion actions', () => {
+  it('reads, undoes, accepts and dismisses a suggestion by id', async () => {
+    const { loadCorporateActionSuggestion, undoCorporateActionSuggestion, acceptCorporateActionSuggestion, dismissCorporateActionSuggestion } = await import('./corporateActionActions');
+    api.GET.mockResolvedValue({ data: { id: 's1' } });
+    expect(await loadCorporateActionSuggestion('s1')).toEqual({ success: true, data: { id: 's1' } });
+    expect(api.GET).toHaveBeenCalledWith('/api/v1/corporate-action-suggestions/{id}', { params: { path: { id: 's1' } } });
+    api.POST.mockResolvedValue({ data: {} });
+    await undoCorporateActionSuggestion('s1');
+    expect(api.POST).toHaveBeenCalledWith('/api/v1/corporate-action-suggestions/{id}/undo', { params: { path: { id: 's1' } } });
+    await acceptCorporateActionSuggestion('s1', { type: 'bonus' } as never);
+    expect(api.POST).toHaveBeenCalledWith('/api/v1/corporate-action-suggestions/{id}/accept', { params: { path: { id: 's1' } }, body: { type: 'bonus' } });
+    await dismissCorporateActionSuggestion('s1');
+    expect(api.POST).toHaveBeenCalledWith('/api/v1/corporate-action-suggestions/{id}/dismiss', { params: { path: { id: 's1' } } });
+  });
+});

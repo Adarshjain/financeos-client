@@ -25,6 +25,8 @@ export function getJobTypeLabel(type: JobType): string {
       return 'Account detection';
     case 'NPS_GMAIL_IMPORT':
       return 'NPS Gmail import';
+    case 'CORPORATE_ACTION_DETECT':
+      return 'Corporate action detection';
     default:
       return type;
   }

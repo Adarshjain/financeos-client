@@ -7,7 +7,8 @@ export type JobType =
   | 'RULE_APPLY'
   | 'CATEGORY_BACKFILL'
   | 'ACCOUNT_DETECT'
-  | 'NPS_GMAIL_IMPORT';
+  | 'NPS_GMAIL_IMPORT'
+  | 'CORPORATE_ACTION_DETECT';
 
 export type JobStatus =
   | 'PENDING'

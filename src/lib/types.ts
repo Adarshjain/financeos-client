@@ -481,6 +481,7 @@ export type CorporateActionType =
   | 'bonus'
   | 'demerger'
   | 'merger'
+  | 'delisted'
   | 'BONUS'
   | 'SPLIT'
   | 'DIVIDEND'

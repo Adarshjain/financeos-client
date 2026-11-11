@@ -1,3 +1,4 @@
+import { holdingHref } from '@/features/investments/investmentsTabs';
 import { appHref } from '@/features/shell/routes';
 import type { InboxActionResponse, InboxItemResponse } from '@/lib/api/types';
 
@@ -16,6 +17,9 @@ export const INBOX_SECTION_TITLES: Record<InboxSectionKey, string> = {
   info: 'Updates',
 };
 
+/** A corporate-action row's own buttons: take back an automatic one, review or turn down a pending one, record a stock that stopped trading. */
+export type CorporateActionRowAction = 'undo' | 'review' | 'not_applicable' | 'merged' | 'delisted';
+
 export type NpsRowAction = 'add_self' | 'add_child' | 'ignore' | 'link' | 'dismiss' | 'record' | 'record_I' | 'record_II' | 'not_nps' | 'setup_not_nps';
 
 /** One decision button on a row: it links somewhere, or opens a bill dialog. */
@@ -30,6 +34,8 @@ export interface RowButton {
   epf?: 'link' | 'dismiss';
   /** An NPS row's own buttons: Gmail (mine / my child's / ignore), a payment pairing (link / not this one), or a debit to record. */
   nps?: NpsRowAction;
+  /** A detected corporate action's own buttons. */
+  ca?: CorporateActionRowAction;
   disabled?: boolean;
 }
 
@@ -76,6 +82,8 @@ function destination(item: InboxItemResponse, action: InboxActionResponse): Pick
       return { label: 'Open', href };
     case 'review':
       return { label: 'Review', href };
+    case 'holding_oversold':
+      return { label: action.label, href: item.refs.instrumentId ? holdingHref(item.refs.instrumentId) : href };
     default:
       return { label: action.label, href };
   }
@@ -160,8 +168,30 @@ function npsRecordButtons(item: InboxItemResponse, options: RowOptions): RowButt
   return buttons;
 }
 
+/** Detected corporate actions: Undo an applied one; Review / Ignore on a pending one; Merged / Delisted on a stock that stopped trading. */
+function corporateActionButtons(item: InboxItemResponse): RowButton[] {
+  if (item.kind === 'corporate_action_applied') {
+    return [{ id: 'ca_undo', label: 'Undo', variant: 'secondary', ca: 'undo', disabled: !item.refs.suggestionId }];
+  }
+  if (item.kind === 'corporate_action_review') {
+    const ready = Boolean(item.refs.suggestionId);
+    return [
+      { id: 'ca_review', label: 'Review', variant: 'secondary', ca: 'review', disabled: !ready },
+      { id: 'ca_not_applicable', label: 'Ignore', variant: 'link', ca: 'not_applicable', disabled: !ready },
+    ];
+  }
+  const ready = Boolean(item.refs.instrumentId);
+  return [
+    { id: 'ca_merged', label: 'Merged', variant: 'secondary', ca: 'merged', disabled: !ready },
+    { id: 'ca_delisted', label: 'Delisted', variant: 'link', ca: 'delisted', disabled: !ready },
+  ];
+}
+
 /** The row's buttons from the server's actions (snooze and dismiss are separate); a summary row shows one. */
 export function rowButtons(item: InboxItemResponse, options: RowOptions = {}): RowButton[] {
+  if (item.kind === 'corporate_action_applied' || item.kind === 'corporate_action_review' || item.kind === 'stock_not_trading') {
+    return corporateActionButtons(item);
+  }
   if (item.kind === 'epf_match') return epfButtons(item);
   if (item.kind === 'nps_match') return npsMatchButtons(item);
   if (item.kind === 'nps_setup') return npsSetupButtons(item);

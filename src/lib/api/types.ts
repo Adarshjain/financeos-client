@@ -169,6 +169,7 @@ export type InstrumentRequest = Schemas['InstrumentRequest'];
 export type CorporateAction = Schemas['CorporateActionResponse'];
 export type CreateCorporateActionRequest = Schemas['CreateCorporateActionRequest'];
 export type UpdateCorporateActionRequest = Schemas['UpdateCorporateActionRequest'];
+export type CorporateActionSuggestion = Schemas['CorporateActionSuggestionResponse'];
 export type Dividend = Schemas['DividendResponse'];
 export type CreateDividendRequest = Schemas['CreateDividendRequest'];
 export type UpdateDividendRequest = Schemas['UpdateDividendRequest'];

@@ -10,10 +10,16 @@ import { Divider } from '@/components/ds/Divider/Divider';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
 import { Text } from '@/components/ds/Text/Text';
+import { showToast } from '@/components/ds/Toast/Toast';
+import { loadCorporateActionSuggestion, loadInstrumentRef } from '@/features/investments/corporate-actions/corporateActionActions';
+import type { CorporateActionDialogProps } from '@/features/investments/corporate-actions/CorporateActionDialog';
+import { loadCorporateActionDialog } from '@/features/investments/lazyDialogs';
 import { LoadError } from '@/features/shell/LoadError';
 import { UPCOMING_HREF } from '@/features/upcoming/upcomingTabs';
 import { unwrapAction } from '@/lib/actionResult';
+import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { InboxItemResponse } from '@/lib/api/types';
+import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useBill } from '@/lib/query/hooks/useBills';
 import { useInbox } from '@/lib/query/hooks/useInbox';
 import { keys } from '@/lib/query/keys';
@@ -40,12 +46,17 @@ export interface InboxScreenProps {
 /** The Inbox tab: Act now and Needs a look in one card, plus the dialogs rows open. */
 export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
   const { data, isLoading, isFetching, error, refetch } = useInbox();
-  const { snooze, dismiss, epfLink, epfDismiss, noStatement, npsPendingAction, npsPaymentAction } = useInboxMutations(dsInboxNotifier);
+  const { snooze, dismiss, epfLink, epfDismiss, noStatement, npsPendingAction, npsPaymentAction, corporateActionRow } = useInboxMutations(dsInboxNotifier);
   const [pendingBill, setPendingBill] = React.useState<PendingBillAction | null>(null);
   const closeBill = React.useCallback(() => setPendingBill(null), []);
   // The bill loads after the press (shared with the host's query): the pressed button shows loading until its dialog can open.
   const bill = useBill(pendingBill?.statementId, pendingBill !== null);
   const billLoading = pendingBill && !bill.data && !bill.error ? pendingBill : null;
+
+  // A corporate-action dialog opened from a row (never from the address): its instrument, kind, detected values and suggestion.
+  const [caDialog, setCaDialog] = React.useState<Pick<CorporateActionDialogProps, 'instrument' | 'type' | 'prefill' | 'suggestionId'> | null>(null);
+  const [caLoading, setCaLoading] = React.useState<string | null>(null);
+  const { Component: CorporateActionDialog, run: runCaDialog } = useLazyDialog(loadCorporateActionDialog);
 
   const items = React.useMemo(() => data?.items ?? [], [data]);
   // Which account a debit is recorded to, and whether Tier II is open on it: read only when a Record row is shown.
@@ -65,7 +76,36 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
     return npsPaymentAction(item, action, recordTarget?.accountId);
   };
 
+  const openCorporateAction = async (item: InboxItemResponse, button: RowButton) => {
+    const loadingKey = `${item.key}|${button.id}`;
+    setCaLoading(loadingKey);
+    try {
+      if (button.ca === 'review') {
+        const suggestion = await unwrapAction(loadCorporateActionSuggestion(item.refs.suggestionId as string));
+        const type = suggestion.kind === 'other' || suggestion.kind === 'oversold' ? undefined : suggestion.kind;
+        await runCaDialog(() =>
+          setCaDialog({
+            instrument: suggestion.instrument,
+            type,
+            prefill: { exDate: suggestion.exDate, ratioFrom: suggestion.ratioFrom, ratioTo: suggestion.ratioTo },
+            suggestionId: suggestion.id,
+          }),
+        );
+      } else {
+        const instrument = await unwrapAction(loadInstrumentRef(item.refs.instrumentId as string));
+        await runCaDialog(() => setCaDialog({ instrument, type: button.ca === 'delisted' ? 'delisted' : 'merger' }));
+      }
+    } catch (e) {
+      showToast(getErrorMessage(e, "Couldn't open this. Try again."), { tone: 'danger' });
+    } finally {
+      setCaLoading(null);
+    }
+  };
+
   const onBillButton = (item: InboxItemResponse, button: RowButton) => {
+    if (button.ca === 'undo') return corporateActionRow(item, 'undo');
+    if (button.ca === 'not_applicable') return corporateActionRow(item, 'dismiss');
+    if (button.ca) return void openCorporateAction(item, button);
     if (button.epf === 'link') return epfLink(item);
     if (button.epf === 'dismiss') return epfDismiss(item);
     if (button.nps) return onNps(item, button.nps);
@@ -111,6 +151,7 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
                 highlightKey={deepLink.found ? highlightKey : null}
                 rowOptions={rowOptions}
                 billLoading={billLoading}
+                caLoading={caLoading}
                 onBillButton={onBillButton}
                 onMenuAction={onMenuAction}
                 onSnooze={(item, until) => snooze(item.key, until)}
@@ -135,6 +176,7 @@ export function InboxScreen({ highlightKey = null }: InboxScreenProps) {
       {deepLink.missing ? <Banner tone="info">That item is already handled.</Banner> : null}
       {body}
       <InboxBillHost pending={pendingBill} onClose={closeBill} />
+      {caDialog && CorporateActionDialog ? <CorporateActionDialog {...caDialog} onClose={() => setCaDialog(null)} /> : null}
     </div>
   );
 }

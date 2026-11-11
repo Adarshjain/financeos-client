@@ -74,6 +74,10 @@ export interface HoldingRow {
   manualPrice: boolean;
   /** An open holding without any price: valued at cost. */
   noPrice: boolean;
+  /** The company is gone: valued at zero, still a priced row. */
+  delisted: boolean;
+  /** Its price has stopped updating (a merger or delisting is likely). */
+  notTrading: boolean;
   currentValue: number;
   invested: number;
   unrealised: number;
@@ -142,6 +146,8 @@ export interface SellEstimate {
   quantity: number;
   price: number | null;
   noPrice: boolean;
+  delisted?: boolean;
+  notTrading?: boolean;
   proceeds: number;
   cost: number;
   gain: number;
@@ -258,7 +264,7 @@ export interface FnoSummary {
 // ---- Corporate actions ----------------------------------------------------------
 
 /** The kinds the corporate-actions page filters and returns. */
-export type CorporateActionKind = 'split' | 'bonus' | 'demerger' | 'merger';
+export type CorporateActionKind = 'split' | 'bonus' | 'demerger' | 'merger' | 'delisted';
 
 export type CorporateActionSort = 'newest' | 'oldest' | 'name';
 

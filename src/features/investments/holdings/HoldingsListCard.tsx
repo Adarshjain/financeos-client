@@ -102,9 +102,9 @@ const columns = [
                 {' · manual price'}
               </Text>
             ) : null}
-            {r.noPrice && !r.merged ? (
+            {r.priceNote && !r.merged ? (
               <Text variant="body" tone="ink-3" as="span" className="max-desk:hidden">
-                {' · at cost (no price)'}
+                {` · ${r.priceNote}`}
               </Text>
             ) : null}
           </Text>
@@ -210,7 +210,7 @@ function PhoneSub({ row }: { row: HoldingListRow }) {
         <Conceal>{row.position}</Conceal>
         {row.dayPct ? <Text variant="label" tone={row.dayPct.tone ?? 'ink-3'} as="span">{` ${row.dayPct.text}`}</Text> : null}
         {row.manualPrice ? ' · manual price' : null}
-        {row.noPrice ? ' · at cost (no price)' : null}
+        {row.priceNote ? ` · ${row.priceNote}` : null}
       </Text>
       {row.noPrice ? <NoPriceNote instrumentId={row.id} /> : null}
     </div>

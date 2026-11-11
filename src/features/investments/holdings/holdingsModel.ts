@@ -165,6 +165,8 @@ export interface HoldingListRow {
   name: string | null;
   merged: { into: string; date: string | null } | null;
   noPrice: boolean;
+  /** "Delisted" or "Not trading" when the server says so, else "at cost (no price)" for an unpriced row, else null. */
+  priceNote: string | null;
   manualPrice: boolean;
   quantity: string;
   avgCost: string | null;
@@ -180,10 +182,19 @@ export interface HoldingListRow {
   position: string;
 }
 
+/** The status a holding shows in place of its price: Delisted, else Not trading, else the unpriced note. */
+export function holdingPriceNote(row: Pick<HoldingRow, 'delisted' | 'notTrading' | 'noPrice'>): string | null {
+  if (row.delisted) return 'Delisted';
+  if (row.notTrading) return 'Not trading';
+  return row.noPrice ? 'at cost (no price)' : null;
+}
+
 export function holdingListRow(row: HoldingRow): HoldingListRow {
   const merged = row.mergedIntoName ? { into: row.mergedIntoName, date: row.mergedIntoDate } : null;
   const title = row.symbol || row.name;
-  const priced = row.ltp != null && !row.noPrice;
+  // A delisted holding is a priced row worth zero, never "No price".
+  const unpriced = row.noPrice && !row.delisted;
+  const priced = row.ltp != null && !unpriced;
   const qty = formatQuantity(row.quantity);
   const position = merged
     ? `${qty} ${unitWord(row.assetType, row.quantity)}`
@@ -197,7 +208,8 @@ export function holdingListRow(row: HoldingRow): HoldingListRow {
     title,
     name: row.symbol && row.name !== row.symbol ? row.name : null,
     merged,
-    noPrice: row.noPrice,
+    noPrice: unpriced && !row.notTrading,
+    priceNote: holdingPriceNote(row),
     manualPrice: row.manualPrice,
     quantity: qty,
     avgCost: merged ? null : formatMoney(row.avgCost, { decimals: 'exact', symbol: false }),
@@ -210,7 +222,7 @@ export function holdingListRow(row: HoldingRow): HoldingListRow {
     current: formatMoney(row.currentValue),
     currentPlain: formatMoney(row.currentValue, { symbol: false }),
     pnl:
-      merged || row.noPrice
+      merged || unpriced
         ? null
         : {
             amount: formatMoney(row.unrealised, { sign: 'always' }),

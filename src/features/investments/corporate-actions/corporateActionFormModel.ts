@@ -22,12 +22,23 @@ export type FormErrors = Partial<Record<FormField, string>>;
 
 export const hasTarget = (type: CorporateActionKind): boolean => type === 'demerger' || type === 'merger';
 
+/** A delisting has no ratio: the form asks only for the instrument and the date, and sends 1 → 1. */
+export const hasRatio = (type: CorporateActionKind): boolean => type !== 'delisted';
+
+/** Values the form opens with, from a detected suggestion. */
+export interface FormPrefill {
+  exDate?: string | null;
+  ratioFrom?: number | null;
+  ratioTo?: number | null;
+}
+
 /** The form for a new action (today, 1 → 2, 20% for a demerger) or filled from the saved one. */
 export function initialForm(args: {
   today: string;
   instrument?: InstrumentRef;
   type?: CorporateActionKind;
   action?: CorporateActionItem;
+  prefill?: FormPrefill;
 }): CorporateActionForm {
   const { action } = args;
   if (action) {
@@ -48,9 +59,9 @@ export function initialForm(args: {
   return {
     instrument: args.instrument ?? null,
     type: args.type ?? 'split',
-    exDate: args.today,
-    ratioFrom: '1',
-    ratioTo: '2',
+    exDate: args.prefill?.exDate ? args.prefill.exDate.slice(0, 10) : args.today,
+    ratioFrom: args.prefill?.ratioFrom != null ? String(args.prefill.ratioFrom) : '1',
+    ratioTo: args.prefill?.ratioTo != null ? String(args.prefill.ratioTo) : '2',
     target: null,
     costAllocationPct: '20',
     cashInLieu: '',
@@ -67,8 +78,8 @@ const positiveInt = (text: string): number | null => {
 export function validateForm(form: CorporateActionForm): FormErrors {
   const errors: FormErrors = {};
   if (!form.instrument) errors.instrument = 'Select an instrument.';
-  if (positiveInt(form.ratioFrom) == null) errors.ratioFrom = 'Enter a whole number above zero.';
-  if (positiveInt(form.ratioTo) == null) errors.ratioTo = 'Enter a whole number above zero.';
+  if (hasRatio(form.type) && positiveInt(form.ratioFrom) == null) errors.ratioFrom = 'Enter a whole number above zero.';
+  if (hasRatio(form.type) && positiveInt(form.ratioTo) == null) errors.ratioTo = 'Enter a whole number above zero.';
   if (form.type === 'bonus' && !errors.ratioFrom && !errors.ratioTo && Number(form.ratioTo) <= Number(form.ratioFrom)) {
     errors.ratioTo = 'After must be more than Before: a 1:1 bonus is 1 → 2.';
   }
@@ -96,8 +107,8 @@ export function requestBody(form: CorporateActionForm): CreateCorporateActionReq
   const merging = hasTarget(form.type);
   return {
     type: form.type,
-    ratioFrom: positiveInt(form.ratioFrom)!,
-    ratioTo: positiveInt(form.ratioTo)!,
+    ratioFrom: hasRatio(form.type) ? positiveInt(form.ratioFrom)! : 1,
+    ratioTo: hasRatio(form.type) ? positiveInt(form.ratioTo)! : 1,
     exDate: form.exDate,
     notes: form.notes.trim() || undefined,
     targetInstrumentId: merging ? form.target!.id : undefined,
@@ -119,4 +130,5 @@ export const KIND_OPTIONS: { value: CorporateActionKind; label: string }[] = [
   { value: 'bonus', label: 'Bonus issue' },
   { value: 'demerger', label: 'Demerger / spin-off' },
   { value: 'merger', label: 'Merger / amalgamation' },
+  { value: 'delisted', label: 'Delisted' },
 ];

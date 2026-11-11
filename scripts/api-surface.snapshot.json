@@ -9,6 +9,7 @@
     "cardholdersApi",
     "categoryListApi",
     "chatApi",
+    "corporateActionSuggestionsApi",
     "corporateActionsApi",
     "counterpartiesApi",
     "dashboardsApi",
@@ -125,6 +126,12 @@
       "list",
       "page",
       "preview"
+    ],
+    "corporateActionSuggestionsApi": [
+      "accept",
+      "dismiss",
+      "get",
+      "undo"
     ],
     "dividendsApi": [
       "acceptSuggestions",

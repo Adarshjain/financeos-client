@@ -4,6 +4,7 @@ import { type QueryClient, useMutation, useQueryClient } from '@tanstack/react-q
 import { toast } from 'sonner';
 
 import { skipStatementPeriod, undoStatementSkip } from '@/features/accounts/detail/statements/statementSkipActions';
+import { dismissCorporateActionSuggestion, undoCorporateActionSuggestion } from '@/features/investments/corporate-actions/corporateActionActions';
 import { importingMessage } from '@/features/investments/nps/npsGmailModel';
 import { scheduleNpsImportRefetch } from '@/features/investments/nps/npsImportRefetch';
 import { unwrapAction } from '@/lib/actionResult';
@@ -57,6 +58,9 @@ export interface InboxNotifier {
   /** An NPS payment was linked, recorded, or turned down; any failing puts the row back. */
   npsPaymentDone?: (action: 'link' | 'dismiss' | 'record' | 'not_nps') => void;
   npsPaymentFailed?: (error: unknown) => void;
+  /** A detected corporate action was taken back (undo) or turned down (Ignore); either failing puts the row back. */
+  corporateActionDone?: (action: 'undo' | 'dismiss') => void;
+  corporateActionFailed?: (error: unknown) => void;
   /** A card's cycle was marked "No statement this period"; undo takes the mark back. */
   statementSkipped?: (undo: () => void) => void;
   statementSkipFailed?: (error: unknown) => void;
@@ -78,6 +82,8 @@ export const sonnerInboxNotifier: InboxNotifier = {
   npsPaymentDone: (action) =>
     toast.success({ link: 'Linked to the NPS contribution', dismiss: 'Dismissed', record: 'Recorded as an NPS contribution', not_nps: 'Marked as not NPS' }[action]),
   npsPaymentFailed: (e) => toast.error(getErrorMessage(e, "Couldn't update this. Try again.")),
+  corporateActionDone: (action) => toast.success(action === 'undo' ? 'Removed' : 'Dismissed'),
+  corporateActionFailed: (e) => toast.error(getErrorMessage(e, "Couldn't update this. Try again.")),
   statementSkipped: (undo) =>
     toast.success('No statement this period', { action: { label: 'Undo', onClick: undo } }),
   statementSkipFailed: (e) => toast.error(getErrorMessage(e, "Couldn't mark this period. Try again.")),
@@ -294,7 +300,30 @@ export function useInboxMutations(notifier: InboxNotifier = sonnerInboxNotifier)
     onSettled: settle,
   });
 
+  // Undo an automatically applied corporate action, or turn down a pending one ("Ignore").
+  const corporateAction = useMutation({
+    mutationKey: INBOX_ACTION_KEY,
+    mutationFn: async ({ item, action }: { item: InboxItemResponse; action: 'undo' | 'dismiss' }) => {
+      const id = item.refs.suggestionId;
+      if (!id) throw new Error('This row has no corporate action to act on');
+      await unwrapAction((action === 'undo' ? undoCorporateActionSuggestion : dismissCorporateActionSuggestion)(id));
+      return action;
+    },
+    onMutate: ({ item }) => hideRow(qc, item.key),
+    onSuccess: (done) => {
+      void invalidateInvestmentQueries(qc);
+      router.refresh();
+      notifier.corporateActionDone?.(done);
+    },
+    onError: (e, _vars, snapshot) => {
+      restore(qc, snapshot);
+      notifier.corporateActionFailed?.(e);
+    },
+    onSettled: settle,
+  });
+
   return {
+    corporateActionRow: (item: InboxItemResponse, action: 'undo' | 'dismiss') => corporateAction.mutate({ item, action }),
     npsPaymentAction: (item: InboxItemResponse, action: NpsRowAction, accountId?: string | null) => npsPayment.mutate({ item, action, accountId }),
     npsPendingAction: (item: InboxItemResponse, action: 'add_self' | 'add_child' | 'ignore') => npsPending.mutate({ item, action }),
     epfLink: (item: InboxItemResponse) => epfLink.mutate(item),

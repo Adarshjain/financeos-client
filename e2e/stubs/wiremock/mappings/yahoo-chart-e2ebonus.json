@@ -1,0 +1,36 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/yahoo/v8/finance/chart/E2EBONUS.NS"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "chart": {
+        "result": [
+          {
+            "meta": {
+              "symbol": "E2EBONUS.NS",
+              "regularMarketPrice": 999.99
+            },
+            "events": {
+              "splits": {
+                "1736912700": {
+                  "date": 1736912700,
+                  "numerator": 2,
+                  "denominator": 1,
+                  "splitRatio": "2:1"
+                }
+              }
+            }
+          }
+        ],
+        "error": null
+      }
+    }
+  }
+}
