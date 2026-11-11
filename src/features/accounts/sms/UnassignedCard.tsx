@@ -17,6 +17,7 @@ import type { Account } from '@/lib/account.types';
 import type { SmsLine } from '@/lib/sms.types';
 
 import { assignLine, markLineNotMine, markLinesNotMine, undoLineNotMine, undoLinesNotMine } from './smsActions';
+import { SmsCardHeader } from './SmsCardHeader';
 import { groupUnassigned, lineText, senderGroupText, type UnassignedSender } from './smsModel';
 import { useSmsRun } from './useSmsRun';
 
@@ -139,7 +140,8 @@ export function UnassignedCard({ lines, accounts }: { lines: readonly SmsLine[];
   };
 
   return (
-    <Card data-testid="sms-unassigned" title="Not in FinanceOS" subtitle="Senders that no account of yours owns yet">
+    <Card data-testid="sms-unassigned">
+      <SmsCardHeader title="Not in FinanceOS" subtitle="Senders that no account of yours owns yet" />
       {groups.items.length === 0 && groups.rare.length === 0 ? (
         <Card.Empty>Nothing here</Card.Empty>
       ) : (

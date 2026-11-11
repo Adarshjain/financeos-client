@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import type { SmsAccountLines, SmsLine } from '@/lib/sms.types';
+import type { SmsAccountLines, SmsLine, SmsReportAlert } from '@/lib/sms.types';
 
 import {
   accountIsOn,
   defaultSyncFrom,
   dmy,
   feedText,
+  groupAlerts,
   groupUnassigned,
   linesToTurnOn,
   messagesText,
@@ -187,5 +188,32 @@ describe('readSummary', () => {
   it('joins what was read', () => {
     expect(readSummary({ amount: 1250, direction: 'debit', txnDate: '2026-11-05', counterparty: 'Corner shop' })).toBe('₹1,250 debit · 05/11/2026 · Corner shop');
     expect(readSummary({ amount: null, direction: null, txnDate: null, counterparty: null })).toBe('');
+  });
+});
+
+describe('groupAlerts', () => {
+  const gap = (date: string | null, message = 'A message may be missing around x'): SmsReportAlert => ({ kind: 'BALANCE_GAP', message, date });
+  const silent: SmsReportAlert = { kind: 'SILENT_LINE', message: 'No messages lately', date: null };
+
+  it('returns nothing without alerts', () => {
+    expect(groupAlerts([])).toEqual([]);
+  });
+  it('keeps the server message for one gap', () => {
+    expect(groupAlerts([gap('2024-11-10', 'A message may be missing around 10/11/2024')])).toEqual(['A message may be missing around 10/11/2024']);
+  });
+  it('joins several gaps oldest first with a final and', () => {
+    expect(groupAlerts([gap('2026-07-02'), gap('2024-11-10'), gap('2026-04-17')])).toEqual([
+      'Messages may be missing around 10/11/2024, 17/04/2026 and 02/07/2026',
+    ]);
+  });
+  it('deduplicates dates', () => {
+    expect(groupAlerts([gap('2024-11-10'), gap('2024-11-10'), gap('2025-01-05')])).toEqual(['Messages may be missing around 10/11/2024 and 05/01/2025']);
+    expect(groupAlerts([gap('2024-11-10'), gap('2024-11-10')])).toEqual(['Messages may be missing around 10/11/2024']);
+  });
+  it('leaves other kinds as their own lines', () => {
+    expect(groupAlerts([gap('2024-11-10'), silent, gap('2025-01-05')])).toEqual([
+      'Messages may be missing around 10/11/2024 and 05/01/2025',
+      'No messages lately',
+    ]);
   });
 });

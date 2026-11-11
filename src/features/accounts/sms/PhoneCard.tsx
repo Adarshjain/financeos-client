@@ -12,6 +12,7 @@ import { formatDateTime, formatTime } from '@/lib/format';
 import type { SmsDevice, SmsPairingCode } from '@/lib/sms.types';
 
 import { createPairingCode, disconnectDevice, pauseDevice, resumeDevice } from './smsActions';
+import { SmsCardHeader } from './SmsCardHeader';
 import { dmy } from './smsModel';
 import { useSmsRun } from './useSmsRun';
 
@@ -68,7 +69,8 @@ export function PhoneCard({ devices }: { devices: readonly SmsDevice[] }) {
   };
 
   return (
-    <Card data-testid="sms-phone" title="Phone" subtitle="The phone that sends your bank and wallet messages">
+    <Card data-testid="sms-phone">
+      <SmsCardHeader title="Phone" subtitle="The phone that sends your bank and wallet messages" />
       {connected.length === 0 ? (
         <Card.Empty>
           <Text variant="body" tone="ink-3" as="p">

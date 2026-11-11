@@ -1,5 +1,5 @@
 import { formatCount, formatMoney } from '@/lib/format';
-import type { SmsAccountLines, SmsLast60Days, SmsLine, SmsMessage, SmsReport, SmsReportAccount } from '@/lib/sms.types';
+import type { SmsAccountLines, SmsLast60Days, SmsLine, SmsMessage, SmsReport, SmsReportAccount, SmsReportAlert } from '@/lib/sms.types';
 
 /** A line with fewer messages than this goes into the "Seen once or twice" group. */
 export const RARE_LINE_BELOW = 3;
@@ -185,4 +185,33 @@ export function readSummary(message: Pick<SmsMessage, 'amount' | 'direction' | '
   const money = message.amount === null ? '' : formatMoney(message.amount, { decimals: 'auto' });
   const first = [money, message.direction ?? ''].filter(Boolean).join(' ');
   return [first, dmy(message.txnDate), message.counterparty ?? ''].filter(Boolean).join(' · ');
+}
+
+/** One line per alert, except that all BALANCE_GAP alerts of an account become a single line listing the dates. */
+export function groupAlerts(alerts: SmsReportAlert[]): string[] {
+  const gaps = alerts.filter((a) => a.kind === 'BALANCE_GAP');
+  const lines: string[] = [];
+  let gapDone = false;
+  for (const alert of alerts) {
+    if (alert.kind !== 'BALANCE_GAP') {
+      lines.push(alert.message);
+      continue;
+    }
+    if (gapDone) continue;
+    gapDone = true;
+    if (gaps.length === 1) {
+      lines.push(alert.message);
+      continue;
+    }
+    const dates = [...new Set(gaps.map((g) => ymdOf(g.date)).filter(Boolean))].sort();
+    if (dates.length === 0) {
+      lines.push(alert.message);
+    } else if (dates.length === 1) {
+      lines.push(`Messages may be missing around ${dmy(dates[0])}`);
+    } else {
+      const shown = dates.map((d) => dmy(d));
+      lines.push(`Messages may be missing around ${shown.slice(0, -1).join(', ')} and ${shown[shown.length - 1]}`);
+    }
+  }
+  return lines;
 }

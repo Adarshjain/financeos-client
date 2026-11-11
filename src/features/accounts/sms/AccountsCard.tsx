@@ -14,6 +14,7 @@ import { DialogFrame, useDialogSubmit } from '@/features/accounts/detail/cards/D
 import type { SmsAccountLines } from '@/lib/sms.types';
 
 import { turnLineOff, turnLineOn } from './smsActions';
+import { SmsCardHeader } from './SmsCardHeader';
 import { accountIsOn, defaultSyncFrom, feedText, linesToTurnOn, messagesText, notSyncedText, sendersText, sortAccounts } from './smsModel';
 import { useSmsRun } from './useSmsRun';
 
@@ -78,7 +79,8 @@ export function AccountsCard({ accounts, today }: { accounts: readonly SmsAccoun
   };
 
   return (
-    <Card data-testid="sms-accounts" title="Your accounts" subtitle="Turn an account on to read its messages. Everything is off until you do.">
+    <Card data-testid="sms-accounts">
+      <SmsCardHeader title="Your accounts" subtitle="Turn an account on to read its messages. Everything is off until you do." />
       {rows.length === 0 ? (
         <Card.Empty>No messages from your accounts yet</Card.Empty>
       ) : (

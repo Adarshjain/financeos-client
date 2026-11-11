@@ -10,6 +10,7 @@ import { ClosedToggleButton } from '@/features/accounts/list/AccountsSections';
 import type { SmsLine } from '@/lib/sms.types';
 
 import { undoLineNotMine } from './smsActions';
+import { SmsCardHeader } from './SmsCardHeader';
 import { lineText } from './smsModel';
 import { useSmsRun } from './useSmsRun';
 
@@ -30,7 +31,8 @@ export function NotMineCard({ lines }: { lines: readonly SmsLine[] }) {
   };
 
   return (
-    <Card data-testid="sms-not-mine" title="Not mine" subtitle={`${lines.length} hidden`} action={<ClosedToggleButton showing={showing} onToggle={() => setShowing((v) => !v)} />}>
+    <Card data-testid="sms-not-mine">
+      <SmsCardHeader title="Not mine" subtitle={`${lines.length} hidden`} action={<ClosedToggleButton showing={showing} onToggle={() => setShowing((v) => !v)} />} />
       {showing
         ? lines.map((line) => (
             <ListRow

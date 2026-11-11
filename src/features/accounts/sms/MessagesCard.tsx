@@ -11,6 +11,7 @@ import type { SmsMessage, SmsMessagesPage, SmsMessageStatus } from '@/lib/sms.ty
 import type { ApiResult } from '@/lib/types';
 
 import { confirmSmsMessage, loadSmsMessages, rejectSmsMessage } from './smsActions';
+import { SmsCardHeader } from './SmsCardHeader';
 import { dmy, readSummary } from './smsModel';
 import { useSmsRun } from './useSmsRun';
 
@@ -76,7 +77,8 @@ export function MessagesCard({ status, title, subtitle, initial }: MessagesCardP
   );
 
   return (
-    <Card data-testid={`sms-messages-${status.toLowerCase()}`} title={title} subtitle={subtitle}>
+    <Card data-testid={`sms-messages-${status.toLowerCase()}`}>
+      <SmsCardHeader title={title} subtitle={subtitle} />
       {pager('bottom')}
       <div>
         {data.items.map((message) => (
