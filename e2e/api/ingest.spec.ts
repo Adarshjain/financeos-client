@@ -500,6 +500,34 @@ test.describe('Statements Ingestion API', () => {
     );
   });
 
+  test('Locked PDF with no saved password opens with the bank rule built from the profile name and birth date', async ({
+    api,
+  }) => {
+    // Made-up profile; federal's rule is NAME4U+DDMM, so the password is RIYA1408.
+    const profile = await api.PATCH('/api/v1/me/profile', {
+      body: { displayName: 'Riya Sharma', birthDate: '1994-08-14' },
+    });
+    expect(profile.response.status).toBe(200);
+
+    const account = await createBankAccount(api, {
+      name: 'Rule Password Account',
+      bank: 'federal',
+      last4: '4321',
+      openingBalance: standardBankSpec.opening,
+    });
+    const lockedPdf = await genBankPdf({ ...standardBankSpec, password: 'RIYA1408' });
+
+    const { job, result } = await uploadAndIngest(api, account.id, [
+      { filename: 'rule-locked.pdf', buffer: lockedPdf },
+    ]);
+    expect(job.status).toBe('SUCCEEDED');
+    expect(result.fileDetails[0].status).toBe('SUCCESS');
+    expect(result.totalCreated).toBe(5);
+
+    const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: account.id }]);
+    expect(txns.length).toBe(5);
+  });
+
   test('PDF with bytes before the %PDF- header (HSBC preamble) parses', async ({ api }) => {
     const encryptedPdf = await genBankPdf({
       ...standardBankSpec,
