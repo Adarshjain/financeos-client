@@ -28,29 +28,30 @@ const txns = [
   { id: 'b', reviewReasons: ['DUPLICATE_SUSPECT' as const] },
 ];
 
-function page(content: unknown[], number: number, last: boolean) {
-  return { success: true, data: { content, number, last, totalElements: 3, totalPages: 2, size: 50 } };
+function page(content: unknown[], number: number, last: boolean, totalElements = content.length) {
+  return { success: true, data: { content, number, last, totalElements, totalPages: last ? number + 1 : number + 2, size: 10 } };
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
-  loadDuplicateReview.mockImplementation(async (n: number) =>
-    n === 0
-      ? page([{ transaction: side('x', 'Unrelated one'), twin: side('y', 'Other') }, { transaction: side('a', 'Coffee at the long named cafe near the station'), twin: side('a2', 'Coffee at the long named cafe near the station', { source: 'gmail_statement' }) }], 0, false)
-      : page([{ transaction: side('b', 'Fuel') }], 1, true),
+  loadDuplicateReview.mockImplementation(async () =>
+    page([
+      { transaction: side('a', 'Coffee at the long named cafe near the station'), twin: side('a2', 'Coffee at the long named cafe near the station', { source: 'gmail_statement' }) },
+      { transaction: side('b', 'Fuel') },
+    ], 0, true),
   );
 });
 
 describe('ApproveDialog: Duplicate evidence', () => {
-  it('lists this transaction next to the one it looks like, and says so when there is none, reading pages until all are found', async () => {
+  it('asks the server for exactly the approved ids, ten per page, and says so when a pair has no twin', async () => {
     renderWithQuery(<ApproveDialog transactions={txns} open onOpenChange={() => {}} />);
     const list = await screen.findByTestId('duplicate-pairs');
     expect(await within(list).findByText('Fuel')).toBeInTheDocument();
     expect(within(list).getAllByText('Coffee at the long named cafe near the station')).toHaveLength(2);
     expect(within(list).getByText('No matching transaction found')).toBeInTheDocument();
-    expect(within(list).queryByText('Unrelated one')).toBeNull();
-    expect(loadDuplicateReview).toHaveBeenCalledWith(0, 50);
-    expect(loadDuplicateReview).toHaveBeenCalledWith(1, 50);
+    expect(loadDuplicateReview).toHaveBeenCalledTimes(1);
+    expect(loadDuplicateReview).toHaveBeenCalledWith(['a', 'b'], 0, 10);
+    expect(screen.queryByRole('button', { name: 'Show more' })).toBeNull();
   });
 
   it('shows nothing extra when Duplicate is not among the reasons', () => {
@@ -67,15 +68,20 @@ describe('ApproveDialog: Duplicate evidence', () => {
     await waitFor(() => expect(approve).toHaveBeenCalledWith(txns, ['DUPLICATE_SUSPECT']));
   });
 
-  it('reveals more pairs ten at a time', async () => {
-    loadDuplicateReview.mockResolvedValue(
-      page(Array.from({ length: 12 }, (_, i) => ({ transaction: side(`t${i}`, `Row ${i}`), twin: side(`w${i}`, `Twin ${i}`) })), 0, true),
+  it('reads the next server page on Show more', async () => {
+    const rows = (from: number) => Array.from({ length: 10 }, (_, i) => ({ transaction: side(`t${from + i}`, `Row ${from + i}`), twin: side(`w${from + i}`, `Twin ${from + i}`) }));
+    loadDuplicateReview.mockImplementation(async (_ids: string[], n: number) =>
+      n === 0 ? page(rows(0), 0, false, 12) : page(rows(10).slice(0, 2), 1, true, 12),
     );
     const many = Array.from({ length: 12 }, (_, i) => ({ id: `t${i}`, reviewReasons: ['DUPLICATE_SUSPECT' as const] }));
     renderWithQuery(<ApproveDialog transactions={many} open onOpenChange={() => {}} />);
     await screen.findByText('Row 9');
+    expect(screen.getByText('12 possible duplicates')).toBeInTheDocument();
     expect(screen.queryByText('Row 11')).toBeNull();
+    expect(loadDuplicateReview).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('button', { name: 'Show more' }));
     expect(await screen.findByText('Row 11')).toBeInTheDocument();
+    expect(loadDuplicateReview).toHaveBeenLastCalledWith(many.map((m) => m.id), 1, 10);
+    expect(screen.queryByRole('button', { name: 'Show more' })).toBeNull();
   });
 });

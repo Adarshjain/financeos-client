@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import type { DuplicateReviewItem, DuplicateReviewTransaction } from '@/lib/api/types';
+import type { DuplicateReviewTransaction } from '@/lib/api/types';
 import { formatDate, formatMoney } from '@/lib/format';
 
-import { allPairsFound, duplicatesHeading, duplicateSideDetail, duplicateSideLine, pairsForSelection } from './duplicatesModel';
+import { duplicatesHeading, duplicateSideDetail, duplicateSideLine } from './duplicatesModel';
 
 const tx = (over: Partial<DuplicateReviewTransaction> = {}): DuplicateReviewTransaction => ({
   id: 't1',
@@ -39,20 +39,7 @@ describe('duplicateSideLine', () => {
   });
 });
 
-describe('pairsForSelection', () => {
-  const items: DuplicateReviewItem[] = [{ transaction: tx({ id: 'a' }), twin: tx({ id: 'b' }) }, { transaction: tx({ id: 'c' }) }];
-  it('keeps only the approved transactions, twin or not', () => {
-    expect(pairsForSelection(items, new Set(['c']))).toEqual([items[1]]);
-    expect(pairsForSelection(items, new Set())).toEqual([]);
-    expect(pairsForSelection([], new Set(['a']))).toEqual([]);
-  });
-});
-
 describe('small helpers', () => {
-  it('knows when every pair was found', () => {
-    expect(allPairsFound(2, 2)).toBe(true);
-    expect(allPairsFound(1, 2)).toBe(false);
-  });
   it('heads the list', () => {
     expect(duplicatesHeading(1)).toBe('Possible duplicate');
     expect(duplicatesHeading(3)).toBe('3 possible duplicates');
