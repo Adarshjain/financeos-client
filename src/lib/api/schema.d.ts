@@ -5642,6 +5642,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/transactions/review/duplicates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["duplicates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/transactions/search": {
         parameters: {
             query?: never;
@@ -7509,6 +7525,21 @@ export interface components {
             /** Format: uuid */
             transactionId: string;
         };
+        DuplicateReviewItem: {
+            transaction: components["schemas"]["DuplicateReviewTransaction"];
+            twin?: components["schemas"]["DuplicateReviewTransaction"];
+        };
+        DuplicateReviewTransaction: {
+            accountName?: string | null;
+            amount?: number | null;
+            /** Format: date */
+            date: string;
+            description?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string|null} */
+            source?: "gmail_transaction_alert" | "gmail_statement" | "manual" | "file_upload" | "sms_alert" | null;
+        };
         EarlierCardRequest: {
             /** Format: date */
             closedOn?: string | null;
@@ -9026,9 +9057,26 @@ export interface components {
             /** Format: uuid */
             transactionId?: string | null;
         };
+        LoanCloseEvidence: {
+            /** Format: int32 */
+            daysOverdue: number;
+            lastPaymentAmount?: number | null;
+            /** Format: date */
+            lastPaymentDate?: string | null;
+            /** Format: date */
+            oldestUnpaidDueDate: string;
+            /** Format: int32 */
+            oldestUnpaidSeq: number;
+            outstandingPrincipal: number;
+            /** Format: int32 */
+            settledInstallments: number;
+            /** Format: int32 */
+            totalInstallments: number;
+        };
         LoanDetailResponse: {
             askClosed: boolean;
             charges: components["schemas"]["LoanChargeResponse"][];
+            closeEvidence?: components["schemas"]["LoanCloseEvidence"];
             events: components["schemas"]["LoanEventResponse"][];
             loan: components["schemas"]["LoanResponse"];
         };
@@ -9984,6 +10032,24 @@ export interface components {
         };
         PageDividendResponse: {
             content: components["schemas"]["DividendResponse"][];
+            empty: boolean;
+            first: boolean;
+            last: boolean;
+            /** Format: int32 */
+            number: number;
+            /** Format: int32 */
+            numberOfElements: number;
+            pageable: components["schemas"]["PageableObject"];
+            /** Format: int32 */
+            size: number;
+            sort: components["schemas"]["SortObject"][];
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
+        PageDuplicateReviewItem: {
+            content: components["schemas"]["DuplicateReviewItem"][];
             empty: boolean;
             first: boolean;
             last: boolean;
@@ -26069,6 +26135,42 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["MergeTransactionsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    duplicates: {
+        parameters: {
+            query?: {
+                /** @description Zero-based page index (0..N) */
+                page?: number;
+                /** @description The size of the page to be returned */
+                size?: number;
+                /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
+                sort?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDuplicateReviewItem"];
                 };
             };
             /** @description Error response */
