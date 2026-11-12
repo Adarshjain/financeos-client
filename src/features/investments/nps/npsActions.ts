@@ -121,3 +121,45 @@ export const unlockNpsGmailStatements = action('nps.unlockNpsGmailStatements', c
     return { opened: data?.opened ?? 0, stillLocked: data?.stillLocked ?? 0 };
   },
 ));
+
+/** Links a bank payment to an NPS contribution the user confirms. */
+export const linkNpsContribution = action('nps.linkNpsContribution', createDomainAction(
+  { fallbackError: "Couldn't link the payment. Try again." },
+  async (npsEntryId: string, transactionId: string): Promise<void> => {
+    await serverApi.POST('/api/v1/nps/entries/{id}/transaction', { ...idPath(npsEntryId), body: { transactionId } });
+  },
+));
+
+/** "None of these": the server stops pairing each of these payments with this contribution. */
+export const dismissNpsLinks = action('nps.dismissNpsLinks', createDomainAction(
+  { fallbackError: "Couldn't update this suggestion. Try again." },
+  async (npsEntryId: string, transactionIds: string[]): Promise<void> => {
+    for (const transactionId of transactionIds) {
+      await serverApi.POST('/api/v1/nps/entries/{id}/suggestion/dismiss', { ...idPath(npsEntryId), body: { transactionId } });
+    }
+  },
+));
+
+/** Records a bank debit as an NPS contribution to the chosen account and tier. */
+export const recordNpsPayment = action('nps.recordNpsPayment', createDomainAction(
+  { fallbackError: "Couldn't record the contribution. Try again." },
+  async (transactionId: string, accountId: string, tier: 'I' | 'II'): Promise<void> => {
+    await serverApi.POST('/api/v1/nps/transactions/{txnId}/record', { params: { path: { txnId: transactionId } }, body: { accountId, tier } });
+  },
+));
+
+/** "Not NPS": the debit stops being offered as a contribution to record. */
+export const markNpsPaymentNotNps = action('nps.markNpsPaymentNotNps', createDomainAction(
+  { fallbackError: "Couldn't update this payment. Try again." },
+  async (transactionId: string): Promise<void> => {
+    await serverApi.POST('/api/v1/nps/transactions/{txnId}/not-nps', { params: { path: { txnId: transactionId } } });
+  },
+));
+
+/** "Not NPS" on the "Looks like you invest in NPS" offer: it stops being offered. */
+export const markNpsSetupNotNps = action('nps.markNpsSetupNotNps', createDomainAction(
+  { fallbackError: "Couldn't update this. Try again." },
+  async (): Promise<void> => {
+    await serverApi.POST('/api/v1/nps/setup/not-nps');
+  },
+));

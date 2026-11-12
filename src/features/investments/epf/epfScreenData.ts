@@ -17,7 +17,7 @@ import {
   passbookSubtitle,
 } from './epfModel';
 import type { EpfScreenProps } from './EpfScreen';
-import { fetchEpfEmployers, fetchEpfEntries, fetchEpfFys, fetchEpfSummary } from './epfServerApi';
+import { fetchEpfEmployers, fetchEpfEntries, fetchEpfFys, fetchEpfReview, fetchEpfSummary } from './epfServerApi';
 
 /** What the EPF view shows for the address's FY, employer and page. A page past the end redirects to the last one. */
 export async function loadEpfScreen(state: EpfUrlState): Promise<Loaded<EpfScreenProps>> {
@@ -36,7 +36,7 @@ export async function loadEpfScreen(state: EpfUrlState): Promise<Loaded<EpfScree
   const earlyFys = employerKnown ? early(orNull(fetchEpfFys(undefined))) : null;
   const earlyEntries = employerKnown && fyKnown ? early(entriesFor(undefined, effectiveFy(state, []))) : null;
 
-  const [summary, employers] = await Promise.all([loaded(fetchEpfSummary()), loaded(fetchEpfEmployers())]);
+  const [summary, employers, review] = await Promise.all([loaded(fetchEpfSummary()), loaded(fetchEpfEmployers()), orNull(fetchEpfReview())]);
   if (!summary.ok) return summary;
   if (!employers.ok) return employers;
   const employer = effectiveEmployer(state, employers.data);
@@ -61,6 +61,7 @@ export async function loadEpfScreen(state: EpfUrlState): Promise<Loaded<EpfScree
     ok: true,
     data: {
       state,
+      review,
       summary: summary.data,
       figures: epfFigures(summary.data),
       entries: page.content,

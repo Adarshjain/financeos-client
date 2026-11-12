@@ -5,6 +5,7 @@ import React from 'react';
 import { Card } from '@/components/ds/Card/Card';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { GRID_GAP } from '@/components/ds/gridGap';
+import type { EpfReviewResponse } from '@/lib/api/types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
 import { loadEpfAddDialog } from '../lazyDialogs';
@@ -20,6 +21,7 @@ import {
   type EpfUrlState,
 } from './epfModel';
 import { EPF_UPLOAD_HREF, EpfPassbookCard } from './EpfPassbookCard';
+import { EpfReview } from './EpfReview';
 import { EpfEmployersCard, EpfPensionCard } from './EpfSideCards';
 
 const loadEpfEntryDialog = () => import('./EpfEntryDialog').then((m) => m.EpfEntryDialog);
@@ -27,6 +29,8 @@ const loadEpfEmployerDialog = () => import('./EpfEmployerDialog').then((m) => m.
 
 export interface EpfScreenProps {
   state: EpfUrlState;
+  /** What the app left to the user to decide; null when it could not be read. */
+  review?: EpfReviewResponse | null;
   summary: EpfSummary;
   figures: EpfFigures;
   /** The page's entries, and the same rows ready to draw. */
@@ -49,6 +53,7 @@ export interface EpfScreenProps {
 /** The EPF tab: the hero, the passbook, the employers and the pension card, and the dialogs they open. */
 export function EpfScreen({
   state,
+  review,
   summary,
   figures,
   entries,
@@ -116,6 +121,7 @@ export function EpfScreen({
     <>
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <EpfHero figures={figures} />
+        <EpfReview review={review} />
         <div className={`grid grid-cols-1 desk:grid-cols-3 items-start ${GRID_GAP}`}>
           <div className="desk:col-span-2 min-w-0">
             <EpfPassbookCard

@@ -7,12 +7,13 @@ vi.mock('next/navigation', () => ({
 }));
 vi.mock('@/lib/auth', () => ({ redirectToSignIn: vi.fn() }));
 
-const api = vi.hoisted(() => ({ summary: vi.fn(), employers: vi.fn(), fys: vi.fn(), entries: vi.fn() }));
+const api = vi.hoisted(() => ({ summary: vi.fn(), employers: vi.fn(), fys: vi.fn(), entries: vi.fn(), review: vi.fn() }));
 vi.mock('./epfServerApi', () => ({
   fetchEpfSummary: () => api.summary(),
   fetchEpfEmployers: () => api.employers(),
   fetchEpfFys: (id?: string) => api.fys(id),
   fetchEpfEntries: (p: unknown) => api.entries(p),
+  fetchEpfReview: () => api.review(),
 }));
 
 import { ApiError } from '@/lib/api/client';
@@ -29,9 +30,19 @@ beforeEach(() => {
   api.employers.mockResolvedValue([employer('e1')]);
   api.fys.mockResolvedValue([2026, 2025]);
   api.entries.mockResolvedValue({ content: [], totalElements: 0, totalPages: 0 });
+  api.review.mockResolvedValue({ matches: [] });
 });
 
 describe('loadEpfScreen', () => {
+  it('carries the review with the page, and still loads when the review cannot be read', async () => {
+    api.review.mockResolvedValue({ matches: [{ why: 'NEEDS_CONFIRMATION' }] });
+    const withReview = await loadEpfScreen(state());
+    expect(withReview.ok && withReview.data.review).toEqual({ matches: [{ why: 'NEEDS_CONFIRMATION' }] });
+    api.review.mockRejectedValue(new Error('down'));
+    const without = await loadEpfScreen(state());
+    expect(without.ok && without.data.review).toBeNull();
+  });
+
   it('starts everything an all-employers address knows before any of it resolves', async () => {
     const never = new Promise(() => undefined);
     api.summary.mockReturnValue(never);

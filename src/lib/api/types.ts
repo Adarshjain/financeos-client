@@ -246,3 +246,13 @@ export type NotificationFeedSummary = Schemas['AppNotificationSummaryResponse'];
 
 // Statement files waiting for an account
 export type HeldUpload = Schemas['HeldUploadResponse'];
+
+// NPS and EPF decisions the app left to the user (the "Needs your review" cards)
+export type NpsReviewResponse = Schemas['NpsReviewResponse'];
+export type NpsReviewMatch = Schemas['NpsReviewMatch'];
+export type NpsReviewUnrecorded = Schemas['NpsReviewUnrecorded'];
+export type NpsReviewSetup = Schemas['NpsReviewSetup'];
+export type NpsReviewPayment = Schemas['NpsReviewPayment'];
+export type NpsReviewAccount = Schemas['NpsReviewAccount'];
+export type EpfReviewResponse = Schemas['EpfReviewResponse'];
+export type EpfReviewMatch = Schemas['EpfReviewMatch'];

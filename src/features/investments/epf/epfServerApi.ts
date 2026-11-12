@@ -1,3 +1,5 @@
+import { serverApi } from '@/lib/api/server';
+import type { EpfReviewResponse } from '@/lib/api/types';
 import { epfApi } from '@/lib/apiClient';
 
 import type { EpfEmployer, EpfEntry, EpfSummary } from './epfModel';
@@ -26,4 +28,10 @@ export interface EpfEntriesPage {
 export async function fetchEpfEntries(params: { employerId?: string; fy?: number; page: number; size: number }): Promise<EpfEntriesPage> {
   const { content, totalElements, totalPages } = await epfApi.entries(params);
   return { content, totalElements, totalPages };
+}
+
+/** The bank credits the app could not link to a withdrawal by itself. */
+export async function fetchEpfReview(): Promise<EpfReviewResponse> {
+  const { data } = await serverApi.GET('/api/v1/epf/review');
+  return data as EpfReviewResponse;
 }

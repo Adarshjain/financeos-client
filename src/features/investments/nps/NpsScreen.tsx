@@ -5,6 +5,7 @@ import React from 'react';
 import { Card } from '@/components/ds/Card/Card';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { GRID_GAP } from '@/components/ds/gridGap';
+import type { NpsReviewResponse } from '@/lib/api/types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 
 import { loadNpsAccountDialog } from '../lazyDialogs';
@@ -14,6 +15,7 @@ import { NpsBanners, NpsHero } from './NpsFigures';
 import { NpsGmailBanners } from './NpsGmailBanners';
 import { NPS_UPLOAD_HREF } from './npsImportModel';
 import type { NpsAccount, NpsAccountCard, NpsAllocationLine, NpsEntry, NpsEntryRow, NpsFigures, NpsFyLine, NpsSchemeRow, NpsSummary, NpsTier, NpsTierGroup, NpsUrlState } from './npsModel';
+import { NpsReview } from './NpsReview';
 import { NpsSchemesCard } from './NpsSchemesCard';
 import { NpsAccountCardView, NpsAllocationCard, NpsThisFyCard } from './NpsSideCards';
 
@@ -23,6 +25,8 @@ const loadNpsSchemeSheet = () => import('./NpsSchemeSheet').then((m) => m.NpsSch
 
 export interface NpsScreenProps {
   state: NpsUrlState;
+  /** What the app left to the user to decide; null when it could not be read. */
+  review?: NpsReviewResponse | null;
   /** The FY the ledger is showing (undefined = all years). */
   ledgerFy: number | undefined;
   summary: NpsSummary;
@@ -44,7 +48,7 @@ export interface NpsScreenProps {
 
 /** The NPS tab: the hero, schemes by tier, the ledger, the account, this FY and the allocation, and the dialogs they open. */
 export function NpsScreen(props: NpsScreenProps) {
-  const { state, ledgerFy, summary, account, figures, groups, card, fyLines, allocation, rows, totalElements, totalPages, accountOptions, accountValue } = props;
+  const { state, review, ledgerFy, summary, account, figures, groups, card, fyLines, allocation, rows, totalElements, totalPages, accountOptions, accountValue } = props;
   const [accountDialog, setAccountDialog] = React.useState<'new' | 'edit' | null>(null);
   const [recording, setRecording] = React.useState(false);
   const [scheme, setScheme] = React.useState<NpsSchemeRow | null>(null);
@@ -71,6 +75,7 @@ export function NpsScreen(props: NpsScreenProps) {
     return (
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <NpsGmailBanners locked={summary.lockedGmail} failed={summary.failedGmail} />
+        <NpsReview review={review} />
         {summary.pendingGmail.length > 0 ? (
           <NpsDetectedAccounts detections={summary.pendingGmail}>
             <Card.Row>{emptyState}</Card.Row>
@@ -88,6 +93,7 @@ export function NpsScreen(props: NpsScreenProps) {
       <div className="flex flex-col gap-space-8 desk:gap-space-16">
         <NpsHero figures={figures} />
         <NpsGmailBanners locked={summary.lockedGmail} failed={summary.failedGmail} />
+        <NpsReview review={review} />
         {summary.pendingGmail.length > 0 ? <NpsDetectedAccounts detections={summary.pendingGmail} /> : null}
         <NpsBanners flags={summary.flags} uploadHref={NPS_UPLOAD_HREF} statementEnd={account.latestStatementEnd} frozenAsOf={account.tier1Status === 'FROZEN' ? (account.tier1StatusAsOf ?? null) : undefined} />
         <div className={`grid grid-cols-1 desk:grid-cols-3 items-start ${GRID_GAP}`}>

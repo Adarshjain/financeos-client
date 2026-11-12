@@ -1,4 +1,5 @@
 import { serverApi } from '@/lib/api/server';
+import type { NpsReviewResponse } from '@/lib/api/types';
 
 import type { NpsStatement } from './npsImportModel';
 import type { NpsContributor, NpsEntry, NpsEntryType, NpsSchemeDetail, NpsSummary, NpsTier } from './npsModel';
@@ -31,4 +32,10 @@ export async function fetchNpsSchemeDetail(code: string): Promise<NpsSchemeDetai
 export async function fetchNpsStatements(accountId?: string): Promise<NpsStatement[]> {
   const { data } = await serverApi.GET('/api/v1/nps/import/statements', { params: { query: { accountId } } });
   return (data ?? []) as NpsStatement[];
+}
+
+/** What the app left to the user on the NPS page: pairings, unrecorded payments, and the setup offer. */
+export async function fetchNpsReview(): Promise<NpsReviewResponse> {
+  const { data } = await serverApi.GET('/api/v1/nps/review');
+  return data as NpsReviewResponse;
 }

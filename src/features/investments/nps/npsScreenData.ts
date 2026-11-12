@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { type Loaded, loaded } from '@/features/shell/loadHelpers';
+import { type Loaded, loaded, orNull } from '@/features/shell/loadHelpers';
 import { clampPage } from '@/features/shell/pagination';
 import { todayInAppZone } from '@/lib/date-range';
 
@@ -20,17 +20,20 @@ import {
   thisFyLines,
 } from './npsModel';
 import type { NpsScreenProps } from './NpsScreen';
-import { fetchNpsEntries, fetchNpsSummary } from './npsServerApi';
+import { fetchNpsEntries, fetchNpsReview, fetchNpsSummary } from './npsServerApi';
 
 /** What the NPS view shows for the address's account, filters and page. A page past the end redirects to the last one. */
 export async function loadNpsScreen(state: NpsUrlState): Promise<Loaded<NpsScreenProps>> {
+  // The review is optional: the page still shows when it can't be read. Asked for together with the summary.
+  const reviewRequest = orNull(fetchNpsReview());
   const summary = await loaded(fetchNpsSummary());
   if (!summary.ok) return summary;
   const data = summary.data;
+  const review = await reviewRequest;
   const account = effectiveAccount(state, data.accounts);
   // No account yet: the empty state needs nothing else.
   if (!account) {
-    return { ok: true, data: { state, ledgerFy: undefined, summary: data, account: null, figures: npsFigures(data), groups: [], card: null, fyLines: [], allocation: [], entries: [], rows: [], totalElements: 0, totalPages: 0, accountOptions: [], accountValue: '' } };
+    return { ok: true, data: { state, review, ledgerFy: undefined, summary: data, account: null, figures: npsFigures(data), groups: [], card: null, fyLines: [], allocation: [], entries: [], rows: [], totalElements: 0, totalPages: 0, accountOptions: [], accountValue: '' } };
   }
   // No period chosen: the FY of the newest entry in this account and tier, so imported old statements show.
   let newestDate: string | null = null;
@@ -61,6 +64,7 @@ export async function loadNpsScreen(state: NpsUrlState): Promise<Loaded<NpsScree
     ok: true,
     data: {
       state,
+      review,
       ledgerFy,
       summary: data,
       account,
