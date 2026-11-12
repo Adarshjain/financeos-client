@@ -15,7 +15,7 @@ const redirect = vi.hoisted(() =>
 );
 vi.mock('next/navigation', () => ({ unstable_rethrow: () => undefined, redirect, useRouter: () => router, usePathname: () => '/investments/corporate-actions' }));
 
-const server = vi.hoisted(() => ({ fetchCorporateActionsPage: vi.fn(), fetchCorporateActionPreview: vi.fn() }));
+const server = vi.hoisted(() => ({ fetchCorporateActionsPage: vi.fn(), fetchCorporateActionReview: vi.fn(), fetchCorporateActionPreview: vi.fn() }));
 vi.mock('@/features/investments/corporate-actions/corporateActionsServerApi', () => server);
 vi.mock('@/features/investments/corporate-actions/corporateActionActions', () => ({ loadCorporateActionPreview: vi.fn().mockResolvedValue({ success: true, data: { holdings: [] } }) }));
 vi.mock('@/features/investments/instruments/useCatalogSearch', () => ({
@@ -36,9 +36,21 @@ async function renderPage(query: Record<string, string> = {}) {
 beforeEach(() => {
   vi.clearAllMocks();
   server.fetchCorporateActionsPage.mockResolvedValue(pageOf([bonus, split]));
+  server.fetchCorporateActionReview.mockResolvedValue({ needsReview: [], appliedAutomatically: [], notTrading: [] });
 });
 
 describe('/investments/corporate-actions', () => {
+  it('shows the detected actions above the list', async () => {
+    server.fetchCorporateActionReview.mockResolvedValue({
+      needsReview: [],
+      appliedAutomatically: [],
+      notTrading: [{ instrument: { id: 'i-x', name: 'Delta Ltd', symbol: 'DEL', exchange: 'NSE' }, sharesHeld: 7, lastPrice: null, lastPriceDate: null, markedAt: null }],
+    });
+    await renderPage();
+    expect(screen.getByText('Needs your review (1)')).toBeInTheDocument();
+    expect(screen.getByText('Delta Ltd no longer trades')).toBeInTheDocument();
+  });
+
   it('asks the server for the page the address names', async () => {
     server.fetchCorporateActionsPage.mockResolvedValue(pageOf([bonus], { page: 1, size: 50, totalElements: 80, totalPages: 2 }));
     await renderPage({ q: 'infy', type: 'bonus', sort: 'name', page: '2', size: '50' });

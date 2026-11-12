@@ -1,4 +1,5 @@
-import type { CreateCorporateActionRequest } from '@/lib/api/types';
+import { serverApi } from '@/lib/api/server';
+import type { CorporateActionReviewResponse, CreateCorporateActionRequest } from '@/lib/api/types';
 import { corporateActionsApi } from '@/lib/apiClient';
 import type { CorporateActionItem, CorporateActionPageQuery, CorporateActionPreview, ItemsPage } from '@/lib/investments.types';
 
@@ -12,4 +13,10 @@ export function fetchCorporateActionsPage(query: CorporateActionPageQuery): Prom
 /** What recording the action would do to the holdings of `instrumentId`, without saving it. */
 export function fetchCorporateActionPreview(instrumentId: string, body: CreateCorporateActionRequest & { excludeActionId?: string }): Promise<CorporateActionPreview> {
   return corporateActionsApi.preview(instrumentId, body);
+}
+
+/** The detected corporate actions: those needing a decision, those applied automatically, and stocks that stopped trading. */
+export async function fetchCorporateActionReview(): Promise<CorporateActionReviewResponse> {
+  const { data } = await serverApi.GET('/api/v1/corporate-action-suggestions');
+  return data!;
 }
