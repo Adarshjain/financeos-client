@@ -163,6 +163,15 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
+      # Any Launchpad PPA on the runner image is removed first: the browser libraries never come from one,
+      # and when Launchpad is unreachable the package refresh hangs on it and this job fails.
+      - name: Drop Launchpad package sources
+        run: |
+          for f in $(sudo grep -rlE 'launchpad(content)?\.net' /etc/apt/sources.list.d 2>/dev/null); do
+            echo "::notice::removed apt source $f"
+            sudo rm -f "$f"
+          done
+
       - name: Install Playwright Chromium with system dependencies
         run: npx playwright install --with-deps chromium
 
