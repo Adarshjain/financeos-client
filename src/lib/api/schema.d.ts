@@ -11,7 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_4"];
+        get: operations["list_5"];
         put?: never;
         post?: never;
         delete?: never;
@@ -61,7 +61,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["notMine"];
+        post: operations["notMine_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -93,7 +93,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["undo_1"];
+        post: operations["undo_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -334,7 +334,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete: operations["undo_2"];
+        delete: operations["undo_3"];
         options?: never;
         head?: never;
         patch?: never;
@@ -811,7 +811,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["summary_3"];
+        get: operations["summary_4"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1005,7 +1005,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["login"];
+        post: operations["login_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1227,7 +1227,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_3"];
+        get: operations["list_4"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2017,7 +2017,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["summary_2"];
+        get: operations["summary_3"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2321,7 +2321,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_2"];
+        get: operations["list_3"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2337,7 +2337,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_1"];
+        get: operations["list_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2353,7 +2353,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["summary_1"];
+        get: operations["summary_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3265,7 +3265,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list"];
+        get: operations["list_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4970,6 +4970,390 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sms/device/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["config"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/device/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["messages"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/device/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["revoke_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/device/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["summary"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["devices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/devices/{id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["pause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/devices/{id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/devices/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["revoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["lines"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/lines/not-mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["notMineAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/lines/seen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["seen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/lines/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["undoAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/lines/{id}/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["account"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/lines/{id}/not-mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["notMine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/lines/{id}/off": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["off"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/lines/{id}/on": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["on"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/lines/{id}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["undo_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/login/google": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["loginWithGoogle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/messages/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/messages/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/replay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["replay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sms/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["report"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/statements/{statementId}": {
         parameters: {
             query?: never;
@@ -5297,7 +5681,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["summary"];
+        get: operations["summary_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5416,9 +5800,24 @@ export interface components {
             kind: "CUSTOMER_ID" | "ACCOUNT_NUMBER" | "CRN" | "OTHER";
             value: string;
         };
+        AccountLines: {
+            /** Format: uuid */
+            accountId: string;
+            last60Days: components["schemas"]["Last60Days"];
+            /** Format: date */
+            lastTransactionDate: string;
+            lines: components["schemas"]["LineView"][];
+            name: string;
+            /** @enum {string} */
+            type: "bank_account" | "credit_card" | "broker" | "generic";
+        };
         AccountPaymentsFromResponse: {
             cardBills: components["schemas"]["CardBill"][];
             emis: components["schemas"]["Emi"][];
+        };
+        AccountRequest: {
+            /** Format: uuid */
+            accountId: string;
         };
         AccountResponse: components["schemas"]["BankAccountResponse"] | components["schemas"]["CreditCardAccountResponse"] | components["schemas"]["BrokerAccountResponse"] | components["schemas"]["GenericAccountResponse"];
         AccountSuggestionBank: {
@@ -6284,6 +6683,13 @@ export interface components {
             linked: components["schemas"]["DividendResponse"][];
             skipped: components["schemas"]["SkippedDividendMatch"][];
         };
+        ConfirmRequest: {
+            amount?: number;
+            counterparty?: string;
+            direction?: string;
+            /** Format: date */
+            txnDate?: string;
+        };
         ConversationDetail: {
             /** Format: date-time */
             createdAt: string;
@@ -6806,6 +7212,11 @@ export interface components {
             reportId?: string | null;
             title?: string | null;
         };
+        Data: {
+            drop: components["schemas"]["Drop"];
+            endingPatterns: components["schemas"]["EndingPattern"][];
+            senders: components["schemas"]["Sender"][];
+        };
         DataSourcesCountsResponse: {
             /** Format: int32 */
             connections: number;
@@ -6840,6 +7251,26 @@ export interface components {
             name: string;
             quantity: number;
             symbol: string;
+        };
+        DeviceConfigResponse: {
+            catalogue: components["schemas"]["Data"];
+            lines: components["schemas"]["OnLine"][];
+            paused: boolean;
+            zone: string;
+        };
+        DeviceView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            lastSeenAt: string;
+            /** Format: date-time */
+            lastSummaryAt: string;
+            name: string;
+            /** Format: date-time */
+            pairedAt: string;
+            paused: boolean;
+            /** Format: date-time */
+            revokedAt: string;
         };
         DiagnosticsLookupResponse: {
             errorId?: string | null;
@@ -6977,6 +7408,10 @@ export interface components {
         DraftResultRequest: {
             draftResult?: unknown;
         };
+        Drop: {
+            otpPatterns: string[];
+            promoHeaderSuffixes: string[];
+        };
         DuplicateDetail: {
             amount: number;
             date: string;
@@ -7009,6 +7444,10 @@ export interface components {
             name: string;
             /** Format: date */
             nextDueDate?: string | null;
+        };
+        EndingPattern: {
+            key: string;
+            pattern: string;
         };
         EnqueueResponse: {
             /** Format: uuid */
@@ -7353,6 +7792,10 @@ export interface components {
             /** Format: int64 */
             failedJobs: number;
         };
+        Family: {
+            key: string;
+            pattern: string;
+        };
         FieldDef: {
             aggregations: ("sum" | "avg" | "count" | "min" | "max")[];
             allowedInReports: ("KPI" | "CHART" | "TABLE")[];
@@ -7505,6 +7948,7 @@ export interface components {
             /** @enum {string} */
             financialPosition?: "asset" | "liability";
             name: string;
+            openingBalance?: unknown;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -7530,6 +7974,7 @@ export interface components {
             /** Format: date */
             lastTransactionDate?: string | null;
             name: string;
+            openingBalance?: number | null;
             reconciliationGap?: number | null;
             /** Format: uuid */
             replacesAccountId?: string | null;
@@ -7642,6 +8087,11 @@ export interface components {
         };
         GoogleAuthStartResponse: {
             authorizationUrl: string;
+        };
+        GoogleLoginRequest: {
+            deviceName: string;
+            idToken: string;
+            installId?: string;
         };
         Group: {
             /** @enum {string} */
@@ -7980,6 +8430,15 @@ export interface components {
             /** Format: int32 */
             needsLook: number;
         };
+        IncomingMessage: {
+            body?: string;
+            fingerprint?: string;
+            /** Format: date-time */
+            receivedAt?: string;
+            sender?: string;
+            /** Format: int32 */
+            simSlot?: number;
+        };
         InstallmentDto: {
             closingBalance: number;
             /** Format: date */
@@ -8229,6 +8688,14 @@ export interface components {
             value?: number | null;
             winnerOnly: boolean;
         };
+        Last60Days: {
+            /** Format: int64 */
+            emailAlert: number;
+            /** Format: int64 */
+            manual: number;
+            /** Format: int64 */
+            statement: number;
+        };
         LastAlert: {
             amount?: number | null;
             /** Format: date */
@@ -8323,6 +8790,37 @@ export interface components {
             /** Format: uuid */
             id: string;
             signedAmount?: number | null;
+        };
+        LineView: {
+            /** Format: uuid */
+            accountId: string;
+            ending: string;
+            family: string;
+            /** Format: date-time */
+            firstMsgAt: string;
+            /** Format: uuid */
+            id: string;
+            isNew: boolean;
+            kind: string;
+            /** Format: date-time */
+            lastMsgAt: string;
+            /** Format: int32 */
+            msgCount: number;
+            provider: string;
+            sender: string;
+            /** @enum {string} */
+            state: "OFF" | "ON" | "NOT_MINE";
+            /** Format: uuid */
+            suggestedAccountId: string;
+            /** Format: date */
+            syncFrom: string;
+            /** Format: int32 */
+            txnCount: number;
+        };
+        LinesResponse: {
+            accounts: components["schemas"]["AccountLines"][];
+            notMine: components["schemas"]["LineView"][];
+            unassigned: components["schemas"]["LineView"][];
         };
         LinkDividendTransactionRequest: {
             /** Format: uuid */
@@ -8537,6 +9035,9 @@ export interface components {
             email: string;
             password: string;
         };
+        LoginResponse: {
+            token: string;
+        };
         Lot: {
             /** Format: date */
             buyDate: string;
@@ -8600,6 +9101,20 @@ export interface components {
             /** @enum {string|null} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA" | null;
         };
+        MessagePage: {
+            items: components["schemas"]["SmsMessageView"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+            /** Format: int64 */
+            total: number;
+        };
+        MessageResult: {
+            fingerprint: string;
+            reason: string;
+            status: string;
+        };
         MessageView: {
             answer: unknown;
             /** Format: date-time */
@@ -8609,6 +9124,12 @@ export interface components {
             id: string;
             role: string;
             text: string;
+        };
+        MessagesRequest: {
+            messages: components["schemas"]["IncomingMessage"][];
+        };
+        MessagesResponse: {
+            results: components["schemas"]["MessageResult"][];
         };
         MilestoneStatus: {
             achieved: boolean;
@@ -8698,6 +9219,9 @@ export interface components {
             threshold: number;
             /** Format: date */
             windowEnd: string;
+        };
+        NotMineRequest: {
+            ids: string[];
         };
         NotOnStatement: {
             /** Format: date */
@@ -9187,6 +9711,21 @@ export interface components {
         };
         ObligationsResponse: {
             items: components["schemas"]["ObligationItemDto"][];
+        };
+        OnLine: {
+            ending: string;
+            family: string;
+            /** Format: uuid */
+            id: string;
+            sender: string;
+            /** Format: date */
+            syncFrom: string;
+        };
+        OnRequest: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: date */
+            syncFrom?: string;
         };
         OperatorCatalog: {
             boolean: string[];
@@ -10011,6 +10550,43 @@ export interface components {
             issuedOn?: string;
             newLast4: string;
         };
+        ReplayResponse: {
+            outcomes: {
+                [key: string]: number;
+            };
+            /** Format: int32 */
+            replayed: number;
+        };
+        ReportAccount: {
+            /** Format: uuid */
+            accountId: string;
+            alerts: components["schemas"]["ReportAlert"][];
+            /** Format: int64 */
+            attached: number;
+            /** Format: int64 */
+            couldNotRead: number;
+            /** Format: int64 */
+            created: number;
+            /** Format: int64 */
+            duplicates: number;
+            /** Format: date-time */
+            firstMessageAt: string;
+            /** Format: date-time */
+            lastMessageAt: string;
+            name: string;
+            /** Format: int64 */
+            needsConfirm: number;
+            /** Format: int64 */
+            wouldAttach: number;
+            /** Format: int64 */
+            wouldCreate: number;
+        };
+        ReportAlert: {
+            /** Format: date */
+            date: string;
+            kind: string;
+            message: string;
+        };
         ReportCatalogView: {
             datasources: components["schemas"]["SingleDatasourceView"][];
             operators: components["schemas"]["OperatorCatalog"];
@@ -10065,6 +10641,28 @@ export interface components {
             type: "KPI" | "CHART" | "TABLE";
             /** Format: date-time */
             updatedAt: string;
+        };
+        ReportTotals: {
+            /** Format: int64 */
+            attached: number;
+            /** Format: int64 */
+            couldNotRead: number;
+            /** Format: int64 */
+            created: number;
+            /** Format: int64 */
+            duplicates: number;
+            /** Format: int64 */
+            ignored: number;
+            /** Format: int64 */
+            needsConfirm: number;
+            /** Format: int64 */
+            read: number;
+            /** Format: int64 */
+            stored: number;
+            /** Format: int64 */
+            wouldAttach: number;
+            /** Format: int64 */
+            wouldCreate: number;
         };
         RequestSummary: {
             /** Format: date-time */
@@ -10726,6 +11324,14 @@ export interface components {
             stcgTax?: number | null;
             tax?: number | null;
         };
+        Sender: {
+            bank: string;
+            families: components["schemas"]["Family"][];
+            header: string;
+            kind: string;
+            numberless: boolean;
+            provider: string;
+        };
         SetCategoryRequest: {
             categoryKey?: string | null;
             restore?: components["schemas"]["Restore"];
@@ -10808,10 +11414,63 @@ export interface components {
             label: string;
             name: string;
         };
+        Skipped: {
+            /** Format: int32 */
+            otp?: number;
+            /** Format: int32 */
+            personal?: number;
+            /** Format: int32 */
+            promo?: number;
+            /** Format: int32 */
+            unknownSender?: number;
+        };
         SkippedDividendMatch: {
             /** Format: uuid */
             dividendId: string;
             reason: string;
+        };
+        SmsLoginRequest: {
+            deviceName: string;
+            email: string;
+            installId?: string;
+            password: string;
+        };
+        SmsMessageView: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            amount: number;
+            balanceAfter: number;
+            body: string;
+            counterparty: string;
+            direction: string;
+            /** Format: uuid */
+            id: string;
+            kind: string;
+            outcome: string;
+            provider: string;
+            readStatus: string;
+            /** Format: date-time */
+            receivedAt: string;
+            refNo: string;
+            sender: string;
+            /** Format: uuid */
+            transactionId: string;
+            /** Format: date */
+            txnDate: string;
+        };
+        SmsReportResponse: {
+            accounts: components["schemas"]["ReportAccount"][];
+            postingEnabled: boolean;
+            totals: components["schemas"]["ReportTotals"];
+        };
+        SmsSummaryResponse: {
+            /** Format: int32 */
+            lines: number;
+            /** Format: int32 */
+            newLines: number;
+            /** Format: int32 */
+            skippedLines: number;
         };
         SortObject: {
             ascending: boolean;
@@ -11030,6 +11689,23 @@ export interface components {
             /** Format: int32 */
             unmatched: number;
         };
+        SummaryLine: {
+            ending?: string;
+            family?: string;
+            /** Format: date-time */
+            firstMsgAt?: string;
+            /** Format: date-time */
+            lastMsgAt?: string;
+            /** Format: int32 */
+            msgCount?: number;
+            sender?: string;
+            /** Format: int32 */
+            txnCount?: number;
+        };
+        SummaryRequest: {
+            lines: components["schemas"]["SummaryLine"][];
+            skipped?: components["schemas"]["Skipped"];
+        };
         SummaryResponse: {
             absoluteReturnPercent: number;
             byBroker: components["schemas"]["BrokerSummaryDto"][];
@@ -11216,7 +11892,7 @@ export interface components {
             /** Format: date */
             settlementDate?: string | null;
             /** @enum {string} */
-            source: "gmail_transaction_alert" | "gmail_statement" | "manual" | "file_upload";
+            source: "gmail_transaction_alert" | "gmail_statement" | "manual" | "file_upload" | "sms_alert";
             sourcedDescription?: string | null;
             subcategory?: components["schemas"]["SubcategoryRef"];
             suggestion?: components["schemas"]["TransactionSuggestion"];
@@ -11287,7 +11963,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            source: "gmail_transaction_alert" | "gmail_statement" | "manual" | "file_upload";
+            source: "gmail_transaction_alert" | "gmail_statement" | "manual" | "file_upload" | "sms_alert";
             sourcedDescription?: string | null;
             /** @enum {string} */
             type: "DEBIT" | "CREDIT";
@@ -11613,7 +12289,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    list_4: {
+    list_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -11708,7 +12384,7 @@ export interface operations {
             };
         };
     };
-    notMine: {
+    notMine_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -11766,7 +12442,7 @@ export interface operations {
             };
         };
     };
-    undo_1: {
+    undo_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -12400,7 +13076,7 @@ export interface operations {
             };
         };
     };
-    undo_2: {
+    undo_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -13488,7 +14164,7 @@ export interface operations {
             };
         };
     };
-    summary_3: {
+    summary_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -13851,7 +14527,7 @@ export interface operations {
             };
         };
     };
-    login: {
+    login_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -14325,7 +15001,7 @@ export interface operations {
             };
         };
     };
-    list_3: {
+    list_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -16351,7 +17027,7 @@ export interface operations {
             };
         };
     };
-    summary_2: {
+    summary_3: {
         parameters: {
             query?: {
                 includeRetryable?: boolean;
@@ -17003,7 +17679,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_3: {
         parameters: {
             query?: {
                 page?: number;
@@ -17036,7 +17712,7 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    list_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -17065,7 +17741,7 @@ export interface operations {
             };
         };
     };
-    summary_1: {
+    summary_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -19547,7 +20223,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    list_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -23701,6 +24377,749 @@ export interface operations {
             };
         };
     };
+    config: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DeviceConfigResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    messages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessagesRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MessagesResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    revoke_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SummaryRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SmsSummaryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    devices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DeviceView"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    pause: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    resume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    lines: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LinesResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    notMineAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotMineRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    seen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    undoAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotMineRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    account: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LineView"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    notMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LineView"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    off: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LineView"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    on: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LineView"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    undo_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LineView"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SmsLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    loginWithGoogle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoogleLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: {
+                status?: string;
+                accountId?: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MessagePage"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SmsMessageView"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SmsMessageView"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    replay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReplayResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    report: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SmsReportResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getStatementById: {
         parameters: {
             query?: never;
@@ -24556,7 +25975,7 @@ export interface operations {
             };
         };
     };
-    summary: {
+    summary_1: {
         parameters: {
             query?: never;
             header?: never;
