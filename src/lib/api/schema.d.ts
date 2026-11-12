@@ -1284,6 +1284,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/corporate-action-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCorporateActionReview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/corporate-action-suggestions/{id}": {
         parameters: {
             query?: never;
@@ -1844,6 +1860,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["previewEpfImportBatch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/epf/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getEpfReview"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4261,6 +4293,22 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["deleteNpsStatement"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/nps/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getNpsReview"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -6750,6 +6798,45 @@ export interface components {
             /** @enum {string} */
             type: "split" | "bonus" | "demerger" | "merger" | "delisted";
         };
+        CorporateActionReviewItemResponse: {
+            avgCostAfter?: number | null;
+            avgCostBefore?: number | null;
+            /** Format: uuid */
+            corporateActionId?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date */
+            exDate: string;
+            exchangeFactor?: number | null;
+            feedFactor?: number | null;
+            /** Format: uuid */
+            id: string;
+            instrument: components["schemas"]["ReviewInstrument"];
+            /** @enum {string} */
+            kind: "split" | "bonus" | "demerger" | "merger" | "other" | "oversold";
+            /** Format: int32 */
+            ratioFrom?: number | null;
+            /** Format: int32 */
+            ratioTo?: number | null;
+            /** @enum {string|null} */
+            reason?: "COMBINED_SAME_DAY" | "NEEDS_DETAILS" | "UNCLEAR_TEXT" | "NO_PRICE_SYMBOL" | "YAHOO_MISSING" | "YAHOO_MISMATCH" | "POSSIBLE_DUPLICATE" | null;
+            /** Format: date-time */
+            resolvedAt?: string | null;
+            /** Format: date */
+            sellDate?: string | null;
+            sharesAfter?: number | null;
+            sharesBefore?: number | null;
+            soldQty?: number | null;
+            source?: string | null;
+            /** @enum {string} */
+            status: "auto_applied" | "pending" | "accepted" | "dismissed" | "undone";
+            subject?: string | null;
+        };
+        CorporateActionReviewResponse: {
+            appliedAutomatically: components["schemas"]["CorporateActionReviewItemResponse"][];
+            needsReview: components["schemas"]["CorporateActionReviewItemResponse"][];
+            notTrading: components["schemas"]["NotTradingStock"][];
+        };
         CorporateActionRowResponse: {
             costAllocationPct?: number | null;
             costPerUnitAfter?: number | null;
@@ -7694,6 +7781,39 @@ export interface components {
             /** Format: int32 */
             fy?: number | null;
             rate?: number | null;
+        };
+        EpfReviewCredit: {
+            accountName: string;
+            amount: number;
+            /** Format: date */
+            date: string;
+            description?: string | null;
+            /** Format: uuid */
+            transactionId: string;
+        };
+        EpfReviewEntry: {
+            /** Format: date */
+            creditedOn: string;
+            description?: string | null;
+            employerName: string;
+            gross: number;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string|null} */
+            kind?: "PARTIAL" | "FINAL_SETTLEMENT" | "PENSION" | null;
+            received: number;
+            tdsAmount?: number | null;
+        };
+        EpfReviewMatch: {
+            credit: components["schemas"]["EpfReviewCredit"];
+            /** Format: int64 */
+            daysApart: number;
+            difference: number;
+            entry: components["schemas"]["EpfReviewEntry"];
+            why: string;
+        };
+        EpfReviewResponse: {
+            matches: components["schemas"]["EpfReviewMatch"][];
         };
         EpfSummaryResponse: {
             balance: number;
@@ -9231,6 +9351,15 @@ export interface components {
             /** Format: uuid */
             statementId: string;
         };
+        NotTradingStock: {
+            instrument: components["schemas"]["ReviewInstrument"];
+            lastPrice?: number | null;
+            /** Format: date */
+            lastPriceDate?: string | null;
+            /** Format: date-time */
+            markedAt?: string | null;
+            sharesHeld: number;
+        };
         NotificationEvaluateResponse: {
             /** Format: int32 */
             evaluated: number;
@@ -9471,6 +9600,67 @@ export interface components {
             accountId?: string | null;
             /** @enum {string|null} */
             tier?: "I" | "II" | null;
+        };
+        NpsReviewAccount: {
+            holderName?: string | null;
+            /** Format: uuid */
+            id: string;
+            pranLast4: string;
+            /** @enum {string} */
+            relation: "SELF" | "CHILD";
+            tiers: ("I" | "II")[];
+        };
+        NpsReviewContribution: {
+            account: components["schemas"]["NpsReviewAccount"];
+            amount: number;
+            /** Format: date */
+            date: string;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            source: "MANUAL" | "STATEMENT" | "EMAIL" | "BANK";
+            /** Format: date */
+            statementPeriodEnd?: string | null;
+            /** Format: date */
+            statementPeriodStart?: string | null;
+            /** @enum {string} */
+            tier: "I" | "II";
+        };
+        NpsReviewMatch: {
+            candidates: components["schemas"]["NpsReviewPayment"][];
+            contribution: components["schemas"]["NpsReviewContribution"];
+            why: string;
+        };
+        NpsReviewPayment: {
+            accountName: string;
+            amount: number;
+            /** Format: date */
+            date: string;
+            description?: string | null;
+            /** Format: uuid */
+            transactionId: string;
+        };
+        NpsReviewResponse: {
+            matches: components["schemas"]["NpsReviewMatch"][];
+            setup?: components["schemas"]["NpsReviewSetup"];
+            unrecorded: components["schemas"]["NpsReviewUnrecorded"][];
+        };
+        NpsReviewSetup: {
+            /** Format: date */
+            firstDate: string;
+            /** Format: date */
+            lastDate: string;
+            /** Format: int32 */
+            paymentCount: number;
+            sample: components["schemas"]["NpsReviewPayment"][];
+            totalAmount: number;
+        };
+        NpsReviewUnrecorded: {
+            /** Format: int64 */
+            daysSince: number;
+            matchedOn?: string | null;
+            payment: components["schemas"]["NpsReviewPayment"];
+            recordTo: components["schemas"]["NpsReviewAccount"][];
         };
         NpsSchemeDetailResponse: {
             entries: components["schemas"]["NpsEntryResponse"][];
@@ -10715,6 +10905,13 @@ export interface components {
             jobsEnqueued: number;
             /** Format: int32 */
             skipped: number;
+        };
+        ReviewInstrument: {
+            exchange?: string | null;
+            /** Format: uuid */
+            id: string;
+            name: string;
+            symbol?: string | null;
         };
         RewardAccountConfigRequest: {
             /** Format: uuid */
@@ -15192,6 +15389,35 @@ export interface operations {
             };
         };
     };
+    getCorporateActionReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CorporateActionReviewResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getCorporateActionSuggestion: {
         parameters: {
             query?: never;
@@ -16689,6 +16915,35 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["EpfImportBatchPreviewResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getEpfReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EpfReviewResponse"];
                 };
             };
             /** @description Error response */
@@ -22537,6 +22792,35 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getNpsReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NpsReviewResponse"];
+                };
             };
             /** @description Error response */
             default: {
