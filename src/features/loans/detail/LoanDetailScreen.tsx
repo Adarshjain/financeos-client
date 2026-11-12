@@ -116,7 +116,7 @@ export function LoanDetailScreen({ detail, schedule, today, highlightSeq }: Loan
         addLoading={eventLoading}
       >
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
-          {detail.askClosed && !closed ? <LoanClosedPrompt loanId={loan.id} /> : null}
+          {detail.askClosed && !closed ? <LoanClosedPrompt loanId={loan.id} evidence={detail.closeEvidence ?? null} /> : null}
           <LoanHero model={hero} />
           <ActionBar
             info={header.info}

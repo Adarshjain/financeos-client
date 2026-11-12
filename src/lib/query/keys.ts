@@ -10,6 +10,8 @@ export const keys = {
     byId: (id: string) => [...keys.transactions.all, 'detail', id] as const,
     links: (transactionId: string) => [...keys.transactions.all, 'links', transactionId] as const,
     /** How many transactions need review: the list's chip and the nav badge. Under `all`, so any transaction change refreshes it. */
+    /** The flagged-duplicate pairs the approve dialog lists, page by page. */
+    reviewDuplicates: (params: Record<string, unknown> = {}) => [...keys.transactions.all, 'review-duplicates', params] as const,
     needsReviewCount: () => [...keys.transactions.all, 'needs-review-count'] as const,
     /** The recent category picks for a direction (OUT or IN). */
     categoryRecentAll: () => [...keys.transactions.all, 'category-recent'] as const,

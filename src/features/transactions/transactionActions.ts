@@ -105,3 +105,13 @@ export const undoApproveTransactions = action('transaction.undoApproveTransactio
     if (!data) throw new Error("Couldn't undo. Try again.");
   },
 ));
+
+/** One page of the flagged-duplicate pairs: each transaction with the one it looks like (twin null when none is found). */
+export const loadDuplicateReview = action('transaction.loadDuplicateReview', createDomainAction(
+  { fallbackError: "Couldn't load the possible duplicates. Try again." },
+  async (page: number, size: number): Promise<Schemas['PageDuplicateReviewItem']> => {
+    const { data } = await serverApi.GET('/api/v1/transactions/review/duplicates', { params: { query: { page, size } } });
+    if (!data) throw new Error('No response from the server');
+    return data;
+  },
+));

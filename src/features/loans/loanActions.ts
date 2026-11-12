@@ -40,6 +40,15 @@ export const deleteLoan = action('loans.loan.deleteLoan', createDomainAction(
   },
 ));
 
+/** GET /loans/{id}: the facts behind "Is this loan closed?" (the Upcoming rows only know the loan's id). */
+export const loadLoanCloseEvidence = action('loans.loan.loadLoanCloseEvidence', createDomainAction(
+  { fallbackError: "Couldn't load the loan's payments. Try again." },
+  async (id: string) => {
+    const { data } = await serverApi.GET('/api/v1/loans/{id}', { params: { path: { id } } });
+    return data?.closeEvidence ?? null;
+  },
+));
+
 /** POST /loans/{id}/close. */
 export const closeLoan = action('loans.loan.closeLoan', createDomainAction(
   { fallbackError: "Couldn't close loan. Try again." },

@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ds/Checkbox/Checkbox';
 import { Dialog } from '@/components/ds/Dialog/Dialog';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
 
+import { DuplicatePairs } from './DuplicatePairs';
 import { approveTitle, type ClearableReason, countReasons } from './reviewModel';
 import { ReviewSummaryDialog } from './ReviewSummaryDialog';
 import { type ReviewTxn, useApproveTransactions } from './useApproveTransactions';
@@ -39,6 +40,11 @@ export function ApproveDialog({ transactions, open, onOpenChange, onDone, instan
     setChosen(null);
   }
   const ticked = chosen ?? present;
+  // Approving "Duplicate" shows what each row looks like before the person confirms.
+  const duplicateIds = useMemo(
+    () => transactions.filter((t) => t.reviewReasons?.includes('DUPLICATE_SUSPECT')).map((t) => t.id),
+    [transactions],
+  );
 
   const toggle = (reason: ClearableReason, on: boolean) =>
     setChosen(on ? [...ticked, reason] : ticked.filter((r) => r !== reason));
@@ -93,6 +99,7 @@ export function ApproveDialog({ transactions, open, onOpenChange, onDone, instan
                 );
               })}
             </Card>
+            {duplicateIds.length > 0 && ticked.includes('DUPLICATE_SUSPECT') ? <DuplicatePairs ids={duplicateIds} /> : null}
           </Dialog.Body>
         </Dialog.Content>
       </Dialog>

@@ -101,7 +101,7 @@ const txn = (over: Partial<Transaction>): Transaction =>
 
 const transactions = [
   txn({}),
-  txn({ id: 't2', description: 'Swiggy', amount: -1249, reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] }),
+  txn({ id: 't2', description: 'Swiggy', amount: -1249, reviewType: 'NEEDS_REVIEW', reviewReasons: ['DATE_CORRECTED'] }),
   txn({ id: 't3', description: 'IKEA', amount: -7430, reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED', 'DATE_CORRECTED'] }),
   txn({ id: 't5', description: 'Uber', amount: -533, category: null }),
 ];
@@ -468,7 +468,7 @@ describe('TransactionsScreen entry lifecycle, counts and ordering', () => {
   });
 
   const flagged = [
-    txn({ id: 'u1', description: 'Uber', amount: -533, category: null, reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] }),
+    txn({ id: 'u1', description: 'Uber', amount: -533, category: null, reviewType: 'NEEDS_REVIEW', reviewReasons: ['DATE_CORRECTED'] }),
     txn({}),
   ];
   const pickCash = async () => {

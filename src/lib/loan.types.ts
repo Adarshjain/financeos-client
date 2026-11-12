@@ -1,3 +1,4 @@
+import type { LoanCloseEvidence } from './api/types';
 import type { Transaction } from './transaction.types';
 
 export type LoanType =
@@ -121,6 +122,8 @@ export interface LoanDetailResponse {
   installments?: InstallmentDto[];
   /** The loan's last EMI is past: ask whether it is closed. */
   askClosed?: boolean;
+  /** The facts behind that question; null when the server has none. */
+  closeEvidence?: LoanCloseEvidence | null;
 }
 
 export interface PaymentInfo {

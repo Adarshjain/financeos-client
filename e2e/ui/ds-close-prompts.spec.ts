@@ -136,6 +136,8 @@ test.describe('Close prompts (@ui)', () => {
       const notYet = await overdueLoan('Page Not Yet Loan');
       await page.goto(`/loans/${notYet.id}`);
       await expect(page.getByText('Is this loan closed?')).toBeVisible({ timeout: 45000 });
+      await expect(page.getByText(/EMI #1 was due on .* and has no payment for \d+ days\./)).toBeVisible();
+      await expect(page.getByText('No payment recorded yet.')).toBeVisible();
       await expect(async () => {
         await page.getByRole('button', { name: 'Not yet', exact: true }).click();
         await expect(page.getByText('Is this loan closed?')).toHaveCount(0, { timeout: 3000 });

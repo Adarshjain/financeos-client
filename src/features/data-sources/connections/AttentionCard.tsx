@@ -4,16 +4,16 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
 import { Card } from '@/components/ds/Card/Card';
-import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
 import { Pager } from '@/components/ds/Pager/Pager';
 import { Text } from '@/components/ds/Text/Text';
 import type { AttentionGroupsResponse, IgnoredNumber, Schemas, UnknownNumberGroup } from '@/lib/api/types';
 
+import { ArchiveAllDialog } from './ArchiveAllDialog';
 import { AssignDialog } from './AssignDialog';
 import { AssignNumberDialog } from './AssignNumberDialog';
 import { AttentionGroup } from './AttentionGroup';
 import { IgnoredNumberRow, ImportOffRow, UnknownNumberRow } from './AttentionGroupRows';
-import { type AttentionItem, type AttentionReason, type AttentionReasonCount, groupAttention, REASON_LABELS } from './attentionItemModel';
+import { type AttentionItem, type AttentionReason, type AttentionReasonCount, groupAttention } from './attentionItemModel';
 import { AttentionItemRow } from './AttentionItemRow';
 import { NumberEmailsDialog } from './NumberEmailsDialog';
 
@@ -187,14 +187,12 @@ export function AttentionCard({
         )}
       </Card>
 
-      <ConfirmDialog
-        open={confirmArchive !== null}
-        onOpenChange={(open) => (open || archivingAll ? undefined : setConfirmArchive(null))}
-        title={confirmArchive ? `Archive all "${REASON_LABELS[confirmArchive]}" items?` : 'Archive all?'}
-        description="They move to Archived and can be unarchived one by one."
-        confirmLabel="Archive all"
-        tone="danger"
-        confirmLoading={archivingAll}
+      <ArchiveAllDialog
+        reason={confirmArchive}
+        ungroupedOnly
+        count={reasonGroups.find((g) => g.reason === confirmArchive)?.count}
+        confirming={archivingAll}
+        onClose={() => setConfirmArchive(null)}
         onConfirm={async () => {
           if (!confirmArchive || archivingAll) return;
           setArchivingAll(true);

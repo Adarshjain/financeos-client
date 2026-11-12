@@ -15,7 +15,7 @@ export type QuickApproveOutcome = 'approved' | 'needs-dialog' | 'nothing-to-appr
 
 /**
  * The one-tap approve on a single row (Review button, phone swipe right). One reason clears at once (on screen before the server answers) and
- * the Toast offers Undo, which puts that reason back. Several reasons return `needs-dialog`: the caller
+ * the Toast offers Undo, which puts that reason back. Several reasons, or a lone Duplicate (evidence first), return `needs-dialog`: the caller
  * opens `ApproveDialog` for that row (owner 15). A row with no reason has nothing to approve (the Review button is not offered), so it returns `nothing-to-approve` and does nothing.
  */
 export function useQuickApprove() {
@@ -29,7 +29,8 @@ export function useQuickApprove() {
   ): Promise<QuickApproveOutcome> => {
     const reasons: ClearableReason[] = txn.reviewReasons ?? [];
     if (reasons.length === 0) return 'nothing-to-approve';
-    if (reasons.length > 1) return 'needs-dialog';
+    // Several reasons, or a Duplicate (the dialog shows the transaction it looks like first), go through the dialog.
+    if (reasons.length > 1 || reasons[0] === 'DUPLICATE_SUSPECT') return 'needs-dialog';
     // The row clears on screen now; a failure puts it back.
     const shown = optimistic?.begin(approveChange([txn.id], reasons));
     try {

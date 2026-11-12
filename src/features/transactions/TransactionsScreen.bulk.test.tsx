@@ -97,7 +97,7 @@ const txn = (over: Partial<Transaction>): Transaction =>
 
 const transactions = [
   txn({}),
-  txn({ id: 't2', description: 'Swiggy', amount: -1249, source: 'gmail_transaction_alert', reviewType: 'NEEDS_REVIEW', reviewReasons: ['DUPLICATE_SUSPECT'] }),
+  txn({ id: 't2', description: 'Swiggy', amount: -1249, source: 'gmail_transaction_alert', reviewType: 'NEEDS_REVIEW', reviewReasons: ['DATE_CORRECTED'] }),
   txn({ id: 't3', description: 'IKEA', amount: -7430, source: 'gmail_statement', reviewType: 'NEEDS_REVIEW', reviewReasons: ['UNRECONCILED', 'DATE_CORRECTED'] }),
   txn({ id: 't4', description: 'Rent', amount: -32000, reviewType: 'NEEDS_REVIEW', reviewReasons: [] }),
 ];
@@ -315,7 +315,7 @@ describe('TransactionsScreen review', () => {
     fireEvent.click(within(row).getByText('swipe-right'));
     await waitFor(() => expect(posts('/api/v1/transactions/batch-review')).toHaveLength(1));
     expect(posts('/api/v1/transactions/batch-review')[0]).toMatchObject({
-      body: { transactionIds: ['t2'], reviewType: 'MANUALLY_REVIEWED', reviewReasons: ['DUPLICATE_SUSPECT'] },
+      body: { transactionIds: ['t2'], reviewType: 'MANUALLY_REVIEWED', reviewReasons: ['DATE_CORRECTED'] },
     });
     await waitFor(() => expect(showToast).toHaveBeenCalled());
     const [message, options] = showToast.mock.calls[0];

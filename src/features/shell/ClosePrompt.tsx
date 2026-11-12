@@ -10,6 +10,8 @@ export interface ClosePromptProps {
   title: string;
   /** What the question rests on; leave out when the question says it all. */
   body?: string;
+  /** The facts the question rests on, one line each, shown before the answers. */
+  evidence?: readonly string[];
   confirmLabel: string;
   dismissLabel?: string;
   onConfirm: () => void;
@@ -23,6 +25,7 @@ export interface ClosePromptProps {
 export function ClosePrompt({
   title,
   body,
+  evidence = [],
   confirmLabel,
   dismissLabel = 'Not yet',
   onConfirm,
@@ -33,6 +36,11 @@ export function ClosePrompt({
   return (
     <Banner tone="info" title={title} className={className}>
       {body ? <span>{body} </span> : null}
+      {evidence.map((line) => (
+        <span key={line} className="block">
+          {line}
+        </span>
+      ))}
       <span className="inline-flex items-center gap-space-12 align-middle">
         <Button variant="link" size="sm" disabled={busy} onClick={onConfirm}>
           {confirmLabel}

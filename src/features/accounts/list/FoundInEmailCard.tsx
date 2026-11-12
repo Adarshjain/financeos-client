@@ -6,6 +6,7 @@ import { Card } from '@/components/ds/Card/Card';
 import { DataTable } from '@/components/ds/DataTable/DataTable';
 import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
 import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
+import { Text } from '@/components/ds/Text/Text';
 import { BankLogo } from '@/components/organisms/BankLogo/BankLogo';
 
 import { ClosedToggleButton, NameCell, useSectionBands } from './AccountsSections';
@@ -18,6 +19,7 @@ import {
   olderBandLabel,
   olderBandSection,
   type SectionSuggestions,
+  seenInEmailsLine,
   type SuggestionRow,
 } from './suggestionsModel';
 
@@ -27,7 +29,19 @@ const columns = [
     id: 'account',
     header: 'Account',
     meta: { size: 'fill', grow: 2, phone: 'main', wrap: true },
-    cell: ({ row }) => <NameCell name={row.original.name} sub={foundRowSub(row.original)} />,
+    cell: ({ row }) => {
+      const seen = seenInEmailsLine(row.original.item);
+      return (
+        <div className="flex flex-col min-w-0">
+          <NameCell name={row.original.name} sub={foundRowSub(row.original)} />
+          {seen ? (
+            <Text variant="caption" tone="ink-3">
+              {seen}
+            </Text>
+          ) : null}
+        </div>
+      );
+    },
   }),
   ch.display({
     id: 'actions',

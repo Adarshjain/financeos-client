@@ -697,10 +697,22 @@ for (const viewport of VIEWPORTS) {
         await expect(row(page, 'Uber Ride')).toHaveCount(1);
         await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
 
-        await swipe(page, row(page, 'Uber Ride'), 160);
+        // Uber Ride's only reason is Duplicate, which asks with the evidence first; Swiggy Dinner (Date corrected) is the one-tap row.
+        await swipe(page, row(page, 'Swiggy Dinner'), 160);
         await expect(page.getByText('Approved', { exact: true })).toBeVisible();
-        await expect(row(page, 'Uber Ride')).toHaveCount(0);
-        await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
+        await expect(row(page, 'Swiggy Dinner')).toHaveCount(0);
+        await expect(row(page, 'Uber Ride')).toHaveCount(1);
+      });
+
+      test('swipe right on a Duplicate row opens the approve dialog with the pair before anything is approved', async ({ page }) => {
+        await seedList();
+        await open(page, '?review=needs_review');
+        await swipe(page, row(page, 'Uber Ride'), 160);
+        const approve = page.getByRole('dialog', { name: /^Approve 1 transaction/ });
+        await expect(approve).toBeVisible();
+        await expect(approve.getByTestId('duplicate-pairs')).toBeVisible({ timeout: 30_000 });
+        await expect(approve.getByText('Uber Ride').first()).toBeVisible();
+        await expect(row(page, 'Uber Ride')).toHaveCount(1);
       });
 
       test('swipe left asks first, then deletes the row', async ({ page }) => {
@@ -752,13 +764,13 @@ for (const viewport of VIEWPORTS) {
       test('right-click a one-reason row: the menu offers Approve and Delete; Approve clears it with a toast', async ({ page }) => {
         await seedList();
         await open(page, '?review=needs_review');
-        await row(page, 'Uber Ride').click({ button: 'right' });
+        await row(page, 'Swiggy Dinner').click({ button: 'right' });
         await expect(page.getByRole('menuitem', { name: 'Approve' })).toBeVisible();
         await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
         await page.getByRole('menuitem', { name: 'Approve' }).click();
         await expect(page.getByText('Approved', { exact: true })).toBeVisible();
-        await expect(row(page, 'Uber Ride')).toHaveCount(0);
-        await expect(row(page, 'Swiggy Dinner')).toHaveCount(1);
+        await expect(row(page, 'Swiggy Dinner')).toHaveCount(0);
+        await expect(row(page, 'Uber Ride')).toHaveCount(1);
       });
 
       test('right-click a clean row: no Approve; Delete asks first, then removes the row; Escape closes the menu', async ({ page }) => {

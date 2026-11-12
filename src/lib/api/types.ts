@@ -136,6 +136,9 @@ export type RecurringSeriesDto = Schemas['RecurringSeriesDto'];
 // Loans
 export type LoanResponse = Schemas['LoanResponse'];
 export type LoanDetailResponse = Schemas['LoanDetailResponse'];
+export type LoanCloseEvidence = Schemas['LoanCloseEvidence'];
+export type DuplicateReviewItem = Schemas['DuplicateReviewItem'];
+export type DuplicateReviewTransaction = Schemas['DuplicateReviewTransaction'];
 export type CreateLoanRequest = Schemas['CreateLoanRequest'];
 export type UpdateLoanRequest = Schemas['UpdateLoanRequest'];
 export type LoanPaymentResponse = Schemas['LoanPaymentResponse'];

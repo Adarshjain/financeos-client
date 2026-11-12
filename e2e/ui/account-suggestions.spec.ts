@@ -52,6 +52,7 @@ test.describe('Account suggestions (@ui)', () => {
     const found = foundCard(page);
     await expect(found).toContainText('We can miss an account or get a detail wrong');
     await expect(found.getByText('From your HDFC Bank emails · ••4321').first()).toBeVisible();
+    await expect(found.getByText(/^Seen in 6 emails from /).first()).toBeVisible();
     await expect(found.getByRole('button', { name: 'Not mine' })).toBeVisible();
     await expect(found.getByRole('button', { name: 'Add', exact: true }).first()).toBeVisible();
     // The Bank accounts and Credit cards sections hold only the user's own accounts: no found row, no row buttons.

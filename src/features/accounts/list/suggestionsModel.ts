@@ -1,6 +1,6 @@
 import type { Account } from '@/lib/account.types';
 import type { Schemas } from '@/lib/api/types';
-import { formatCount } from '@/lib/format';
+import { formatCount, formatDate } from '@/lib/format';
 import { AccountType } from '@/lib/types';
 
 // The generated types say every field is a plain, always-present string; these narrow the ones the page switches on
@@ -232,6 +232,21 @@ export function foundRowSub(row: Pick<SuggestionRow, 'item' | 'sub' | 'last4' | 
   return [fromEmailsLine(row), parent ? `On ${parent.name}` : '', row.last4 ? `••${row.last4}` : '']
     .filter(Boolean)
     .join(' · ');
+}
+
+/**
+ * The evidence line under a Found row: how many emails and over which dates ("Seen in 3 emails from 02/01/2026 to 09/03/2026",
+ * one date when both are the same, "Seen in 1 email on …"). Null when the server counted no emails.
+ */
+export function seenInEmailsLine(item: Pick<SuggestionItem, 'evidenceMails' | 'firstSeenOn' | 'lastSeenOn'> | null | undefined): string | null {
+  const n = item?.evidenceMails;
+  if (!item || !n || n < 1) return null;
+  const count = `Seen in ${formatCount(n)} ${n === 1 ? 'email' : 'emails'}`;
+  const first = item.firstSeenOn || null;
+  const last = item.lastSeenOn || null;
+  if (first && last && first !== last) return `${count} from ${formatDate(first, 'list')} to ${formatDate(last, 'list')}`;
+  const only = first ?? last;
+  return only ? `${count} on ${formatDate(only, 'list')}` : count;
 }
 
 /** Bank and card suggestions together, for the one Found card: bank rows first in each band, every account a row can be filed under. */

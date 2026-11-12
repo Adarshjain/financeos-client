@@ -141,11 +141,11 @@ describe('useQuickApprove', () => {
     const { result } = setup(() => useQuickApprove());
     let outcome;
     await act(async () => {
-      outcome = await result.current.quickApprove({ id: 'a', reviewReasons: ['DUPLICATE_SUSPECT'] });
+      outcome = await result.current.quickApprove({ id: 'a', reviewReasons: ['DATE_CORRECTED'] });
     });
     expect(outcome).toBe('approved');
     expect(post()[0]).toEqual({
-      body: { transactionIds: ['a'], reviewType: 'MANUALLY_REVIEWED', reviewReasons: ['DUPLICATE_SUSPECT'] },
+      body: { transactionIds: ['a'], reviewType: 'MANUALLY_REVIEWED', reviewReasons: ['DATE_CORRECTED'] },
     });
     const options = showToast.mock.calls[0][1];
     expect(showToast.mock.calls[0][0]).toBe('Approved');
