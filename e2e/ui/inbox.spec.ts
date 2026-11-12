@@ -83,7 +83,7 @@ test.describe('Inbox UI (@ui)', () => {
       await expect(emiRow).toContainText('Inbox Home Loan: EMI #1');
       await expect(emiRow).toHaveAttribute('href', `/loans/${loan.id}?installment=1`);
       await expect(row(page, billKey)).toContainText('Inbox Card ••7101 bill');
-      await expect(row(page, billKey)).toHaveAttribute('href', `/upcoming?bill=${bill.statementId}`);
+      await expect(row(page, billKey)).toHaveAttribute('href', `/accounts/${bill.cardId}`);
       const reviewRow = row(page, 'review');
       await expect(reviewRow).toContainText('Transactions to review');
       await expect(reviewRow).toHaveAttribute('href', REVIEW_HREF);

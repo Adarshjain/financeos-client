@@ -91,7 +91,7 @@ test.describe('Inbox API: reads (@api)', () => {
       severity: 'warning',
       title: 'Inbox Card ••8101 bill',
       date: istToday(3),
-      href: `/upcoming?bill=${bill.statementId}`,
+      href: `/accounts/${card.id}`,
     });
     expect(Number(row!.amount)).toBeCloseTo(6000, 2);
     expect(row!.actions).toEqual([]);
