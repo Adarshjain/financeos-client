@@ -127,6 +127,7 @@ test.describe('Loans and Obligations UI (@ui)', () => {
     await page.getByRole('button', { name: 'Find matches' }).click();
     await expect(page.getByText(/SBI Loan EMI Match/).first()).toBeVisible();
     await page.getByRole('button', { name: 'Confirm all' }).click();
+    await page.getByRole('button', { name: 'Link 1', exact: true }).click();
     await expect(page.getByText('1 of 2 paid EMIs')).toBeVisible();
 
     // 6. Close loan and reopen loan

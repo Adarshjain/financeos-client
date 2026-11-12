@@ -38,7 +38,7 @@ describe('account page: Close this account?', () => {
   it('shows the notice only when suggestClose and the account is open', async () => {
     const { unmount } = renderWithQuery(await AccountOverview({ account: account({ suggestClose: true }), today: '2026-11-04' }));
     expect(screen.getByText('Close this account?')).toBeInTheDocument();
-    expect(screen.getByText(/No activity for 90 days and the balance is zero\./)).toBeInTheDocument();
+    expect(screen.getByText(/No transactions yet\. Balance ₹0\.00\./)).toBeInTheDocument();
     unmount();
     const none = renderWithQuery(await AccountOverview({ account: account({ suggestClose: false }), today: '2026-11-04' }));
     expect(screen.queryByText('Close this account?')).toBeNull();

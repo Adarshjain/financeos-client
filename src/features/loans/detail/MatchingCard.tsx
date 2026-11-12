@@ -4,11 +4,13 @@ import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
 import { Card } from '@/components/ds/Card/Card';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
 import { ListField } from '@/components/ds/ListField/ListField';
 import { Text } from '@/components/ds/Text/Text';
 import type { MatchSuggestionsResponse } from '@/lib/loan.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
 
-import { nothingFound, suggestionRows } from './matchModel';
+import { ambiguousNote, confirmAllPlan, nothingFound, suggestionRows } from './matchModel';
 
 export interface MatchingCardProps {
   /** "13 of 13 paid EMIs" */
@@ -25,14 +27,18 @@ export interface MatchingCardProps {
 /** EMIs against bank debits: how many paid EMIs are linked, and the debits that look like unpaid ones. */
 export function MatchingCard({ linked, matches, loading, busy = false, onFind, onLink, onConfirmAll }: MatchingCardProps) {
   const rows = suggestionRows(matches);
+  const { data: accounts = [] } = useAccounts();
+  const [confirming, setConfirming] = React.useState(false);
+  const plan = confirmAllPlan(matches, new Map(accounts.map((a) => [a.id, a.name])));
   return (
+    <>
     <Card
       title="Matching"
       subtitle="EMIs ↔ bank debits"
       action={
         <Text variant="label" as="div" className="flex items-center gap-space-12">
-          {rows.length > 0 ? (
-            <Button variant="link" size="sm" loading={busy} onClick={onConfirmAll}>
+          {plan.pairs.length > 0 ? (
+            <Button variant="link" size="sm" loading={busy} onClick={() => setConfirming(true)}>
               Confirm all
             </Button>
           ) : null}
@@ -70,5 +76,32 @@ export function MatchingCard({ linked, matches, loading, busy = false, onFind, o
         />
       ) : null}
     </Card>
+    <ConfirmDialog
+      open={confirming}
+      onOpenChange={setConfirming}
+      title="Link these payments?"
+      description="Each EMI below will be marked paid by its bank debit."
+      confirmLabel={`Link ${plan.pairs.length}`}
+      tone="default"
+      size="lg"
+      onConfirm={() => {
+        setConfirming(false);
+        onConfirmAll();
+      }}
+    >
+      <ul className="flex flex-col gap-space-8">
+        {plan.pairs.map((p) => (
+          <Text key={p.seq} as="li" variant="label">
+            {p.text}
+          </Text>
+        ))}
+      </ul>
+      {plan.ambiguous > 0 ? (
+        <Text variant="label" tone="ink-3" as="p">
+          {ambiguousNote(plan.ambiguous)}
+        </Text>
+      ) : null}
+    </ConfirmDialog>
+    </>
   );
 }

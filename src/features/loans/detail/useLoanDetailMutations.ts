@@ -24,7 +24,7 @@ import {
   type EventValues,
   type PaymentValues,
 } from './loanRequestsModel';
-import { nothingFound } from './matchModel';
+import { confirmAllPlan, nothingFound } from './matchModel';
 
 const NO_MATCHES = 'No matching bank transactions (±7 days)';
 
@@ -137,9 +137,7 @@ export function useLoanDetailMutations(loanId: string) {
 
   const confirmAll = async () => {
     if (!matches) return;
-    const items = matches.suggestions
-      .filter((s) => s.candidates.length > 0)
-      .flatMap((s) => paymentItemFor(s.installmentSeq, s.candidates[0]) ?? []);
+    const items = confirmAllPlan(matches).pairs.flatMap((p) => paymentItemFor(p.seq, p.tx) ?? []);
     if (items.length === 0) return;
     try {
       const result = await mutations.addPaymentsBatch.mutateAsync({ items } satisfies BatchLoanPaymentRequest);

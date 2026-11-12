@@ -1,4 +1,5 @@
-import type { Broker } from '@/lib/account.types';
+import { daysBetween } from '@/features/loans/loanFormatModel';
+import type { AccountBase, Broker } from '@/lib/account.types';
 import { formatCount, formatDate, formatMoney } from '@/lib/format';
 import type { StatementSummary } from '@/lib/statement.types';
 import type { Transaction } from '@/lib/transaction.types';
@@ -183,4 +184,22 @@ export function buildBrokerCash(account: Broker, recent: readonly Transaction[] 
 export function lastEntryDate(recent: readonly Transaction[] | null | undefined): string | null {
   if (!recent || recent.length === 0) return null;
   return recent.reduce((max, t) => (t.date > max ? t.date : max), recent[0].date);
+}
+
+/**
+ * The facts behind "Close this account?": the newest transaction and how long ago, the balance, when it was added.
+ * `today` is the business date (yyyy-mm-dd).
+ */
+export function closeEvidence(
+  account: Pick<AccountBase, 'lastTransactionDate' | 'balance' | 'createdAt'>,
+  today: string,
+): string {
+  const last = account.lastTransactionDate;
+  const ago = last ? daysBetween(last, today) : null;
+  const lastText = last
+    ? `Last transaction on ${formatDate(last, 'input')}${ago == null ? '' : ` (${ago === 1 ? '1 day' : `${ago} days`} ago)`}.`
+    : 'No transactions yet.';
+  const parts = [lastText, `Balance ${formatMoney(account.balance ?? 0, { decimals: 'exact' })}.`];
+  if (account.createdAt) parts.push(`Added on ${formatDate(account.createdAt, 'input')}.`);
+  return parts.join(' ');
 }

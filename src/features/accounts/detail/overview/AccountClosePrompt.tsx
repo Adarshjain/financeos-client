@@ -13,8 +13,8 @@ import { todayInAppZone } from '@/lib/date-range';
 import { keys } from '@/lib/query/keys';
 import { useAppRouter } from '@/lib/useAppRouter';
 
-/** "Close this account?" on an idle, empty account: Close (as of today, with Undo) or Not yet (asks no more). */
-export function AccountClosePrompt({ accountId }: { accountId: string }) {
+/** "Close this account?" on an idle, empty account (shows the evidence: last transaction, balance, when added): Close (as of today, with Undo) or Not yet (asks no more). */
+export function AccountClosePrompt({ accountId, evidence }: { accountId: string; evidence?: string }) {
   const router = useAppRouter();
   const qc = useQueryClient();
   const [busy, setBusy] = React.useState(false);
@@ -41,7 +41,7 @@ export function AccountClosePrompt({ accountId }: { accountId: string }) {
     <>
       <ClosePrompt
         title="Close this account?"
-        body="No activity for 90 days and the balance is zero."
+        body={evidence}
         confirmLabel="Close"
         busy={busy || refreshing}
         onConfirm={() => setConfirming(true)}

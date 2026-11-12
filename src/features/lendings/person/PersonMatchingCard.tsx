@@ -5,6 +5,7 @@ import React from 'react';
 
 import { Button } from '@/components/ds/Button/Button';
 import { Card } from '@/components/ds/Card/Card';
+import { ConfirmDialog } from '@/components/ds/Dialog/Dialog';
 import { ListField } from '@/components/ds/ListField/ListField';
 import { ListRow } from '@/components/ds/ListRow/ListRow';
 import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
@@ -18,6 +19,7 @@ import { useAppRouter } from '@/lib/useAppRouter';
 
 import { useTransferLink } from '../list/useTransferLink';
 import { loadPersonMatches } from './personMatchActions';
+import { leftOutNote, transferConfirmPlan } from './personModel';
 
 export interface PersonMatchingCardProps {
   counterpartyId: string;
@@ -48,17 +50,11 @@ export function PersonMatchingCard({ counterpartyId, personName, linked, hasUnli
   const visible = (rows ?? []).filter((row) => !transfer.hidden(row));
   const pending = visible.filter((row) => !transfer.linked.has(row.key));
 
-  // One transfer per entry (the first), none used twice.
+  const [asking, setAsking] = React.useState(false);
+  const plan = transferConfirmPlan(pending);
   const confirmMutation = useMutation({
     mutationFn: async () => {
-      const usedEntries = new Set<string>();
-      const usedTransfers = new Set<string>();
-      const picks = pending.filter((row) => {
-        if (usedEntries.has(row.lendingId) || usedTransfers.has(row.transactionId)) return false;
-        usedEntries.add(row.lendingId);
-        usedTransfers.add(row.transactionId);
-        return true;
-      });
+      const { picks } = plan;
       let done = 0;
       for (const row of picks) {
         if (await transfer.onLink(row, true)) done += 1;
@@ -70,13 +66,14 @@ export function PersonMatchingCard({ counterpartyId, personName, linked, hasUnli
   const confirming = confirmMutation.isPending;
 
   return (
+    <>
     <Card
       title="Matching"
       subtitle="Bank transfers ↔ entries"
       action={
         <Text variant="label" as="div" className="flex items-center gap-space-12">
           {pending.length > 0 ? (
-            <Button variant="link" size="sm" onClick={() => confirmMutation.mutate()} disabled={confirming || transfer.linkingKey !== null}>
+            <Button variant="link" size="sm" onClick={() => setAsking(true)} disabled={confirming || transfer.linkingKey !== null}>
               {confirming ? 'Confirming…' : 'Confirm all'}
             </Button>
           ) : null}
@@ -117,5 +114,37 @@ export function PersonMatchingCard({ counterpartyId, personName, linked, hasUnli
         );
       })}
     </Card>
+    <ConfirmDialog
+      open={asking}
+      onOpenChange={setAsking}
+      title="Link these transfers?"
+      description="Each bank transfer below will be linked to its entry."
+      confirmLabel={`Link ${plan.picks.length}`}
+      tone="default"
+      size="lg"
+      onConfirm={() => {
+        setAsking(false);
+        confirmMutation.mutate();
+      }}
+    >
+      <ul className="flex flex-col gap-space-8">
+        {plan.picks.map((row) => (
+          <li key={row.key}>
+            <Text variant="label" as="div">
+              {row.title}
+            </Text>
+            <Text variant="caption" tone="ink-3" as="div">
+              {`Entry ${row.entryLabel} · ${row.subtitle}`}
+            </Text>
+          </li>
+        ))}
+      </ul>
+      {plan.leftOut > 0 ? (
+        <Text variant="label" tone="ink-3" as="p">
+          {leftOutNote(plan.leftOut)}
+        </Text>
+      ) : null}
+    </ConfirmDialog>
+    </>
   );
 }

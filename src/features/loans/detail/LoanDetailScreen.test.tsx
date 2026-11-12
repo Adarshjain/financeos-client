@@ -405,7 +405,21 @@ describe('matching', () => {
     renderView();
     await user.click(screen.getByRole('button', { name: 'Find matches' }));
     await user.click(await screen.findByRole('button', { name: 'Confirm all' }));
+    expect(m.addPaymentsBatch.mutateAsync).not.toHaveBeenCalled();
+    expect(await screen.findByText(/EMI #14 due 5 Oct/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Link 1' }));
     await waitFor(() => expect(m.addPaymentsBatch.mutateAsync).toHaveBeenCalled());
+  });
+
+  it('hides Confirm all when every installment has several candidates', async () => {
+    loadLoanMatches.mockResolvedValue({
+      success: true,
+      data: { suggestions: [{ installmentSeq: 14, dueDate: '2026-10-05', expectedAmount: 36603, candidates: [debit(), debit()] }] },
+    });
+    renderView();
+    await user.click(screen.getByRole('button', { name: 'Find matches' }));
+    await screen.findAllByText(/#14/);
+    expect(screen.queryByRole('button', { name: 'Confirm all' })).toBeNull();
   });
 
   it('says so when no debit matches', async () => {

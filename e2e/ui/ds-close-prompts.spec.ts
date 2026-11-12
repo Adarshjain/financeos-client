@@ -31,7 +31,7 @@ test.describe('Close prompts (@ui)', () => {
       await page.goto(`/accounts/${account.id}`);
       const prompt = page.getByText('Close this account?').first();
       await expect(prompt).toBeVisible({ timeout: 45000 });
-      await expect(page.getByText('No activity for 90 days and the balance is zero.')).toBeVisible();
+      await expect(page.getByText('No transactions yet. Balance ₹0.00.')).toBeVisible();
 
       // Close opens a confirmation; Cancel changes nothing.
       const dialog = page.getByRole('dialog', { name: 'Close this account?' });
@@ -50,7 +50,7 @@ test.describe('Close prompts (@ui)', () => {
       await dialog.getByRole('button', { name: 'Close account' }).click();
       await expectToast(page, 'Account closed');
       expect(await closedOn(api, account.id)).toBe(istToday());
-      await expect(page.getByText('No activity for 90 days and the balance is zero.')).toHaveCount(0, { timeout: 30000 });
+      await expect(page.getByText('No transactions yet. Balance ₹0.00.')).toHaveCount(0, { timeout: 30000 });
 
       await page.getByRole('button', { name: 'Undo' }).click();
       await expect.poll(() => closedOn(api, account.id), { timeout: 30000 }).toBeNull();
@@ -62,16 +62,16 @@ test.describe('Close prompts (@ui)', () => {
       await ageAccount(api, account.id, 100);
 
       await page.goto(`/accounts/${account.id}`);
-      await expect(page.getByText('No activity for 90 days and the balance is zero.')).toBeVisible({ timeout: 45000 });
+      await expect(page.getByText('No transactions yet. Balance ₹0.00.')).toBeVisible({ timeout: 45000 });
       await expect(async () => {
         await page.getByRole('button', { name: 'Not yet', exact: true }).click();
-        await expect(page.getByText('No activity for 90 days and the balance is zero.')).toHaveCount(0, { timeout: 3000 });
+        await expect(page.getByText('No transactions yet. Balance ₹0.00.')).toHaveCount(0, { timeout: 3000 });
       }).toPass({ timeout: 30000 });
       expect(await closedOn(api, account.id)).toBeNull();
 
       await page.reload();
       await expect(page.getByRole('heading', { name: 'Idle Dismiss Bank' }).or(page.getByText('Idle Dismiss Bank').first())).toBeVisible({ timeout: 45000 });
-      await expect(page.getByText('No activity for 90 days and the balance is zero.')).toHaveCount(0);
+      await expect(page.getByText('No transactions yet. Balance ₹0.00.')).toHaveCount(0);
     });
 
     test('a new account, or one with a balance, is not asked about', async ({ page }) => {

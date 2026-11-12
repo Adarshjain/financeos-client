@@ -6,6 +6,7 @@ import { AccountType } from '@/lib/types';
 
 import { AccountClosePrompt } from './AccountClosePrompt';
 import { AccountLifecycleCard } from './AccountLifecycleCard';
+import { closeEvidence } from './accountOverviewModel';
 import { BankOverview } from './BankOverview';
 import { BrokerOverview } from './BrokerOverview';
 import { CardOverview } from './CardOverview';
@@ -28,7 +29,7 @@ export async function AccountOverview({
           {disagreement.body}
         </Banner>
       ) : null}
-      {account.suggestClose && !account.closedOn ? <AccountClosePrompt accountId={account.id} /> : null}
+      {account.suggestClose && !account.closedOn ? <AccountClosePrompt accountId={account.id} evidence={closeEvidence(account, today)} /> : null}
       {account.type === AccountType.CREDIT_CARD ? (
         <CardOverview account={account} today={today} />
       ) : account.type === AccountType.BANK_ACCOUNT ? (

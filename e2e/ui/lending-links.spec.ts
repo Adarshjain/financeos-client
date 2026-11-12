@@ -324,6 +324,7 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
     await expect(page.getByRole('button', { name: 'Link', exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: 'Confirm all' }).click();
+    await page.getByRole('button', { name: 'Link 1', exact: true }).click();
 
     // The suggestion is linked: no Link button is left, and the card counts one linked entry.
     await expect(page.getByRole('button', { name: 'Link', exact: true })).toHaveCount(0);

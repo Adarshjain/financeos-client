@@ -177,8 +177,8 @@ describe('matching', () => {
     expect(loadLoanMatches).toHaveBeenCalled();
   });
 
-  it('confirms every first candidate in one batch', async () => {
-    loadLoanMatches.mockResolvedValue({ success: true, data: matches([tx('t1'), tx('t2')]) });
+  it('confirms installments with exactly one candidate in one batch', async () => {
+    loadLoanMatches.mockResolvedValue({ success: true, data: matches([tx('t1')]) });
     m.addPaymentsBatch.mutateAsync.mockResolvedValue({ created: 1 });
     const actions = setup();
     await act(async () => actions.current.findMatches());
@@ -187,6 +187,14 @@ describe('matching', () => {
       items: [{ installmentSeq: 14, paymentDate: '2026-10-05', amount: 39052, transactionId: 't1' }],
     });
     expect(toast).toHaveBeenCalledWith('1 payment recorded');
+  });
+
+  it('confirm all leaves out an installment that shows several candidates', async () => {
+    loadLoanMatches.mockResolvedValue({ success: true, data: matches([tx('t1'), tx('t2')]) });
+    const actions = setup();
+    await act(async () => actions.current.findMatches());
+    await act(async () => actions.current.confirmAll());
+    expect(m.addPaymentsBatch.mutateAsync).not.toHaveBeenCalled();
   });
 
   it('confirm all does nothing before the debits were searched for', async () => {

@@ -1,3 +1,4 @@
+import type { TransferRow } from '@/features/lendings/list/lendingsListModel';
 import { daysBetween, type HeroModel } from '@/features/loans/loanFormatModel';
 import { DEFAULT_PAGE_SIZE, parsePage, setPageParam } from '@/features/shell/pagination';
 import { appHref } from '@/features/shell/routes';
@@ -184,4 +185,29 @@ export function deletePersonCopy(cp: CounterpartyResponse): { description: strin
       'Bank transactions stay; only their links to these entries go.',
     ],
   };
+}
+
+export interface TransferConfirmPlan {
+  /** One transfer per entry (the first), none used twice: what Confirm all links. */
+  picks: TransferRow[];
+  /** Rows left out because they compete for an entry or a transfer a pick already uses. */
+  leftOut: number;
+}
+
+/** What Confirm all will link from the pending suggestion rows. */
+export function transferConfirmPlan(pending: readonly TransferRow[]): TransferConfirmPlan {
+  const usedEntries = new Set<string>();
+  const usedTransfers = new Set<string>();
+  const picks = pending.filter((row) => {
+    if (usedEntries.has(row.lendingId) || usedTransfers.has(row.transactionId)) return false;
+    usedEntries.add(row.lendingId);
+    usedTransfers.add(row.transactionId);
+    return true;
+  });
+  return { picks, leftOut: pending.length - picks.length };
+}
+
+/** "2 suggestions are left out: they compete for the same entry or transfer." */
+export function leftOutNote(count: number): string {
+  return `${count === 1 ? '1 suggestion is' : `${count} suggestions are`} left out: ${count === 1 ? 'it competes' : 'they compete'} for the same entry or transfer. Link ${count === 1 ? 'it' : 'those'} by hand.`;
 }
