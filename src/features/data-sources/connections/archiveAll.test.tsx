@@ -76,4 +76,19 @@ describe('ArchiveAllDialog', () => {
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Archive all' }));
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
+
+  it('starts from one page again after the reason is cleared without onClose', async () => {
+    vi.mocked(api.GET).mockImplementation((async (_path: string, init: { params: { query: { size: number } } }) => ({
+      data: paged(Array.from({ length: Math.min(init.params.query.size, 12) }, (_, i) => mail(i)), 12),
+    })) as never);
+    const props = { ungroupedOnly: true, count: 12, confirming: false, onConfirm: vi.fn(), onClose: vi.fn() };
+    const { rerender } = renderWithQuery(<ArchiveAllDialog reason="NO_ACCOUNT" {...props} />);
+    await screen.findByText('A rather long subject number 9 that must never be cut short');
+    fireEvent.click(screen.getByRole('button', { name: 'Show more' }));
+    await screen.findByText('A rather long subject number 11 that must never be cut short');
+    rerender(<ArchiveAllDialog reason={null} {...props} />);
+    rerender(<ArchiveAllDialog reason="NO_ACCOUNT" {...props} />);
+    await waitFor(() => expect(screen.queryByText('A rather long subject number 11 that must never be cut short')).toBeNull());
+    expect(screen.getByText('A rather long subject number 9 that must never be cut short')).toBeInTheDocument();
+  });
 });

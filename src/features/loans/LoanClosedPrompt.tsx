@@ -66,6 +66,9 @@ export function LoanClosedPrompt({
     }
   };
 
+  // The loaded loan no longer asks to close: nothing to show (while loading it stays).
+  if (evidence === undefined && loaded === null) return null;
+
   return (
     <ClosePrompt
       className={className}

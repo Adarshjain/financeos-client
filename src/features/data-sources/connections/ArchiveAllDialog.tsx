@@ -32,6 +32,12 @@ interface ArchiveAllDialogProps {
 /** "Archive N emails?": lists the mails that will be archived (subject, sender, date), page by page, before the confirm. */
 export function ArchiveAllDialog({ reason, ungroupedOnly, count, confirming, onConfirm, onClose }: ArchiveAllDialogProps) {
   const [size, setSize] = useState(PAGE_SIZE);
+  // A confirmed archive clears the reason without onClose, so start the next open from one page.
+  const [sizeReason, setSizeReason] = useState(reason);
+  if (sizeReason !== reason) {
+    setSizeReason(reason);
+    setSize(PAGE_SIZE);
+  }
   const params = { page: 0, size, includeRetryable: false, reason: reason ?? undefined };
   const { data, isPlaceholderData, isError } = useQuery({
     queryKey: keys.settings.gmailAttention({ archiveAll: true, ungrouped: ungroupedOnly, ...params }),

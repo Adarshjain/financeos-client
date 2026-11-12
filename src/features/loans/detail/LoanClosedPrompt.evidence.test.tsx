@@ -106,4 +106,17 @@ describe('loan page: the evidence behind "Is this loan closed?"', () => {
     expect(await screen.findByText(/EMI #7 was due on/)).toBeInTheDocument();
     expect(loadEvidence).toHaveBeenCalledWith('l9');
   });
+
+  it('hides itself when the loaded loan no longer asks to close', async () => {
+    loadEvidence.mockResolvedValue({ success: true, data: null });
+    renderWithQuery(<LoanClosedPrompt loanId="l8" />);
+    await waitFor(() => expect(loadEvidence).toHaveBeenCalledWith('l8'));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Yes, closed' })).toBeNull());
+  });
+
+  it('keeps showing the question while the evidence loads', () => {
+    loadEvidence.mockReturnValue(new Promise(() => {}));
+    renderWithQuery(<LoanClosedPrompt loanId="l7" />);
+    expect(screen.getByRole('button', { name: 'Yes, closed' })).toBeInTheDocument();
+  });
 });
