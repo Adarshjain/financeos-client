@@ -17,7 +17,7 @@ vi.mock('@/lib/date-range', async (importOriginal) => ({ ...(await importOrigina
 vi.mock('@/lib/query/hooks/useAccounts', () => ({ useAccounts: () => ({ data: [] }) }));
 vi.mock('@/features/transactions/TransactionPickerField', () => ({ TransactionPickerField: () => <div /> }));
 
-const server = vi.hoisted(() => ({ fetchEpfSummary: vi.fn(), fetchEpfEmployers: vi.fn(), fetchEpfFys: vi.fn(), fetchEpfEntries: vi.fn() }));
+const server = vi.hoisted(() => ({ fetchEpfSummary: vi.fn(), fetchEpfEmployers: vi.fn(), fetchEpfFys: vi.fn(), fetchEpfEntries: vi.fn(), fetchEpfReview: vi.fn() }));
 vi.mock('@/features/investments/epf/epfServerApi', () => server);
 vi.mock('@/features/investments/epf/epfActions', () => ({ loadEpfFormOptions: vi.fn() }));
 vi.mock('@/lib/api/client', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/api/client')>()), api: {} }));
@@ -36,6 +36,7 @@ beforeEach(() => {
   server.fetchEpfEmployers.mockResolvedValue([employer()]);
   server.fetchEpfFys.mockResolvedValue([2026, 2025]);
   server.fetchEpfEntries.mockResolvedValue(page());
+  server.fetchEpfReview.mockResolvedValue({ matches: [] });
 });
 
 describe('/investments/epf: data', () => {
