@@ -31,13 +31,20 @@ describe('stocksCard', () => {
     });
   });
 
-  it('is an import row when there are no holdings, with the Holdings empty wording', () => {
+  it('is still a Holdings link at zero, "No holdings", when there are no holdings', () => {
     expect(stocksCard(ok(holdingsResponse([])))).toEqual({
-      kind: 'empty',
+      kind: 'product',
       id: 'stocks',
       title: 'Stocks & funds',
-      line: 'Record a trade or import your tradebook.',
-      action: { label: 'Import tradebook', href: '/investments/import' },
+      subtitle: 'No holdings',
+      href: '/investments/holdings',
+      value: 0,
+      valueText: '₹0',
+      dayMove: null,
+      gain: null,
+      delta: null,
+      updated: '',
+      inNetWorth: true,
     });
   });
 
@@ -170,6 +177,11 @@ describe('overviewHero', () => {
     expect(hero.segments.map((s) => s.color).slice(4)).toEqual(['chart-5', 'chart-rest']);
   });
 
+  it('has no segment for a Stocks & funds card worth nothing', () => {
+    const hero = overviewHero(overviewCards({ holdings: ok(holdingsResponse([])), epf: ok(epfSummary()), employers: ok([employer()]), nps: ok(npsSummary([])) }));
+    expect(hero.segments.map((s) => s.label)).toEqual(['EPF 100%']);
+  });
+
   it('says what is missing when a product failed, never a silent partial total', () => {
     const hero = overviewHero(overviewCards({ holdings: bad, epf: bad, employers: ok([]), nps: ok(npsSummary([npsAccount()])) }));
     expect(hero.without).toBe('Without Stocks & funds and EPF');
@@ -185,10 +197,10 @@ describe('overviewHero', () => {
 });
 
 describe('overviewShare', () => {
-  it('is a product part of the total, and blank for an empty or failed row', () => {
+  it('is a product part of the total, 0% for a zero-value product, and blank for an empty or failed row', () => {
     const cards = overviewCards({ holdings: ok(holdingsResponse([])), epf: ok(epfSummary()), employers: ok([]), nps: bad });
     expect(overviewShare(cards, cards[1])).toBe('100%');
-    expect(overviewShare(cards, cards[0])).toBe('');
+    expect(overviewShare(cards, cards[0])).toBe('0%');
     expect(overviewShare(cards, cards[2])).toBe('');
   });
 });

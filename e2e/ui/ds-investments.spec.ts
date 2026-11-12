@@ -63,6 +63,22 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('main').getByRole('tab')).toHaveCount(0);
     });
 
+    test('a user with no broker account and no trades still opens Holdings and Tradebook from Stocks & funds', async ({ context, request, page }) => {
+      const fresh = await createUser(request, 'ui-ds-investments-empty');
+      await context.clearCookies();
+      await loginContext(context, fresh.cookie);
+      await page.goto('/investments');
+      const product = viewport.width < 641 ? page.getByTestId('overview-stocks') : page.getByRole('button').filter({ hasText: 'Stocks & funds' }).first();
+      await expect(product).toBeVisible();
+      await product.click();
+      await page.waitForURL('**/investments/holdings');
+      await expect(page.getByRole('tab', { name: 'Holdings' })).toHaveAttribute('data-state', 'active');
+      await expect(page.getByRole('main').getByRole('tab')).toHaveText(['Holdings', 'Dividends', 'Tradebook', 'F&O', 'Corporate actions']);
+      await page.getByRole('tab', { name: 'Tradebook' }).click();
+      await page.waitForURL('**/investments/tradebook');
+      await expect(page.getByRole('tab', { name: 'Tradebook' })).toHaveAttribute('data-state', 'active');
+    });
+
     test('Holdings: the three tabs, the figures and every row state', async ({ page }) => {
       await page.goto('/investments/holdings');
       await expect(page).toHaveTitle('Stocks & funds · FinanceOS');

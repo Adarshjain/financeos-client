@@ -84,9 +84,12 @@ describe('InvestmentsOverview: desktop table', () => {
     const epf = row('EPF');
     expect(within(epf).getByText('Upload your EPFO passbook to see your balance here')).toBeInTheDocument();
     expect(within(epf).getByRole('link', { name: 'Upload passbook' })).toHaveAttribute('href', '/investments/import?type=epf');
-    expect(within(row('Stocks & funds')).getByRole('link', { name: 'Import tradebook' })).toHaveAttribute('href', '/investments/import');
+    const stocks = row('Stocks & funds');
+    expect(within(stocks).getByText('No holdings')).toBeInTheDocument();
     fireEvent.click(epf);
     expect(router.push).not.toHaveBeenCalled();
+    fireEvent.click(stocks);
+    expect(router.push).toHaveBeenCalledWith('/investments/holdings');
   });
 
   it("draws a failed product as Couldn't load with Retry, and the row does not open", () => {

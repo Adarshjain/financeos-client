@@ -4,7 +4,7 @@ import type { HoldingsResponse } from '@/lib/investments.types';
 
 import { type EpfEmployer, epfFigures, type EpfSummary } from '../epf/epfModel';
 import { heroModel } from '../holdings/holdingsModel';
-import { HOLDINGS_HREF, INVESTMENTS_IMPORT_HREF } from '../investmentsTabs';
+import { HOLDINGS_HREF } from '../investmentsTabs';
 import { type NpsSummary } from '../nps/npsModel';
 import { accountNavDate, EPF_EMPTY, epfRetirementRow, NPS_EMPTY, npsRetirementRows } from '../retirement/retirementModel';
 
@@ -55,7 +55,20 @@ export function stocksCard(holdings: Loaded<HoldingsResponse>, now: Date = new D
   const title = 'Stocks & funds';
   if (!holdings.ok) return failed('stocks', title, 'holdings');
   if (holdings.data.totalElements === 0) {
-    return { kind: 'empty', id: 'stocks', title, line: 'Record a trade or import your tradebook.', action: { label: 'Import tradebook', href: INVESTMENTS_IMPORT_HREF } };
+    return {
+      kind: 'product',
+      id: 'stocks',
+      title,
+      subtitle: 'No holdings',
+      href: HOLDINGS_HREF,
+      value: 0,
+      valueText: formatMoney(0),
+      dayMove: null,
+      gain: null,
+      delta: null,
+      updated: '',
+      inNetWorth: true,
+    };
   }
   const { header } = holdings.data;
   const hero = heroModel(header, now);
