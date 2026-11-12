@@ -92,6 +92,9 @@ describe('appliedCard', () => {
     expect(card.lines.find((l) => l.label === 'Cost per share')?.value).toBe('₹1,420.00 → ₹710.00');
     expect(card.lines.find((l) => l.label === 'Price feed')?.value).toBe('×2 on this date');
   });
+  it('uses resolvedAt for the applied date when present', () => {
+    expect(appliedCard({ ...base, resolvedAt: '2025-06-12T06:00:00Z' }).subheading).toBe('Applied on 12/06/25');
+  });
   it('older rows: Not recorded, and no cost line when null', () => {
     const card = appliedCard({ ...base, avgCostBefore: null, avgCostAfter: null, reason: null });
     expect(card.lines.find((l) => l.label === 'Price feed')?.value).toBe('Not recorded');

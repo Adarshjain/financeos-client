@@ -9,8 +9,8 @@ import { expect, test } from '../fixtures/test';
 
 const POINTER_KEY = 'page:/investments/corporate-actions';
 const row = (page: Page, key: string) => page.locator(`[data-inbox-key="${key}"]`);
-/** A review card on the Corporate actions page, found by its instrument name. */
-const card = (page: Page, name: string) => page.locator('section').locator('> div').filter({ hasText: name });
+/** A review block (an item inside a section card) on the Corporate actions page, found by its instrument name. */
+const card = (page: Page, name: string) => page.locator('[data-testid="ca-review"] > div, [data-testid="ca-applied"] > div').filter({ hasText: name });
 
 test.describe('/ds Inbox points at detected corporate actions, desktop 1440px (@ui)', () => {
   let currentUser: CreatedUser;
@@ -39,7 +39,7 @@ test.describe('/ds Inbox points at detected corporate actions, desktop 1440px (@
 
     await pointer.click();
     await page.waitForURL('**/investments/corporate-actions');
-    await expect(page.getByRole('heading', { name: /^Needs your review/ })).toBeVisible();
+    await expect(page.getByTestId('ca-review')).toBeVisible();
   });
 
   test('Undo on the page removes the applied action', async ({ page }) => {
@@ -49,10 +49,10 @@ test.describe('/ds Inbox points at detected corporate actions, desktop 1440px (@
     await waitForSuggestion(api, 'appliedAutomatically', seed.bonus.id);
 
     await page.goto('/investments/corporate-actions');
-    await expect(page.getByRole('heading', { name: /^Applied automatically/ })).toBeVisible({ timeout: 45_000 });
+    await expect(page.getByTestId('ca-applied')).toBeVisible({ timeout: 45_000 });
     await expect(page.getByText('Bonus 1:1').first()).toBeVisible();
     await page.getByRole('button', { name: 'Undo' }).click();
-    await expect(page.getByRole('heading', { name: /^Applied automatically/ })).toHaveCount(0);
+    await expect(page.getByTestId('ca-applied')).toHaveCount(0);
   });
 
   test('Review and apply opens the dialog on the detected kind and date; Not applicable removes the other card', async ({ page }) => {

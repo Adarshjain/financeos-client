@@ -8,7 +8,7 @@ export const INBOX_SECTIONS: { key: InboxSectionKey; title: string }[] = [
   { key: 'info', title: 'Info' },
 ];
 
-/** Actions the bill dialogs (Upcoming) handle. */
+/** The bill actions Upcoming opens a dialog for; the Inbox no longer acts on them, it only points to the page. */
 export const BILL_ACTION_TYPES = ['mark_paid', 'set_details'] as const;
 export type BillActionType = (typeof BILL_ACTION_TYPES)[number];
 

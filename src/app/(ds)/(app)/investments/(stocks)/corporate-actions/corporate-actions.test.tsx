@@ -47,7 +47,7 @@ describe('/investments/corporate-actions', () => {
       notTrading: [{ instrument: { id: 'i-x', name: 'Delta Ltd', symbol: 'DEL', exchange: 'NSE' }, sharesHeld: 7, lastPrice: null, lastPriceDate: null, markedAt: null }],
     });
     await renderPage();
-    expect(screen.getByText('Needs your review (1)')).toBeInTheDocument();
+    expect(screen.getByText('Needs your review')).toBeInTheDocument();
     expect(screen.getByText('Delta Ltd no longer trades')).toBeInTheDocument();
   });
 

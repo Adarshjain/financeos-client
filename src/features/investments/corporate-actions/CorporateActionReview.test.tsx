@@ -3,7 +3,8 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { CorporateActionReviewItem, CorporateActionReviewResponse } from '@/lib/api/types';
-import { renderWithQuery } from '@/test/renderWithQuery';
+import { keys } from '@/lib/query/keys';
+import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
 
 import { CorporateActionReview } from './CorporateActionReview';
 
@@ -68,8 +69,8 @@ describe('CorporateActionReview', () => {
 
   it('shows both sections with counts and the full picture', () => {
     renderWithQuery(<CorporateActionReview review={review} />);
-    expect(screen.getByText('Needs your review (3)')).toBeInTheDocument();
-    expect(screen.getByText('Applied automatically (1)')).toBeInTheDocument();
+    expect(screen.getByText('Needs your review')).toBeInTheDocument();
+    expect(screen.getByText('Applied automatically')).toBeInTheDocument();
     expect(screen.getByText('Split 1→5 · Acme Ltd')).toBeInTheDocument();
     expect(screen.getAllByText('Face value split from Rs 10 to Rs 2')[0]).toBeInTheDocument();
     expect(screen.getByText('The price feed shows a different ratio.')).toBeInTheDocument();
@@ -82,7 +83,7 @@ describe('CorporateActionReview', () => {
   it('only the applied section when nothing needs review', () => {
     renderWithQuery(<CorporateActionReview review={{ ...review, needsReview: [], notTrading: [] }} />);
     expect(screen.queryByText(/Needs your review/)).toBeNull();
-    expect(screen.getByText('Applied automatically (1)')).toBeInTheDocument();
+    expect(screen.getByText('Applied automatically')).toBeInTheDocument();
   });
 
   it('Review and apply opens the dialog prefilled with the suggestion', async () => {
@@ -98,6 +99,17 @@ describe('CorporateActionReview', () => {
     await waitFor(() => expect(actions.dismiss).toHaveBeenCalledWith('s-1'));
     await waitFor(() => expect(router.refresh).toHaveBeenCalled());
     expect(toast).toHaveBeenCalledWith('Dismissed');
+  });
+
+  it('a decision also refreshes the Inbox pointer and the nav badge', async () => {
+    const qc = createTestQueryClient();
+    const spy = vi.spyOn(qc, 'invalidateQueries');
+    renderWithQuery(<CorporateActionReview review={review} />, { queryClient: qc });
+    fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    await waitFor(() => expect(router.refresh).toHaveBeenCalled());
+    const calls = spy.mock.calls.map((c) => JSON.stringify(c[0]?.queryKey));
+    expect(calls).toContain(JSON.stringify(keys.inbox.all));
+    expect(calls).toContain(JSON.stringify(keys.shell.counts()));
   });
 
   it('Undo takes the applied action back', async () => {

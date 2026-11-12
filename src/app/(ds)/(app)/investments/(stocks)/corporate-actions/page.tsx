@@ -29,7 +29,7 @@ export default async function DsCorporateActionsPage({ searchParams }: { searchP
   }
   return (
     <div className="flex flex-col gap-space-8 desk:gap-space-16">
-      {review.ok ? <CorporateActionReview review={review.data} /> : null}
+      {review.ok ? <CorporateActionReview review={review.data} /> : <LoadError what="detected corporate actions" reference={review.reference} />}
       <CorporateActionsList state={state} items={items} totalElements={totalElements} totalPages={totalPages} />
     </div>
   );

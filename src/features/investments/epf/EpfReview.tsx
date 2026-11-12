@@ -6,6 +6,7 @@ import { Button } from '@/components/ds/Button/Button';
 import { Card } from '@/components/ds/Card/Card';
 import { Text } from '@/components/ds/Text/Text';
 import { showToast } from '@/components/ds/Toast/Toast';
+import { LoadError } from '@/features/shell/LoadError';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { EpfReviewMatch, EpfReviewResponse } from '@/lib/api/types';
 
@@ -92,6 +93,7 @@ function MatchCard({ match }: { match: EpfReviewMatch }) {
 
 /** The bank credits the app would not link to a withdrawal by itself: the user decides, with both sides in view. */
 export function EpfReview({ review }: { review: EpfReviewResponse | null | undefined }) {
+  if (review === null) return <LoadError what="the EPF review" />;
   if (!review || review.matches.length === 0) return null;
   const n = review.matches.length;
   return (

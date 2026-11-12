@@ -9,6 +9,7 @@ import { Card } from '@/components/ds/Card/Card';
 import { Select } from '@/components/ds/Select/Select';
 import { Text } from '@/components/ds/Text/Text';
 import { showToast } from '@/components/ds/Toast/Toast';
+import { LoadError } from '@/features/shell/LoadError';
 import { unwrapAction } from '@/lib/actionResult';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { NpsReviewMatch, NpsReviewResponse, NpsReviewSetup, NpsReviewUnrecorded } from '@/lib/api/types';
@@ -174,6 +175,8 @@ export function NpsReview({ review }: { review: NpsReviewResponse | null | undef
         await mutation.mutateAsync({ key, run });
       } catch (e) {
         void showToast(getErrorMessage(e, failed), { tone: 'danger' });
+        // A multi-step action (None of these) may have changed some rows before it failed.
+        await refresh();
         return;
       }
       void showToast(done);
@@ -181,6 +184,7 @@ export function NpsReview({ review }: { review: NpsReviewResponse | null | undef
     })();
   };
 
+  if (review === null) return <LoadError what="the NPS review" />;
   const count = reviewCount(review);
   if (!review || count === 0) return null;
   const busy = mutation.isPending;

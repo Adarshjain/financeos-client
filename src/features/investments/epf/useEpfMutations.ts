@@ -34,6 +34,7 @@ export function useEpfMutations() {
       qc.invalidateQueries({ queryKey: keys.transactions.all }),
       qc.invalidateQueries({ queryKey: keys.epf.all }),
       qc.invalidateQueries({ queryKey: keys.inbox.all }),
+      qc.invalidateQueries({ queryKey: keys.shell.counts() }),
     ]);
     router.refresh();
   };

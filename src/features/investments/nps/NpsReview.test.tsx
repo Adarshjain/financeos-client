@@ -87,11 +87,16 @@ describe('NpsReview', () => {
     await waitFor(() => expect(api.POST).toHaveBeenCalledWith('/api/v1/nps/setup/not-nps'));
   });
 
-  it('a failed action shows an error toast and does not refresh', async () => {
+  it('a failed action shows an error toast and still refreshes (a multi-step action may have changed some rows)', async () => {
     vi.mocked(api.POST).mockRejectedValue(new Error('boom'));
     renderWithQuery(<NpsReview review={{ ...empty, unrecorded: [{ payment: pay('t9'), matchedOn: null, daysSince: 3, recordTo: [account] }] }} />);
     fireEvent.click(screen.getByRole('button', { name: 'Not NPS' }));
     await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' }));
-    expect(router.refresh).not.toHaveBeenCalled();
+    await waitFor(() => expect(router.refresh).toHaveBeenCalled());
+  });
+
+  it('a review that failed to load shows the load error in its place', () => {
+    renderWithQuery(<NpsReview review={null} />);
+    expect(screen.getByText(/Couldn't load the NPS review/)).toBeInTheDocument();
   });
 });

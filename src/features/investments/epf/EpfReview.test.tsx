@@ -78,4 +78,9 @@ describe('EpfReview', () => {
     await waitFor(() => expect(showToast).toHaveBeenCalledWith(expect.any(String), { tone: 'danger' }));
     expect(router.refresh).not.toHaveBeenCalled();
   });
+
+  it('a review that failed to load shows the load error in its place', () => {
+    renderWithQuery(<EpfReview review={null} />);
+    expect(screen.getByText(/Couldn't load the EPF review/)).toBeInTheDocument();
+  });
 });

@@ -27,7 +27,12 @@ export function useNpsMutations() {
   const router = useAppRouter();
 
   const refresh = async () => {
-    await Promise.all([invalidateInvestmentQueries(qc), qc.invalidateQueries({ queryKey: keys.nps.all })]);
+    await Promise.all([
+      invalidateInvestmentQueries(qc),
+      qc.invalidateQueries({ queryKey: keys.nps.all }),
+      qc.invalidateQueries({ queryKey: keys.inbox.all }),
+      qc.invalidateQueries({ queryKey: keys.shell.counts() }),
+    ]);
     router.refresh();
   };
 

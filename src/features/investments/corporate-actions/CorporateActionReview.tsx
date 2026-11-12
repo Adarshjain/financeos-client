@@ -13,6 +13,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { CorporateActionReviewItem, CorporateActionReviewResponse } from '@/lib/api/types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
+import { keys } from '@/lib/query/keys';
 import { useAppRouter } from '@/lib/useAppRouter';
 
 import {
@@ -27,42 +28,52 @@ type DialogProps = Pick<CorporateActionDialogProps, 'instrument' | 'type' | 'pre
 
 function Lines({ lines }: { lines: ReviewCardModel['lines'] }) {
   return (
-    <>
+    <div className="flex flex-col gap-space-6">
       {lines.map((line) => (
-        <Card.Row key={line.label} className="items-baseline">
+        <div key={line.label} className="flex items-baseline gap-space-12">
           <Text variant="body" tone="ink-3" as="div" className="w-1/3 shrink-0 desk:w-48">
             {line.label}
           </Text>
           <Text variant="body" as="div" className="flex-1 min-w-0">
             {line.value}
           </Text>
-        </Card.Row>
+        </div>
       ))}
-    </>
+    </div>
   );
 }
 
-/** The card's heading and the line under it, wrapping (never cut). */
+/** An item's heading and the line under it, wrapping (never cut). */
 function Heading({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <Card.Header>
-      <div className="min-w-0">
-        <Text variant="heading" as="div">
-          {title}
+    <div className="min-w-0">
+      <Text variant="heading" as="div">
+        {title}
+      </Text>
+      {subtitle ? (
+        <Text variant="label" tone="ink-3" as="div">
+          {subtitle}
         </Text>
-        {subtitle ? (
-          <Text variant="label" tone="ink-3" as="div">
-            {subtitle}
-          </Text>
-        ) : null}
-      </div>
-    </Card.Header>
+      ) : null}
+    </div>
   );
 }
 
 function Actions({ children }: { children: React.ReactNode }) {
-  return <Card.Footer className="justify-start">{children}</Card.Footer>;
+  return <div className="flex items-center gap-space-8 flex-wrap">{children}</div>;
 }
+
+/** One section: a card with the shared "N items" header and one separated block per item. */
+function Section({ title, count, testId, children }: { title: string; count: number; testId: string; children: React.ReactNode }) {
+  return (
+    <Card data-testid={testId}>
+      <Card.Header title={title} subtitle={`${count} ${count === 1 ? 'item' : 'items'}`} />
+      {children}
+    </Card>
+  );
+}
+
+const BLOCK = 'flex-col items-stretch gap-space-10';
 
 export interface CorporateActionReviewProps {
   review: CorporateActionReviewResponse;
@@ -93,6 +104,8 @@ export function CorporateActionReview({ review }: CorporateActionReviewProps) {
       async () => {
         await unwrapAction((kind === 'undo' ? undoCorporateActionSuggestion : dismissCorporateActionSuggestion)(id));
         void invalidateInvestmentQueries(qc);
+        void qc.invalidateQueries({ queryKey: keys.inbox.all });
+        void qc.invalidateQueries({ queryKey: keys.shell.counts() });
         router.refresh();
         showToast(kind === 'undo' ? 'Removed' : 'Dismissed');
       },
@@ -129,15 +142,15 @@ export function CorporateActionReview({ review }: CorporateActionReviewProps) {
   const trading = review.notTrading;
   const applied = review.appliedAutomatically;
 
+  const total = needs.length + trading.length;
   return (
     <>
-      {needs.length + trading.length > 0 ? (
-        <section className="flex flex-col gap-space-8 desk:gap-space-16">
-          <Text variant="heading" as="h2">{`Needs your review (${needs.length + trading.length})`}</Text>
+      {total > 0 ? (
+        <Section title="Needs your review" count={total} testId="ca-review">
           {needs.map((item) => {
             const card = reviewCard(item);
             return (
-              <Card key={item.id}>
+              <Card.Row key={item.id} className={BLOCK}>
                 <Heading title={card.heading} subtitle={card.subheading} />
                 <Lines lines={card.lines} />
                 <Actions>
@@ -154,26 +167,24 @@ export function CorporateActionReview({ review }: CorporateActionReviewProps) {
                     Not applicable
                   </Button>
                 </Actions>
-              </Card>
+              </Card.Row>
             );
           })}
           {trading.map((stock) => {
             const card = notTradingCard(stock);
             return (
-              <Card key={`nt-${card.id}`}>
+              <Card.Row key={`nt-${card.id}`} className={BLOCK}>
                 <Heading title={card.heading} />
-                {card.lines.map((line) => (
-                  <Card.Row key={line}>
-                    <Text variant="body" as="div" className="min-w-0">
+                <div className="flex flex-col gap-space-6">
+                  {card.lines.map((line) => (
+                    <Text key={line} variant="body" as="div">
                       {line}
                     </Text>
-                  </Card.Row>
-                ))}
-                <Card.Row>
-                  <Text variant="body" tone="ink-3" as="div" className="min-w-0">
+                  ))}
+                  <Text variant="body" tone="ink-3" as="div">
                     {card.advice}
                   </Text>
-                </Card.Row>
+                </div>
                 <Actions>
                   <Button size="sm" variant="secondary" loading={busy === `${card.id}|merged`} onClick={() => void openRecord(`${card.id}|merged`, stock.instrument, 'merger')}>
                     Merged
@@ -182,18 +193,17 @@ export function CorporateActionReview({ review }: CorporateActionReviewProps) {
                     Delisted
                   </Button>
                 </Actions>
-              </Card>
+              </Card.Row>
             );
           })}
-        </section>
+        </Section>
       ) : null}
       {applied.length > 0 ? (
-        <section className="flex flex-col gap-space-8 desk:gap-space-16">
-          <Text variant="heading" as="h2">{`Applied automatically (${applied.length})`}</Text>
+        <Section title="Applied automatically" count={applied.length} testId="ca-applied">
           {applied.map((item) => {
             const card = appliedCard(item);
             return (
-              <Card key={item.id}>
+              <Card.Row key={item.id} className={BLOCK}>
                 <Heading title={card.heading} subtitle={card.subheading} />
                 <Lines lines={card.lines} />
                 <Actions>
@@ -201,10 +211,10 @@ export function CorporateActionReview({ review }: CorporateActionReviewProps) {
                     Undo
                   </Button>
                 </Actions>
-              </Card>
+              </Card.Row>
             );
           })}
-        </section>
+        </Section>
       ) : null}
       {dialog && CorporateActionDialog ? <CorporateActionDialog {...dialog} onClose={() => setDialog(null)} /> : null}
     </>

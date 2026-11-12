@@ -129,7 +129,7 @@ export function appliedCard(item: CorporateActionReviewItem): ReviewCardModel {
     label: 'Price feed',
     value: item.feedFactor != null ? `×${formatQuantity(item.feedFactor)} on this date` : 'Not recorded',
   });
-  return { id: item.id, heading: reviewHeading(item), subheading: `Applied on ${date(item.createdAt)}`, lines };
+  return { id: item.id, heading: reviewHeading(item), subheading: `Applied on ${date(item.resolvedAt ?? item.createdAt)}`, lines };
 }
 
 export interface NotTradingCardModel {
