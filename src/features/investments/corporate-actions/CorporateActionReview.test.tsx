@@ -47,6 +47,7 @@ const item: CorporateActionReviewItem = {
   sharesAfter: 50,
   avgCostBefore: 500,
   avgCostAfter: 100,
+  possibleChildren: [],
 };
 const review: CorporateActionReviewResponse = {
   needsReview: [item, { ...item, id: 's-2', kind: 'oversold', reason: null, soldQty: 3, sellDate: '2025-03-04', sharesAfter: null, subject: null, instrument: { id: 'i-2', name: 'Beta Ltd', symbol: 'BETA', exchange: 'NSE' } }],
@@ -145,3 +146,20 @@ describe('CorporateActionReview', () => {
     await waitFor(() => expect(screen.getByTestId('dialog')).toHaveTextContent('Delta Ltd|delisted|'));
   });
 });
+
+describe('CorporateActionReview: a detected demerger', () => {
+  it('shows the note and a line per possible new company', () => {
+    const demerger: CorporateActionReviewItem = {
+      ...item,
+      kind: 'demerger',
+      reason: 'NEEDS_DETAILS',
+      ratioFrom: null,
+      ratioTo: null,
+      possibleChildren: [{ symbol: 'ITCHOTELS', name: 'ITC Hotels', listedOn: '2025-01-29', yahooSymbol: 'ITCHOTELS.NS' }],
+    };
+    renderWithQuery(<CorporateActionReview review={{ needsReview: [demerger], appliedAutomatically: [], notTrading: [] }} />);
+    expect(screen.getByText(/only says "Demerger"/)).toBeInTheDocument();
+    expect(screen.getByText('Possible new company: ITC Hotels (ITCHOTELS), listed on NSE 29/01/25')).toBeInTheDocument();
+  });
+});
+

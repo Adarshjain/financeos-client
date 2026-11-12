@@ -122,7 +122,7 @@ export function CorporateActionReview({ review }: CorporateActionReviewProps) {
           setDialog({
             instrument: suggestion.instrument,
             type,
-            prefill: { exDate: suggestion.exDate, ratioFrom: suggestion.ratioFrom, ratioTo: suggestion.ratioTo },
+            prefill: { exDate: suggestion.exDate, ratioFrom: suggestion.ratioFrom, ratioTo: suggestion.ratioTo, possibleChildren: suggestion.possibleChildren },
             suggestionId: suggestion.id,
           }),
         );
@@ -153,6 +153,16 @@ export function CorporateActionReview({ review }: CorporateActionReviewProps) {
               <Card.Row key={item.id} className={BLOCK}>
                 <Heading title={card.heading} subtitle={card.subheading} />
                 <Lines lines={card.lines} />
+                {card.candidates?.map((line) => (
+                  <Text key={line} variant="body" as="div">
+                    {line}
+                  </Text>
+                ))}
+                {card.note ? (
+                  <Text variant="body" tone="ink-3" as="div">
+                    {card.note}
+                  </Text>
+                ) : null}
                 <Actions>
                   {item.kind === 'oversold' ? (
                     <Button size="sm" variant="secondary" loading={busy === `${item.id}|record`} onClick={() => void openRecord(`${item.id}|record`, item.instrument)}>

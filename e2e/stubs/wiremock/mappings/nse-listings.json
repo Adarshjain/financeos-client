@@ -1,0 +1,14 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/nse/listings.csv"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "text/csv"
+    },
+    "body": "SYMBOL,NAME OF COMPANY, SERIES, DATE OF LISTING, PAID UP VALUE, MARKET LOT, ISIN NUMBER, FACE VALUE\nE2EDMCHILD,E2E Demerger Spinco Limited,EQ,10-FEB-2025,10,1,INE2E0000045,1\nE2EOTHER,Unrelated Widgets Limited,EQ,12-FEB-2025,10,1,INE2E0000052,1\n"
+  }
+}

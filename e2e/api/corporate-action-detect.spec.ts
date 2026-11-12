@@ -42,6 +42,14 @@ test.describe('Detected corporate actions API (@api)', () => {
     expect(pointer.title).toBe('Corporate actions: 2 to review');
     expect(await listInstrumentCorporateActions(api, seed.miss.id)).toHaveLength(0);
     expect(await listInstrumentCorporateActions(api, seed.demerge.id)).toHaveLength(0);
+
+    // The demerger carries the new company the exchange listed after the ex-date; the listing cache warms in the
+    // background, so the first read may not have it yet. The bonus items have none.
+    await expect
+      .poll(async () => (await suggestionOf(api, 'needsReview', seed.demerge.id))?.possibleChildren.map((c) => c.symbol), { timeout: 60_000 })
+      .toEqual(['E2EDMCHILD']);
+    expect((await suggestionOf(api, 'needsReview', seed.miss.id))?.possibleChildren).toEqual([]);
+    expect((await suggestionOf(api, 'appliedAutomatically', seed.bonus.id))?.possibleChildren).toEqual([]);
   });
 
   test('undo takes the applied action and its listing away', async ({ api }) => {

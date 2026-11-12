@@ -173,6 +173,7 @@ export type CorporateAction = Schemas['CorporateActionResponse'];
 export type CreateCorporateActionRequest = Schemas['CreateCorporateActionRequest'];
 export type UpdateCorporateActionRequest = Schemas['UpdateCorporateActionRequest'];
 export type CorporateActionSuggestion = Schemas['CorporateActionSuggestionResponse'];
+export type CorporateActionChildCandidate = Schemas['CorporateActionChildCandidate'];
 export type CorporateActionReviewResponse = Schemas['CorporateActionReviewResponse'];
 export type CorporateActionReviewItem = Schemas['CorporateActionReviewItemResponse'];
 export type NotTradingStock = Schemas['NotTradingStock'];

@@ -286,3 +286,74 @@ describe('CorporateActionDialog: editing and deleting', () => {
     expect(router.refresh).toHaveBeenCalled();
   });
 });
+
+describe('CorporateActionDialog: a detected demerger', () => {
+  const listed = { symbol: 'ITCHOTELS', name: 'ITC Hotels', listedOn: '2025-01-29', yahooSymbol: 'ITCHOTELS.NS', isin: 'INE000000000' };
+  const known = { symbol: 'ITCHOTELS', name: 'ITC Hotels', listedOn: '2025-01-29', yahooSymbol: 'ITCHOTELS.NS', instrumentId: 'i-itch' };
+  const open = (possibleChildren: unknown[], ratio: { ratioFrom?: number; ratioTo?: number } = {}) =>
+    renderWithQuery(
+      <CorporateActionDialog
+        instrument={itc}
+        type="demerger"
+        suggestionId="s-1"
+        prefill={{ exDate: '2025-01-29', ...ratio, possibleChildren: possibleChildren as never }}
+        onClose={onClose}
+      />,
+    );
+
+  it('leaves the ratio blank, shows the note and asks for the ratio on save', async () => {
+    open([]);
+    expect(field('Held')).toHaveValue('');
+    expect(field('Received')).toHaveValue('');
+    expect(screen.getByText(/only says "Demerger"/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Record demerger' }));
+    expect((await screen.findAllByText('Enter a whole number above zero.')).length).toBe(2);
+    expect(api.POST).not.toHaveBeenCalled();
+  });
+
+  it('a manual demerger keeps the default ratio and shows no note', () => {
+    renderWithQuery(<CorporateActionDialog instrument={itc} type="demerger" onClose={onClose} />);
+    expect(field('Held')).toHaveValue('1');
+    expect(screen.queryByText(/only says/)).toBeNull();
+  });
+
+  it('Use on a company already in the catalog sets it as the child without resolving', async () => {
+    open([known]);
+    expect(screen.getByText('ITC Hotels (ITCHOTELS), listed on NSE 29/01/25')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Use' }));
+    await waitFor(() => expect(screen.getByRole('combobox', { name: /^Child instrument/ })).toHaveTextContent('ITCHOTELS · ITC Hotels'));
+    expect(catalog.resolve).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'Use' })).toBeNull();
+  });
+
+  it('Use on a new company resolves it first, then sets the child', async () => {
+    catalog.resolve.mockResolvedValue({ id: 'i-new', name: 'ITC Hotels', symbol: 'ITCHOTELS' });
+    open([listed]);
+    fireEvent.click(screen.getByRole('button', { name: 'Use' }));
+    await waitFor(() => expect(screen.getByRole('combobox', { name: /^Child instrument/ })).toHaveTextContent('ITCHOTELS · ITC Hotels'));
+    expect(catalog.resolve).toHaveBeenCalledWith({
+      type: 'stock',
+      name: 'ITC Hotels',
+      symbol: 'ITCHOTELS',
+      exchange: 'NSE',
+      isin: 'INE000000000',
+      yahooSymbol: 'ITCHOTELS.NS',
+      currency: 'INR',
+    });
+  });
+
+  it('a failed resolve shows an inline error and picks nothing', async () => {
+    catalog.resolve.mockRejectedValue(new Error('nope'));
+    open([listed]);
+    fireEvent.click(screen.getByRole('button', { name: 'Use' }));
+    expect(await screen.findByText(/Couldn't add the instrument|nope/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Use' })).toBeInTheDocument();
+  });
+
+  it('a merger shows its note only without a ratio, and no candidates', () => {
+    renderWithQuery(<CorporateActionDialog instrument={itc} type="merger" suggestionId="s-2" prefill={{ exDate: '2025-01-29' }} onClose={onClose} />);
+    expect(screen.getByText(/only says "Merger"/)).toBeInTheDocument();
+    expect(field('Held')).toHaveValue('');
+  });
+});
+

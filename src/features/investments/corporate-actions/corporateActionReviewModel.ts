@@ -1,6 +1,7 @@
 import type { CorporateActionReviewItem, NotTradingStock } from '@/lib/api/types';
 import { formatDate, formatMoney, formatQuantity } from '@/lib/format';
 
+import { candidateText, detectedNote } from './corporateActionFormModel';
 import { ratioText } from './corporateActionRatioModel';
 
 export type ReviewReason = NonNullable<CorporateActionReviewItem['reason']>;
@@ -30,6 +31,10 @@ export interface ReviewCardModel {
   /** "Ex-date 10/06/2025" or "Applied on 11/06/2025". */
   subheading: string;
   lines: ReviewLine[];
+  /** A plain line on what the notice leaves out (demerger and merger). */
+  note?: string;
+  /** Companies that may be the new company of a demerger, one line each. */
+  candidates?: string[];
 }
 
 const date = (v: string | null | undefined) => formatDate(v, 'input');
@@ -116,7 +121,13 @@ export function reviewCard(item: CorporateActionReviewItem): ReviewCardModel {
   if (item.kind !== 'oversold') lines.push({ label: 'Price feed', value: priceFeedText(item) });
   const why = reviewReasonText(item);
   if (why) lines.push({ label: "Why we didn't apply it", value: why });
-  return { id: item.id, heading: reviewHeading(item), subheading: `Ex-date ${date(item.exDate)}`, lines };
+  const card: ReviewCardModel = { id: item.id, heading: reviewHeading(item), subheading: `Ex-date ${date(item.exDate)}`, lines };
+  const note = detectedNote(item.kind === 'demerger' || item.kind === 'merger' ? item.kind : undefined, item);
+  if (note) card.note = note;
+  if (item.kind === 'demerger' && item.possibleChildren.length > 0) {
+    card.candidates = item.possibleChildren.map((c) => `Possible new company: ${candidateText(c)}`);
+  }
+  return card;
 }
 
 /** An action the app applied on its own. */

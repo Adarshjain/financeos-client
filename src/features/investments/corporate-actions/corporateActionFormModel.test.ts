@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { initialForm, ratioCopy, requestBody, validateForm } from './corporateActionFormModel';
+import { candidateText, detectedNote, initialForm, ratioCopy, requestBody, validateForm } from './corporateActionFormModel';
 import { demerger } from './corporateActions.fixtures';
 
 const itc = { id: 'i-itc', name: 'ITC', symbol: 'ITC' };
@@ -117,5 +117,44 @@ describe('ratioCopy', () => {
     expect(ratioCopy('split')).toMatchObject({ from: 'Before', to: 'After' });
     expect(ratioCopy('demerger').heading).toContain('parent held → child received');
     expect(ratioCopy('merger').heading).toContain('transferor held → acquirer received');
+  });
+});
+
+describe('a detected demerger or merger without a ratio', () => {
+  const detected = { exDate: '2025-01-06', ratioFrom: null, ratioTo: null };
+
+  it('leaves both ratio fields blank, and the form then asks for them', () => {
+    for (const type of ['demerger', 'merger'] as const) {
+      const form = initialForm({ today: '2026-10-23', instrument: itc, type, prefill: detected });
+      expect(form).toMatchObject({ ratioFrom: '', ratioTo: '' });
+      const errors = validateForm({ ...form, target: hotels });
+      expect(errors.ratioFrom).toBe('Enter a whole number above zero.');
+      expect(errors.ratioTo).toBe('Enter a whole number above zero.');
+    }
+  });
+
+  it('keeps a detected ratio, and keeps the defaults for a manual action or another kind', () => {
+    expect(initialForm({ today: '2026-10-23', type: 'demerger', prefill: { ratioFrom: 10, ratioTo: 1 } })).toMatchObject({ ratioFrom: '10', ratioTo: '1' });
+    expect(initialForm({ today: '2026-10-23', type: 'demerger' })).toMatchObject({ ratioFrom: '1', ratioTo: '2' });
+    expect(initialForm({ today: '2026-10-23', type: 'merger' })).toMatchObject({ ratioFrom: '1', ratioTo: '2' });
+    expect(initialForm({ today: '2026-10-23', type: 'split', prefill: detected })).toMatchObject({ ratioFrom: '1', ratioTo: '2' });
+  });
+});
+
+describe('detectedNote and candidateText', () => {
+  it('says what the notice leaves out, only when there is something to check', () => {
+    expect(detectedNote('demerger', { ratioFrom: 10, ratioTo: 1 })).toBe(
+      'The exchange notice only says "Demerger". It doesn\'t name the new company or the ratio. Check the company\'s announcement.',
+    );
+    expect(detectedNote('merger', {})).toBe(
+      'The exchange notice only says "Merger". It doesn\'t name the acquiring company or the ratio. Check the company\'s announcement.',
+    );
+    expect(detectedNote('merger', { ratioFrom: 1, ratioTo: 2 })).toBeNull();
+    expect(detectedNote('split', {})).toBeNull();
+    expect(detectedNote('demerger', undefined)).toBeNull();
+  });
+
+  it('writes a candidate on one line', () => {
+    expect(candidateText({ name: 'ITC Hotels', symbol: 'ITCHOTELS', listedOn: '2025-01-29' })).toBe('ITC Hotels (ITCHOTELS), listed on NSE 29/01/25');
   });
 });

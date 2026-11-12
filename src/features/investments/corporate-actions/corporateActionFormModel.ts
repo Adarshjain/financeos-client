@@ -1,5 +1,6 @@
 import type { InstrumentRef } from '@/features/investments/investmentsFormatModel';
-import type { CreateCorporateActionRequest } from '@/lib/api/types';
+import type { CorporateActionChildCandidate, CreateCorporateActionRequest } from '@/lib/api/types';
+import { formatDate } from '@/lib/format';
 import type { CorporateActionItem, CorporateActionKind } from '@/lib/investments.types';
 
 export { instrumentLabel, type InstrumentRef } from '@/features/investments/investmentsFormatModel';
@@ -30,6 +31,26 @@ export interface FormPrefill {
   exDate?: string | null;
   ratioFrom?: number | null;
   ratioTo?: number | null;
+  /** Companies that listed around the demerger date, for the user to pick the child from. */
+  possibleChildren?: CorporateActionChildCandidate[];
+}
+
+/** What the notice leaves out for a detected demerger or merger, or null when there is nothing to check. */
+export function detectedNote(type: CorporateActionKind | undefined, prefill: Pick<FormPrefill, 'ratioFrom' | 'ratioTo'> | undefined): string | null {
+  if (!prefill) return null;
+  const ratioMissing = prefill.ratioFrom == null || prefill.ratioTo == null;
+  if (type === 'demerger') {
+    return 'The exchange notice only says "Demerger". It doesn\'t name the new company or the ratio. Check the company\'s announcement.';
+  }
+  if (type === 'merger' && ratioMissing) {
+    return 'The exchange notice only says "Merger". It doesn\'t name the acquiring company or the ratio. Check the company\'s announcement.';
+  }
+  return null;
+}
+
+/** "ITC Hotels (ITCHOTELS), listed on NSE 29/01/2025". */
+export function candidateText(c: Pick<CorporateActionChildCandidate, 'name' | 'symbol' | 'listedOn'>): string {
+  return `${c.name} (${c.symbol}), listed on NSE ${formatDate(c.listedOn, 'input')}`;
 }
 
 /** The form for a new action (today, 1 → 2, 20% for a demerger) or filled from the saved one. */
@@ -56,12 +77,15 @@ export function initialForm(args: {
       notes: action.notes ?? '',
     };
   }
+  // A detected demerger or merger with no ratio in the notice: the user enters it, we don't guess.
+  const blankRatio = Boolean(args.prefill) && (args.type === 'demerger' || args.type === 'merger');
+  const fallback = (v: string) => (blankRatio ? '' : v);
   return {
     instrument: args.instrument ?? null,
     type: args.type ?? 'split',
     exDate: args.prefill?.exDate ? args.prefill.exDate.slice(0, 10) : args.today,
-    ratioFrom: args.prefill?.ratioFrom != null ? String(args.prefill.ratioFrom) : '1',
-    ratioTo: args.prefill?.ratioTo != null ? String(args.prefill.ratioTo) : '2',
+    ratioFrom: args.prefill?.ratioFrom != null ? String(args.prefill.ratioFrom) : fallback('1'),
+    ratioTo: args.prefill?.ratioTo != null ? String(args.prefill.ratioTo) : fallback('2'),
     target: null,
     costAllocationPct: '20',
     cashInLieu: '',

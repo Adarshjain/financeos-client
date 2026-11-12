@@ -69,6 +69,7 @@ export interface DetectedSuggestion {
   id: string;
   kind: string;
   instrument: { id: string };
+  possibleChildren: { symbol: string; name: string }[];
 }
 
 async function suggestionsOf(api: ApiClient, bucket: DetectBucket, instrumentId: string): Promise<DetectedSuggestion | undefined> {

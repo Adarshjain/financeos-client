@@ -65,10 +65,21 @@ test.describe('/ds Inbox points at detected corporate actions, desktop 1440px (@
     await page.goto('/investments/corporate-actions');
     const demerge = card(page, seed.demerge.name);
     await expect(demerge).toBeVisible({ timeout: 45_000 });
+    // The listing cache warms in the background: the candidate line shows up once the first read has finished.
+    await expect(async () => {
+      await page.reload();
+      await expect(demerge).toContainText('Possible new company: E2E Demerger Spinco Limited (E2EDMCHILD), listed on NSE 10/02/25', { timeout: 3_000 });
+    }).toPass({ timeout: 60_000 });
+    await expect(demerge).toContainText('The exchange notice only says "Demerger"');
     await demerge.getByRole('button', { name: 'Review and apply' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByRole('combobox', { name: /^Action/ })).toContainText('Demerger');
     await expect(dialog.getByLabel('Ex-date')).toHaveValue('15/01/2025');
+    await expect(dialog.getByRole('textbox', { name: /^Held/ })).toHaveValue('');
+    await expect(dialog.getByRole('textbox', { name: /^Received/ })).toHaveValue('');
+    await expect(dialog.getByText('E2E Demerger Spinco Limited (E2EDMCHILD)')).toBeVisible();
+    await dialog.getByRole('button', { name: 'Use' }).click();
+    await expect(dialog.getByRole('combobox', { name: /^Child instrument/ })).toContainText('E2E Demerger Spinco');
     expect(DETECT_EX_DATE).toBe('2025-01-15');
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(dialog).toHaveCount(0);

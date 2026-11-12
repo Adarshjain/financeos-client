@@ -6775,6 +6775,16 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
+        CorporateActionChildCandidate: {
+            /** Format: uuid */
+            instrumentId?: string | null;
+            isin?: string | null;
+            /** Format: date */
+            listedOn: string;
+            name: string;
+            symbol: string;
+            yahooSymbol: string;
+        };
         CorporateActionPage: {
             items: components["schemas"]["CorporateActionRowResponse"][];
             /** Format: int32 */
@@ -6830,6 +6840,7 @@ export interface components {
             instrument: components["schemas"]["ReviewInstrument"];
             /** @enum {string} */
             kind: "split" | "bonus" | "demerger" | "merger" | "other" | "oversold";
+            possibleChildren: components["schemas"]["CorporateActionChildCandidate"][];
             /** Format: int32 */
             ratioFrom?: number | null;
             /** Format: int32 */
@@ -6892,6 +6903,7 @@ export interface components {
             instrument: components["schemas"]["InstrumentRef"];
             /** @enum {string} */
             kind: "split" | "bonus" | "demerger" | "merger" | "other" | "oversold";
+            possibleChildren: components["schemas"]["CorporateActionChildCandidate"][];
             /** Format: int32 */
             ratioFrom?: number | null;
             /** Format: int32 */

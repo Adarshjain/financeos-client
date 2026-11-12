@@ -21,6 +21,7 @@ const base: CorporateActionReviewItem = {
   sharesAfter: 60,
   avgCostBefore: 1420,
   avgCostAfter: 710,
+  possibleChildren: [],
 };
 const line = (item: CorporateActionReviewItem, label: string) => reviewCard(item).lines.find((l) => l.label === label)?.value;
 
@@ -112,5 +113,26 @@ describe('notTradingCard', () => {
   });
   it('hides the last price and mark date when null', () => {
     expect(notTradingCard({ ...stock, lastPrice: null, lastPriceDate: null, markedAt: null }).lines).toEqual(['You hold 12.5 shares']);
+  });
+});
+
+describe('reviewCard: detected demerger and merger', () => {
+  const cand = { symbol: 'ITCHOTELS', name: 'ITC Hotels', listedOn: '2025-01-29', yahooSymbol: 'ITCHOTELS.NS' };
+
+  it('a demerger carries the note and one line per possible new company', () => {
+    const card = reviewCard({ ...base, kind: 'demerger', ratioFrom: null, ratioTo: null, possibleChildren: [cand] });
+    expect(card.note).toContain('only says "Demerger"');
+    expect(card.candidates).toEqual(['Possible new company: ITC Hotels (ITCHOTELS), listed on NSE 29/01/25']);
+  });
+
+  it('a merger has the note only when the ratio is missing, and never candidates', () => {
+    expect(reviewCard({ ...base, kind: 'merger', ratioFrom: null, ratioTo: null }).note).toContain('only says "Merger"');
+    expect(reviewCard({ ...base, kind: 'merger', ratioFrom: 1, ratioTo: 2 }).note).toBeUndefined();
+    expect(reviewCard({ ...base, kind: 'merger', ratioFrom: null, ratioTo: null }).candidates).toBeUndefined();
+  });
+
+  it('other kinds have neither', () => {
+    expect(reviewCard(base).note).toBeUndefined();
+    expect(reviewCard(base).candidates).toBeUndefined();
   });
 });

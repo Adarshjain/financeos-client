@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { Button } from '@/components/ds/Button/Button';
 import { Card } from '@/components/ds/Card/Card';
 import { DateField } from '@/components/ds/DateField/DateField';
 import { ConfirmDialog, Dialog } from '@/components/ds/Dialog/Dialog';
@@ -14,6 +15,7 @@ import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { IrreversibleNote } from '@/features/shell/IrreversibleNote';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import type { CorporateActionChildCandidate } from '@/lib/api/types';
 import { watchSession } from '@/lib/authExpiry';
 import { todayInAppZone } from '@/lib/date-range';
 import type { CorporateActionItem, CorporateActionKind, CorporateActionPreview } from '@/lib/investments.types';
@@ -21,10 +23,13 @@ import { useAppRouter } from '@/lib/useAppRouter';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/lib/useDebouncedValue';
 
 import { isBadRequest } from '../badRequest';
+import { useResolveInstrumentMutation } from '../instruments/useCatalogSearch';
 import { InstrumentSelect } from '../InstrumentSelect';
 import { loadCorporateActionPreview } from './corporateActionActions';
 import {
+  candidateText,
   type CorporateActionForm,
+  detectedNote,
   type FormErrors,
   type FormPrefill,
   hasRatio,
@@ -77,6 +82,9 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
   const resolving = resolvingMain || resolvingTarget;
   const [formError, setFormError] = React.useState<string | undefined>();
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
+  const resolveCandidate = useResolveInstrumentMutation();
+  const [usingCandidate, setUsingCandidate] = React.useState<string | null>(null);
+  const [candidateError, setCandidateError] = React.useState<string | undefined>();
   const { createMutation, updateMutation, deleteMutation, acceptMutation } = useCorporateActionMutations(form.instrument?.id);
   const saving = createMutation.isPending || updateMutation.isPending || acceptMutation.isPending;
   const deleting = deleteMutation.isPending;
@@ -85,6 +93,31 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
     setForm((f) => ({ ...f, ...patch }));
     setFormError(undefined);
     if (clear) setErrors((e) => ({ ...e, [clear]: undefined }));
+  };
+
+  const pickCandidate = async (c: CorporateActionChildCandidate) => {
+    setCandidateError(undefined);
+    if (c.instrumentId) {
+      change({ target: { id: c.instrumentId, name: c.name, symbol: c.symbol } }, 'target');
+      return;
+    }
+    setUsingCandidate(c.yahooSymbol);
+    try {
+      const resolved = await resolveCandidate.mutateAsync({
+        type: 'stock',
+        name: c.name,
+        symbol: c.symbol,
+        exchange: 'NSE',
+        isin: c.isin ?? undefined,
+        yahooSymbol: c.yahooSymbol,
+        currency: 'INR',
+      });
+      change({ target: resolved }, 'target');
+    } catch (e) {
+      setCandidateError(getErrorMessage(e, "Couldn't add the instrument. Try again."));
+    } finally {
+      setUsingCandidate(null);
+    }
   };
 
   // ---- The effect of saving it ----
@@ -165,6 +198,8 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
   };
 
   const copy = ratioCopy(form.type);
+  const note = suggestionId ? detectedNote(form.type, prefill) : null;
+  const candidates = suggestionId && form.type === 'demerger' ? (prefill?.possibleChildren ?? []) : [];
   const merging = hasTarget(form.type);
   const ratioShown = hasRatio(form.type);
   const kindLabel = KIND_LABELS[form.type].toLowerCase();
@@ -239,6 +274,37 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
                   />
                 ) : null}
               </div>
+              {note ? (
+                <Text variant="label" tone="ink-3" as="div">
+                  {note}
+                </Text>
+              ) : null}
+              {candidates.length > 0 && !form.target ? (
+                <div className="flex flex-col gap-space-6">
+                  {candidates.map((c) => (
+                    <div key={c.yahooSymbol} className="flex items-baseline gap-space-8 flex-wrap">
+                      <Text variant="label" as="div">
+                        {candidateText(c)}
+                      </Text>
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="sm"
+                        loading={usingCandidate === c.yahooSymbol}
+                        disabled={usingCandidate !== null && usingCandidate !== c.yahooSymbol}
+                        onClick={() => void pickCandidate(c)}
+                      >
+                        Use
+                      </Button>
+                    </div>
+                  ))}
+                  {candidateError ? (
+                    <Text variant="label" tone="danger" as="div">
+                      {candidateError}
+                    </Text>
+                  ) : null}
+                </div>
+              ) : null}
               {ratioShown ? (
               <div className="flex flex-col gap-space-8">
                 <Text variant="label" tone="ink-3" as="div">
