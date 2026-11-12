@@ -4,13 +4,15 @@ import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
-import { DETECT_EX_DATE, seedDetectablePurchases, waitForInboxItem } from '../fixtures/seed/corporateActionDetect';
+import { DETECT_EX_DATE, seedDetectablePurchases, waitForSuggestion } from '../fixtures/seed/corporateActionDetect';
 import { expect, test } from '../fixtures/test';
-import { expectToast } from '../fixtures/ui';
 
+const POINTER_KEY = 'page:/investments/corporate-actions';
 const row = (page: Page, key: string) => page.locator(`[data-inbox-key="${key}"]`);
+/** A review card on the Corporate actions page, found by its instrument name. */
+const card = (page: Page, name: string) => page.locator('section').locator('> div').filter({ hasText: name });
 
-test.describe('/ds Inbox detected corporate actions, desktop 1440px (@ui)', () => {
+test.describe('/ds Inbox points at detected corporate actions, desktop 1440px (@ui)', () => {
   let currentUser: CreatedUser;
 
   test.beforeEach(async ({ context, request, page }) => {
@@ -19,39 +21,61 @@ test.describe('/ds Inbox detected corporate actions, desktop 1440px (@ui)', () =
     await page.setViewportSize({ width: 1440, height: 900 });
   });
 
-  test('Undo removes the applied row', async ({ page }) => {
+  test('the Inbox has one row for the actions to review, with no buttons, and it opens the page', async ({ page }) => {
     test.slow();
     const api = makeApi(currentUser.cookie);
     const seed = await seedDetectablePurchases(api);
-    const applied = await waitForInboxItem(api, 'corporate_action_applied', seed.bonus.id);
+    await waitForSuggestion(api, 'needsReview', seed.demerge.id);
+    await waitForSuggestion(api, 'needsReview', seed.miss.id);
 
     await page.goto('/inbox');
-    await expect(row(page, applied.key)).toBeVisible({ timeout: 45_000 });
-    await expect(row(page, applied.key)).toContainText('Bonus 1:1 applied to');
-    await row(page, applied.key).getByRole('button', { name: 'Undo' }).click();
-    await expectToast(page, 'Removed');
-    await expect(row(page, applied.key)).toHaveCount(0);
+    const pointer = row(page, POINTER_KEY);
+    await expect(pointer).toBeVisible({ timeout: 45_000 });
+    await expect(pointer).toContainText('Corporate actions: 2 to review');
+    await expect(pointer).toHaveAttribute('href', '/investments/corporate-actions');
+    await expect(pointer.getByRole('button')).toHaveCount(0);
+    // An automatic one gets no Inbox row.
+    await expect(page.locator('[data-inbox-key^="ca_applied:"]')).toHaveCount(0);
+
+    await pointer.click();
+    await page.waitForURL('**/investments/corporate-actions');
+    await expect(page.getByRole('heading', { name: /^Needs your review/ })).toBeVisible();
   });
 
-  test('Review opens the dialog on the detected kind and date; Ignore removes the other row', async ({ page }) => {
+  test('Undo on the page removes the applied action', async ({ page }) => {
     test.slow();
     const api = makeApi(currentUser.cookie);
     const seed = await seedDetectablePurchases(api);
-    const demerge = await waitForInboxItem(api, 'corporate_action_review', seed.demerge.id);
-    const miss = await waitForInboxItem(api, 'corporate_action_review', seed.miss.id);
+    await waitForSuggestion(api, 'appliedAutomatically', seed.bonus.id);
 
-    await page.goto('/inbox');
-    await expect(row(page, demerge.key)).toBeVisible({ timeout: 45_000 });
-    await row(page, demerge.key).getByRole('button', { name: 'Review' }).click();
+    await page.goto('/investments/corporate-actions');
+    await expect(page.getByRole('heading', { name: /^Applied automatically/ })).toBeVisible({ timeout: 45_000 });
+    await expect(page.getByText('Bonus 1:1').first()).toBeVisible();
+    await page.getByRole('button', { name: 'Undo' }).click();
+    await expect(page.getByRole('heading', { name: /^Applied automatically/ })).toHaveCount(0);
+  });
+
+  test('Review and apply opens the dialog on the detected kind and date; Not applicable removes the other card', async ({ page }) => {
+    test.slow();
+    const api = makeApi(currentUser.cookie);
+    const seed = await seedDetectablePurchases(api);
+    await waitForSuggestion(api, 'needsReview', seed.demerge.id);
+    await waitForSuggestion(api, 'needsReview', seed.miss.id);
+
+    await page.goto('/investments/corporate-actions');
+    const demerge = card(page, seed.demerge.name);
+    await expect(demerge).toBeVisible({ timeout: 45_000 });
+    await demerge.getByRole('button', { name: 'Review and apply' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByRole('combobox', { name: /^Action/ })).toContainText('Demerger');
     await expect(dialog.getByLabel('Ex-date')).toHaveValue('15/01/2025');
     expect(DETECT_EX_DATE).toBe('2025-01-15');
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(row(page, demerge.key)).toBeVisible();
+    await expect(demerge).toBeVisible();
 
-    await row(page, miss.key).getByRole('button', { name: 'Ignore' }).click();
-    await expect(row(page, miss.key)).toHaveCount(0);
+    const miss = card(page, seed.miss.name);
+    await miss.getByRole('button', { name: 'Not applicable' }).click();
+    await expect(miss).toHaveCount(0);
   });
 });

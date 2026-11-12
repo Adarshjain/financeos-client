@@ -2,30 +2,23 @@
 
 import React from 'react';
 
+import { appHref } from '@/features/shell/routes';
 import type { InboxItemResponse } from '@/lib/api/types';
-
-import { inboxRowId } from './inboxModel';
+import { useAppRouter } from '@/lib/useAppRouter';
 
 /**
- * Resolve the ?item= deep link once, against the first loaded list: scroll to the row when it is
- * there, or flag it as already handled. Later refetches (after the user acts on the row) do not
- * flip it to "handled".
+ * Old notifications link to /inbox?item=<key>. Resolve it once, against the first loaded list: when the row is
+ * there, replace the address with the page it points at (so Back does not return to the redirect); otherwise
+ * stay on the Inbox.
  */
 export function useInboxDeepLink(highlightKey: string | null, items: InboxItemResponse[] | null) {
-  const [state, setState] = React.useState<{ found: boolean; missing: boolean }>({ found: false, missing: false });
+  const router = useAppRouter();
   const resolved = React.useRef(false);
 
   React.useEffect(() => {
     if (!highlightKey || !items || resolved.current) return;
     resolved.current = true;
-    const found = items.some((i) => i.key === highlightKey);
-    setState({ found, missing: !found });
-  }, [highlightKey, items]);
-
-  React.useEffect(() => {
-    if (!state.found || !highlightKey) return;
-    document.getElementById(inboxRowId(highlightKey))?.scrollIntoView({ block: 'center' });
-  }, [state.found, highlightKey]);
-
-  return state;
+    const href = items.find((i) => i.key === highlightKey)?.href;
+    if (href) router.replace(appHref(href));
+  }, [highlightKey, items, router]);
 }

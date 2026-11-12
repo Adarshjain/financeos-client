@@ -44,8 +44,8 @@ test.describe('Inbox API: reads (@api)', () => {
     });
     expect(Number(row!.amount)).toBeGreaterThan(0);
     expect(row!.refs).toBeTruthy();
-    expect(row!.actions.map((a) => a.type)).toEqual(['open', 'snooze']);
-    expect(row!.actions[0].href).toBe(`/loans/${loan.id}?installment=1`);
+    // The Inbox only points: the row links to the page and carries no actions.
+    expect(row!.actions).toEqual([]);
     expect(inbox.summary).toMatchObject({ actNow: 1, needsLook: 0, badge: 1 });
   });
 
@@ -76,7 +76,7 @@ test.describe('Inbox API: reads (@api)', () => {
     expect(inboxRow(inbox, emiKey(loan.id))).toBeUndefined();
   });
 
-  test('a card bill due within 7 days is listed with its amount, due date and mark-paid action', async ({ request }) => {
+  test('a card bill due within 7 days is listed with its amount, due date and the page it points at', async ({ request }) => {
     const { api } = await newUser(request, 'inbox-bill');
     const card = await createCreditCard(api, { name: 'Inbox Card', last4: '8101' });
     const bill = await ingestCardStatement(api, card.id, '8101');
@@ -94,8 +94,7 @@ test.describe('Inbox API: reads (@api)', () => {
       href: `/upcoming?bill=${bill.statementId}`,
     });
     expect(Number(row!.amount)).toBeCloseTo(6000, 2);
-    expect(row!.actions.map((a) => a.type)).toEqual(['mark_paid', 'snooze']);
-    expect(row!.actions[0].payload).toBeTruthy();
+    expect(row!.actions).toEqual([]);
   });
 
   test('bill window: day 7 listed, day 8 not; overdue is critical; paying removes it', async ({ request }) => {
@@ -228,7 +227,7 @@ test.describe('Inbox API: summary rows (@api)', () => {
     ],
   };
 
-  test('the review queue is one needs_look summary row: dismissable, never snoozable, counted in the badge', async ({ request }) => {
+  test('the review queue is one needs_look summary row that points at the review page, never snoozable, counted in the badge', async ({ request }) => {
     const { api } = await newUser(request, 'inbox-review');
     const account = await createBankAccount(api, { name: 'Inbox Review Account' });
     await uploadAndIngest(api, account.id, [
@@ -258,7 +257,7 @@ test.describe('Inbox API: summary rows (@api)', () => {
     expect(row!.count).toBeGreaterThanOrEqual(1);
     expect(row!.amount ?? null).toBeNull();
     expect(row!.date ?? null).toBeNull();
-    expect(row!.actions.map((a) => a.type)).toEqual(['review', 'dismiss']);
+    expect(row!.actions).toEqual([]);
     expect(before.summary.needsLook).toBe(1);
     expect(before.summary.badge).toBe(before.summary.actNow + 1);
 

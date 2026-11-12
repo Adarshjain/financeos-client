@@ -105,17 +105,22 @@ for (const viewport of VIEWPORTS) {
       await expect(sheet).toHaveCount(0);
     });
 
-    test('the Inbox offers to record an NPS-looking debit; Record links it on the NPS tab and the transaction', async ({ page }) => {
+    test('the Inbox points at an NPS-looking debit; Record on the NPS page links it on the NPS tab and the transaction', async ({ page }) => {
       test.slow();
       await createNpsAccount(api, await equityScheme(api));
       const { debit } = await seedNpsBankDebit(api, istToday(-20));
       await page.goto('/inbox');
-      const row = page.locator('[data-inbox-key^="nps_record:"]');
+      const row = page.locator('[data-testid="inbox-row"][href="/investments/nps"]');
       await expect(row).toHaveCount(1, { timeout: 45_000 });
       await expect(row).toContainText('NPS TRUST');
-      await row.getByRole('button', { name: 'Record', exact: true }).click();
+      await expect(row.getByRole('button')).toHaveCount(0);
+      await row.click();
+      await page.waitForURL('**/investments/nps');
+      const review = page.getByTestId('nps-review-unrecorded');
+      await expect(review).toBeVisible({ timeout: 45_000 });
+      await review.getByRole('button', { name: 'Record', exact: true }).click();
       await expect(toast(page, 'Recorded as an NPS contribution')).toBeVisible();
-      await expect(row).toHaveCount(0);
+      await expect(review).toHaveCount(0);
 
       await page.goto('/investments/nps');
       await expect(shown(page.getByText('Contribution · You'))).toBeVisible({ timeout: 45_000 });

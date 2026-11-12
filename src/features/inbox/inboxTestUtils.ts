@@ -17,8 +17,6 @@ export function item(over: Partial<InboxItemResponse> & { key: string }): InboxI
   } as InboxItemResponse;
 }
 
-export const SNOOZE = action({ type: 'snooze', label: 'Snooze' });
-export const DISMISS = action({ type: 'dismiss', label: 'Dismiss' });
 
 export function inbox(items: InboxItemResponse[]): InboxResponse {
   const count = (section: string) => items.filter((i) => i.section === section).length;

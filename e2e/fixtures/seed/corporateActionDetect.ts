@@ -64,21 +64,42 @@ export async function seedDetectablePurchases(api: ApiClient): Promise<DetectSee
   return { brokerAccountId: broker.id, bonus: resolved.bonus, miss: resolved.miss, demerge: resolved.demerge };
 }
 
-/** The inbox row of a kind for an instrument; the detection job runs after the import, so it is polled for. */
-export async function waitForInboxItem(api: ApiClient, kind: string, instrumentId: string, timeoutMs = 90_000): Promise<InboxItemResponse> {
-  let found: InboxItemResponse | undefined;
+export type DetectBucket = 'needsReview' | 'appliedAutomatically';
+export interface DetectedSuggestion {
+  id: string;
+  kind: string;
+  instrument: { id: string };
+}
+
+async function suggestionsOf(api: ApiClient, bucket: DetectBucket, instrumentId: string): Promise<DetectedSuggestion | undefined> {
+  const res = await api.GET('/api/v1/corporate-action-suggestions');
+  expect(res.response.status).toBe(200);
+  return res.data![bucket].find((s) => s.instrument.id === instrumentId) as DetectedSuggestion | undefined;
+}
+
+/**
+ * The detected suggestion for an instrument as the Corporate actions page lists it (the Inbox only points there and
+ * has no row for an automatic one); the detection job runs after the import, so it is polled for.
+ */
+export async function waitForSuggestion(api: ApiClient, bucket: DetectBucket, instrumentId: string, timeoutMs = 90_000): Promise<DetectedSuggestion> {
+  let found: DetectedSuggestion | undefined;
   await expect
     .poll(
       async () => {
-        found = (await getInbox(api)).items.find((i) => i.kind === kind && i.refs.instrumentId === instrumentId);
+        found = await suggestionsOf(api, bucket, instrumentId);
         return found !== undefined;
       },
-      { timeout: timeoutMs, intervals: [1000], message: `inbox item ${kind} for ${instrumentId}` },
+      { timeout: timeoutMs, intervals: [1000], message: `${bucket} suggestion for ${instrumentId}` },
     )
     .toBe(true);
   return found!;
 }
 
-export async function inboxItemOf(api: ApiClient, kind: string, instrumentId: string): Promise<InboxItemResponse | undefined> {
-  return (await getInbox(api)).items.find((i) => i.kind === kind && i.refs.instrumentId === instrumentId);
+export async function suggestionOf(api: ApiClient, bucket: DetectBucket, instrumentId: string): Promise<DetectedSuggestion | undefined> {
+  return suggestionsOf(api, bucket, instrumentId);
+}
+
+/** The Inbox rows that point at the Corporate actions page (several are grouped into one "<label>: N to review" row). */
+export async function inboxRowsForCorporateActions(api: ApiClient): Promise<InboxItemResponse[]> {
+  return (await getInbox(api)).items.filter((i) => i.href === '/investments/corporate-actions');
 }

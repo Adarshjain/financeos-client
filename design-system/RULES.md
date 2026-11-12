@@ -178,7 +178,7 @@ Storybook consumes components exactly as an app would, so a developer can see an
 2. No body title on phone; the app bar carries it. Tab strips and filter-chip rows scroll sideways and never wrap.
 3. A single choice is a dropdown; several choices are a multi-select dropdown. Never tiles or chip groups in forms (the four account-type buttons on Add account are the only exception).
 4. Selection: long-press starts it, tap toggles, the eye icon opens the detail without leaving selection. No checkboxes on phone; desktop uses checkboxes. The selection bar docks at the bottom.
-5. Swipe (phone layout only, any pointer) on Transactions: right approves, left deletes. Swipe on Inbox: right snoozes until tomorrow, left dismisses. SwipeActions only reports the swipe to the page; the page confirms (destructive) or applies with Undo (reversible) by §5.7.
+5. Swipe (phone layout only, any pointer) on Transactions: right approves, left deletes. SwipeActions only reports the swipe to the page; the page confirms (destructive) or applies with Undo (reversible) by §5.7.
 6. Phone lists group by day under sticky date headers, and rows don't repeat the date. The transaction context line starts with the account name.
 7. A field that can't change is disabled (for example the account of an imported transaction). There is no locked state.
 

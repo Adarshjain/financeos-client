@@ -1,69 +1,23 @@
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import React from 'react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/api/server', () => ({ serverApi: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } }));
-const showToast = vi.hoisted(() => vi.fn());
-vi.mock('@/components/ds/Toast/Toast', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/components/ds/Toast/Toast')>()),
-  showToast: (...args: unknown[]) => showToast(...args),
-}));
-const push = vi.hoisted(() => vi.fn());
-vi.mock('next/navigation', () => ({ usePathname: () => '/', useRouter: () => ({ push, refresh: vi.fn() }) }));
-vi.mock('./InboxBillHost', () => ({
-  InboxBillHost: ({ pending }: { pending: unknown }) => (
-    <div data-testid="bill-host" data-pending={JSON.stringify(pending)} />
-  ),
-}));
-// Swipe is a pointer gesture; the stub exposes what each side would do.
-vi.mock('@/components/ds/SwipeActions/SwipeActions', () => ({
-  SwipeActions: ({
-    children,
-    left,
-    right,
-    disabled,
-  }: {
-    children: React.ReactNode;
-    left?: { onTrigger?: () => void };
-    right?: { onTrigger?: () => void };
-    disabled?: boolean;
-  }) => (
-    <div data-testid="swipe" data-disabled={String(Boolean(disabled))}>
-      {left ? <button onClick={left.onTrigger}>swipe-right</button> : null}
-      {right ? <button onClick={right.onTrigger}>swipe-left</button> : null}
-      {children}
-    </div>
-  ),
-}));
+const replace = vi.hoisted(() => vi.fn());
+vi.mock('next/navigation', () => ({ usePathname: () => '/', useRouter: () => ({ push: vi.fn(), replace, refresh: vi.fn() }) }));
 
 import { serverApi as api } from '@/lib/api/server';
 import { keys } from '@/lib/query/keys';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { InboxScreen } from './InboxScreen';
-import { action, DISMISS, inbox, item, SNOOZE } from './inboxTestUtils';
+import { inbox, item } from './inboxTestUtils';
 
 function seed(items: ReturnType<typeof item>[]) {
   vi.mocked(api.GET).mockResolvedValue({ data: inbox(items) } as never);
 }
 
-const bill = item({
-  key: 'bill:s1',
-  kind: 'bill',
-  title: 'Amex bill',
-  subtitle: 'Due in 2 days',
-  date: '2026-10-10',
-  refs: { statementId: 's1' },
-  actions: [action({ type: 'mark_paid', label: 'Mark paid', payload: { statementId: 's1' } }), SNOOZE],
-});
-const emi = item({
-  key: 'emi:l1:8',
-  kind: 'emi',
-  section: 'act_now',
-  title: 'Car loan EMI',
-  actions: [action({ type: 'open', label: 'Open', href: '/loans/l1' }), SNOOZE],
-});
+const bill = item({ key: 'bill:s1', kind: 'bill', title: 'Amex bill', subtitle: 'Due in 2 days', date: '2026-10-10', href: '/accounts/a1' });
+const emi = item({ key: 'emi:l1:8', kind: 'emi', title: 'Car loan EMI', href: '/loans/l1' });
 const review = item({
   key: 'review',
   kind: 'review',
@@ -71,18 +25,16 @@ const review = item({
   section: 'needs_look',
   title: '25 transactions to review',
   count: 25,
-  actions: [action({ type: 'review', label: 'Review', href: '/transactions/review' }), DISMISS],
+  href: '/transactions?review=needs_review',
 });
-const reward = item({
-  key: 'reward:1',
-  kind: 'reward_cap',
+const grouped = item({
+  key: 'page:/investments/nps',
   section: 'needs_look',
-  severity: 'info',
-  title: 'Amex dining cap',
-  refs: { accountId: 'acc-1' },
-  actions: [action({ type: 'open', label: 'Open', href: '/rewards' }), DISMISS],
+  title: 'NPS: 2 to review',
+  subtitle: 'Link a payment · Record a debit',
+  count: 2,
+  href: '/investments/nps',
 });
-const prices = item({ key: 'job:2', kind: 'job', section: 'needs_look', severity: 'info', title: 'Prices refreshed', actions: [DISMISS] });
 
 describe('InboxScreen', () => {
   beforeEach(() => {
@@ -138,7 +90,7 @@ describe('InboxScreen', () => {
   });
 
   it('rows have no leading square', async () => {
-    seed([bill, emi, review, reward]);
+    seed([bill, emi, review]);
     renderWithQuery(<InboxScreen />);
     await screen.findByText('Amex bill');
     expect(screen.queryByText('2d')).not.toBeInTheDocument();
@@ -146,158 +98,42 @@ describe('InboxScreen', () => {
     expect(screen.queryByText('cap')).not.toBeInTheDocument();
   });
 
-  it('buttons: Mark paid secondary; Open, Review and Rewards links to their targets', async () => {
-    seed([bill, emi, review, reward]);
+  it('every row is one link to its page, with no buttons', async () => {
+    seed([bill, emi, review]);
     renderWithQuery(<InboxScreen />);
     await screen.findByText('Amex bill');
-    expect(screen.getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/loans/l1');
-    expect(screen.getByRole('link', { name: 'Review' })).toHaveAttribute('href', '/transactions?review=needs_review');
-    expect(screen.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/accounts/acc-1/rewards');
+    const rows = screen.getAllByTestId('inbox-row');
+    expect(rows.map((r) => r.getAttribute('href'))).toEqual(['/accounts/a1', '/loans/l1', '/transactions?review=needs_review']);
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    expect(screen.queryByText(/Swipe/)).not.toBeInTheDocument();
   });
 
-  it('snooze and dismiss icons follow the server actions', async () => {
-    seed([bill, review, prices]);
+  it('a grouped row shows its count and the full subtitle', async () => {
+    seed([grouped]);
     renderWithQuery(<InboxScreen />);
-    await screen.findByText('Amex bill');
-    expect(screen.getByRole('button', { name: 'Snooze Amex bill' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Dismiss Amex bill' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Snooze 25 transactions/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Dismiss 25 transactions to review' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Dismiss Prices refreshed' })).toBeInTheDocument();
+    expect(await screen.findByText('Link a payment · Record a debit')).toBeInTheDocument();
+    expect(screen.getByText('NPS: 2 to review').closest('a')).toHaveAttribute('href', '/investments/nps');
   });
 
-  it('a bill button opens the bill dialogs for its statement', async () => {
-    seed([bill]);
+  it('never asks the server for link suggestions', async () => {
+    seed([review]);
     renderWithQuery(<InboxScreen />);
-    await screen.findByText('Amex bill');
-    expect(screen.getByTestId('bill-host')).toHaveAttribute('data-pending', 'null');
-    fireEvent.click(screen.getByRole('button', { name: 'Mark paid' }));
-    expect(JSON.parse(screen.getByTestId('bill-host').getAttribute('data-pending')!)).toEqual({
-      type: 'mark_paid',
-      statementId: 's1',
-    });
+    await screen.findByText('25 transactions to review');
+    expect(vi.mocked(api.GET).mock.calls.some((c) => String(c[0]).includes('link-suggestions'))).toBe(false);
   });
 
-  it('dismiss removes the row at once, toasts with Undo, and Undo restores it', async () => {
-    seed([review, prices]);
-    vi.mocked(api.POST).mockResolvedValue({} as never);
-    vi.mocked(api.DELETE).mockResolvedValue({} as never);
-    renderWithQuery(<InboxScreen />);
-    await screen.findByText('Prices refreshed');
-    vi.mocked(api.GET).mockResolvedValue({ data: inbox([review]) } as never); // the server's answer once it is gone
-    fireEvent.click(screen.getByRole('button', { name: 'Dismiss Prices refreshed' }));
-    await waitFor(() => expect(screen.queryByText('Prices refreshed')).not.toBeInTheDocument());
-    expect(api.POST).toHaveBeenCalledWith('/api/v1/inbox/{key}/dismiss', { params: { path: { key: 'job:2' } } });
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Item dismissed', expect.anything()));
-    const { action: undo } = showToast.mock.calls[0][1];
-    expect(undo.label).toBe('Undo');
-    await act(async () => undo.onSelect());
-    expect(api.DELETE).toHaveBeenCalledWith('/api/v1/inbox/{key}/state', { params: { path: { key: 'job:2' } } });
-    await waitFor(() => expect(showToast).toHaveBeenCalledWith('Item restored'));
-  });
-
-  it('snooze preset hides the row, toasts the date with Undo', async () => {
-    seed([bill, review]);
-    vi.mocked(api.POST).mockResolvedValue({} as never);
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-    renderWithQuery(<InboxScreen />);
-    await screen.findByText('Amex bill');
-    await user.click(screen.getByRole('button', { name: 'Snooze Amex bill' }));
-    vi.mocked(api.GET).mockResolvedValue({ data: inbox([review]) } as never); // the server's answer once it is gone
-    await user.click(await screen.findByText('In 3 days'));
-    await waitFor(() => expect(screen.queryByText('Amex bill')).not.toBeInTheDocument());
-    expect(api.POST).toHaveBeenCalledWith('/api/v1/inbox/{key}/snooze', {
-      params: { path: { key: 'bill:s1' } },
-      body: { until: '2026-10-11' },
-    });
-    await waitFor(() =>
-      expect(showToast).toHaveBeenCalledWith('Snoozed until 11 Oct', expect.objectContaining({ action: expect.anything() })),
-    );
-  });
-
-  it('a failed snooze puts the row back with the board copy', async () => {
-    seed([bill]);
-    vi.mocked(api.POST).mockRejectedValue(new Error('nope'));
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-    renderWithQuery(<InboxScreen />);
-    await screen.findByText('Amex bill');
-    await user.click(screen.getByRole('button', { name: 'Snooze Amex bill' }));
-    await user.click(await screen.findByText('Tomorrow'));
-    await waitFor(() =>
-      expect(showToast).toHaveBeenCalledWith("Couldn't snooze. The row is back.", { tone: 'danger' }),
-    );
-    expect(await screen.findByText('Amex bill')).toBeInTheDocument();
-  });
-
-  it('a failed dismiss puts the row back with the board copy', async () => {
-    seed([prices]);
-    vi.mocked(api.POST).mockRejectedValue(new Error('nope'));
-    renderWithQuery(<InboxScreen />);
-    await screen.findByText('Prices refreshed');
-    fireEvent.click(screen.getByRole('button', { name: 'Dismiss Prices refreshed' }));
-    await waitFor(() =>
-      expect(showToast).toHaveBeenCalledWith("Couldn't dismiss. The row is back.", { tone: 'danger' }),
-    );
-    expect(await screen.findByText('Prices refreshed')).toBeInTheDocument();
-  });
-
-  it('swipe right snoozes until tomorrow, swipe left dismisses, only where allowed', async () => {
-    seed([bill, prices]);
-    vi.mocked(api.POST).mockResolvedValue({} as never);
-    renderWithQuery(<InboxScreen />);
-    await screen.findByText('Amex bill');
-    const billSwipe = screen.getByText('Amex bill').closest('[data-testid="swipe"]') as HTMLElement;
-    const pricesSwipe = screen.getByText('Prices refreshed').closest('[data-testid="swipe"]') as HTMLElement;
-    expect(within(billSwipe).queryByText('swipe-left')).not.toBeInTheDocument();
-    expect(within(pricesSwipe).queryByText('swipe-right')).not.toBeInTheDocument();
-    fireEvent.click(within(billSwipe).getByText('swipe-right'));
-    await waitFor(() =>
-      expect(api.POST).toHaveBeenCalledWith('/api/v1/inbox/{key}/snooze', {
-        params: { path: { key: 'bill:s1' } },
-        body: { until: '2026-10-09' },
-      }),
-    );
-    fireEvent.click(within(pricesSwipe).getByText('swipe-left'));
-    await waitFor(() =>
-      expect(api.POST).toHaveBeenCalledWith('/api/v1/inbox/{key}/dismiss', { params: { path: { key: 'job:2' } } }),
-    );
-  });
-
-  it('a row that cannot be snoozed or dismissed does not swipe', async () => {
-    seed([item({ key: 'k', kind: 'gmail_reconnect', title: 'Reconnect Gmail', actions: [action({ type: 'reconnect', label: 'Reconnect', href: '/settings/gmail' })] })]);
-    renderWithQuery(<InboxScreen />);
-    const row = (await screen.findByText('Reconnect Gmail')).closest('[data-testid="swipe"]') as HTMLElement;
-    expect(row).toHaveAttribute('data-disabled', 'true');
-  });
-
-  it('shows the phone swipe hint under the list', async () => {
-    seed([bill]);
-    renderWithQuery(<InboxScreen />);
-    await screen.findByText('Amex bill');
-    expect(screen.getByText('Swipe')).toBeInTheDocument();
-    expect(
-      screen.getByText(/a row right to snooze it until tomorrow, left to dismiss it/),
-    ).toBeInTheDocument();
-  });
-
-  it('?item= highlights the row and scrolls it into view', async () => {
-    const scroll = vi.spyOn(window.HTMLElement.prototype, 'scrollIntoView').mockImplementation(() => undefined);
+  it('?item= for a row that exists replaces the address with that row page', async () => {
     seed([bill, emi]);
     renderWithQuery(<InboxScreen highlightKey="emi:l1:8" />);
-    await screen.findByText('Car loan EMI');
-    await waitFor(() => expect(scroll).toHaveBeenCalled());
-    const row = screen.getByText('Car loan EMI').closest('[data-testid="inbox-row"]') as HTMLElement;
-    expect(row.className).toContain('bg-brand-tint');
-    const other = screen.getByText('Amex bill').closest('[data-testid="inbox-row"]') as HTMLElement;
-    expect(other.className).not.toContain('bg-brand-tint');
-    expect(screen.queryByText('That item is already handled.')).not.toBeInTheDocument();
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/loans/l1'));
   });
 
-  it('?item= with no matching row shows the already-handled Banner', async () => {
+  it('?item= with no matching row stays on the Inbox without an error', async () => {
     seed([bill]);
     renderWithQuery(<InboxScreen highlightKey="gone" />);
-    expect(await screen.findByText('That item is already handled.')).toBeInTheDocument();
+    expect(await screen.findByText('Amex bill')).toBeInTheDocument();
+    expect(replace).not.toHaveBeenCalled();
+    expect(screen.queryByText('That item is already handled.')).not.toBeInTheDocument();
   });
 
   it('refetches when the window regains focus', async () => {

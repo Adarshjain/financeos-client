@@ -10,7 +10,6 @@ import { createBankAccount } from '../fixtures/seed/accounts';
 import { seedDueSoonLoan } from '../fixtures/seed/obligations';
 import { createTransaction, todayString } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
-import { expectToast } from '../fixtures/ui';
 
 /**
  * One transaction waiting for review. An overlapping statement no longer flags its repeated rows (the matcher folds them
@@ -26,9 +25,8 @@ async function seedReviewRow(api: ApiClient, accountId: string) {
 }
 
 const row = (page: Page, key: string) => page.locator(`[data-inbox-key="${key}"]`);
-const toastAction = (page: Page, label: string) => page.locator('[data-sonner-toast]').getByRole('button', { name: label }).first();
 
-test.describe('/ds Inbox right-click menu, desktop 1440px (@ui)', () => {
+test.describe('/ds Inbox rows only point, desktop 1440px (@ui)', () => {
   let currentUser: CreatedUser;
 
   test.beforeEach(async ({ context, request, page }) => {
@@ -37,7 +35,7 @@ test.describe('/ds Inbox right-click menu, desktop 1440px (@ui)', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
   });
 
-  test('right-click an EMI row offers Snooze only; it snoozes with an Undo toast', async ({ page }) => {
+  test('an EMI row is one link to the installment: no buttons, and right-click offers no Snooze', async ({ page }) => {
     test.slow();
     const api = makeApi(currentUser.cookie);
     const loan = await seedDueSoonLoan(api, 'Ds Inbox Loan');
@@ -45,19 +43,15 @@ test.describe('/ds Inbox right-click menu, desktop 1440px (@ui)', () => {
     await page.goto('/inbox');
     await expect(page).toHaveTitle('Inbox · FinanceOS');
     await expect(row(page, emiKey)).toBeVisible({ timeout: 45_000 });
+    await expect(row(page, emiKey)).toHaveAttribute('href', `/loans/${loan.id}?installment=1`);
+    await expect(row(page, emiKey).getByRole('button')).toHaveCount(0);
 
     await row(page, emiKey).click({ button: 'right' });
-    await expect(page.getByRole('menuitem', { name: 'Snooze' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Snooze' })).toHaveCount(0);
     await expect(page.getByRole('menuitem', { name: 'Dismiss' })).toHaveCount(0);
-    await page.getByRole('menuitem', { name: 'Snooze' }).click();
-    await expectToast(page, /Snoozed until/);
-    await expect(row(page, emiKey)).toHaveCount(0);
-
-    await toastAction(page, 'Undo').click();
-    await expect(row(page, emiKey)).toBeVisible();
   });
 
-  test('right-click the review summary row offers Dismiss only; it dismisses with an Undo toast', async ({ page }) => {
+  test('the review summary row is one link to the transactions to review, with no buttons', async ({ page }) => {
     test.slow();
     const api = makeApi(currentUser.cookie);
     await resetLlm(api);
@@ -67,14 +61,9 @@ test.describe('/ds Inbox right-click menu, desktop 1440px (@ui)', () => {
 
     await page.goto('/inbox');
     await expect(row(page, 'review')).toBeVisible({ timeout: 45_000 });
-
-    await row(page, 'review').click({ button: 'right' });
-    await expect(page.getByRole('menuitem', { name: 'Snooze' })).toHaveCount(0);
-    await page.getByRole('menuitem', { name: 'Dismiss' }).click();
-    await expectToast(page, 'Item dismissed');
-    await expect(row(page, 'review')).toHaveCount(0);
-
-    await toastAction(page, 'Undo').click();
-    await expect(row(page, 'review')).toBeVisible();
+    await expect(row(page, 'review')).toHaveAttribute('href', '/transactions?review=needs_review');
+    await expect(row(page, 'review').getByRole('button')).toHaveCount(0);
+    await row(page, 'review').click();
+    await page.waitForURL(/\/transactions\?review=needs_review/);
   });
 });

@@ -438,7 +438,7 @@ for (const viewport of VIEWPORTS) {
       await expect(dialog.getByRole('checkbox', { name: 'TDS was deducted' })).toBeChecked();
     });
 
-    test('the Inbox offers the matching credit for a withdrawal; Link attaches it, Not this one drops the row', async ({ page }) => {
+    test('the Inbox points at the matching credit for a withdrawal; Link on the EPF page attaches it, Not this one drops it', async ({ page }) => {
       test.slow();
       const { employer } = await seedEpfBalance(api, 'Inbox Labs');
       const first = await seedEpfWithdrawal(api, employer.id, {
@@ -448,15 +448,20 @@ for (const viewport of VIEWPORTS) {
         description: 'NEFT EPFO INBOXLINK',
       });
       await page.goto('/inbox');
-      const row = page.locator('[data-inbox-key^="epf_match:"]');
+      const row = page.locator('[data-testid="inbox-row"][href="/investments/epf"]');
       await expect(row).toHaveCount(1, { timeout: 45_000 });
-      await expect(row).toContainText('INBOXLINK');
-      await row.getByRole('button', { name: 'Link', exact: true }).click();
+      await expect(row.getByRole('button')).toHaveCount(0);
+      await row.click();
+      await page.waitForURL('**/investments/epf');
+      const match = page.getByTestId('epf-review-match');
+      await expect(match).toHaveCount(1, { timeout: 45_000 });
+      await expect(match).toContainText('INBOXLINK');
+      await match.getByRole('button', { name: 'Link', exact: true }).click();
       await expect(toast(page, 'Linked to the EPF withdrawal')).toBeVisible();
-      await expect(row).toHaveCount(0);
+      await expect(match).toHaveCount(0);
       expect(first.entry.id).toBeTruthy();
 
-      // Another withdrawal and credit: Not this one removes the row.
+      // Another withdrawal and credit: Not this one removes the suggestion.
       await seedEpfWithdrawal(api, employer.id, {
         creditedOn: istToday(-9),
         creditDate: istToday(-8),
@@ -464,10 +469,10 @@ for (const viewport of VIEWPORTS) {
         description: 'NEFT EPFO INBOXSKIP',
       });
       await page.reload();
-      await expect(row).toHaveCount(1, { timeout: 45_000 });
-      await expect(row).toContainText('INBOXSKIP');
-      await row.getByRole('button', { name: 'Not this one' }).click();
-      await expect(row).toHaveCount(0);
+      await expect(match).toHaveCount(1, { timeout: 45_000 });
+      await expect(match).toContainText('INBOXSKIP');
+      await match.getByRole('button', { name: 'Not this one' }).click();
+      await expect(match).toHaveCount(0);
     });
   });
 }
