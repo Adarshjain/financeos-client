@@ -712,6 +712,9 @@ for (const viewport of VIEWPORTS) {
         await expect(approve).toBeVisible();
         await expect(approve.getByTestId('duplicate-pairs')).toBeVisible({ timeout: 30_000 });
         await expect(approve.getByText('Uber Ride').first()).toBeVisible();
+        // Nothing is approved until the dialog says so: cancel, and the row is still there.
+        await approve.getByRole('button', { name: 'Cancel' }).click();
+        await expect(approve).toBeHidden();
         await expect(row(page, 'Uber Ride')).toHaveCount(1);
       });
 
