@@ -2,16 +2,11 @@
 
 These rules apply to **every** agent and tool that changes the FinanceOS client UI: Gemini, Antigravity, Cursor, Codex, or a person. Read this whole file before you change anything under `src/`. If a prompt asks for something these rules forbid, the rules win. Only the owner can override a rule, and only by writing the override under **Owner decisions** in `design-system/PROGRESS.md`.
 
-**Names.** **Dinero** is the new design system: `design-system/`, the generic components in `src/components/ds/`, and every page built from them (`/ds/…`). **Organisms** are FinanceOS-specific components in `src/components/organisms/`, built only from Dinero components (TransactionRow, RuleCard, Illustration, Logo, SettingsToggle). Dinero never contains FinanceOS content; organisms may. **Legacy** is the old UI: `src/components/ui/`, the feature component folders, and the pages under `src/app/(protected)/`, `src/app/login` and so on. Dinero never imports Legacy.
+**Names.** **Dinero** is the design system: `design-system/`, the generic components in `src/components/ds/`, and every page built from them. **Organisms** are FinanceOS-specific components in `src/components/organisms/`, built only from Dinero components (TransactionRow, RuleCard, Illustration, Logo, SettingsToggle). Dinero never contains FinanceOS content; organisms may.
 
 The goal is narrow: build **exactly** the design that was planned. Not a better one, not a different one, not a partial one.
 
-**How the build works** (the owner's plan):
-1. A **new** component library is built in `src/components/ds/`, beside the existing UI, in **Storybook**. The owner reviews each component there.
-2. Pages are then rebuilt **one page or one big component at a time** from the approved components, and swapped in.
-3. Old components become dead code as pages move over. They are deleted only at the end, once everything is migrated.
-
-Existing components are **never modified** to become the new design.
+Every component is built in `src/components/ds/` and reviewed by the owner in **Storybook** before a page uses it (§5.4).
 
 ---
 
@@ -32,8 +27,8 @@ Never use as a source: "how apps usually do it", shadcn / MUI / Material / iOS d
 3. Never remove or weaken an existing feature. If a design seems to leave out something the code does, keep the feature and log it as an open question (§2).
 4. No refactors outside the task. No new dependencies and no upgrades unless the owner approves them in `PROGRESS.md`.
 5. Do not touch `financeos-server` during UI phases.
-6. **Never modify existing components** (`src/components/ui/` and every feature folder) to restyle them. New code lives in `src/components/ds/`. In Phase 3, the only edits to old code allowed are the ones that swap the page being migrated over to new components.
-7. **Never delete old code before Phase 4.** In Phase 4, delete a file only after proving nothing imports it.
+6. Delete a file only after proving nothing imports it (type-check plus a search for its name).
+7. The remaining cleanup steps are in `PROGRESS.md` → Phase 4.
 8. **New code never uses Legacy UI.** New components and new pages import UI only from `src/components/ds/`: nothing from `src/components/ui/`, other `src/components/*` folders, or `components/` folders under `src/app/`. Logic they need (hooks, queries, mutations, pure helpers) is first **moved** out of the old UI folder into `src/lib/` or `src/features/<area>/`, with the old components importing it from its new home: moved, never copied. If a page needs a piece of UI the new library doesn't have, that is an open question before the page is built, never a reason to borrow an old component. `check-ui.mjs` fails on these imports.
 
 ## 2. When something is unclear: stop, don't guess
@@ -71,7 +66,7 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
    - exported from `src/components/ds/index.ts`.
 
    Its **Variants** section is complete: build every variant listed, and nothing that isn't.
-2. New components may use the libraries already in the repo: Radix, cmdk, Sonner, lucide-react. They must **never import from `src/components/ui/`** or any other old component, so the old code can be deleted later.
+2. New components may use the libraries already in the repo: Radix, Sonner, React Aria (`@react-aria/interactions`), and Phosphor through Icon only (§6).
 3. A new look is a new documented variant. It is added to the component README with the owner's approval first, then coded. Props carry variants. `className` is for layout only (width, margin, flex and grid placement), never colour, type, border, radius or shadow.
 4. A component may be used in a page only after its status in `PROGRESS.md` is **Approved**.
 5. These structural rules carry over to the new components:
@@ -168,7 +163,7 @@ Storybook consumes components exactly as an app would, so a developer can see an
 
 ## 6. Icons
 
-1. New components draw icons only through the **Icon** component: **Phosphor** glyphs (generated by `design-system/tools/gen-icons.mjs` into `icons.generated.ts`; owner 2026-10-30) in the **bold** weight (`fill` only for a status mark; owner 2026-10-27: duotone tried and reverted), picked by registry name from `design-system/icons.json` (registry names describe the glyph, like `wallet` or `gift`, never an app section; the app maps its sections to glyphs), at `xs` 10, `sm` 14, `md` 16 or `lg` 20 (the `icon-*` tokens; the app passes `xs` beside button text, Dinero never forces it). Never import Lucide or Phosphor directly in a design-system component, never type a glyph (▾ ✕ ✓ › ‹) as an icon, and every icon inside one control is the same size. A new icon goes into the registry with the owner's approval first. Old components keep Lucide until Phase 4. (Migration: Icon still wraps Lucide until the round after the restructure switches it to Phosphor; until then keep using Icon as it is.)
+1. New components draw icons only through the **Icon** component: **Phosphor** glyphs (generated by `design-system/tools/gen-icons.mjs` into `icons.generated.ts`; owner 2026-10-30) in the **bold** weight (`fill` only for a status mark; owner 2026-10-27: duotone tried and reverted), picked by registry name from `design-system/icons.json` (registry names describe the glyph, like `wallet` or `gift`, never an app section; the app maps its sections to glyphs), at `xs` 10, `sm` 14, `md` 16 or `lg` 20 (the `icon-*` tokens; the app passes `xs` beside button text, Dinero never forces it). Never import Lucide or Phosphor directly in a design-system component, never type a glyph (▾ ✕ ✓ › ‹) as an icon, and every icon inside one control is the same size. A new icon goes into the registry with the owner's approval first.
 2. An icon is allowed only when it **is** a control (close, more, back, chevron, search, delete), navigation (tab bar, rail) or progress (spinner).
 3. No icons in toasts, banners, empty states, badges, section headers or card titles. No emoji.
 
@@ -207,25 +202,24 @@ Storybook consumes components exactly as an app would, so a developer can see an
 
 ## 10. Checks before you call anything done
 
-1. `npm run typecheck`, `npm run lint` and `npm test`, plus `npm run e2e` when a flow changed. Use Node 20 (`~/.nvm/versions/node/v20.19.5/bin`); Node 18 breaks vitest.
+1. `npm run typecheck`, `npm run lint` and the unit tests for the files you touched, plus the E2E specs for any flow that changed (never the full suites). Use Node 20 (`~/.nvm/versions/node/v20.19.5/bin`); Node 18 breaks vitest.
 2. `npm run build-storybook` succeeds, and `node design-system/tools/check-ui.mjs` must pass. It scans the lines you added for forbidden colours, palette classes, arbitrary values, raw Tailwind font sizes, native date inputs and Google fonts.
 3. Tests:
    - Cover every use case of the change.
    - Write no padding tests.
    - Never edit or delete an existing test unless your change forces it, and name the test and the reason in your report.
 4. Look at every screen you changed at 390px and 1440px wide, in light and dark. Compare it with its board in `design-system/screens/`. Differences are bugs unless they are logged as open questions.
-5. **E2E during page swaps (Phase 3).** The end-to-end suite is the proof that no feature was lost.
-   - Before swapping a page, list every E2E spec that touches it and map each step to the new control that replaces the old one.
+5. **E2E when a page changes.** The end-to-end suite is the proof that no feature was lost.
+   - List every E2E spec that touches the page, map each step to the control that now does it, and run those specs.
    - Change selectors only. Never weaken an assertion, delete a step or skip a test to make it pass. If a behaviour moves (for example a header button becomes the app bar +), move the test step with it.
    - Keep the `data-*` hooks the specs use, and put them on the new controls.
-   - The full E2E suite is green before the swap is committed, not just the touched specs.
    - Add phone-width (390px) coverage for the page's main flow when the page gets a phone-specific pattern (bottom sheet, swipe, long-press selection).
 
 ## 11. How to work
 
 1. **Start**: read this file, then `PROGRESS.md`, the README of every component you will touch, and the boards for your screens.
-   - **Phase 2**: build one component at a time, set it to **Ready for review**, and stop. The owner approves it or asks for changes.
-   - **Phase 3**: every page, signed-out ones included (`/ds/login`, `/ds/signup`, `/ds/offline`), is first built as a new route under `/ds/…` (for example `/ds/login`, `/ds/transactions`), with the same data and behaviour as the live page, while the live page stays untouched. The owner reviews it there. Only after the owner approves does the live route switch to the new page (the swap), with the E2E rules in §10.5, and the `/ds/…` copy is removed. Put the new files' paths in `design-system/checked-paths.txt` and add a row to the migration map in `PROGRESS.md`: the page, its new files, and the old files it no longer uses.
+   - **New components**: build one at a time, set it to **Ready for review**, and stop. The owner approves it or asks for changes.
+   - **New pages** are built at their live route under `src/app/(ds)/`, from **Approved** components only. Add any new folder outside the checked paths to `design-system/checked-paths.txt`.
 2. **Commit**: small commits on `main` with explicit paths (`git add <paths>`). Never `git add -A`, never push, never force-push, never rewrite history. Start each message with `ui(ds):`.
 3. **Finish**: update `PROGRESS.md` with:
    - the phase status;
