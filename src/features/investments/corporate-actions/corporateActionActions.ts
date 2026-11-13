@@ -50,6 +50,15 @@ export const loadCorporateActionSuggestion = action('corporateAction.loadCorpora
   },
 ));
 
+/** The corporate actions already recorded on an instrument. */
+export const loadInstrumentCorporateActions = action('corporateAction.loadInstrumentCorporateActions', createDomainAction(
+  { fallbackError: "Couldn't open this instrument's corporate actions. Try again." },
+  async (instrumentId: string): Promise<CorporateAction[]> => {
+    const { data } = await serverApi.GET('/api/v1/instruments/{instrumentId}/corporate-actions', { params: { path: { instrumentId } } });
+    return (data ?? []) as CorporateAction[];
+  },
+));
+
 /** Takes an automatically applied corporate action back. */
 export const undoCorporateActionSuggestion = action('corporateAction.undoCorporateActionSuggestion', createDomainAction(
   { fallbackError: "Couldn't remove the corporate action. Try again." },

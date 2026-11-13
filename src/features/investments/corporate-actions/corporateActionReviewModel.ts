@@ -3,6 +3,7 @@ import { formatDate, formatMoney, formatQuantity } from '@/lib/format';
 
 import { candidateText, detectedNote } from './corporateActionFormModel';
 import { ratioText } from './corporateActionRatioModel';
+import { type EvidenceLine, schemeEvidence } from './corporateActionSchemeModel';
 
 export type ReviewReason = NonNullable<CorporateActionReviewItem['reason']>;
 
@@ -35,6 +36,10 @@ export interface ReviewCardModel {
   note?: string;
   /** Companies that may be the new company of a demerger, one line each. */
   candidates?: string[];
+  /** What the company's notices and the user's holdings show (demerger and merger, when the notices were read). */
+  evidence?: EvidenceLine[];
+  /** For an automatic demerger or merger: what it rested on. */
+  because?: string;
 }
 
 const date = (v: string | null | undefined) => formatDate(v, 'input');
@@ -122,9 +127,12 @@ export function reviewCard(item: CorporateActionReviewItem): ReviewCardModel {
   const why = reviewReasonText(item);
   if (why) lines.push({ label: "Why we didn't apply it", value: why });
   const card: ReviewCardModel = { id: item.id, heading: reviewHeading(item), subheading: `Ex-date ${date(item.exDate)}`, lines };
-  const note = detectedNote(item.kind === 'demerger' || item.kind === 'merger' ? item.kind : undefined, item);
+  const details = item.details ?? null;
+  const schemeKind = item.kind === 'demerger' || item.kind === 'merger' ? item.kind : undefined;
+  if (details && schemeKind) card.evidence = schemeEvidence(details, { kind: schemeKind, parentName: item.instrument.name });
+  const note = details ? null : detectedNote(schemeKind, item);
   if (note) card.note = note;
-  if (item.kind === 'demerger' && item.possibleChildren.length > 0) {
+  if (item.kind === 'demerger' && item.possibleChildren.length > 0 && !(details && details.children.length > 0)) {
     card.candidates = item.possibleChildren.map((c) => `Possible new company: ${candidateText(c)}`);
   }
   return card;
@@ -140,7 +148,11 @@ export function appliedCard(item: CorporateActionReviewItem): ReviewCardModel {
     label: 'Price feed',
     value: item.feedFactor != null ? `×${formatQuantity(item.feedFactor)} on this date` : 'Not recorded',
   });
-  return { id: item.id, heading: reviewHeading(item), subheading: `Applied on ${date(item.resolvedAt ?? item.createdAt)}`, lines };
+  const card: ReviewCardModel = { id: item.id, heading: reviewHeading(item), subheading: `Applied on ${date(item.resolvedAt ?? item.createdAt)}`, lines };
+  if (item.appliedBecause) card.because = item.appliedBecause;
+  const schemeKind = item.kind === 'demerger' || item.kind === 'merger' ? item.kind : undefined;
+  if (item.details && schemeKind) card.evidence = schemeEvidence(item.details, { kind: schemeKind, parentName: item.instrument.name });
+  return card;
 }
 
 export interface NotTradingCardModel {
@@ -148,6 +160,8 @@ export interface NotTradingCardModel {
   heading: string;
   lines: string[];
   advice: string;
+  /** What the notices say about the company it merged into, when they were read. */
+  evidence?: EvidenceLine[];
 }
 
 /** A held stock with no price on NSE or BSE for a while. */
@@ -156,5 +170,7 @@ export function notTradingCard(stock: NotTradingStock): NotTradingCardModel {
   if (stock.markedAt) lines.push(`No price on NSE or BSE since ${date(stock.markedAt)}`);
   lines.push(`You hold ${qty(stock.sharesHeld)} shares`);
   if (stock.lastPrice != null) lines.push(`Last price ${rupees(stock.lastPrice)}${stock.lastPriceDate ? ` on ${date(stock.lastPriceDate)}` : ''}`);
-  return { id: stock.instrument.id, heading: `${stock.instrument.name} no longer trades`, lines, advice: NOT_TRADING_ADVICE };
+  const card: NotTradingCardModel = { id: stock.instrument.id, heading: `${stock.instrument.name} no longer trades`, lines, advice: NOT_TRADING_ADVICE };
+  if (stock.details) card.evidence = schemeEvidence(stock.details, { kind: 'merger', parentName: stock.instrument.name });
+  return card;
 }

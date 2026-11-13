@@ -40,10 +40,13 @@ import {
   KIND_OPTIONS,
   ratioCopy,
   requestBody,
+  resolveChildRequest,
+  sourcesStillApply,
   validateForm,
 } from './corporateActionFormModel';
 import { CORPORATE_ACTION_GONE_MESSAGE, isCorporateActionGone } from './corporateActionGone';
 import { ratioText } from './corporateActionRatioModel';
+import { type EvidenceLine, prefillSources } from './corporateActionSchemeModel';
 import { KIND_LABELS, type PreviewLine, previewLines } from './corporateActionsModel';
 import { useCorporateActionMutations } from './useCorporateActionMutations';
 
@@ -75,6 +78,11 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
   const router = useAppRouter();
   const editing = Boolean(action);
   const [today] = React.useState(() => todayInAppZone());
+  // A demerger into several companies is recorded one child after another: the first save accepts the suggestion, the rest create.
+  const details = prefill?.details ?? null;
+  const total = type === 'demerger' && details ? details.children.length : 1;
+  const [step, setStep] = React.useState(prefill?.childIndex ?? 0);
+  const inFlight = React.useRef(false);
   const [form, setForm] = React.useState<CorporateActionForm>(() => initialForm({ today, instrument, type, action, prefill }));
   const [errors, setErrors] = React.useState<FormErrors>({});
   const [resolvingMain, setResolvingMain] = React.useState(false);
@@ -86,7 +94,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
   const [usingCandidate, setUsingCandidate] = React.useState<string | null>(null);
   const [candidateError, setCandidateError] = React.useState<string | undefined>();
   const { createMutation, updateMutation, deleteMutation, acceptMutation } = useCorporateActionMutations(form.instrument?.id);
-  const saving = createMutation.isPending || updateMutation.isPending || acceptMutation.isPending;
+  const saving = createMutation.isPending || updateMutation.isPending || acceptMutation.isPending || resolveCandidate.isPending;
   const deleting = deleteMutation.isPending;
 
   const change = (patch: Partial<CorporateActionForm>, clear?: keyof FormErrors) => {
@@ -103,15 +111,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
     }
     setUsingCandidate(c.yahooSymbol);
     try {
-      const resolved = await resolveCandidate.mutateAsync({
-        type: 'stock',
-        name: c.name,
-        symbol: c.symbol,
-        exchange: 'NSE',
-        isin: c.isin ?? undefined,
-        yahooSymbol: c.yahooSymbol,
-        currency: 'INR',
-      });
+      const resolved = await resolveCandidate.mutateAsync(resolveChildRequest(c));
       change({ target: resolved }, 'target');
     } catch (e) {
       setCandidateError(getErrorMessage(e, "Couldn't add the instrument. Try again."));
@@ -145,16 +145,39 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
 
   // ---- Save and delete ----
   const submit = async () => {
-    if (resolving) return;
+    if (resolving || inFlight.current) return;
+    inFlight.current = true;
+    try {
+      await save();
+    } finally {
+      inFlight.current = false;
+    }
+  };
+
+  const save = async () => {
     const found = validateForm(form);
     setErrors(found);
-    const request = requestBody(form);
-    if (!request || !form.instrument) return;
+    if (Object.keys(found).length > 0 || !form.instrument) return;
+    let toSave = form;
+    if (hasTarget(form.type) && !form.target && form.pendingChild) {
+      // The notices named a company that isn't in the catalog yet: add it, then record the action against it.
+      try {
+        const resolved = await resolveCandidate.mutateAsync(resolveChildRequest(form.pendingChild));
+        toSave = { ...form, target: resolved };
+        setForm(toSave);
+      } catch (e) {
+        setFormError(getErrorMessage(e, "Couldn't add the new company. Try again."));
+        return;
+      }
+    }
+    const request = requestBody(toSave);
+    if (!request) return;
     try {
       if (action) {
         await updateMutation.mutateAsync({ id: action.id, body: request });
         showToast('Corporate action updated');
-      } else if (suggestionId) {
+      } else if (suggestionId && step + 1 >= total) {
+        // The suggestion is accepted on the last child's save; the earlier ones are plain actions.
         await acceptMutation.mutateAsync({ suggestionId, body: request });
         showToast('Corporate action recorded');
       } else {
@@ -162,6 +185,14 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
         showToast('Corporate action recorded');
       }
       router.refresh();
+      if (!action && step + 1 < total) {
+        const next = step + 1;
+        setStep(next);
+        setErrors({});
+        setFormError(undefined);
+        setForm(initialForm({ today, instrument: form.instrument, type: form.type, prefill: { ...prefill, exDate: form.exDate, childIndex: next } }));
+        return;
+      }
       onClose();
     } catch (e) {
       if (action && isCorporateActionGone(e)) {
@@ -176,6 +207,14 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
       }
       showToast(getErrorMessage(e, "Couldn't save the corporate action. Try again."), { tone: 'danger' });
     }
+  };
+
+  // Leaving a multi-child demerger part way: say what is done and where the rest waits.
+  const closeEarly = () => {
+    if (!action && step > 0 && total > 1) {
+      showToast(`${step} of ${total} new companies recorded. The rest stay in Needs your review.`);
+    }
+    onClose();
   };
 
   const remove = async () => {
@@ -198,8 +237,16 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
   };
 
   const copy = ratioCopy(form.type);
-  const note = suggestionId ? detectedNote(form.type, prefill) : null;
-  const candidates = suggestionId && form.type === 'demerger' ? (prefill?.possibleChildren ?? []) : [];
+  const named = Boolean(details && details.children.length > 0);
+  const note = suggestionId && !details ? detectedNote(form.type, prefill) : null;
+  const candidates = suggestionId && form.type === 'demerger' && !named ? (prefill?.possibleChildren ?? []) : [];
+  const prefilled = React.useMemo(
+    () => initialForm({ today, instrument, type, prefill: { ...prefill, childIndex: step } }),
+    [today, instrument, type, prefill, step],
+  );
+  const still = sourcesStillApply(form, prefilled);
+  const sources = details && !action && (form.type === 'demerger' || form.type === 'merger') ? prefillSources(details, form.type, step) : null;
+  const targetValue = form.target ?? (form.pendingChild ? { id: `pending:${form.pendingChild.symbol}`, name: form.pendingChild.name, symbol: form.pendingChild.symbol } : null);
   const merging = hasTarget(form.type);
   const ratioShown = hasRatio(form.type);
   const kindLabel = KIND_LABELS[form.type].toLowerCase();
@@ -216,13 +263,13 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
 
   return (
     <>
-      <Dialog open onOpenChange={(open) => (open || confirmingDelete ? undefined : onClose())}>
+      <Dialog open onOpenChange={(open) => (open || confirmingDelete ? undefined : closeEarly())}>
         <Dialog.Content
           size="sm"
           title={editing ? 'Edit corporate action' : 'Record corporate action'}
           description="Quantity and cost update when you save."
           tertiary={editing ? { label: 'Delete', tone: 'danger', onSelect: () => setConfirmingDelete(true), disabled: saving } : undefined}
-          secondary={{ label: 'Cancel', onSelect: onClose, disabled: saving }}
+          secondary={{ label: 'Cancel', onSelect: closeEarly, disabled: saving }}
           primary={{ label: editing ? `Save ${kindLabel}` : `Record ${kindLabel}`, type: 'submit', form: FORM_ID, loading: saving, disabled: resolving }}
         >
           <Dialog.Body>
@@ -236,6 +283,11 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
                 void submit();
               }}
             >
+              {total > 1 ? (
+                <Text variant="heading" as="div">
+                  {`New company ${step + 1} of ${total}`}
+                </Text>
+              ) : null}
               <div className="grid grid-cols-2 gap-x-space-12 gap-y-space-8 desk:gap-y-space-12">
                 <InstrumentSelect
                   label="Instrument"
@@ -265,15 +317,16 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
                 {merging ? (
                   <InstrumentSelect
                     label={form.type === 'merger' ? 'Acquirer instrument' : 'Child instrument'}
-                    value={form.target}
+                    value={targetValue}
                     resolveExisting={false}
                     error={errors.target}
-                    onValueChange={(i) => change({ target: i }, 'target')}
+                    onValueChange={(i) => change({ target: i, pendingChild: null }, 'target')}
                     onResolveError={(message) => showToast(message, { tone: 'danger' })}
                     onResolvingChange={setResolvingTarget}
                   />
                 ) : null}
               </div>
+              {sources && still.target ? <Sources lines={sources.target} /> : null}
               {note ? (
                 <Text variant="label" tone="ink-3" as="div">
                   {note}
@@ -327,6 +380,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
                     onValueChange={(v) => change({ ratioTo: v.replace(/\D/g, '') }, 'ratioTo')}
                   />
                 </div>
+                {sources && still.ratio ? <Sources lines={sources.ratio} /> : null}
               </div>
               ) : null}
               {merging ? (
@@ -350,6 +404,7 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
                   />
                 </div>
               ) : null}
+              {sources && form.type === 'demerger' && still.cost ? <Sources lines={sources.cost} /> : null}
               <TextField label="Notes" value={form.notes} onValueChange={(v) => change({ notes: v })} />
               {formError ? (
                 <Text variant="label" tone="danger" as="div">
@@ -378,6 +433,29 @@ export function CorporateActionDialog({ onClose, instrument, type, action, prefi
         </ConfirmDialog>
       ) : null}
     </>
+  );
+}
+
+/** Muted lines under a prefilled field: where the value came from, with a link to the notice. */
+function Sources({ lines }: { lines: EvidenceLine[] }) {
+  if (lines.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-space-4">
+      {lines.map((line) => (
+        <div key={line.text} className="flex items-baseline gap-space-8 flex-wrap">
+          <Text variant="label" tone="ink-3" as="div">
+            {line.text}
+          </Text>
+          {line.noticeUrl ? (
+            <Button asChild variant="link" size="sm">
+              <a href={line.noticeUrl} target="_blank" rel="noopener noreferrer">
+                View notice
+              </a>
+            </Button>
+          ) : null}
+        </div>
+      ))}
+    </div>
   );
 }
 

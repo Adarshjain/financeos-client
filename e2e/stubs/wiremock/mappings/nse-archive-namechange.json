@@ -1,0 +1,14 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/nsearchives/content/equities/namechange.csv"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "text/csv"
+    },
+    "body": "SYMBOL,OLD NAME OF THE COMPANY,NEW NAME OF THE COMPANY,DATE OF CHANGE\n"
+  }
+}

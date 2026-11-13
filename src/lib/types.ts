@@ -827,6 +827,12 @@ export interface TradeSettlementClassification {
   intradaySellValue: number | string;
 }
 
+/** The holdings file's quantities per symbol, echoed from the preview into the commit so the server can check the import against it. */
+export interface ReconcileHoldingsSnapshot {
+  asOfDate: string;
+  items: { isin?: string | null; quantity: number; symbol?: string | null }[];
+}
+
 export interface ReconcilePreview {
   executions: ReconciledExecution[];
   derivedHoldings: DerivedHolding[];
@@ -835,6 +841,7 @@ export interface ReconcilePreview {
   summaryStats: SummaryStats;
   classifications?: TradeSettlementClassification[];
   fnoTrades?: FnoTradePreview[];
+  holdingsSnapshot?: ReconcileHoldingsSnapshot | null;
 }
 
 export interface CommitExecutionDto {
@@ -860,6 +867,7 @@ export interface ReconcileCommitRequest {
   executions: CommitExecutionDto[];
   classifications?: TradeSettlementClassification[];
   fnoTrades?: CommitFnoTradeDto[];
+  holdingsSnapshot?: ReconcileHoldingsSnapshot | null;
 }
 
 export interface GmailOAuthStartResponse {

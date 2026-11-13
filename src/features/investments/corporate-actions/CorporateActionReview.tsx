@@ -19,10 +19,12 @@ import { useAppRouter } from '@/lib/useAppRouter';
 import {
   dismissCorporateActionSuggestion,
   loadCorporateActionSuggestion,
+  loadInstrumentCorporateActions,
   undoCorporateActionSuggestion,
 } from './corporateActionActions';
 import type { CorporateActionDialogProps } from './CorporateActionDialog';
 import { appliedCard, notTradingCard, reviewCard,type ReviewCardModel } from './corporateActionReviewModel';
+import { type EvidenceLine, firstUnrecordedChild } from './corporateActionSchemeModel';
 
 type DialogProps = Pick<CorporateActionDialogProps, 'instrument' | 'type' | 'prefill' | 'suggestionId'>;
 
@@ -37,6 +39,29 @@ function Lines({ lines }: { lines: ReviewCardModel['lines'] }) {
           <Text variant="body" as="div" className="flex-1 min-w-0">
             {line.value}
           </Text>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Evidence from the company's notices, one plain line each; a notice's source line carries a "View notice" link. */
+function Evidence({ lines }: { lines?: EvidenceLine[] }) {
+  if (!lines || lines.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-space-6">
+      {lines.map((line, i) => (
+        <div key={`${i}-${line.text}`} className="flex items-baseline gap-space-8 flex-wrap">
+          <Text variant="body" tone={line.noticeUrl ? 'ink-3' : undefined} as="div">
+            {line.text}
+          </Text>
+          {line.noticeUrl ? (
+            <Button asChild variant="link" size="sm">
+              <a href={line.noticeUrl} target="_blank" rel="noopener noreferrer">
+                View notice
+              </a>
+            </Button>
+          ) : null}
         </div>
       ))}
     </div>
@@ -118,11 +143,24 @@ export function CorporateActionReview({ review }: CorporateActionReviewProps) {
       async () => {
         const suggestion = await unwrapAction(loadCorporateActionSuggestion(item.id));
         const type = suggestion.kind === 'other' || suggestion.kind === 'oversold' ? undefined : suggestion.kind;
+        // A demerger into several companies that was interrupted: start at the first one not recorded yet.
+        const children = suggestion.details?.children ?? [];
+        const childIndex =
+          type === 'demerger' && children.length > 1
+            ? firstUnrecordedChild(children, await unwrapAction(loadInstrumentCorporateActions(suggestion.instrument.id)), suggestion.exDate)
+            : undefined;
         await run(() =>
           setDialog({
             instrument: suggestion.instrument,
             type,
-            prefill: { exDate: suggestion.exDate, ratioFrom: suggestion.ratioFrom, ratioTo: suggestion.ratioTo, possibleChildren: suggestion.possibleChildren },
+            prefill: {
+              exDate: suggestion.exDate,
+              ratioFrom: suggestion.ratioFrom,
+              ratioTo: suggestion.ratioTo,
+              possibleChildren: suggestion.possibleChildren,
+              details: suggestion.details ?? null,
+              childIndex,
+            },
             suggestionId: suggestion.id,
           }),
         );
@@ -130,11 +168,11 @@ export function CorporateActionReview({ review }: CorporateActionReviewProps) {
       "Couldn't open this. Try again.",
     );
 
-  const openRecord = (key: string, item: { id: string; name: string; symbol?: string | null }, type?: DialogProps['type']) =>
+  const openRecord = (key: string, item: { id: string; name: string; symbol?: string | null }, type?: DialogProps['type'], prefill?: DialogProps['prefill']) =>
     attempt(
       key,
       async () => {
-        await run(() => setDialog({ instrument: { id: item.id, name: item.name, symbol: item.symbol ?? null }, type }));
+        await run(() => setDialog({ instrument: { id: item.id, name: item.name, symbol: item.symbol ?? null }, type, prefill }));
       },
       "Couldn't open this. Try again.");
 
@@ -153,6 +191,7 @@ export function CorporateActionReview({ review }: CorporateActionReviewProps) {
               <Card.Row key={item.id} className={BLOCK}>
                 <Heading title={card.heading} subtitle={card.subheading} />
                 <Lines lines={card.lines} />
+                <Evidence lines={card.evidence} />
                 {card.candidates?.map((line) => (
                   <Text key={line} variant="body" as="div">
                     {line}
@@ -195,8 +234,9 @@ export function CorporateActionReview({ review }: CorporateActionReviewProps) {
                     {card.advice}
                   </Text>
                 </div>
+                <Evidence lines={card.evidence} />
                 <Actions>
-                  <Button size="sm" variant="secondary" loading={busy === `${card.id}|merged`} onClick={() => void openRecord(`${card.id}|merged`, stock.instrument, 'merger')}>
+                  <Button size="sm" variant="secondary" loading={busy === `${card.id}|merged`} onClick={() => void openRecord(`${card.id}|merged`, stock.instrument, 'merger', stock.details ? { details: stock.details } : undefined)}>
                     Merged
                   </Button>
                   <Button size="sm" variant="link" loading={busy === `${card.id}|delisted`} onClick={() => void openRecord(`${card.id}|delisted`, stock.instrument, 'delisted')}>
@@ -216,6 +256,12 @@ export function CorporateActionReview({ review }: CorporateActionReviewProps) {
               <Card.Row key={item.id} className={BLOCK}>
                 <Heading title={card.heading} subtitle={card.subheading} />
                 <Lines lines={card.lines} />
+                {card.because ? (
+                  <Text variant="body" as="div">
+                    {card.because}
+                  </Text>
+                ) : null}
+                <Evidence lines={card.evidence} />
                 <Actions>
                   <Button size="sm" variant="secondary" loading={busy === `${item.id}|undo`} onClick={() => void settle(`${item.id}|undo`, item.id, 'undo')}>
                     Undo

@@ -6825,12 +6825,14 @@ export interface components {
             type: "split" | "bonus" | "demerger" | "merger" | "delisted";
         };
         CorporateActionReviewItemResponse: {
+            appliedBecause?: string | null;
             avgCostAfter?: number | null;
             avgCostBefore?: number | null;
             /** Format: uuid */
             corporateActionId?: string | null;
             /** Format: date-time */
             createdAt: string;
+            details?: components["schemas"]["CorporateActionSchemeDetails"];
             /** Format: date */
             exDate: string;
             exchangeFactor?: number | null;
@@ -6893,9 +6895,53 @@ export interface components {
             /** @enum {string} */
             type: "split" | "bonus" | "demerger" | "merger" | "delisted";
         };
+        CorporateActionSchemeChild: {
+            childCostPct?: number | null;
+            /** Format: uuid */
+            instrumentId?: string | null;
+            isin?: string | null;
+            /** Format: date */
+            listedOn?: string | null;
+            name: string;
+            /** Format: int32 */
+            ratioFrom?: number | null;
+            ratioSource?: components["schemas"]["CorporateActionSchemeSource"];
+            /** Format: int32 */
+            ratioTo?: number | null;
+            symbol: string;
+            yahooSymbol: string;
+        };
+        CorporateActionSchemeDetails: {
+            /** Format: date-time */
+            checkedAt: string;
+            children: components["schemas"]["CorporateActionSchemeChild"][];
+            costKind?: string | null;
+            costSource: components["schemas"]["CorporateActionSchemeSource"];
+            holdingsCheck: components["schemas"]["CorporateActionSchemeHoldingsCheck"][];
+            missing: string[];
+            parentCostPct?: number | null;
+        };
+        CorporateActionSchemeHoldingsCheck: {
+            accountName: string;
+            agrees: boolean;
+            /** Format: date */
+            asOf?: string | null;
+            /** Format: uuid */
+            brokerAccountId: string;
+            expectedQty: number;
+            foundQty: number;
+            source: string;
+        };
+        CorporateActionSchemeSource: {
+            /** Format: date */
+            date?: string | null;
+            quote: string;
+            url: string;
+        };
         CorporateActionSuggestionResponse: {
             /** Format: uuid */
             corporateActionId?: string | null;
+            details?: components["schemas"]["CorporateActionSchemeDetails"];
             /** Format: date */
             exDate: string;
             /** Format: uuid */
@@ -9412,6 +9458,7 @@ export interface components {
             statementId: string;
         };
         NotTradingStock: {
+            details: components["schemas"]["CorporateActionSchemeDetails"];
             instrument: components["schemas"]["ReviewInstrument"];
             lastPrice?: number | null;
             /** Format: date */
@@ -10713,12 +10760,24 @@ export interface components {
             classifications?: components["schemas"]["CommitClassificationDto"][];
             executions: components["schemas"]["CommitExecutionDto"][];
             fnoTrades?: components["schemas"]["CommitFnoTradeDto"][];
+            holdingsSnapshot?: components["schemas"]["ReconcileHoldingsSnapshot"];
+        };
+        ReconcileHoldingsSnapshot: {
+            /** Format: date */
+            asOfDate: string;
+            items: components["schemas"]["ReconcileHoldingsSnapshotRow"][];
+        };
+        ReconcileHoldingsSnapshotRow: {
+            isin?: string | null;
+            quantity: number;
+            symbol?: string | null;
         };
         ReconcilePreviewResponse: {
             classifications: components["schemas"]["TradeSettlementClassificationDto"][];
             derivedHoldings: components["schemas"]["DerivedHoldingDto"][];
             executions: components["schemas"]["ReconciledExecutionDto"][];
             fnoTrades: components["schemas"]["FnoTradePreviewDto"][];
+            holdingsSnapshot?: components["schemas"]["ReconcileHoldingsSnapshot"];
             realizedSummary?: components["schemas"]["RealizedSummaryDto"];
             summaryStats: components["schemas"]["SummaryStatsDto"];
             warnings: components["schemas"]["ReconcileWarningDto"][];

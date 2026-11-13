@@ -27,7 +27,10 @@ export interface DetectSeed {
 }
 
 /** A new broker account holding 10 shares of each listing, bought on 3 Jun 2024 and imported through a reconcile commit. */
-export async function seedDetectablePurchases(api: ApiClient): Promise<DetectSeed> {
+export async function seedDetectablePurchases(
+  api: ApiClient,
+  holdingsSnapshot?: { asOfDate: string; items: { isin?: string; symbol?: string; quantity: number }[] },
+): Promise<DetectSeed> {
   const broker = await createBroker(api);
   const resolved: Record<string, InstrumentResponse> = {};
   for (const [key, l] of Object.entries(LISTINGS)) {
@@ -44,6 +47,7 @@ export async function seedDetectablePurchases(api: ApiClient): Promise<DetectSee
     body: {
       broker: 'zerodha',
       brokerAccountId: broker.id,
+      ...(holdingsSnapshot ? { holdingsSnapshot } : {}),
       executions: Object.entries(LISTINGS).map(([key, l], i) => ({
         rowIndex: i + 1,
         symbol: l.symbol,
@@ -70,6 +74,14 @@ export interface DetectedSuggestion {
   kind: string;
   instrument: { id: string };
   possibleChildren: { symbol: string; name: string }[];
+  appliedBecause?: string | null;
+  details?: {
+    children: { symbol: string; name: string; ratioFrom?: number | null; ratioTo?: number | null; childCostPct?: number | null }[];
+    parentCostPct?: number | null;
+    costKind?: string | null;
+    holdingsCheck: { source: string; agrees: boolean; expectedQty: number; foundQty: number }[];
+    missing: string[];
+  } | null;
 }
 
 async function suggestionsOf(api: ApiClient, bucket: DetectBucket, instrumentId: string): Promise<DetectedSuggestion | undefined> {

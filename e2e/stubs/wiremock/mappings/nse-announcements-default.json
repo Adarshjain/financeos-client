@@ -1,0 +1,14 @@
+{
+  "priority": 8,
+  "request": {
+    "method": "GET",
+    "urlPath": "/nse/api/corporate-announcements"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": []
+  }
+}

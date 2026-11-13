@@ -140,6 +140,8 @@ export function buildReconcileCommitRequest(params: {
     executions,
     classifications: reconcilePreview.classifications,
     fnoTrades,
+    // Unchanged from the preview: without it the server auto-applies nothing.
+    holdingsSnapshot: reconcilePreview.holdingsSnapshot,
   };
 }
 

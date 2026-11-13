@@ -1,7 +1,9 @@
 import type { InstrumentRef } from '@/features/investments/investmentsFormatModel';
-import type { CorporateActionChildCandidate, CreateCorporateActionRequest } from '@/lib/api/types';
+import type { CorporateActionChildCandidate, CorporateActionSchemeChild, CreateCorporateActionRequest } from '@/lib/api/types';
 import { formatDate } from '@/lib/format';
 import type { CorporateActionItem, CorporateActionKind } from '@/lib/investments.types';
+
+import { costAllocationFor, type SchemeDetails } from './corporateActionSchemeModel';
 
 export { instrumentLabel, type InstrumentRef } from '@/features/investments/investmentsFormatModel';
 
@@ -13,6 +15,8 @@ export interface CorporateActionForm {
   ratioTo: string;
   /** The child (demerger) or the acquirer (merger). */
   target: InstrumentRef | null;
+  /** A child or acquirer named by the notices that is not in the catalog yet: added when the user saves. */
+  pendingChild?: CorporateActionSchemeChild | null;
   costAllocationPct: string;
   cashInLieu: string;
   notes: string;
@@ -33,6 +37,10 @@ export interface FormPrefill {
   ratioTo?: number | null;
   /** Companies that listed around the demerger date, for the user to pick the child from. */
   possibleChildren?: CorporateActionChildCandidate[];
+  /** What the company's notices say: the child or acquirer, ratio and cost split. */
+  details?: SchemeDetails | null;
+  /** Which of the scheme's children the form is for (0 when there is one). */
+  childIndex?: number;
 }
 
 /** What the notice leaves out for a detected demerger or merger, or null when there is nothing to check. */
@@ -80,14 +88,20 @@ export function initialForm(args: {
   // A detected demerger or merger with no ratio in the notice: the user enters it, we don't guess.
   const blankRatio = Boolean(args.prefill) && (args.type === 'demerger' || args.type === 'merger');
   const fallback = (v: string) => (blankRatio ? '' : v);
+  const child = args.prefill?.details?.children[args.prefill.childIndex ?? 0];
+  const fromNotice = child?.ratioFrom != null && child.ratioTo != null;
+  const ratioFrom = fromNotice ? child.ratioFrom : args.prefill?.ratioFrom;
+  const ratioTo = fromNotice ? child.ratioTo : args.prefill?.ratioTo;
+  const allocation = args.type === 'demerger' && args.prefill?.details ? costAllocationFor(args.prefill.details.children, args.prefill.childIndex ?? 0) : null;
   return {
     instrument: args.instrument ?? null,
     type: args.type ?? 'split',
     exDate: args.prefill?.exDate ? args.prefill.exDate.slice(0, 10) : args.today,
-    ratioFrom: args.prefill?.ratioFrom != null ? String(args.prefill.ratioFrom) : fallback('1'),
-    ratioTo: args.prefill?.ratioTo != null ? String(args.prefill.ratioTo) : fallback('2'),
-    target: null,
-    costAllocationPct: '20',
+    ratioFrom: ratioFrom != null ? String(ratioFrom) : fallback('1'),
+    ratioTo: ratioTo != null ? String(ratioTo) : fallback('2'),
+    target: child?.instrumentId ? { id: child.instrumentId, name: child.name, symbol: child.symbol } : null,
+    pendingChild: child && !child.instrumentId ? child : null,
+    costAllocationPct: allocation != null ? String(allocation) : '20',
     cashInLieu: '',
     notes: '',
   };
@@ -112,9 +126,9 @@ export function validateForm(form: CorporateActionForm): FormErrors {
   }
   if (!form.exDate) errors.exDate = 'Ex-date is required.';
   if (hasTarget(form.type)) {
-    if (!form.target) {
+    if (!form.target && !form.pendingChild) {
       errors.target = `${form.type === 'merger' ? 'Acquirer' : 'Child'} instrument is required.`;
-    } else if (form.target.id === form.instrument?.id) {
+    } else if (form.target && form.target.id === form.instrument?.id) {
       errors.target = 'Must be different from the instrument.';
     }
     if (form.type === 'demerger') {
@@ -128,6 +142,7 @@ export function validateForm(form: CorporateActionForm): FormErrors {
 /** The request the server takes to save, preview or update the action. Null while the form is not valid. */
 export function requestBody(form: CorporateActionForm): CreateCorporateActionRequest | null {
   if (Object.keys(validateForm(form)).length > 0) return null;
+  if (hasTarget(form.type) && !form.target) return null;
   const merging = hasTarget(form.type);
   return {
     type: form.type,
@@ -156,3 +171,25 @@ export const KIND_OPTIONS: { value: CorporateActionKind; label: string }[] = [
   { value: 'merger', label: 'Merger / amalgamation' },
   { value: 'delisted', label: 'Delisted' },
 ];
+
+/** The request body to add a child or acquirer the notices named, with the same fields as picking a possible child. */
+export function resolveChildRequest(c: Pick<CorporateActionChildCandidate, 'name' | 'symbol' | 'isin' | 'yahooSymbol'>) {
+  return {
+    type: 'stock' as const,
+    name: c.name,
+    symbol: c.symbol,
+    exchange: 'NSE',
+    isin: c.isin ?? undefined,
+    yahooSymbol: c.yahooSymbol,
+    currency: 'INR',
+  };
+}
+
+/** Which prefilled values the user has left as they were, so a source line is shown only while it is still true. */
+export function sourcesStillApply(form: CorporateActionForm, prefilled: CorporateActionForm) {
+  return {
+    target: prefilled.pendingChild ? form.pendingChild === prefilled.pendingChild : prefilled.target != null && form.target?.id === prefilled.target.id,
+    ratio: form.ratioFrom === prefilled.ratioFrom && form.ratioTo === prefilled.ratioTo,
+    cost: form.costAllocationPct === prefilled.costAllocationPct,
+  };
+}

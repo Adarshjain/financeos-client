@@ -52,6 +52,48 @@ test.describe('Detected corporate actions API (@api)', () => {
     expect((await suggestionOf(api, 'appliedAutomatically', seed.bonus.id))?.possibleChildren).toEqual([]);
   });
 
+  test('the exchange notices fill the demerger: child, ratio, cost split; no holdings file keeps it pending', async ({ api }) => {
+    test.slow();
+    const seed = await seedDetectablePurchases(api);
+    await waitForSuggestion(api, 'needsReview', seed.demerge.id);
+    // The notices are read in the background (the listing cache and the two PDFs), so the details are polled for.
+    await expect
+      .poll(async () => (await suggestionOf(api, 'needsReview', seed.demerge.id))?.details?.children.map((c) => c.symbol), { timeout: 90_000 })
+      .toEqual(['E2EDMCHILD']);
+    const details = (await suggestionOf(api, 'needsReview', seed.demerge.id))!.details!;
+    expect(details.children[0]).toMatchObject({ symbol: 'E2EDMCHILD', ratioFrom: 2, ratioTo: 1, childCostPct: 20 });
+    expect(details).toMatchObject({ parentCostPct: 80, costKind: 'NOTICE' });
+    // The shared user's other accounts holding the same demerger are checked too: none has a holdings file or sales.
+    expect(details.holdingsCheck.length).toBeGreaterThanOrEqual(1);
+    expect(details.holdingsCheck.every((c) => c.source === 'NONE' && !c.agrees)).toBe(true);
+    expect(await listInstrumentCorporateActions(api, seed.demerge.id)).toHaveLength(0);
+  });
+
+  test('a holdings file showing the child shares lets the demerger apply on its own; undo takes it away', async ({ request }) => {
+    test.slow();
+    const { api: owner } = await secondUser(request, 'detect-holdings');
+    // 10 parent shares at 1 for 2 give 5 child shares: the account's holdings file shows exactly that.
+    const seed = await seedDetectablePurchases(owner, {
+      asOfDate: '2025-03-01',
+      items: [{ isin: 'INE2E0000045', symbol: 'E2EDMCHILD', quantity: 5 }],
+    });
+    const applied = await waitForSuggestion(owner, 'appliedAutomatically', seed.demerge.id, 120_000);
+    expect(applied.kind).toBe('demerger');
+    expect(applied.appliedBecause).toBeTruthy();
+    expect(applied.details?.holdingsCheck[0]).toMatchObject({ source: 'SNAPSHOT', agrees: true, expectedQty: 5, foundQty: 5 });
+    const actions = await listInstrumentCorporateActions(owner, seed.demerge.id);
+    expect(actions).toHaveLength(1);
+    // The child is the catalog row that carries the ISIN (another spec may have created it under its own symbol).
+    const childId = actions[0].targetInstrumentId;
+    expect(childId).toBeTruthy();
+    expect((await positions(owner)).positions.find((p) => p.instrument.id === childId)?.quantity).toBe(5);
+
+    expectStatus(await owner.POST('/api/v1/corporate-action-suggestions/{id}/undo', { params: { path: { id: applied.id } } }), 200);
+    expect(await listInstrumentCorporateActions(owner, seed.demerge.id)).toHaveLength(0);
+    expect(await suggestionOf(owner, 'appliedAutomatically', seed.demerge.id)).toBeUndefined();
+    expect((await positions(owner)).positions.find((p) => p.instrument.id === childId)?.quantity ?? 0).toBe(0);
+  });
+
   test('undo takes the applied action and its listing away', async ({ api }) => {
     test.slow();
     const seed = await seedDetectablePurchases(api);

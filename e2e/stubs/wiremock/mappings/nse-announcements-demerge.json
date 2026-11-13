@@ -1,0 +1,36 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/nse/api/corporate-announcements",
+    "queryParameters": {
+      "symbol": {
+        "equalTo": "E2EDEMERGE"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": [
+      {
+        "symbol": "E2EDEMERGE",
+        "sm_isin": "INE2E0000037",
+        "desc": "Record Date",
+        "attchmntText": "Scheme of Arrangement (Demerger): fixing of record date for entitlement of shares of the resulting company",
+        "an_dt": "10-Jan-2025 18:00:00",
+        "attchmntFile": "https://nsearchives.nseindia.com/corporate/E2EDEMERGE_recorddate.pdf"
+      },
+      {
+        "symbol": "E2EDEMERGE",
+        "sm_isin": "INE2E0000037",
+        "desc": "Updates",
+        "attchmntText": "Demerger: intimation of the cost of acquisition of equity shares and its apportionment",
+        "an_dt": "20-Jan-2025 18:00:00",
+        "attchmntFile": "https://nsearchives.nseindia.com/corporate/E2EDEMERGE_costofacquisition.pdf"
+      }
+    ]
+  }
+}

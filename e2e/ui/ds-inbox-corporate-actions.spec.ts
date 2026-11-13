@@ -65,21 +65,27 @@ test.describe('/ds Inbox points at detected corporate actions, desktop 1440px (@
     await page.goto('/investments/corporate-actions');
     const demerge = card(page, seed.demerge.name);
     await expect(demerge).toBeVisible({ timeout: 45_000 });
-    // The listing cache warms in the background: the candidate line shows up once the first read has finished.
+    // The notices are read in the background (listing cache, two PDFs): the evidence lines show up once the job has finished.
     await expect(async () => {
       await page.reload();
-      await expect(demerge).toContainText('Possible new company: E2E Demerger Spinco Limited (E2EDMCHILD), listed on NSE 10/02/25', { timeout: 3_000 });
-    }).toPass({ timeout: 60_000 });
-    await expect(demerge).toContainText('The exchange notice only says "Demerger"');
+      await expect(demerge).toContainText('1 E2E Demerger Spinco Limited share for every 2 E2E Demerger Limited shares', { timeout: 3_000 });
+    }).toPass({ timeout: 90_000 });
+    await expect(demerge).toContainText('New company: E2E Demerger Spinco Limited (E2EDMCHILD), listed on NSE 10/02/25');
+    await expect(demerge).toContainText('Cost split: E2E Demerger Limited 80%, E2E Demerger Spinco Limited 20%');
+    await expect(demerge).toContainText("From the company's notice of");
+    await expect(demerge.getByRole('link', { name: 'View notice' }).first()).toBeVisible();
+    await expect(demerge).toContainText('no holdings file or sales of E2E Demerger Spinco Limited yet');
     await demerge.getByRole('button', { name: 'Review and apply' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByRole('combobox', { name: /^Action/ })).toContainText('Demerger');
     await expect(dialog.getByLabel('Ex-date')).toHaveValue('15/01/2025');
-    await expect(dialog.getByRole('textbox', { name: /^Held/ })).toHaveValue('');
-    await expect(dialog.getByRole('textbox', { name: /^Received/ })).toHaveValue('');
-    await expect(dialog.getByText('E2E Demerger Spinco Limited (E2EDMCHILD)')).toBeVisible();
-    await dialog.getByRole('button', { name: 'Use' }).click();
+    await expect(dialog.getByRole('textbox', { name: /^Held/ })).toHaveValue('2');
+    await expect(dialog.getByRole('textbox', { name: /^Received/ })).toHaveValue('1');
     await expect(dialog.getByRole('combobox', { name: /^Child instrument/ })).toContainText('E2E Demerger Spinco');
+    await expect(dialog.getByRole('textbox', { name: /^Cost allocation/ })).toHaveValue('20');
+    await expect(dialog.getByText("Named in the company's notice of")).toBeVisible();
+    await expect(dialog.getByText("From the company's notice of").first()).toBeVisible();
+    await expect(dialog.getByRole('link', { name: 'View notice' }).first()).toBeVisible();
     expect(DETECT_EX_DATE).toBe('2025-01-15');
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(dialog).toHaveCount(0);

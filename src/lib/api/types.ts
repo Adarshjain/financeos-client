@@ -174,9 +174,14 @@ export type CreateCorporateActionRequest = Schemas['CreateCorporateActionRequest
 export type UpdateCorporateActionRequest = Schemas['UpdateCorporateActionRequest'];
 export type CorporateActionSuggestion = Schemas['CorporateActionSuggestionResponse'];
 export type CorporateActionChildCandidate = Schemas['CorporateActionChildCandidate'];
-export type CorporateActionReviewResponse = Schemas['CorporateActionReviewResponse'];
 export type CorporateActionReviewItem = Schemas['CorporateActionReviewItemResponse'];
-export type NotTradingStock = Schemas['NotTradingStock'];
+export type CorporateActionSchemeDetails = Schemas['CorporateActionSchemeDetails'];
+export type CorporateActionSchemeChild = Schemas['CorporateActionSchemeChild'];
+export type CorporateActionSchemeSource = Schemas['CorporateActionSchemeSource'];
+export type CorporateActionSchemeHoldingsCheck = Schemas['CorporateActionSchemeHoldingsCheck'];
+/** `details` is null until the company's notices have been read. */
+export type NotTradingStock = Omit<Schemas['NotTradingStock'], 'details'> & { details?: CorporateActionSchemeDetails | null };
+export type CorporateActionReviewResponse = Omit<Schemas['CorporateActionReviewResponse'], 'notTrading'> & { notTrading: NotTradingStock[] };
 export type Dividend = Schemas['DividendResponse'];
 export type CreateDividendRequest = Schemas['CreateDividendRequest'];
 export type UpdateDividendRequest = Schemas['UpdateDividendRequest'];
