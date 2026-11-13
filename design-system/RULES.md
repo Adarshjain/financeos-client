@@ -29,7 +29,7 @@ Never use as a source: "how apps usually do it", shadcn / MUI / Material / iOS d
 5. Do not touch `financeos-server` during UI phases.
 6. Delete a file only after proving nothing imports it (type-check plus a search for its name).
 7. The remaining cleanup steps are in `PROGRESS.md` → Phase 4.
-8. **New code never uses Legacy UI.** New components and new pages import UI only from `src/components/ds/`: nothing from `src/components/ui/`, other `src/components/*` folders, or `components/` folders under `src/app/`. Logic they need (hooks, queries, mutations, pure helpers) is first **moved** out of the old UI folder into `src/lib/` or `src/features/<area>/`, with the old components importing it from its new home: moved, never copied. If a page needs a piece of UI the new library doesn't have, that is an open question before the page is built, never a reason to borrow an old component. `check-ui.mjs` fails on these imports.
+8. **UI comes from Dinero and organisms only.** Pages and organisms import UI from `src/components/ds/` and `src/components/organisms/`; Dinero never imports organisms (§5b.1). Nothing imports from `components/` folders under `src/app/`. Logic (hooks, queries, mutations, pure helpers) lives in `src/lib/` or `src/features/<area>/`, never copied. If a page needs a piece of UI Dinero doesn't have, that is an open question before the page is built. `check-ui.mjs` fails on other imports.
 
 ## 2. When something is unclear: stop, don't guess
 
@@ -37,7 +37,7 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 
 ## 3. Tokens: colour, space, shape, depth
 
-1. Every colour comes from a token, through the Tailwind names fixed in `PROGRESS.md` (Phase 1). In the app the CSS variables are `--ds-<token name>` (generated in `design-system/tokens.css`), so they never clash with the existing theme. Not allowed in new components:
+1. Every colour comes from a token, through the Tailwind names fixed in `PROGRESS.md` (Phase 1). In the app the CSS variables are `--ds-<token name>` (generated in `design-system/tokens.css`). Not allowed in new components:
    - hex, `rgb()` or `hsl()` literals;
    - Tailwind palette classes (`slate-*`, `gray-*`, `emerald-*`, `rose-*`, `red-*`, `blue-*`…);
    - arbitrary values (`bg-[#…]`, `p-[13px]`, `text-[11px]`, `w-[372px]`).
@@ -96,7 +96,7 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
 
 **Responsive**
 1. **One component, one structure, one code path.** Phone and desktop are the same markup; what differs (size, position, what shows) is written with Tailwind breakpoint classes, mobile first. Never two render functions, never `renderPhone` / `renderDesktop`, never a `variant="phone" | "desktop"` prop. The page never chooses a form.
-2. **One switch: `desk` (641px).** 640px and below is the phone form; above it is the desktop form (owner, 2026-10-19; was `lg`, 1024px). `desk` is Dinero's own Tailwind screen, so Legacy keeps its `lg:` layouts untouched. Dinero code uses only `desk:` (and `max-desk:`) for that switch, never `sm:`, `md:`, `lg:`, `xl:` or `2xl:`; `check-ui` fails on them.
+2. **One switch: `desk` (641px).** 640px and below is the phone form; above it is the desktop form (owner, 2026-10-19; was `lg`, 1024px). `desk` is Dinero's own Tailwind screen. Dinero code uses only `desk:` (and `max-desk:`) for that switch, never `sm:`, `md:`, `lg:`, `xl:` or `2xl:`; `check-ui` fails on them.
 3. **No viewport detection in JavaScript** (`useMediaQuery`, `useIsPhone`, `matchMedia`, `innerWidth`) for anything that renders. The server can't know the width, so it renders the wrong form and the page jumps. (ResponsiveOverlay, the old JS switch between dropdown and sheet, was deleted; the dropdown-to-sheet switch is now CSS only, §5.6a.) The one exception is `isPhoneLayout()` in `src/components/ds/phoneLayout.ts`, called only inside event handlers to gate the phone-only gestures of §5c.4; it never decides what renders (owner, 2026-10-18). `check-ui` allows `matchMedia` in that file alone.
 4. **Gestures belong to the phone layout.** Long-press and swipe work only in the phone layout (below `desk`), with any pointer, touch or mouse (owner, 2026-10-18; replaces the 2026-10-17 touch-only rule). In the desktop layout there is no long-press and no swipe: a press always opens the item, even in selection mode, and the checkbox selects. Long-press fires while the pointer is still down, after the threshold, and the release that follows does nothing. In the phone layout a tap selects only in selection mode. Ds code reads the layout when the gesture starts, through `isPhoneLayout()` (§5c.3), never from the pointer type; the desktop checkbox column is still shown with `hidden desk:flex`. Press and long-press come from React Aria (`@react-aria/interactions`) through Dinero's `useSelectableItem`; never hand-roll pointer timers.
 
