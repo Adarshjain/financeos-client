@@ -233,7 +233,7 @@ Storybook consumes components exactly as an app would, so a developer can see an
 
 A task is done only when all of these hold:
 
-- It matches the boards and the component READMEs exactly, and for Phase 2 the owner has approved it in Storybook.
+- It matches the boards and the component READMEs exactly, and for a new component the owner has approved it in Storybook.
 - It uses only tokens and type styles.
 - No feature was lost.
 - All checks in §10 pass.
