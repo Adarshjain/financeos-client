@@ -517,8 +517,9 @@ export const investmentsApi = {
           sort: params?.sort,
           // `dir` is not in the generated schema until it is synced from the server.
           ...(params?.dir ? { dir: params.dir } : {}),
-          page: params?.page ?? 0,
-          size: params?.size ?? 50,
+          // Without page and size the server returns every row.
+          page: params?.page,
+          size: params?.size,
         },
       },
     });

@@ -70,19 +70,17 @@ afterEach(() => {
 });
 
 describe('/investments Holdings: data', () => {
-  it('asks the server for the first page of holdings by name', async () => {
+  it('asks the server for every holding by name, with no page or size', async () => {
     await renderPage();
     expect(server.fetchHoldings).toHaveBeenCalledWith({
       search: undefined,
       assetType: undefined,
       brokerAccountId: undefined,
       sort: 'name',
-      page: 0,
-      size: 25,
     });
   });
 
-  it('passes the search, type, broker, sort, page and size from the URL to the server', async () => {
+  it('passes the search, type, broker, and sort from the URL to the server', async () => {
     server.fetchHoldings.mockResolvedValue(holdingsResponse(rows, { totalElements: 120, totalPages: 3 }));
     await renderPage({ q: 'tcs', type: 'etf', broker: 'b2', sort: 'return_pct', page: '2', size: '25' });
     expect(server.fetchHoldings).toHaveBeenCalledWith({
@@ -90,8 +88,6 @@ describe('/investments Holdings: data', () => {
       assetType: 'etf',
       brokerAccountId: 'b2',
       sort: 'return_pct',
-      page: 1,
-      size: 25,
     });
   });
 
@@ -172,9 +168,11 @@ describe('/investments Holdings: rows', () => {
     expect(screen.getAllByText('₹4,01,290').length).toBeGreaterThan(0);
   });
 
-  it('writes a priced row: quantity × price, the day move and the P&L', async () => {
+  it('writes a priced row: quantity and average, LTP, the day move and the P&L', async () => {
     await renderPage();
-    expect(screen.getAllByText(/40 × ₹1,742\.60/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/40 qty · avg ₹1,580\.00/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/LTP ₹1,742\.60/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Invested ₹63,200/).length).toBeGreaterThan(0);
     expect(screen.getAllByText('+₹6,504').length).toBeGreaterThan(0);
     expect(screen.getAllByText('−0.3%').length).toBeGreaterThan(0);
   });
@@ -208,7 +206,7 @@ describe('/investments Holdings: rows', () => {
   it('writes a fund by its name with units', async () => {
     await renderPage();
     expect(screen.getAllByText('Mirae Asset Large Cap').length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/325\.11 units × ₹118\.62/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/325\.11 units · avg ₹/).length).toBeGreaterThan(0);
   });
 
   it('opens the holding page when the row is pressed, with no chevron link at the row end', async () => {
@@ -348,12 +346,14 @@ describe('/investments Holdings: filters go to the URL', () => {
     expect(screen.queryByRole('button', { name: 'Broker' })).toBeNull();
   });
 
-  it('shows the Pager above and below with the server totals, and pages through the URL', async () => {
+  it('shows no Pager: the list is one page and a stale page or size in the address is ignored', async () => {
     server.fetchHoldings.mockResolvedValue(holdingsResponse(rows, { totalElements: 120, totalPages: 3 }));
-    await renderPage({ type: 'stock' });
-    expect(screen.getAllByText('/ 120').length).toBeGreaterThanOrEqual(2);
-    fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
-    expect(router.replace).toHaveBeenCalledWith('/investments/holdings?type=stock&page=2', { scroll: false });
+    await renderPage({ type: 'stock', page: '2', size: '25' });
+    expect(screen.queryByText('/ 120')).toBeNull();
+    expect(screen.queryByRole('button', { name: /next/i })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Stocks' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'ETFs' }));
+    expect(router.replace).toHaveBeenCalledWith('/investments/holdings?type=etf', { scroll: false });
   });
 });
 
@@ -380,10 +380,11 @@ describe('/investments Holdings: whole-portfolio figures', () => {
   });
 });
 
-describe('/investments Holdings: a page past the end', () => {
-  it('sends the visitor to the last page', async () => {
+describe('/investments Holdings: a stale page in the address', () => {
+  it('is ignored, with no redirect', async () => {
     server.fetchHoldings.mockResolvedValue(holdingsResponse([], { totalElements: 120, totalPages: 3, page: 7 }));
-    await expect(renderPage({ page: '8', type: 'stock' })).rejects.toThrow('REDIRECT /investments/holdings?type=stock&page=3');
+    await renderPage({ page: '8', type: 'stock' });
+    expect(redirect).not.toHaveBeenCalled();
   });
 
   it('shows the empty state, not a redirect, when there are no holdings at all', async () => {

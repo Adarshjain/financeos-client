@@ -10,7 +10,6 @@ import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { FilterBar } from '@/components/ds/FilterBar/FilterBar';
 import { FilterChip } from '@/components/ds/FilterChip/FilterChip';
-import { Pager } from '@/components/ds/Pager/Pager';
 import { Select, type SelectOption } from '@/components/ds/Select/Select';
 import { Text } from '@/components/ds/Text/Text';
 import { AccountPicker } from '@/components/organisms/AccountPicker/AccountPicker';
@@ -27,7 +26,6 @@ import {
   groupBands,
   type HoldingListRow,
   holdingListRow,
-  HOLDINGS_SIZE_OPTIONS,
   holdingsUrl,
   type HoldingsUrlState,
   mergedLine,
@@ -83,10 +81,26 @@ const columns = [
       const r = row.original;
       return (
         <div className="flex flex-col min-w-0">
-          <Text variant="body" truncate>
-            <Text variant="body-strong" as="span">
-              {r.title}
+          <div className="desk:hidden">
+            <Text variant="caption" tone="ink-3" as="span">
+              <Conceal>{r.phone.caption}</Conceal>
             </Text>
+          </div>
+          <Text variant="body" as="span">
+            {r.phone.title === r.title ? (
+              <Text variant="body-strong" as="span">
+                {r.title}
+              </Text>
+            ) : (
+              <>
+                <Text variant="body-strong" as="span" className="desk:hidden">
+                  {r.phone.title}
+                </Text>
+                <Text variant="body-strong" as="span" className="max-desk:hidden">
+                  {r.title}
+                </Text>
+              </>
+            )}
             {r.name ? (
               <Text variant="body" tone="ink-3" as="span" className="max-desk:hidden">
                 {` · ${r.name}`}
@@ -108,6 +122,20 @@ const columns = [
               </Text>
             ) : null}
           </Text>
+          {r.merged ? (
+            <div className="desk:hidden">
+              <Text variant="label" tone="ink-3" as="span">
+                {mergedLine(r.merged)}
+              </Text>
+            </div>
+          ) : null}
+          {r.phone.note ? (
+            <div className="desk:hidden">
+              <Text variant="label" tone="ink-3" as="span">
+                {r.phone.note}
+              </Text>
+            </div>
+          ) : null}
           {r.noPrice && !r.merged ? (
             <div className="max-desk:hidden">
               <NoPriceNote instrumentId={r.id} />
@@ -132,15 +160,35 @@ const columns = [
   ch.display({
     id: 'ltp',
     header: 'LTP · Day',
-    meta: { size: 'md', align: 'end', phone: 'hidden' },
+    meta: { size: 'md', align: 'end', wrap: true, phone: 'status' },
     cell: ({ row }) => {
       const r = row.original;
-      if (!r.ltp) return <Text variant="body" tone="ink-3">{'—'}</Text>;
+      const line = r.phone.ltp;
       return (
-        <span className="flex items-baseline justify-end gap-space-4">
-          <Text variant="body-strong"><Conceal whole>{r.ltp}</Conceal></Text>
-          {r.dayPct ? <Move move={r.dayPct} /> : null}
-        </span>
+        <>
+          {line ? (
+            <div className="desk:hidden">
+              <Text variant="caption" tone="ink-3" as="span">
+                <Conceal>{line.text}</Conceal>
+              </Text>
+              {line.dayPct ? (
+                <Text variant="caption" tone={line.dayPct.tone ?? 'ink-3'} as="span">
+                  {` (${line.dayPct.text})`}
+                </Text>
+              ) : null}
+            </div>
+          ) : null}
+          <div className="max-desk:hidden desk:whitespace-nowrap desk:overflow-hidden">
+            {r.ltp ? (
+              <span className="flex items-baseline justify-end gap-space-4">
+                <Text variant="body-strong"><Conceal whole>{r.ltp}</Conceal></Text>
+                {r.dayPct ? <Move move={r.dayPct} /> : null}
+              </span>
+            ) : (
+              <Text variant="body" tone="ink-3">{'—'}</Text>
+            )}
+          </div>
+        </>
       );
     },
   }),
@@ -153,7 +201,7 @@ const columns = [
   ch.display({
     id: 'current',
     header: 'Current',
-    meta: { size: 'sm', align: 'end', phone: 'amount' },
+    meta: { size: 'sm', align: 'end', phone: 'hidden' },
     cell: ({ row }) => (
       <Text variant="body-strong">
         <span className="desk:hidden"><Conceal whole>{row.original.current}</Conceal></span>
@@ -164,55 +212,60 @@ const columns = [
   ch.display({
     id: 'pnl',
     header: 'P&L',
-    meta: { size: 'md', align: 'end', phone: 'status' },
+    meta: { size: 'md', align: 'end', wrap: true, phone: 'amount' },
     cell: ({ row }) => {
       const r = row.original;
-      if (r.merged) {
-        return (
-          <>
-            <Text variant="label" tone="ink-3" className="desk:hidden">
-              {r.position}
-            </Text>
-            <Text variant="body" tone="ink-3" className="max-desk:hidden">
-              {'\u2014'}
-            </Text>
-          </>
-        );
-      }
-      if (!r.pnl) return <Text variant="body" tone="ink-3">{'—'}</Text>;
+      const { returnPct, returnAmount } = r.phone;
       return (
-        <span className="flex items-baseline justify-end gap-space-4">
-          <Text variant="body-strong" tone={r.pnl.tone}>
-            <span className="desk:hidden"><Conceal whole>{r.pnl.amount}</Conceal></span>
-            <span className="max-desk:hidden"><Conceal whole>{r.pnl.plain}</Conceal></span>
-          </Text>
-          {r.pnl.pct ? <Text variant="caption" tone={r.pnl.tone}>{`· ${r.pnl.pct}`}</Text> : null}
-        </span>
+        <>
+          <div className="desk:hidden flex flex-col items-end">
+            {r.merged ? null : (
+              <>
+                <Text variant="caption" tone={returnPct?.tone ?? 'ink-3'}>
+                  {returnPct ? returnPct.text : '\u00a0'}
+                </Text>
+                {returnAmount ? (
+                  <Text variant="body-strong" tone={returnAmount.tone}>
+                    <Conceal>{returnAmount.text}</Conceal>
+                  </Text>
+                ) : (
+                  <Text variant="body-strong" tone="ink-3">
+                    {'—'}
+                  </Text>
+                )}
+              </>
+            )}
+          </div>
+          <div className="max-desk:hidden desk:whitespace-nowrap desk:overflow-hidden">
+            {r.merged || !r.pnl ? (
+              <Text variant="body" tone="ink-3">
+                {r.merged ? '\u2014' : '—'}
+              </Text>
+            ) : (
+              <span className="flex items-baseline justify-end gap-space-4">
+                <Text variant="body-strong" tone={r.pnl.tone}>
+                  <Conceal whole>{r.pnl.plain}</Conceal>
+                </Text>
+                {r.pnl.pct ? <Text variant="caption" tone={r.pnl.tone}>{`· ${r.pnl.pct}`}</Text> : null}
+              </span>
+            )}
+          </div>
+        </>
       );
     },
   }),
 ];
 
-/** The second line of a phone row: "40 × ₹1,742.60 −0.3%", "10 × ₹2,150 · manual price", "Merged into …". */
+/** The bottom left of a phone row: "Invested ₹3,396.05", and the record-a-merger line under an unpriced holding. */
 function PhoneSub({ row }: { row: HoldingListRow }) {
-  if (row.merged) {
-    return (
-      <div className="min-w-0 overflow-hidden">
-        <Text variant="label" tone="ink-3" truncate>
-          {mergedLine(row.merged)}
-        </Text>
-      </div>
-    );
-  }
   return (
     <div className="flex flex-col min-w-0">
-      <Text variant="label" tone="ink-3" truncate>
-        <Conceal>{row.position}</Conceal>
-        {row.dayPct ? <Text variant="label" tone={row.dayPct.tone ?? 'ink-3'} as="span">{` ${row.dayPct.text}`}</Text> : null}
-        {row.manualPrice ? ' · manual price' : null}
-        {row.priceNote ? ` · ${row.priceNote}` : null}
-      </Text>
-      {row.noPrice ? <NoPriceNote instrumentId={row.id} /> : null}
+      {row.phone.invested ? (
+        <Text variant="caption" tone="ink-3">
+          <Conceal>{row.phone.invested}</Conceal>
+        </Text>
+      ) : null}
+      {row.noPrice && !row.merged ? <NoPriceNote instrumentId={row.id} /> : null}
     </div>
   );
 }
@@ -221,17 +274,15 @@ export interface HoldingsListCardProps {
   state: HoldingsUrlState;
   rows: HoldingRow[];
   groups: HoldingsGroup[];
-  totalElements: number;
-  totalPages: number;
   /** The broker accounts for the Broker filter. */
   brokers: { id: string; name: string }[];
 }
 
 /** The search, asset type, Broker and sort controls over the grouped holdings table. Every control is one URL change. */
-export function HoldingsListCard({ state, rows, groups, totalElements, totalPages, brokers }: HoldingsListCardProps) {
+export function HoldingsListCard({ state, rows, groups, brokers }: HoldingsListCardProps) {
   const router = useAppRouter();
   const go = (next: Partial<HoldingsUrlState>) => router.replace(holdingsUrl({ ...state, ...next }), { scroll: false });
-  const { text, setText } = useSearchText(state.q, (q) => go({ q, page: 0 }));
+  const { text, setText } = useSearchText(state.q, (q) => go({ q }));
 
   const listRows = React.useMemo(() => rows.map(holdingListRow), [rows]);
   const bands = React.useMemo(() => groupBands(groups), [groups]);
@@ -243,20 +294,6 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
   const brokerName = brokers.find((b) => b.id === state.broker)?.name;
   const sortLabel = SORT_OPTIONS.find((o) => o.value === sortValue(state))?.label ?? SORT_OPTIONS[0].label;
   const typeLabel = TYPE_OPTIONS.find((o) => o.value === state.type && o.value !== '')?.label ?? 'Asset type';
-
-  const pager = (
-    <Pager
-      page={state.page}
-      size={state.size}
-      totalElements={totalElements}
-      totalPages={totalPages}
-      unit="holdings"
-      sizeOptions={HOLDINGS_SIZE_OPTIONS}
-      sizeLabel={(n) => `${n} / page`}
-      onPageChange={(page) => go({ page })}
-      onSizeChange={(size) => go({ size, page: 0 })}
-    />
-  );
 
   const filtered = state.q !== '' || state.type !== '' || state.broker !== '';
   const recordMerger = (instrumentId: string) => {
@@ -270,14 +307,14 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
       <FilterBar
         search={{ value: text, onValueChange: setText }}
         changed={filtered}
-        onReset={() => go({ q: '', type: '', broker: '', page: 0 })}
+        onReset={() => go({ q: '', type: '', broker: '' })}
       >
         <Select
           value={state.type}
           options={TYPE_OPTIONS}
-          onValueChange={(v) => go({ type: (v ?? '') as HoldingsUrlState['type'], page: 0 })}
+          onValueChange={(v) => go({ type: (v ?? '') as HoldingsUrlState['type'] })}
           trigger={
-            <FilterChip hasDropdown changed={state.type !== ''} onReset={() => go({ type: '', page: 0 })} className="shrink-0">
+            <FilterChip hasDropdown changed={state.type !== ''} onReset={() => go({ type: '' })} className="shrink-0">
               {typeLabel}
             </FilterChip>
           }
@@ -288,9 +325,9 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
             types={BROKER_TYPES}
             leadingOptions={ALL_BROKERS}
             value={state.broker}
-            onValueChange={(v) => go({ broker: v ?? '', page: 0 })}
+            onValueChange={(v) => go({ broker: v ?? '' })}
             trigger={
-              <FilterChip hasDropdown changed={state.broker !== ''} onReset={() => go({ broker: '', page: 0 })} className="shrink-0">
+              <FilterChip hasDropdown changed={state.broker !== ''} onReset={() => go({ broker: '' })} className="shrink-0">
                 {brokerName ?? 'Broker'}
               </FilterChip>
             }
@@ -300,7 +337,7 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
           <Select
             value={sortValue(state)}
             options={SORT_OPTIONS}
-            onValueChange={(v) => go({ ...sortFromValue(String(v)), page: 0 })}
+            onValueChange={(v) => go({ ...sortFromValue(String(v)) })}
             trigger={<FilterChip hasDropdown className="shrink-0">{sortLabel}</FilterChip>}
           />
         </div>
@@ -310,7 +347,6 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
           columns={columns}
           data={listRows}
           getRowId={(row) => row.id}
-          pager={pager}
           band={(row) => {
             const band = bands.get(row.assetType);
             if (!band) return null;
@@ -333,7 +369,7 @@ export function HoldingsListCard({ state, rows, groups, totalElements, totalPage
               <EmptyState
                 title="No holdings match"
                 description="Try a different search or filter."
-                action={{ label: 'Clear filters', variant: 'secondary', href: holdingsUrl({ ...state, q: '', type: '', broker: '', page: 0 }) }}
+                action={{ label: 'Clear filters', variant: 'secondary', href: holdingsUrl({ ...state, q: '', type: '', broker: '' }) }}
               />
             ) : (
               <EmptyState

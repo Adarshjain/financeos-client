@@ -230,6 +230,7 @@ When every page is migrated:
 
 ## Owner decisions
 Only the owner adds to this list. Each entry has a date and the decision.
+- 2026-11-15: Holdings phone row is the 3-row layout (qty·avg / return %, ticker / return amount, invested / LTP (day %)); holdings page is unpaginated (overrides the Lists pagination rule for this page only).
 - 2026-11-04: Welcome Skip asks once: 'Continue without Gmail?' dialog with Connect Gmail / Skip for now.
 - 11-04: found accounts in a separate card (option A); Import emails from prefilled from first seen
 
@@ -497,6 +498,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 - 2026-10-24 · Rewards · Tier spend window placement: owner says Active from/until is only for rule precedence by txn date; discuss later (parked).
 - 2026-10-26 · Ask the data · Open: (1) pane — owner 2026-10-27: keep Card + ListRow. (2) Composer fade — owner 2026-10-27: dropped. (3) The table card has no share-bar column: the server table block has no percent/share type (formats are only inr, number, text), so no bar cells. Resolved by the coordinator 2026-10-26: phone conversation crumb = Ask the data; Ask the data shortcut hidden on chat pages; + labelled New chat on desktop; stopped answer reads Stopped · Show steps with Ask again; follow-ups come from blocks.followUps; a failed first question's Retry re-sends it as a new chat. Report preview labels — owner 2026-10-27: use the catalog (built). Undo of an update only in the same visit — owner OK 2026-10-27.
 ## Log
+- 2026-11-15 · Holdings: every holding on one page (no Pager, page and size dropped from the address; the server returns all rows when size is omitted); phone rows are three lines of two (qty · avg / return %, ticker / return amount, Invested / LTP (day %)) through the DataTable phone slots (funds show their name, not the ISIN); desktop table unchanged except the Holding cell now wraps instead of cutting with an ellipsis. Model fns + Vitest, one new phone E2E.
 - 2026-11-13 · Corporate actions show the evidence: new company, ratio, cost split, your holdings per account and what is missing, each with its source and a "View notice" link; the record dialog opens prefilled (child, ratio, cost allocation), records multi-child demergers one after another, and the reconcile commit passes the holdings snapshot. Model fns + Vitest.
 - 2026-11-12 · Prompts show their evidence first: loan "Is this loan closed?" (unpaid EMI, last payment, paid count), approving Duplicate (pair list, a lone Duplicate also opens the dialog), "Archive N emails?" (subject, sender, date, paged), Found in email rows ("Seen in N emails from … to …"). Model fns + Vitest.
 - 2026-11-12 · Confirm-with-evidence: Close this account? shows last transaction (days ago), balance, added date; Confirm all on a loan's and a person's Matching card opens a list of exactly what it will link first (button "Link n"); loans link only EMIs with one candidate. Model fns + Vitest.

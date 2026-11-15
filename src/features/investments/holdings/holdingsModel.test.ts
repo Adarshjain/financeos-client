@@ -25,7 +25,7 @@ pinClock();
 
 describe('Holdings URL state', () => {
   it('reads defaults from an empty query', () => {
-    expect(parseHoldingsUrl({})).toEqual({ q: '', type: '', broker: '', sort: 'name', dir: 'asc', page: 0, size: 25 });
+    expect(parseHoldingsUrl({})).toEqual({ q: '', type: '', broker: '', sort: 'name', dir: 'asc' });
   });
 
   it('reads every filter and ignores values it does not know', () => {
@@ -35,8 +35,6 @@ describe('Holdings URL state', () => {
       broker: 'b1',
       sort: 'return_abs',
       dir: 'desc',
-      page: 2,
-      size: 25,
     });
     expect(parseHoldingsUrl({ type: 'bond', sort: 'dividend', page: '-1', size: '7' })).toEqual({
       q: '',
@@ -44,26 +42,22 @@ describe('Holdings URL state', () => {
       broker: '',
       sort: 'name',
       dir: 'asc',
-      page: 0,
-      size: 25,
     });
   });
 
   it('keeps defaults out of the address', () => {
     expect(holdingsUrl(parseHoldingsUrl({}))).toBe('/investments/holdings');
-    expect(holdingsUrl({ q: 'tcs', type: 'stock', broker: 'b1', sort: 'return_pct', dir: 'desc', page: 1, size: 50 })).toBe(
-      '/investments/holdings?q=tcs&type=stock&broker=b1&sort=return_pct&page=2&size=50',
+    expect(holdingsUrl({ q: 'tcs', type: 'stock', broker: 'b1', sort: 'return_pct', dir: 'desc' })).toBe(
+      '/investments/holdings?q=tcs&type=stock&broker=b1&sort=return_pct',
     );
   });
 
   it('turns the state into the server request', () => {
-    expect(holdingsQuery({ q: 'tcs', type: 'mutual_fund', broker: 'b1', sort: 'return_pct', dir: 'desc', page: 1, size: 25 })).toEqual({
+    expect(holdingsQuery({ q: 'tcs', type: 'mutual_fund', broker: 'b1', sort: 'return_pct', dir: 'desc' })).toEqual({
       search: 'tcs',
       assetType: 'mutual_fund',
       brokerAccountId: 'b1',
       sort: 'return_pct',
-      page: 1,
-      size: 25,
     });
     expect(holdingsQuery(parseHoldingsUrl({}))).toMatchObject({ search: undefined, assetType: undefined, brokerAccountId: undefined, sort: 'name' });
   });
@@ -137,11 +131,11 @@ describe('heroModel', () => {
 });
 
 describe('holdingListRow', () => {
-  it('writes a priced stock: position, LTP, day move and P&L', () => {
+  it('writes a priced stock: caption, LTP, day move and P&L', () => {
     const row = holdingListRow(holdingRow());
     expect(row.title).toBe('HDFCBANK');
     expect(row.name).toBe('HDFC Bank');
-    expect(row.position).toBe('40 × ₹1,742.60');
+    expect(row.phone.caption).toBe('40 qty · avg ₹1,580.00');
     expect(row.dayPct).toEqual({ text: '−0.3%', tone: 'danger' });
     expect(row.pnl).toEqual({ amount: '+₹6,504', plain: '+6,504', pct: '+10.3%', tone: 'positive' });
     // The desktop columns carry no ₹.
@@ -153,7 +147,7 @@ describe('holdingListRow', () => {
     const row = holdingListRow(holdingRow({ symbol: null, name: 'Mirae Asset Large Cap', assetType: 'mutual_fund', quantity: 325.11, ltp: 118.62 }));
     expect(row.title).toBe('Mirae Asset Large Cap');
     expect(row.name).toBeNull();
-    expect(row.position).toBe('325.11 units × ₹118.62');
+    expect(row.phone.caption).toBe('325.11 units · avg ₹1,580.00');
   });
 
   it('marks a manual price and shows no day move for it', () => {
@@ -167,7 +161,7 @@ describe('holdingListRow', () => {
     expect(row.noPrice).toBe(true);
     expect(row.ltp).toBeNull();
     expect(row.pnl).toBeNull();
-    expect(row.position).toBe('100 × ₹45.00');
+    expect(row.phone.caption).toBe('100 qty · avg ₹45.00');
     expect(row.current).toBe('₹4,500');
   });
 
@@ -177,7 +171,7 @@ describe('holdingListRow', () => {
     );
     expect(row.merged).toEqual({ into: 'HDFCBANK', date: '2023-07-13' });
     expect(mergedLine(row.merged!)).toBe('Merged into HDFCBANK · 13 Jul 23');
-    expect(row.position).toBe('0 shares');
+    expect(row.phone.caption).toBe('0 shares');
     expect(row.avgCost).toBeNull();
     expect(row.invested).toBeNull();
     expect(row.pnl).toBeNull();
@@ -271,5 +265,67 @@ describe('moversFromResponse', () => {
       { id: 'a', symbol: 'INFY', amount: '+₹1,860', tone: 'positive' },
       { id: 'b', symbol: 'Parag Parikh Flexi', amount: '−₹280', tone: 'danger' },
     ]);
+  });
+});
+
+describe('holdingListRow phone lines', () => {
+  it('writes a stock: qty and avg, return %, return amount, invested, LTP and day %', () => {
+    const { phone } = holdingListRow(holdingRow());
+    expect(phone.caption).toBe('40 qty · avg ₹1,580.00');
+    expect(phone.returnPct).toEqual({ text: '+10.3%', tone: 'positive' });
+    expect(phone.returnAmount).toEqual({ text: '+₹6,504', tone: 'positive' });
+    expect(phone.invested).toBe('Invested ₹63,200');
+    expect(phone.ltp).toEqual({ text: 'LTP ₹1,742.60', dayPct: { text: '−0.3%', tone: 'danger' } });
+    expect(phone.note).toBeNull();
+  });
+
+  it('shows paise on single amounts and colours a loss', () => {
+    const { phone } = holdingListRow(holdingRow({ invested: 3396.05, unrealised: -2237.5, unrealisedPct: -65.89 }));
+    expect(phone.invested).toBe('Invested ₹3,396.05');
+    expect(phone.returnAmount).toEqual({ text: '−₹2,237.50', tone: 'danger' });
+    expect(phone.returnPct).toEqual({ text: '−65.9%', tone: 'danger' });
+  });
+
+  it('says units for a fund', () => {
+    const { phone } = holdingListRow(holdingRow({ symbol: null, name: 'Mirae Asset Large Cap', assetType: 'mutual_fund', quantity: 12.345, avgCost: 45.67 }));
+    expect(phone.caption).toBe('12.345 units · avg ₹45.67');
+  });
+
+  it('adds "manual price" after the LTP and has no day %', () => {
+    const { phone } = holdingListRow(holdingRow({ manualPrice: true, dayChangePct: 1.2 }));
+    expect(phone.ltp).toEqual({ text: 'LTP ₹1,742.60 · manual price', dayPct: null });
+  });
+
+  it('has no day % for a price without a day change', () => {
+    const { phone } = holdingListRow(holdingRow({ dayChangePct: null }));
+    expect(phone.ltp).toEqual({ text: 'LTP ₹1,742.60', dayPct: null });
+  });
+
+  it('shows the no-price note in place of the LTP and no return', () => {
+    const { phone } = holdingListRow(holdingRow({ noPrice: true, ltp: null, unrealised: 0, unrealisedPct: null }));
+    expect(phone.ltp).toEqual({ text: 'at cost (no price)', dayPct: null });
+    expect(phone.returnPct).toBeNull();
+    expect(phone.returnAmount).toBeNull();
+    expect(phone.invested).toBe('Invested ₹63,200');
+  });
+
+  it('keeps a delisted note under the ticker beside its LTP', () => {
+    const { phone } = holdingListRow(holdingRow({ delisted: true, ltp: 0 }));
+    expect(phone.note).toBe('Delisted');
+    expect(phone.ltp?.text).toBe('LTP ₹0.00');
+  });
+
+  it('leaves a merged holding with its quantity only', () => {
+    const { phone } = holdingListRow(holdingRow({ quantity: 0, mergedIntoName: 'HDFCBANK', mergedIntoDate: '2023-07-13' }));
+    expect(phone).toMatchObject({ caption: '0 shares', returnPct: null, returnAmount: null, invested: null, ltp: null, note: null });
+  });
+});
+
+describe('holdingListRow phone title', () => {
+  it('shows the ticker for a stock and the name for a fund whose symbol is an ISIN', () => {
+    expect(holdingListRow(holdingRow()).phone.title).toBe('HDFCBANK');
+    const fund = holdingListRow(holdingRow({ symbol: 'INF100E2E001', name: 'E2E Bluechip', assetType: 'mutual_fund' }));
+    expect(fund.title).toBe('INF100E2E001');
+    expect(fund.phone.title).toBe('E2E Bluechip');
   });
 });

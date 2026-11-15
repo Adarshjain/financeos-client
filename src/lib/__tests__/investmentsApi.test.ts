@@ -30,7 +30,13 @@ describe('investments API client', () => {
     expect(result).toEqual(body);
     const { url } = lastRequest();
     expect(url.pathname).toBe('/api/v1/investments/holdings');
-    expect(Object.fromEntries(url.searchParams)).toEqual({ brokerAccountId: 'b1', assetType: 'etf', search: 'gold', sort: 'return_pct', page: '1', size: '50' });
+    expect(Object.fromEntries(url.searchParams)).toEqual({ brokerAccountId: 'b1', assetType: 'etf', search: 'gold', sort: 'return_pct', page: '1' });
+  });
+
+  it('getHoldings sends no page or size when none is given, so the server returns every row', async () => {
+    reply({ header: {}, groups: [], holdings: [], page: 0, size: 0, totalElements: 0, totalPages: 1 });
+    await investmentsApi.getHoldings({ sort: 'name' });
+    expect(Object.fromEntries(lastRequest().url.searchParams)).toEqual({ sort: 'name' });
   });
 
   it('getHolding and getSellEstimate address the instrument; no quantity = no query', async () => {

@@ -274,3 +274,35 @@ for (const viewport of VIEWPORTS) {
     });
   });
 }
+
+test.describe('/ds Investments Holdings phone rows, 390px (@ui)', () => {
+  test('Holdings: each row is three lines of two, and the list has no pager', async ({ context, request, page }) => {
+    const user = await createUser(request, 'ui-ds-holdings-phone');
+    await loginContext(context, user.cookie);
+    await page.setViewportSize({ width: 390, height: 844 });
+    const seed = await seedHoldings(makeApi(user.cookie));
+
+    await page.goto('/investments/holdings');
+    const row = page.getByRole('button').filter({ hasText: seed.tcs.symbol });
+    await expect(row).toHaveCount(1);
+    // Top: quantity and average on the left, the return % on the right.
+    await expect(row.getByText(/^10 qty · avg ₹[\d,]+\.\d{2}$/)).toBeVisible();
+    await expect(row.getByText(/^[+−]\d+(\.\d)?%$/)).toBeVisible();
+    // Middle: the ticker and the return amount.
+    await expect(shown(row.getByText(seed.tcs.symbol, { exact: true }))).toBeVisible();
+    await expect(row.getByText(/^[+−]₹[\d,]+(\.\d{2})?$/)).toBeVisible();
+    // Bottom: what was invested and the price.
+    await expect(row.getByText(/^Invested ₹[\d,]+(\.\d{2})?$/)).toBeVisible();
+    await expect(row.getByText(/^LTP ₹[\d,]+\.\d{2} · manual price$/)).toBeVisible();
+
+    // A merged holding says where it went, under its ticker on the left, with nothing long on the right.
+    const merged = page.getByRole('button').filter({ hasText: seed.merged.symbol });
+    await expect(shown(merged.getByText(new RegExp(`Merged into ${seed.target.name} · \\d+ Jul 23`)))).toBeVisible();
+    await expect(shown(merged.getByText('0 shares'))).toBeVisible();
+
+    // Every holding is on the page: no pager, no page or size in the address.
+    await expect(page.getByRole('navigation', { name: 'Pagination' })).toHaveCount(0);
+    await expect(page.getByText('/ page')).toHaveCount(0);
+    expect(new URL(page.url()).searchParams.has('page')).toBe(false);
+  });
+});

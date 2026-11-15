@@ -1,5 +1,4 @@
 import { fyLabel, moveTone, priceTimeLabel, unitWord } from '@/features/investments/investmentsFormatModel';
-import { parsePage, setPageParam } from '@/features/shell/pagination';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatDate, formatMoney, formatPercent, formatQuantity, formatTime } from '@/lib/format';
 import type { HoldingRow, HoldingsGroup, HoldingsHeader, HoldingsMover, HoldingsQuery, HoldingsSort, HoldingsSortDir } from '@/lib/investments.types';
@@ -10,9 +9,6 @@ import { holdingHref,HOLDINGS_HREF } from '../investmentsTabs';
 
 // ---- URL state ---------------------------------------------------------------
 
-export const HOLDINGS_SIZE_OPTIONS = [25, 50, 100];
-export const HOLDINGS_DEFAULT_SIZE = 25;
-
 export interface HoldingsUrlState {
   q: string;
   /** '' = every asset type. */
@@ -22,8 +18,6 @@ export interface HoldingsUrlState {
   sort: HoldingsSort;
   /** Always resolved: the key's default when the URL has none. */
   dir: HoldingsSortDir;
-  page: number;
-  size: number;
 }
 
 const TYPES: InstrumentType[] = ['stock', 'mutual_fund', 'etf'];
@@ -43,7 +37,6 @@ export function parseHoldingsUrl(params: SearchParamsRecord): HoldingsUrlState {
     broker: (first(params.broker) ?? '').trim(),
     sort,
     dir: DIRS.includes(first(params.dir) as HoldingsSortDir) ? (first(params.dir) as HoldingsSortDir) : defaultSortDir(sort),
-    ...parsePage(params, { size: HOLDINGS_DEFAULT_SIZE, sizes: HOLDINGS_SIZE_OPTIONS }),
   };
 }
 
@@ -55,8 +48,6 @@ export function holdingsUrl(state: HoldingsUrlState): string {
   if (state.broker) query.set('broker', state.broker);
   if (state.sort !== 'name') query.set('sort', state.sort);
   if (state.dir !== defaultSortDir(state.sort)) query.set('dir', state.dir);
-  setPageParam(query, state.page);
-  if (state.size !== HOLDINGS_DEFAULT_SIZE) query.set('size', String(state.size));
   const text = query.toString();
   return text ? `${HOLDINGS_HREF}?${text}` : HOLDINGS_HREF;
 }
@@ -69,8 +60,6 @@ export function holdingsQuery(state: HoldingsUrlState): HoldingsQuery {
     brokerAccountId: state.broker || undefined,
     sort: state.sort,
     dir: state.dir !== defaultSortDir(state.sort) ? state.dir : undefined,
-    page: state.page,
-    size: state.size,
   };
 }
 
@@ -178,8 +167,30 @@ export interface HoldingListRow {
   /** Without it (desktop column). */
   currentPlain: string;
   pnl: { amount: string; plain: string; pct: string | null; tone: Tone } | null;
-  /** The part of the phone's second line before the day change: "40 × ₹1,742.60", "0 shares". */
-  position: string;
+  phone: HoldingPhoneLines;
+}
+
+/** The lines of a phone row: three rows by two columns. */
+export interface HoldingPhoneLines {
+  /** Middle left: the ticker, or the name for a fund (its symbol is an ISIN). */
+  title: string;
+  /** Top left: "3 qty · avg ₹1,132.02", "12.345 units · avg ₹45.67"; "0 shares" for a merged holding. */
+  caption: string;
+  /** Top right: the return %, coloured by sign. */
+  returnPct: { text: string; tone: Tone } | null;
+  /** Middle right: the return amount with ₹, coloured by sign. */
+  returnAmount: { text: string; tone: Tone } | null;
+  /** Bottom left: "Invested ₹3,396.05". */
+  invested: string | null;
+  /** Bottom right: "LTP ₹1,877.85" with the day % after it, or "LTP ₹X · manual price", or the no-price note. */
+  ltp: { text: string; dayPct: { text: string; tone: Tone } | null } | null;
+  /** Under the ticker: "Delisted" for a priced holding that has a status note. */
+  note: string | null;
+}
+
+/** "3 qty", "12.345 units". */
+function quantityLabel(type: InstrumentType, qty: string): string {
+  return `${qty} ${type === 'mutual_fund' ? 'units' : 'qty'}`;
 }
 
 /** The status a holding shows in place of its price: Delisted, else Not trading, else the unpriced note. */
@@ -196,11 +207,26 @@ export function holdingListRow(row: HoldingRow): HoldingListRow {
   const unpriced = row.noPrice && !row.delisted;
   const priced = row.ltp != null && !unpriced;
   const qty = formatQuantity(row.quantity);
-  const position = merged
-    ? `${qty} ${unitWord(row.assetType, row.quantity)}`
-    : row.assetType === 'mutual_fund'
-      ? `${qty} units × ${formatMoney(priced ? row.ltp! : row.avgCost, { decimals: 'exact' })}`
-      : `${qty} × ${formatMoney(priced ? row.ltp! : row.avgCost, { decimals: 'exact' })}`;
+  const dayPct =
+    priced && !row.manualPrice && row.dayChangePct != null
+      ? { text: formatPercent(row.dayChangePct, { sign: 'always' }), tone: moveTone(row.dayChangePct) }
+      : null;
+  const priceNote = holdingPriceNote(row);
+  const phone: HoldingPhoneLines = {
+    title: row.assetType === 'mutual_fund' ? row.name : title,
+    caption: merged ? `${qty} ${unitWord(row.assetType, row.quantity)}` : `${quantityLabel(row.assetType, qty)} · avg ${formatMoney(row.avgCost, { decimals: 'exact' })}`,
+    returnPct: merged || unpriced || row.unrealisedPct == null ? null : { text: formatPercent(row.unrealisedPct, { sign: 'always' }), tone: moveTone(row.unrealised) },
+    returnAmount: merged || unpriced ? null : { text: formatMoney(row.unrealised, { sign: 'always', decimals: 'auto' }), tone: moveTone(row.unrealised) },
+    invested: merged ? null : `Invested ${formatMoney(row.invested, { decimals: 'auto' })}`,
+    ltp: merged
+      ? null
+      : priced
+        ? { text: `LTP ${formatMoney(row.ltp!, { decimals: 'exact' })}${row.manualPrice ? ' · manual price' : ''}`, dayPct }
+        : priceNote
+          ? { text: priceNote, dayPct: null }
+          : null,
+    note: !merged && priced && priceNote ? priceNote : null,
+  };
   return {
     id: row.instrumentId,
     href: holdingHref(row.instrumentId),
@@ -209,15 +235,12 @@ export function holdingListRow(row: HoldingRow): HoldingListRow {
     name: row.symbol && row.name !== row.symbol ? row.name : null,
     merged,
     noPrice: unpriced && !row.notTrading,
-    priceNote: holdingPriceNote(row),
+    priceNote,
     manualPrice: row.manualPrice,
     quantity: qty,
     avgCost: merged ? null : formatMoney(row.avgCost, { decimals: 'exact', symbol: false }),
     ltp: priced ? formatMoney(row.ltp!, { decimals: 'exact', symbol: false }) : null,
-    dayPct:
-      priced && !row.manualPrice && row.dayChangePct != null
-        ? { text: formatPercent(row.dayChangePct, { sign: 'always' }), tone: moveTone(row.dayChangePct) }
-        : null,
+    dayPct,
     invested: merged ? null : formatMoney(row.invested, { symbol: false }),
     current: formatMoney(row.currentValue),
     currentPlain: formatMoney(row.currentValue, { symbol: false }),
@@ -230,7 +253,7 @@ export function holdingListRow(row: HoldingRow): HoldingListRow {
             pct: row.unrealisedPct == null ? null : formatPercent(row.unrealisedPct, { sign: 'always' }),
             tone: moveTone(row.unrealised),
           },
-    position,
+    phone,
   };
 }
 
