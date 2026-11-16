@@ -107,10 +107,49 @@ const serverMiddleware: Middleware = {
 };
 
 
+const GET_RETRY_DELAY_MS = 2000;
+const GET_RETRY_STATUSES = new Set([502, 503, 504]);
+
+/**
+ * One retry after a short wait for a GET that hit a restarting API (502/503/504 or a network error), so a deploy
+ * restart does not surface as a failure. Other methods and statuses, and aborted requests, are never retried.
+ */
+async function fetchWithGetRetry(req: Request): Promise<Response> {
+  if (req.method !== 'GET') return fetch(req);
+  const retry = req.clone();
+  let response: Response;
+  try {
+    response = await fetch(req);
+  } catch (error) {
+    if (req.signal.aborted || !(error instanceof TypeError)) throw error;
+    await waitUnlessAborted(req.signal);
+    if (req.signal.aborted) throw error;
+    return fetch(retry);
+  }
+  if (!GET_RETRY_STATUSES.has(response.status) || req.signal.aborted) return response;
+  await waitUnlessAborted(req.signal);
+  if (req.signal.aborted) return response;
+  await response.body?.cancel().catch(() => {});
+  return fetch(retry);
+}
+
+/** The retry wait, cut short when the caller aborts. */
+function waitUnlessAborted(signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const done = () => {
+      clearTimeout(timer);
+      signal.removeEventListener('abort', done);
+      resolve();
+    };
+    const timer = setTimeout(done, GET_RETRY_DELAY_MS);
+    signal.addEventListener('abort', done, { once: true });
+  });
+}
+
 export const serverApi = createFetchClient<paths>({
   baseUrl: API_BASE,
   cache: 'no-store',
-  fetch: (req: Request) => fetch(req),
+  fetch: fetchWithGetRetry,
 });
 
 serverApi.use(serverMiddleware);

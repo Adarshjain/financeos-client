@@ -11,6 +11,7 @@ import {
   type SortId,
   type TransactionsQuery,
   type TypeFilter,
+  validDate,
 } from './transactionsUrl';
 
 export type PeriodMode = 'preset' | 'date' | 'range';
@@ -90,8 +91,8 @@ export function amountFromDraft(draft: Pick<FiltersDraft, 'amountOp' | 'amountFr
 export function queryFromDraft(base: TransactionsQuery, draft: FiltersDraft): TransactionsQuery {
   const preset = PERIOD_PRESETS.find((p) => p.id === draft.preset)?.id ?? DEFAULT_PERIOD.id;
   let period: TransactionsQuery['period'] = { kind: 'preset', id: preset };
-  if (draft.periodMode === 'date' && draft.date) period = { kind: 'date', date: draft.date };
-  if (draft.periodMode === 'range' && draft.from && draft.to) {
+  if (draft.periodMode === 'date' && validDate(draft.date)) period = { kind: 'date', date: draft.date };
+  if (draft.periodMode === 'range' && validDate(draft.from) && validDate(draft.to)) {
     period =
       draft.from <= draft.to
         ? { kind: 'range', from: draft.from, to: draft.to }

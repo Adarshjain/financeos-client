@@ -1,12 +1,12 @@
 import type { FilterClause } from '@/lib/reports.types';
 import type { TransactionSearchRequest } from '@/lib/transaction.types';
 
-import { isAllTime, type Period, SORTS, type TransactionsQuery } from './transactionsUrl';
+import { isAllTime, type Period, SORTS, type TransactionsQuery, validDate } from './transactionsUrl';
 
 function periodClause(period: Period): FilterClause | null {
   if (isAllTime(period)) return null;
-  if (period.kind === 'date') return { field: 'date', operator: 'is', value: period.date };
-  if (period.kind === 'range') return { field: 'date', operator: 'between', value: { from: period.from, to: period.to } };
+  if (period.kind === 'date') return !validDate(period.date) ? null : { field: 'date', operator: 'is', value: period.date };
+  if (period.kind === 'range') return !validDate(period.from) || !validDate(period.to) ? null : { field: 'date', operator: 'between', value: { from: period.from, to: period.to } };
   if (period.id === 'last_14_days') return { field: 'date', operator: 'last_x_days', value: { amount: 14 } };
   return { field: 'date', operator: period.id };
 }

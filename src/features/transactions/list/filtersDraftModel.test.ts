@@ -24,6 +24,15 @@ describe('draft', () => {
     expect(queryFromDraft(DEFAULT_QUERY, { ...d, preset: 'all_time' }).period).toEqual(ALL_TIME);
   });
 
+  it('keeps an incomplete or malformed date un-applied and falls back to the preset', () => {
+    const d = draftFromQuery(DEFAULT_QUERY);
+    const preset = { kind: 'preset', id: 'this_year' };
+    expect(queryFromDraft(DEFAULT_QUERY, { ...d, periodMode: 'date', date: '261-11-01', preset: 'this_year' }).period).toEqual(preset);
+    expect(queryFromDraft(DEFAULT_QUERY, { ...d, periodMode: 'date', date: '2026-13-45', preset: 'this_year' }).period).toEqual(preset);
+    expect(queryFromDraft(DEFAULT_QUERY, { ...d, periodMode: 'range', from: '261-11-01', to: '2026-11-05', preset: 'this_year' }).period).toEqual(preset);
+    expect(queryFromDraft(DEFAULT_QUERY, { ...d, periodMode: 'range', from: '2026-11-01', to: '2026-11', preset: 'this_year' }).period).toEqual(preset);
+  });
+
   it('builds amount conditions from the typed fields', () => {
     expect(amountFromDraft({ amountOp: 'greater_than', amountFrom: '1,500', amountTo: '' })).toEqual({ op: 'greater_than', from: 1500, to: null });
     expect(amountFromDraft({ amountOp: 'less_than', amountFrom: '9', amountTo: '20' })).toEqual({ op: 'less_than', from: null, to: 20 });

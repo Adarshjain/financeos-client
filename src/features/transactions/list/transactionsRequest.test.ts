@@ -58,6 +58,16 @@ describe('buildFilters', () => {
   });
 });
 
+describe('buildFilters dates', () => {
+  it('sends no date clause for a value that is not a full yyyy-MM-dd date', () => {
+    const date = (period: TransactionsQuery['period']) => buildFilters({ ...DEFAULT_QUERY, period }).filter((c) => c.field === 'date');
+    expect(date({ kind: 'date', date: '261-11-01' })).toEqual([]);
+    expect(date({ kind: 'range', from: '261-11-01', to: '2026-11-05' })).toEqual([]);
+    expect(date({ kind: 'range', from: '2026-11-01', to: '2026-11-05' })).toHaveLength(1);
+    expect(date({ kind: 'date', date: '2026-11-01' })).toHaveLength(1);
+  });
+});
+
 describe('search body and paging', () => {
   it('carries the search text, trimmed away when empty', () => {
     expect(buildSearchBody(q({ q: 'swiggy' })).search).toBe('swiggy');

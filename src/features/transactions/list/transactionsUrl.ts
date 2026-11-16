@@ -150,7 +150,7 @@ function many(value: string | string[] | undefined): string[] {
 }
 
 // Calendar arithmetic on UTC-midnight dates, not a clock read: no zone is involved.
-function validDate(value: string): boolean {
+export function validDate(value: string): boolean {
   if (!ISO_DATE.test(value)) return false;
   const d = new Date(`${value}T00:00:00Z`);
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === value;
