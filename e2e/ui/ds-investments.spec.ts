@@ -95,12 +95,13 @@ for (const viewport of VIEWPORTS) {
       // Prices are live, so there is no manual Refresh (owner 2026-10-26).
       await expect(page.getByRole('button', { name: 'Refresh' })).toHaveCount(0);
 
-      // Rows: priced by hand, held at cost, merged away.
+      // Rows: priced by hand, held at cost; a holding merged away is not listed.
       await expect(shown(page.getByText(seeded.infy.symbol, { exact: true }))).toBeVisible();
       await expect(shown(page.getByText(/manual price/))).toBeVisible();
       await expect(shown(page.getByText(/at cost \(no price\)/))).toBeVisible();
       await expect(shown(page.getByRole('button', { name: 'record a merger' }))).toBeVisible();
-      await expect(shown(page.getByText(new RegExp(`Merged into ${seeded.target.name} · \\d+ Jul 23`)))).toBeVisible();
+      await expect(page.getByText(seeded.merged.symbol, { exact: true })).toHaveCount(0);
+      await expect(page.getByText(/Merged into/)).toHaveCount(0);
       await expect(shown(page.getByText('Stocks', { exact: false }))).toBeVisible();
       // One row per stock: INFY is held at two brokers and appears once.
       await expect(page.getByRole('button').filter({ hasText: seeded.infy.symbol })).toHaveCount(1);
@@ -295,10 +296,8 @@ test.describe('/ds Investments Holdings phone rows, 390px (@ui)', () => {
     await expect(row.getByText(/^Invested ₹[\d,]+(\.\d{2})?$/)).toBeVisible();
     await expect(row.getByText(/^LTP ₹[\d,]+\.\d{2} · manual price$/)).toBeVisible();
 
-    // A merged holding says where it went, under its ticker on the left, with nothing long on the right.
-    const merged = page.getByRole('button').filter({ hasText: seed.merged.symbol });
-    await expect(shown(merged.getByText(new RegExp(`Merged into ${seed.target.name} · \\d+ Jul 23`)))).toBeVisible();
-    await expect(shown(merged.getByText('0 shares'))).toBeVisible();
+    // A holding merged away entirely is not listed.
+    await expect(page.getByRole('button').filter({ hasText: seed.merged.symbol })).toHaveCount(0);
 
     // Every holding is on the page: no pager, no page or size in the address.
     await expect(page.getByRole('navigation', { name: 'Pagination' })).toHaveCount(0);

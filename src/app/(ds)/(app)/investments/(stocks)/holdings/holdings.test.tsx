@@ -177,10 +177,11 @@ describe('/investments Holdings: rows', () => {
     expect(screen.getAllByText('−0.3%').length).toBeGreaterThan(0);
   });
 
-  it('writes a merged holding with what it merged into and no P&L', async () => {
+  it('does not list a holding merged out entirely', async () => {
     await renderPage();
-    expect(screen.getAllByText(/Merged into HDFCBANK · 13 Jul 23/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/0 shares/).length).toBeGreaterThan(0);
+    expect(screen.queryByText('HDFC')).toBeNull();
+    expect(screen.queryByText(/Merged into/)).toBeNull();
+    expect(screen.queryByText(/0 shares/)).toBeNull();
   });
 
   it('says "manual price" for a holding priced by hand', async () => {

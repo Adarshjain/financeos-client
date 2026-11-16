@@ -1,4 +1,4 @@
-import { fyLabel, moveTone, priceTimeLabel, unitWord } from '@/features/investments/investmentsFormatModel';
+import { fyLabel, moveTone, priceTimeLabel } from '@/features/investments/investmentsFormatModel';
 import { first, type SearchParamsRecord } from '@/features/shell/searchParams';
 import { formatDate, formatMoney, formatPercent, formatQuantity, formatTime } from '@/lib/format';
 import type { HoldingRow, HoldingsGroup, HoldingsHeader, HoldingsMover, HoldingsQuery, HoldingsSort, HoldingsSortDir } from '@/lib/investments.types';
@@ -152,7 +152,6 @@ export interface HoldingListRow {
   title: string;
   /** The name beside a symbol on desktop; null when the title already is the name. */
   name: string | null;
-  merged: { into: string; date: string | null } | null;
   noPrice: boolean;
   /** "Delisted" or "Not trading" when the server says so, else "at cost (no price)" for an unpriced row, else null. */
   priceNote: string | null;
@@ -174,7 +173,7 @@ export interface HoldingListRow {
 export interface HoldingPhoneLines {
   /** Middle left: the ticker, or the name for a fund (its symbol is an ISIN). */
   title: string;
-  /** Top left: "3 qty · avg ₹1,132.02", "12.345 units · avg ₹45.67"; "0 shares" for a merged holding. */
+  /** Top left: "3 qty · avg ₹1,132.02", "12.345 units · avg ₹45.67". */
   caption: string;
   /** Top right: the return %, coloured by sign. */
   returnPct: { text: string; tone: Tone } | null;
@@ -201,7 +200,6 @@ export function holdingPriceNote(row: Pick<HoldingRow, 'delisted' | 'notTrading'
 }
 
 export function holdingListRow(row: HoldingRow): HoldingListRow {
-  const merged = row.mergedIntoName ? { into: row.mergedIntoName, date: row.mergedIntoDate } : null;
   const title = row.symbol || row.name;
   // A delisted holding is a priced row worth zero, never "No price".
   const unpriced = row.noPrice && !row.delisted;
@@ -214,18 +212,16 @@ export function holdingListRow(row: HoldingRow): HoldingListRow {
   const priceNote = holdingPriceNote(row);
   const phone: HoldingPhoneLines = {
     title: row.assetType === 'mutual_fund' ? row.name : title,
-    caption: merged ? `${qty} ${unitWord(row.assetType, row.quantity)}` : `${quantityLabel(row.assetType, qty)} · avg ${formatMoney(row.avgCost, { decimals: 'exact' })}`,
-    returnPct: merged || unpriced || row.unrealisedPct == null ? null : { text: formatPercent(row.unrealisedPct, { sign: 'always' }), tone: moveTone(row.unrealised) },
-    returnAmount: merged || unpriced ? null : { text: formatMoney(row.unrealised, { sign: 'always', decimals: 'auto' }), tone: moveTone(row.unrealised) },
-    invested: merged ? null : `Invested ${formatMoney(row.invested, { decimals: 'auto' })}`,
-    ltp: merged
-      ? null
-      : priced
-        ? { text: `LTP ${formatMoney(row.ltp!, { decimals: 'exact' })}${row.manualPrice ? ' · manual price' : ''}`, dayPct }
-        : priceNote
-          ? { text: priceNote, dayPct: null }
-          : null,
-    note: !merged && priced && priceNote ? priceNote : null,
+    caption: `${quantityLabel(row.assetType, qty)} · avg ${formatMoney(row.avgCost, { decimals: 'exact' })}`,
+    returnPct: unpriced || row.unrealisedPct == null ? null : { text: formatPercent(row.unrealisedPct, { sign: 'always' }), tone: moveTone(row.unrealised) },
+    returnAmount: unpriced ? null : { text: formatMoney(row.unrealised, { sign: 'always', decimals: 'auto' }), tone: moveTone(row.unrealised) },
+    invested: `Invested ${formatMoney(row.invested, { decimals: 'auto' })}`,
+    ltp: priced
+      ? { text: `LTP ${formatMoney(row.ltp!, { decimals: 'exact' })}${row.manualPrice ? ' · manual price' : ''}`, dayPct }
+      : priceNote
+        ? { text: priceNote, dayPct: null }
+        : null,
+    note: priced && priceNote ? priceNote : null,
   };
   return {
     id: row.instrumentId,
@@ -233,19 +229,18 @@ export function holdingListRow(row: HoldingRow): HoldingListRow {
     assetType: row.assetType,
     title,
     name: row.symbol && row.name !== row.symbol ? row.name : null,
-    merged,
     noPrice: unpriced && !row.notTrading,
     priceNote,
     manualPrice: row.manualPrice,
     quantity: qty,
-    avgCost: merged ? null : formatMoney(row.avgCost, { decimals: 'exact', symbol: false }),
+    avgCost: formatMoney(row.avgCost, { decimals: 'exact', symbol: false }),
     ltp: priced ? formatMoney(row.ltp!, { decimals: 'exact', symbol: false }) : null,
     dayPct,
-    invested: merged ? null : formatMoney(row.invested, { symbol: false }),
+    invested: formatMoney(row.invested, { symbol: false }),
     current: formatMoney(row.currentValue),
     currentPlain: formatMoney(row.currentValue, { symbol: false }),
     pnl:
-      merged || unpriced
+      unpriced
         ? null
         : {
             amount: formatMoney(row.unrealised, { sign: 'always' }),
@@ -257,9 +252,9 @@ export function holdingListRow(row: HoldingRow): HoldingListRow {
   };
 }
 
-/** "Merged into HDFCBANK · 13 Jul 23". */
-export function mergedLine(merged: { into: string; date: string | null }): string {
-  return merged.date ? `Merged into ${merged.into} · ${formatDate(merged.date, 'list')}` : `Merged into ${merged.into}`;
+/** A holding merged out entirely (0 shares, merged into another) is not listed; the server no longer sends it. */
+export function isListedHolding(row: Pick<HoldingRow, 'quantity' | 'mergedIntoName'>): boolean {
+  return !(row.quantity === 0 && row.mergedIntoName);
 }
 
 // ---- Groups ------------------------------------------------------------------

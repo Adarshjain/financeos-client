@@ -28,7 +28,7 @@ import {
   holdingListRow,
   holdingsUrl,
   type HoldingsUrlState,
-  mergedLine,
+  isListedHolding,
   SORT_OPTIONS,
   sortFromValue,
   sortValue,
@@ -106,29 +106,17 @@ const columns = [
                 {` · ${r.name}`}
               </Text>
             ) : null}
-            {r.merged ? (
-              <Text variant="body" tone="ink-3" as="span" className="max-desk:hidden">
-                {` · ${mergedLine(r.merged)}`}
-              </Text>
-            ) : null}
-            {r.manualPrice && !r.merged ? (
+            {r.manualPrice ? (
               <Text variant="body" tone="ink-3" as="span" className="max-desk:hidden">
                 {' · manual price'}
               </Text>
             ) : null}
-            {r.priceNote && !r.merged ? (
+            {r.priceNote ? (
               <Text variant="body" tone="ink-3" as="span" className="max-desk:hidden">
                 {` · ${r.priceNote}`}
               </Text>
             ) : null}
           </Text>
-          {r.merged ? (
-            <div className="desk:hidden">
-              <Text variant="label" tone="ink-3" as="span">
-                {mergedLine(r.merged)}
-              </Text>
-            </div>
-          ) : null}
           {r.phone.note ? (
             <div className="desk:hidden">
               <Text variant="label" tone="ink-3" as="span">
@@ -136,7 +124,7 @@ const columns = [
               </Text>
             </div>
           ) : null}
-          {r.noPrice && !r.merged ? (
+          {r.noPrice ? (
             <div className="max-desk:hidden">
               <NoPriceNote instrumentId={r.id} />
             </div>
@@ -219,27 +207,23 @@ const columns = [
       return (
         <>
           <div className="desk:hidden flex flex-col items-end">
-            {r.merged ? null : (
-              <>
-                <Text variant="caption" tone={returnPct?.tone ?? 'ink-3'}>
-                  {returnPct ? returnPct.text : '\u00a0'}
-                </Text>
-                {returnAmount ? (
-                  <Text variant="body-strong" tone={returnAmount.tone}>
-                    <Conceal>{returnAmount.text}</Conceal>
-                  </Text>
-                ) : (
-                  <Text variant="body-strong" tone="ink-3">
-                    {'—'}
-                  </Text>
-                )}
-              </>
+            <Text variant="caption" tone={returnPct?.tone ?? 'ink-3'}>
+              {returnPct ? returnPct.text : '\u00a0'}
+            </Text>
+            {returnAmount ? (
+              <Text variant="body-strong" tone={returnAmount.tone}>
+                <Conceal>{returnAmount.text}</Conceal>
+              </Text>
+            ) : (
+              <Text variant="body-strong" tone="ink-3">
+                {'—'}
+              </Text>
             )}
           </div>
           <div className="max-desk:hidden desk:whitespace-nowrap desk:overflow-hidden">
-            {r.merged || !r.pnl ? (
+            {!r.pnl ? (
               <Text variant="body" tone="ink-3">
-                {r.merged ? '\u2014' : '—'}
+                {'—'}
               </Text>
             ) : (
               <span className="flex items-baseline justify-end gap-space-4">
@@ -265,7 +249,7 @@ function PhoneSub({ row }: { row: HoldingListRow }) {
           <Conceal>{row.phone.invested}</Conceal>
         </Text>
       ) : null}
-      {row.noPrice && !row.merged ? <NoPriceNote instrumentId={row.id} /> : null}
+      {row.noPrice ? <NoPriceNote instrumentId={row.id} /> : null}
     </div>
   );
 }
@@ -284,7 +268,7 @@ export function HoldingsListCard({ state, rows, groups, brokers }: HoldingsListC
   const go = (next: Partial<HoldingsUrlState>) => router.replace(holdingsUrl({ ...state, ...next }), { scroll: false });
   const { text, setText } = useSearchText(state.q, (q) => go({ q }));
 
-  const listRows = React.useMemo(() => rows.map(holdingListRow), [rows]);
+  const listRows = React.useMemo(() => rows.filter(isListedHolding).map(holdingListRow), [rows]);
   const bands = React.useMemo(() => groupBands(groups), [groups]);
   const [merging, setMerging] = React.useState<InstrumentRef | null>(null);
   const { Component: CorporateActionDialog, run: runMerge } = useLazyDialog(loadCorporateActionDialog);
@@ -363,7 +347,6 @@ export function HoldingsListCard({ state, rows, groups, brokers }: HoldingsListC
           }}
           phoneSub={(row) => <PhoneSub row={row} />}
           onRowSelect={(row) => router.push(row.href)}
-          rowState={(row) => (byId.get(row.id)?.mergedIntoName ? { muted: true } : undefined)}
           empty={
             filtered ? (
               <EmptyState

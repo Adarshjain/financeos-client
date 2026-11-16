@@ -11,7 +11,7 @@ import {
   holdingListRow,
   holdingsQuery,
   holdingsUrl,
-  mergedLine,
+  isListedHolding,
   moversFromResponse,
   parseHoldingsUrl,
   SORT_OPTIONS,
@@ -165,17 +165,10 @@ describe('holdingListRow', () => {
     expect(row.current).toBe('₹4,500');
   });
 
-  it('writes a merged holding with what it merged into and no figures', () => {
-    const row = holdingListRow(
-      holdingRow({ symbol: 'HDFC', name: 'HDFC Ltd', quantity: 0, mergedIntoName: 'HDFCBANK', mergedIntoDate: '2023-07-13', currentValue: 0 }),
-    );
-    expect(row.merged).toEqual({ into: 'HDFCBANK', date: '2023-07-13' });
-    expect(mergedLine(row.merged!)).toBe('Merged into HDFCBANK · 13 Jul 23');
-    expect(row.phone.caption).toBe('0 shares');
-    expect(row.avgCost).toBeNull();
-    expect(row.invested).toBeNull();
-    expect(row.pnl).toBeNull();
-    expect(row.current).toBe('₹0');
+  it('does not list a holding merged out entirely', () => {
+    expect(isListedHolding(holdingRow({ quantity: 0, mergedIntoName: 'HDFCBANK', mergedIntoDate: '2023-07-13' }))).toBe(false);
+    expect(isListedHolding(holdingRow({ quantity: 0, mergedIntoName: null }))).toBe(true);
+    expect(isListedHolding(holdingRow({ quantity: 5, mergedIntoName: 'HDFCBANK' }))).toBe(true);
   });
 });
 
@@ -313,11 +306,6 @@ describe('holdingListRow phone lines', () => {
     const { phone } = holdingListRow(holdingRow({ delisted: true, ltp: 0 }));
     expect(phone.note).toBe('Delisted');
     expect(phone.ltp?.text).toBe('LTP ₹0.00');
-  });
-
-  it('leaves a merged holding with its quantity only', () => {
-    const { phone } = holdingListRow(holdingRow({ quantity: 0, mergedIntoName: 'HDFCBANK', mergedIntoDate: '2023-07-13' }));
-    expect(phone).toMatchObject({ caption: '0 shares', returnPct: null, returnAmount: null, invested: null, ltp: null, note: null });
   });
 });
 
