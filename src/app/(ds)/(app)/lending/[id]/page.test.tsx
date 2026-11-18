@@ -42,11 +42,11 @@ describe('/lending/[id]', () => {
   it('loads this person for the page and size in the URL and hands the view its data, today and your name', async () => {
     await renderPage({ page: '3', size: '50' });
     expect(screen.getByText('person view')).toBeInTheDocument();
-    expect(loadPersonPage).toHaveBeenCalledWith('p1', { page: 2, size: 50 });
+    expect(loadPersonPage).toHaveBeenCalledWith('p1', { page: 2, size: 50, cycle: 'latest' });
     expect(viewProps?.cp.name).toBe('Rahul Sharma');
     expect(viewProps?.today).toBe('2026-10-13');
     expect(viewProps?.myName).toBe('Adarsh');
-    expect(viewProps?.state).toEqual({ page: 2, size: 50 });
+    expect(viewProps?.state).toEqual({ page: 2, size: 50, cycle: 'latest' });
   });
 
   it('hands the view the page the loader clamped to', async () => {
@@ -61,7 +61,7 @@ describe('/lending/[id]', () => {
 
   it('falls back to the first page of 25 for junk in the URL', async () => {
     await renderPage({ page: 'x', size: '3' });
-    expect(viewProps?.state).toEqual({ page: 0, size: 25 });
+    expect(viewProps?.state).toEqual({ page: 0, size: 25, cycle: 'latest' });
   });
 
   it('opens Export ledger on load only for ?export=1', async () => {
