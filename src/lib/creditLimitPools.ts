@@ -18,6 +18,8 @@ export interface CreditUsage {
   limit: number;
   /** Each shared limit's owed once (closed members included), plus every unpooled card's owed. */
   owed: number;
+  /** Owed on cards that have a limit, each shared limit's once: what `utilizationPct` divides. */
+  owedAgainstLimit: number;
   /** Owed on cards with a limit ÷ that limit × 100; null when there is no limit. */
   utilizationPct: number | null;
 }
@@ -48,7 +50,12 @@ export function sumCreditUsage(cards: readonly CreditCard[]): CreditUsage {
       if (cardLimit > 0) owedAgainstLimit += cardOwed;
     }
   }
-  return { limit, owed, utilizationPct: limit > 0 ? (owedAgainstLimit / limit) * 100 : null };
+  return {
+    limit,
+    owed,
+    owedAgainstLimit,
+    utilizationPct: limit > 0 ? (owedAgainstLimit / limit) * 100 : null,
+  };
 }
 
 /**

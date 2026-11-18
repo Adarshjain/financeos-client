@@ -94,3 +94,23 @@ describe('Found in your email card', () => {
     expect(screen.queryByTestId('found-in-email')).toBeNull();
   });
 });
+
+describe('Credit cards summary', () => {
+  it('shows total limit, limit used and utilisation in the section', async () => {
+    await renderScreen(accounts, null);
+    const cards = sectionCard('Credit cards');
+    expect(within(cards).getByText('Total limit').parentElement?.textContent).toContain('₹1,00,000');
+    expect(within(cards).getAllByText('Limit used')[0].parentElement?.textContent).toContain('₹20,000');
+    expect(within(cards).getByText('Utilisation').parentElement?.textContent).toContain('20%');
+  });
+
+  it('is absent when no card has a limit', async () => {
+    const noLimit = accounts.map((a) =>
+      a.type === AccountType.CREDIT_CARD ? { ...a, creditLimit: null, effectiveCreditLimit: null } : a,
+    ) as Account[];
+    await renderScreen(noLimit, null);
+    const cards = sectionCard('Credit cards');
+    expect(within(cards).queryByText('Total limit')).toBeNull();
+    expect(within(cards).queryByText('Utilisation')).toBeNull();
+  });
+});

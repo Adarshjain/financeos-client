@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Account, BankAccount, Broker, CreditCard, GenericAccount } from '@/lib/account.types';
 import type { CardBillResponse } from '@/lib/api/types';
 import { AccountType } from '@/lib/types';
+import { UTILISATION_HIGH_PCT, UTILISATION_WATCH_PCT } from '@/lib/utilisation';
 import { pinClock } from '@/test/pinClock';
 
 import {
@@ -13,6 +14,7 @@ import {
   cardRow,
   cardsKpi,
   cardsSubtitle,
+  cardsSummary,
   cashKpi,
   closedLine,
   gapLabel,
@@ -23,7 +25,6 @@ import {
   nextBillBadge,
   relativeDay,
   rewardsText,
-  unpaidBillsDue,
   walletRow,
 } from './accountsListModel';
 
@@ -321,13 +322,60 @@ describe('card rows', () => {
   it('shows outstanding as owed with two decimals', () => {
     expect(cardRow(card({ balance: -84809 }), undefined, undefined, TODAY).outstanding).toBe('84,809.00');
   });
-  it('subtitle includes the full limit and card count, and drops the limit part at zero', () => {
+  it('subtitle carries the card count, without the limit', () => {
     const open = [card({ id: 'a' }), card({ id: 'b' })];
-    expect(cardsSubtitle(open)).toBe('Owed today · ₹2,00,000 limit, 2 cards');
+    expect(cardsSubtitle(open)).toBe('Owed today · 2 cards');
     expect(cardsSubtitle([card({ creditLimit: null, effectiveCreditLimit: null })])).toBe(
-      'Owed today',
+      'Owed today · 1 card',
     );
-    expect(cardsSubtitle([card()])).toContain('limit, 1 card');
+    expect(cardsSubtitle([card()])).toBe('Owed today · 1 card');
+    expect(cardsSubtitle([])).toBe('Owed today');
+  });
+});
+
+describe('cards summary', () => {
+  const pool = (id: string, creditLimit: number, owed: number) =>
+    ({ id, name: id, creditLimit, owed, available: creditLimit - owed, utilizationPct: 0, memberCount: 2, openMemberCount: 2 }) as NonNullable<CreditCard['limitPool']>;
+  const noLimit = { creditLimit: null, effectiveCreditLimit: null };
+  const pctCard = (id: string, pct: number) => card({ id, creditLimit: 100000, effectiveCreditLimit: 100000, balance: -pct * 1000 });
+
+  it('shows total limit, limit used and utilisation, in that order', () => {
+    const open = [card({ id: 'a', balance: -20000 }), card({ id: 'b', balance: -40000 })];
+    expect(cardsSummary(open)).toEqual([
+      { label: 'Total limit', value: '₹2,00,000' },
+      { label: 'Limit used', value: '₹60,000' },
+      { label: 'Utilisation', value: '30%', tone: 'warning' },
+    ]);
+  });
+  it('is null with no cards or no card with a limit', () => {
+    expect(cardsSummary([])).toBeNull();
+    expect(cardsSummary([card({ ...noLimit, balance: -5000 })])).toBeNull();
+  });
+  it('leaves a no-limit card debt out of limit used', () => {
+    const out = cardsSummary([card({ id: 'a', balance: -20000 }), card({ id: 'b', ...noLimit, balance: -90000 })]);
+    expect(out?.[0].value).toBe('₹1,00,000');
+    expect(out?.[1].value).toBe('₹20,000');
+    expect(out?.[2].value).toBe('20%');
+  });
+  it('counts a shared pool once', () => {
+    const shared = pool('p', 500000, 100000);
+    const out = cardsSummary([
+      card({ id: 'a', limitPool: shared, effectiveCreditLimit: 500000 }),
+      card({ id: 'b', limitPool: shared, effectiveCreditLimit: 500000 }),
+    ]);
+    expect(out?.map((f) => f.value)).toEqual(['₹5,00,000', '₹1,00,000', '20%']);
+  });
+  it('tones utilisation by the shared bands', () => {
+    const tone = (pct: number) => cardsSummary([pctCard('a', pct)])?.[2].tone;
+    expect(tone(UTILISATION_WATCH_PCT - 1)).toBe('ink');
+    expect(tone(UTILISATION_WATCH_PCT)).toBe('warning');
+    expect(tone(UTILISATION_HIGH_PCT - 1)).toBe('warning');
+    expect(tone(UTILISATION_HIGH_PCT)).toBe('danger');
+  });
+  it('shows nothing used for cards in credit', () => {
+    const out = cardsSummary([card({ balance: 5000 })]);
+    expect(out?.[1].value).toBe('₹0');
+    expect(out?.[2].value).toBe('0%');
   });
 });
 
@@ -366,31 +414,6 @@ describe('Gmail fetch line on rows', () => {
   it('is absent otherwise', () => {
     expect(bankRow(bank(), TODAY).fetchLine).toBeNull();
     expect(cardBaseRow(card({ gmailFetch: null }), TODAY).fetchLine).toBeNull();
-  });
-  it('leads the subtitle with unpaid bills: count, total remaining, earliest due date', () => {
-    const open = [card({ id: 'a' }), card({ id: 'b' })];
-    const bills = [
-      bill({ accountId: 'a', status: 'OPEN', remainingAmount: 1000, paymentDueDate: '2026-11-20' }),
-      bill({ accountId: 'b', status: 'OVERDUE', remainingAmount: 500, paymentDueDate: '2026-11-13' }),
-    ];
-    const due = unpaidBillsDue(bills, open, TODAY);
-    expect(due).toEqual({ count: 2, total: 1500, earliestDue: '2026-11-13' });
-    expect(cardsSubtitle(open, due)).toBe('2 bills due · ₹1,500 by 13 Nov · ₹2,00,000 limit, 2 cards');
-    const one = unpaidBillsDue([bills[0]], open, TODAY);
-    expect(cardsSubtitle(open, one)).toBe('1 bill due · ₹1,000 by 20 Nov · ₹2,00,000 limit, 2 cards');
-  });
-  it('counts a partly paid bill by what remains, and ignores paid, awaiting and closed-card bills', () => {
-    const open = [card({ id: 'a' })];
-    const bills = [
-      bill({ accountId: 'a', status: 'PARTIAL', remainingAmount: 250, paymentDueDate: '2026-11-15' }),
-      bill({ accountId: 'a', status: 'PAID', remainingAmount: 0 }),
-      bill({ accountId: 'a', status: 'AWAITING_STATEMENT' }),
-      bill({ accountId: 'zz', status: 'OPEN', remainingAmount: 9999, paymentDueDate: '2026-11-01' }),
-    ];
-    expect(unpaidBillsDue(bills, open, TODAY)).toEqual({ count: 1, total: 250, earliestDue: '2026-11-15' });
-    expect(unpaidBillsDue([bills[1], bills[2]], open, TODAY)).toBeNull();
-    expect(unpaidBillsDue(null, open, TODAY)).toBeNull();
-    expect(cardsSubtitle(open, null)).toBe('Owed today · ₹1,00,000 limit, 1 card');
   });
 });
 

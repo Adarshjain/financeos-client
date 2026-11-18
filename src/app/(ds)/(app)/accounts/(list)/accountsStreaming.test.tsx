@@ -115,6 +115,21 @@ describe('/accounts streaming', () => {
     expect(screen.queryByText('Statement missing')).toBeNull();
   });
 
+  it('keeps the Credit cards subtitle static: no bills-due text even with an unpaid bill', async () => {
+    const bill = {
+      accountId: 'c1',
+      accountName: 'Axis Magnus',
+      status: 'OPEN',
+      remainingAmount: 1000,
+      paymentDueDate: '2999-01-01',
+    } as unknown as CardBillResponse;
+    loadMock.mockReturnValue(toStreams({ ...plain, bills: [bill] }));
+    await resolved();
+
+    expect(screen.getByText('Owed today · 1 card')).toBeDefined();
+    expect(screen.queryByText(/bills? due/i)).toBeNull();
+  });
+
   it('shows Statement missing with no Upload link on the row', async () => {
     const bill = {
       accountId: 'c1',

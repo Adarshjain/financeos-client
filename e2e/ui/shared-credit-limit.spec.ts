@@ -55,7 +55,8 @@ test.describe('Shared credit limit UI (@ui)', () => {
     // 3. Both rows show the shared limit; the section total counts it once.
     await page.goto('/accounts');
     await expect(page.getByText('Shared limit · HDFC shared ₹5L').locator('visible=true')).toHaveCount(2);
-    await expect(page.getByText(/₹5,00,000 limit, 2 cards/).locator('visible=true').first()).toBeVisible();
+    await expect(page.getByText('Total limit').locator('visible=true').first().locator('xpath=..')).toContainText('₹5,00,000');
+    await expect(page.getByText(/2 cards/).locator('visible=true').first()).toBeVisible();
 
     // 4. One card leaves the pool and gets its own limit back.
     await page.getByRole('button', { name: /HDFC Millennia/ }).click();
@@ -70,6 +71,7 @@ test.describe('Shared credit limit UI (@ui)', () => {
 
     await page.goto('/accounts');
     await expect(page.getByText('Shared limit · HDFC shared ₹5L').locator('visible=true')).toHaveCount(1);
-    await expect(page.getByText(/₹6,00,000 limit, 2 cards/).locator('visible=true').first()).toBeVisible();
+    await expect(page.getByText('Total limit').locator('visible=true').first().locator('xpath=..')).toContainText('₹6,00,000');
+    await expect(page.getByText(/2 cards/).locator('visible=true').first()).toBeVisible();
   });
 });

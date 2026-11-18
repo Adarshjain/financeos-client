@@ -7,6 +7,7 @@ import { Card } from '@/components/ds/Card/Card';
 import { DataTable } from '@/components/ds/DataTable/DataTable';
 import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
+import { type Figure, Figures } from '@/components/ds/Figures/Figures';
 import { Icon } from '@/components/ds/Icon/Icon';
 import { ProgressBar } from '@/components/ds/ProgressBar/ProgressBar';
 import { SectionHeader } from '@/components/ds/SectionHeader/SectionHeader';
@@ -443,7 +444,11 @@ function cardPhoneSub(row: CardListRow): React.ReactNode {
 }
 
 export function CardsSection(
-  props: SectionProps<CardListRow> & { subtitle: React.ReactNode; emptyText?: string }
+  props: SectionProps<CardListRow> & {
+    subtitle: React.ReactNode;
+    summary?: Figure[] | null;
+    emptyText?: string;
+  }
 ) {
   const router = useAppRouter();
   const closed = useClosedToggle();
@@ -458,7 +463,7 @@ export function CardsSection(
       : null;
   return (
     <Card>
-      {/* The bills-due line wraps on phone rather than cutting off. */}
+      {/* The subtitle wraps on phone rather than cutting off. */}
       <Card.Header>
         <div className="min-w-0">
           <Card.Title>Credit cards</Card.Title>
@@ -468,6 +473,11 @@ export function CardsSection(
           <AddLink addType="credit_card">Add credit card</AddLink>
         </div>
       </Card.Header>
+      {props.summary?.length ? (
+        <div className="px-space-16 pb-space-10">
+          <Figures figures={props.summary} size="sm" />
+        </div>
+      ) : null}
       <DataTable
         columns={cardColumns}
         data={withClosed({ ...props, rows: grouped.rows }, closed.showing)}

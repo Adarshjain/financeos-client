@@ -18,7 +18,8 @@ import {
   brokerRow,
   cardBaseRow,
   cardsKpi,
-  cardsSubtitle as cardsSubtitleText,
+  cardsSubtitle,
+  cardsSummary,
   cashKpi,
   closedLineFor,
   groupAccounts,
@@ -33,7 +34,6 @@ import {
 } from './AccountsSections';
 import { AccountsEmpty } from './AccountsStates';
 import {
-  CardsSubtitle,
   InvestmentsDelta,
   InvestmentsValue,
   LoansSection,
@@ -126,11 +126,8 @@ export function AccountsScreen({
         {foundCount > 0 ? <FoundInEmailCard suggestions={mergeSuggestions(found)} /> : null}
 
         <CardsSection
-          subtitle={
-            <Suspense fallback={cardsSubtitleText(sections.cards.open)}>
-              <CardsSubtitle bills={streams.bills} open={sections.cards.open} today={today} />
-            </Suspense>
-          }
+          subtitle={cardsSubtitle(sections.cards.open)}
+          summary={cardsSummary(sections.cards.open)}
           rows={cardRows(sections.cards.open)}
           closedRows={cardRows(sections.cards.closed)}
           closedLine={closedLineFor(sections.cards.closed)}

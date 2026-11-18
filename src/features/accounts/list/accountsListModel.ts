@@ -1,3 +1,4 @@
+import type { Figure } from '@/components/ds/Figures/Figures';
 import { bankById } from '@/features/banks/banks';
 import { deriveBillCardState } from '@/features/bills/billCardStateModel';
 import {
@@ -266,9 +267,13 @@ export function limitUsed(card: CreditCard): LimitUsed | null {
     pctLabel: formatPercent(pct),
     limitLabel: formatMoney(limit, { compact: true }),
     tone: band === 'high' ? 'danger' : band === 'medium' ? 'warning' : 'brand',
-    textTone:
-      band === 'high' ? 'danger' : band === 'medium' ? 'warning' : 'ink',
+    textTone: utilisedTextTone(pct),
   };
+}
+
+function utilisedTextTone(pct: number): UsedTextTone {
+  const band = utilisationTone(pct);
+  return band === 'high' ? 'danger' : band === 'medium' ? 'warning' : 'ink';
 }
 
 /** Rewards cell text: points, else the rupee value, else an em dash. */
@@ -373,44 +378,23 @@ export function cardRow(
   };
 }
 
-/** The open cards' unpaid bills: how many, what is left to pay, and the earliest due date. */
-export interface BillsDue {
-  count: number;
-  total: number;
-  earliestDue: string | null;
+export function cardsSubtitle(open: readonly CreditCard[]): string {
+  return open.length > 0 ? `Owed today · ${formatCount(open.length, ['card', 'cards'])}` : 'Owed today';
 }
 
-/** Unpaid = a statement is out with something left to pay (the Bills due widget's arrived and overdue phases). Null when none. */
-export function unpaidBillsDue(
-  bills: readonly CardBillResponse[] | null,
-  openCards: readonly CreditCard[],
-  today: string
-): BillsDue | null {
-  if (!bills) return null;
-  const open = new Set(openCards.map((c) => c.id));
-  let count = 0;
-  let total = 0;
-  let earliestDue: string | null = null;
-  for (const bill of bills) {
-    if (!open.has(bill.accountId)) continue;
-    const state = deriveBillCardState(bill, today);
-    if (state.phase === 'awaiting') continue;
-    count += 1;
-    total += state.toPay ?? 0;
-    const due = bill.paymentDueDate ?? null;
-    if (due && (earliestDue === null || due < earliestDue)) earliestDue = due;
-  }
-  return count > 0 ? { count, total, earliestDue } : null;
-}
-
-export function cardsSubtitle(open: readonly CreditCard[], due: BillsDue | null = null): string {
-  const limit = sumCreditUsage(open).limit;
-  const lead = due
-    ? `${formatCount(due.count, ['bill', 'bills'])} due · ${formatMoney(due.total)}${due.earliestDue ? ` by ${formatDate(due.earliestDue, 'list')}` : ''}`
-    : 'Owed today';
-  return limit > 0
-    ? `${lead} · ${formatMoney(limit)} limit, ${formatCount(open.length, ['card', 'cards'])}`
-    : lead;
+/** Total limit, limit used and utilisation across open cards; null with no limit to measure against. */
+export function cardsSummary(open: readonly CreditCard[]): Figure[] | null {
+  const usage = sumCreditUsage(open);
+  if (!(usage.limit > 0) || usage.utilizationPct === null) return null;
+  return [
+    { label: 'Total limit', value: formatMoney(usage.limit) },
+    { label: 'Limit used', value: formatMoney(usage.owedAgainstLimit) },
+    {
+      label: 'Utilisation',
+      value: formatPercent(usage.utilizationPct),
+      tone: utilisedTextTone(usage.utilizationPct),
+    },
+  ];
 }
 
 // ---- Brokers and wallets ---------------------------------------------------
