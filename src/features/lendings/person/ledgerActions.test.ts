@@ -12,14 +12,17 @@ import { loadPersonLedger } from './ledgerActions';
 beforeEach(() => vi.clearAllMocks());
 
 describe('loadPersonLedger', () => {
-  it('asks for every entry in one page and returns them', async () => {
-    ledger.mockResolvedValue({ entries: { content: [{ id: 'e1' }] } });
-    expect(await loadPersonLedger('p1', 40)).toEqual({ success: true, data: [{ id: 'e1' }] });
+  it('asks for every entry in one page and returns them with the cycles', async () => {
+    ledger.mockResolvedValue({ entries: { content: [{ id: 'e1' }] }, cycles: [{ number: 1 }] });
+    expect(await loadPersonLedger('p1', 40)).toEqual({
+      success: true,
+      data: { entries: [{ id: 'e1' }], cycles: [{ number: 1 }] },
+    });
     expect(ledger).toHaveBeenCalledWith('p1', 0, 40);
   });
 
   it('asks for at least one entry', async () => {
-    ledger.mockResolvedValue({ entries: { content: [] } });
+    ledger.mockResolvedValue({ entries: { content: [] }, cycles: [] });
     await loadPersonLedger('p1', 0);
     expect(ledger).toHaveBeenCalledWith('p1', 0, 1);
   });

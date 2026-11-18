@@ -16,6 +16,7 @@ import { AmountField } from '@/components/organisms/AmountField/AmountField';
 import { SettingsToggle } from '@/components/organisms/SettingsToggle/SettingsToggle';
 import { amountExpressionProps } from '@/lib/amountExpression';
 import { formatDate, formatMoney } from '@/lib/format';
+import type { LendingCycleResponse } from '@/lib/lending.types';
 import { ENTRY_TYPE_SHORT, toEntryType } from '@/lib/lendingEntry';
 import {
   directionLabels,
@@ -23,6 +24,7 @@ import {
   type LendingExportToggles,
 } from '@/lib/lendingExport';
 
+import { cycleLabel } from '../cycleModel';
 import { type ExportLedgerState, useExportLedger } from '../useExportLedger';
 
 const TOGGLE_LABELS: Record<keyof LendingExportToggles, string> = {
@@ -42,8 +44,10 @@ function EntryChecklist({ state }: { state: ExportLedgerState }) {
     toggleEntry,
     selectAll,
     selectNone,
-    selectSinceSettled,
-    sinceSettledAvailable,
+    cycles,
+    cyclesAvailable,
+    selectCycle,
+    selectedCycle,
   } = state;
   return (
     <div className="flex flex-col gap-space-8">
@@ -54,11 +58,6 @@ function EntryChecklist({ state }: { state: ExportLedgerState }) {
         <Button variant="link" size="sm" onClick={selectAll}>
           All
         </Button>
-        {sinceSettledAvailable ? (
-          <Button variant="link" size="sm" onClick={selectSinceSettled}>
-            Since last settled
-          </Button>
-        ) : null}
         <Button variant="link" size="sm" onClick={selectNone}>
           None
         </Button>
@@ -72,6 +71,16 @@ function EntryChecklist({ state }: { state: ExportLedgerState }) {
           {`${selectedIds.size} selected`}
         </Text>
       </div>
+      {cyclesAvailable ? (
+        <Select
+          aria-label="Cycle"
+          size="sm"
+          placeholder="Cycle"
+          options={cycles.map((c) => ({ value: String(c.number), label: cycleLabel(c) }))}
+          value={selectedCycle === null ? '' : String(selectedCycle)}
+          onValueChange={(v) => selectCycle(Number(v))}
+        />
+      ) : null}
       <Card>
         {entries.map((entry: ExportableEntry) => {
           const label =
@@ -216,6 +225,10 @@ export interface ExportLedgerDialogProps {
   theirName: string;
   /** The signed-in user's name; prefills "Your name" unless a saved value exists. */
   defaultMyName: string | null;
+  /** The person's cycles; with more than one, the Entries row gets a Cycle picker. */
+  cycles?: LendingCycleResponse[];
+  /** The cycle whose entries start selected; otherwise every entry does. */
+  initialCycle?: number | null;
   onClose: () => void;
 }
 
@@ -227,9 +240,11 @@ export function ExportLedgerDialog({
   entries,
   theirName,
   defaultMyName,
+  cycles,
+  initialCycle,
   onClose,
 }: ExportLedgerDialogProps) {
-  const state = useExportLedger({ entries, theirName, defaultMyName, notify });
+  const state = useExportLedger({ entries, theirName, defaultMyName, cycles, initialCycle, notify });
   const disabled = state.noneSelected || Boolean(state.openingError);
   const formId = React.useId();
   const run = state.canShare ? state.share : state.copy;

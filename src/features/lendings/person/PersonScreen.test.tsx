@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -52,7 +52,12 @@ vi.mock('@/features/lendings/SettleDialog', () => ({
   ),
 }));
 vi.mock('@/features/lendings/form/AddLendingDialog', () => ({
-  AddLendingDialog: (p: { initialPerson?: { name: string } }) => <p>{`add entry for ${p.initialPerson?.name ?? 'nobody'}`}</p>,
+  AddLendingDialog: (p: { initialPerson?: { name: string }; onRecorded?: () => void }) => (
+    <div>
+      <p>{`add entry for ${p.initialPerson?.name ?? 'nobody'}`}</p>
+      <button onClick={p.onRecorded}>add recorded</button>
+    </div>
+  ),
 }));
 vi.mock('@/features/transactions/TransactionPickerField', () => ({
   TransactionPickerField: (p: { value: { id: string } | null; onSelect: (t: unknown) => void; onClear: () => void }) => (
@@ -72,10 +77,13 @@ import { AddLendingProvider } from '@/features/lendings/form/AddLendingProvider'
 import { pinClock } from '@/test/pinClock';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
-import { entriesFixture, ledgerFixture, personFixture } from './personModel.fixtures';
+import { cyclesFixture, entriesFixture, ledgerFixture, personFixture } from './personModel.fixtures';
 import { PersonScreen, type PersonScreenProps } from './PersonScreen';
 
 pinClock();
+
+/** What loadPersonLedger returns: every entry (newest first) and the cycles. */
+const exportData = () => ({ entries: entriesFixture(), cycles: cyclesFixture(entriesFixture()) });
 
 const user = userEvent.setup({ pointerEventsCheck: 0 });
 
@@ -86,7 +94,7 @@ function renderView(props: Partial<PersonScreenProps> = {}) {
       <PersonScreen
         cp={personFixture({ entryCount: 4 })}
         ledger={ledgerFixture(all)}
-        state={{ page: 0, size: 25 }}
+        state={{ page: 0, size: 25, cycle: 'latest' }}
         today="2026-10-13"
         myName="Adarsh"
         openExport={false}
@@ -107,7 +115,7 @@ beforeEach(() => {
     m[key].isPending = false;
   }
   loadPersonMatches.mockResolvedValue({ success: true, data: [] });
-  loadPersonLedger.mockResolvedValue({ success: true, data: entriesFixture() });
+  loadPersonLedger.mockResolvedValue({ success: true, data: exportData() });
 });
 
 describe('header', () => {
@@ -189,6 +197,124 @@ describe('ledger', () => {
   });
 });
 
+const CYCLE_2 = 'Cycle 2 · from 29 Aug 26';
+const CYCLE_1 = 'Cycle 1 · 2 May 26 – 9 May 26';
+const cycleSelect = () => screen.queryByRole('combobox', { name: 'Cycle' });
+
+describe('cycles', () => {
+  it('shows no picker for a person with one cycle or none', () => {
+    const onlyCycle2 = entriesFixture().slice(0, 2);
+    renderView({ ledger: ledgerFixture(onlyCycle2) });
+    expect(cycleSelect()).toBeNull();
+    cleanup();
+    renderView({ ledger: ledgerFixture([]) });
+    expect(cycleSelect()).toBeNull();
+  });
+
+  it('lists the cycles newest first then All entries, with the newest selected for latest', async () => {
+    renderView();
+    expect(cycleSelect()).toHaveTextContent(CYCLE_2);
+    await user.click(cycleSelect()!);
+    const options = (await screen.findAllByRole('option')).map((o) => o.textContent);
+    expect(options).toEqual([CYCLE_2, CYCLE_1, 'All entries']);
+  });
+
+  it('shows the numbered cycle and All entries as the value', () => {
+    renderView({ state: { page: 0, size: 25, cycle: 1 } });
+    expect(cycleSelect()).toHaveTextContent(CYCLE_1);
+    cleanup();
+    renderView({ state: { page: 0, size: 25, cycle: 'all' } });
+    expect(cycleSelect()).toHaveTextContent('All entries');
+  });
+
+  it('choosing an older cycle writes it and goes back to the first page', async () => {
+    renderView({ state: { page: 2, size: 25, cycle: 'latest' } });
+    await user.click(cycleSelect()!);
+    await user.click(await screen.findByRole('option', { name: CYCLE_1 }));
+    expect(router.replace).toHaveBeenCalledWith('/lending/p1?cycle=1', { scroll: false });
+  });
+
+  it('choosing All entries writes cycle=all', async () => {
+    renderView();
+    await user.click(cycleSelect()!);
+    await user.click(await screen.findByRole('option', { name: 'All entries' }));
+    expect(router.replace).toHaveBeenCalledWith('/lending/p1?cycle=all', { scroll: false });
+  });
+
+  it('choosing the newest cycle leaves the param out', async () => {
+    renderView({ state: { page: 0, size: 25, cycle: 1 } });
+    await user.click(cycleSelect()!);
+    await user.click(await screen.findByRole('option', { name: CYCLE_2 }));
+    expect(router.replace).toHaveBeenCalledWith('/lending/p1', { scroll: false });
+  });
+
+  it('after Settle up or an added entry, a numbered cycle jumps to the newest on page one', async () => {
+    renderView({ state: { page: 1, size: 25, cycle: 1 } });
+    fireEvent.click(screen.getByRole('button', { name: 'Settle up' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'recorded' }));
+    expect(router.replace).toHaveBeenLastCalledWith('/lending/p1', { scroll: false });
+    expect(router.refresh).not.toHaveBeenCalled();
+    router.replace.mockClear();
+    fireEvent.click(topBarAdd());
+    fireEvent.click(await screen.findByRole('button', { name: 'add recorded' }));
+    expect(router.replace).toHaveBeenLastCalledWith('/lending/p1', { scroll: false });
+    expect(router.refresh).not.toHaveBeenCalled();
+  });
+
+  it('after Settle up or an added entry, the newest and All views just refresh', async () => {
+    for (const cycle of ['latest', 'all'] as const) {
+      renderView({ state: { page: 0, size: 25, cycle } });
+      fireEvent.click(screen.getByRole('button', { name: 'Settle up' }));
+      fireEvent.click(await screen.findByRole('button', { name: 'recorded' }));
+      expect(router.refresh).toHaveBeenCalledTimes(1);
+      cleanup();
+      router.refresh.mockClear();
+      renderView({ state: { page: 0, size: 25, cycle } });
+      fireEvent.click(topBarAdd());
+      fireEvent.click(await screen.findByRole('button', { name: 'add recorded' }));
+      expect(router.replace).not.toHaveBeenCalled();
+      cleanup();
+    }
+  });
+
+  it('an entry in a settled cycle says so in the edit dialog; one in the open cycle does not', async () => {
+    renderView();
+    const note = 'This entry is in a settled cycle. Changing it works that cycle out again and can reopen it.';
+    await user.click(row('Dinner split'));
+    expect(await screen.findByText(note)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(row('Laptop advance'));
+    await screen.findByText('Edit ledger entry');
+    expect(screen.queryByText(note)).toBeNull();
+  });
+
+  it('deleting an entry in a settled cycle says it reopens; in the open cycle it does not', async () => {
+    const line = 'It is in a settled cycle: that cycle is worked out again and can reopen.';
+    renderView();
+    await user.click(row('Dinner split'));
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
+    expect(await screen.findByText(line)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(row('Laptop advance'));
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
+    await screen.findByText('This lent entry of ₹25,000 goes.');
+    expect(screen.queryByText(line)).toBeNull();
+  });
+
+  it('Export ledger starts with the shown cycle selected, or everything for All entries', async () => {
+    renderView({ ledger: ledgerFixture(entriesFixture().slice(0, 2), 1, 2), state: { page: 0, size: 25, cycle: 'latest' } });
+    await user.click(screen.getByRole('button', { name: 'Export ledger' }));
+    expect(await screen.findByTestId('export-selected-count')).toHaveTextContent('2 selected');
+  });
+
+  it('Export ledger leaves everything selected when the page shows All entries', async () => {
+    renderView({ ledger: ledgerFixture(entriesFixture(), 1, null), state: { page: 0, size: 25, cycle: 'all' } });
+    await openMenu();
+    await user.click(await screen.findByRole('menuitem', { name: 'Export ledger' }));
+    expect(await screen.findByTestId('export-selected-count')).toHaveTextContent('4 selected');
+  });
+});
+
 describe('expected return, person and matching cards', () => {
   it('shows the expected date with the Export ledger share row, and the person details', () => {
     renderView();
@@ -264,7 +390,7 @@ describe('Export ledger', () => {
     await user.click(screen.getByRole('button', { name: 'Export ledger' }));
     expect(loadPersonLedger).toHaveBeenCalledWith('p1', 4);
     expect(screen.getByTestId('export-loading')).toBeInTheDocument();
-    resolve({ success: true, data: entriesFixture() });
+    resolve({ success: true, data: exportData() });
     expect(await screen.findByTestId('export-selected-count')).toHaveTextContent('4 selected');
     expect(screen.queryByTestId('export-loading')).toBeNull();
   });

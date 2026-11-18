@@ -47,6 +47,8 @@ export interface EditEntryDialogProps {
   onSubmit: (id: string, change: EntryChange) => Promise<boolean>;
   onDelete: (entry: LedgerEntryResponse) => void;
   onClose: () => void;
+  /** The entry belongs to a settled cycle: changing it works that cycle out again. */
+  inSettledCycle?: boolean;
 }
 
 /** One ledger entry: type, amount, date, linked transaction, expected return and notes. Delete asks first. */
@@ -58,6 +60,7 @@ export function EditEntryDialog({
   onSubmit,
   onDelete,
   onClose,
+  inSettledCycle = false,
 }: EditEntryDialogProps) {
   const today = todayInAppZone();
   const [entryType, setEntryType] = React.useState<LendingEntryType>(toEntryType(entry.direction, entry.kind));
@@ -143,6 +146,11 @@ export function EditEntryDialog({
             {warning ? (
               <Text variant="label" tone="warning">
                 {warning}
+              </Text>
+            ) : null}
+            {inSettledCycle ? (
+              <Text variant="label" tone="warning">
+                This entry is in a settled cycle. Changing it works that cycle out again and can reopen it.
               </Text>
             ) : null}
             <TransactionPickerField

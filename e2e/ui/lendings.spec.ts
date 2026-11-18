@@ -137,4 +137,44 @@ test.describe('Lendings UI (@ui)', () => {
     const copied = await page.evaluate(() => navigator.clipboard.readText());
     expect(copied).toBe(text);
   });
+
+  test('Person: the ledger shows the newest cycle, the Cycle select switches cycles, and Export ledger follows it', async ({ page }) => {
+    const api = makeApi(currentUser.cookie);
+    const cp = await createCounterparty(api, { name: `Cycle Friend ${Date.now()}` });
+    await addLending(api, { counterpartyId: cp.id, direction: 'lent', amount: 8000, entryDate: monthsAgo(3), notes: 'First loan' });
+    await addLending(api, { counterpartyId: cp.id, direction: 'borrowed', kind: 'settlement', amount: 8000, entryDate: monthsAgo(2), notes: 'First payback' });
+    await addLending(api, { counterpartyId: cp.id, direction: 'lent', amount: 3000, entryDate: monthsAgo(1), notes: 'Second loan' });
+
+    // Default: only the newest cycle.
+    await page.goto(`/lending/${cp.id}`);
+    await expect(page.getByText('Second loan').first()).toBeVisible();
+    await expect(page.getByText('First loan')).toHaveCount(0);
+    const cycle = page.getByRole('combobox', { name: 'Cycle' });
+    await expect(cycle).toContainText(/^Cycle 2 · from /);
+
+    // Older cycle: the URL carries it.
+    await cycle.click();
+    await page.getByRole('option', { name: /^Cycle 1 · / }).click();
+    await expect(page).toHaveURL(/cycle=1/);
+    await expect(page.getByText('First loan').first()).toBeVisible();
+    await expect(page.getByText('Second loan')).toHaveCount(0);
+
+    // All entries.
+    await page.getByRole('combobox', { name: 'Cycle' }).click();
+    await page.getByRole('option', { name: 'All entries', exact: true }).click();
+    await expect(page).toHaveURL(/cycle=all/);
+    await expect(page.getByText('First loan').first()).toBeVisible();
+    await expect(page.getByText('Second loan').first()).toBeVisible();
+
+    // Export starts with the shown cycle and its own Cycle select switches the selection.
+    await page.goto(`/lending/${cp.id}`);
+    await page.getByRole('button', { name: 'More actions' }).click();
+    await page.getByRole('menuitem', { name: 'Export ledger', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Export ledger' });
+    await expect(dialog.getByTestId('export-selected-count')).toHaveText('1 selected');
+    await expect(dialog.getByRole('combobox', { name: 'Cycle' })).toContainText(/^Cycle 2 · from /);
+    await dialog.getByRole('combobox', { name: 'Cycle' }).click();
+    await page.getByRole('option', { name: /^Cycle 1 · / }).click();
+    await expect(dialog.getByTestId('export-selected-count')).toHaveText('2 selected');
+  });
 });

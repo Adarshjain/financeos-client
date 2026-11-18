@@ -26,6 +26,8 @@ export interface ExportableEntry {
   entryDate: string;
   expectedReturnDate?: string | null;
   notes?: string | null;
+  /** The ledger cycle the entry belongs to (1 = oldest); set when the caller knows cycles. */
+  cycle?: number;
   /** Σ lent − Σ borrowed after this entry, over the whole loaded ledger (ascending). */
   runningBalance: number;
 }
@@ -143,23 +145,6 @@ export function headerLine(myName: string | null, theirName: string | null): str
   if (me && them) return `Lending ledger · ${me} & ${them}`;
   const one = me ?? them;
   return one ? `Lending ledger with ${one}` : 'Lending ledger';
-}
-
-/**
- * Ids of the entries after the most recent point the running balance hit zero.
- * If the ledger is square right now, that is the cycle just settled (after the
- * previous zero) rather than nothing. With no zero at all, every entry.
- */
-export function sinceLastSettledIds(entries: ExportableEntry[]): Set<string> {
-  if (entries.length === 0) return new Set();
-  const last = entries.length - 1;
-  const zeros: number[] = [];
-  entries.forEach((e, i) => {
-    if (isSettledBalance(e.runningBalance)) zeros.push(i);
-  });
-  const relevant = isSettledBalance(entries[last].runningBalance) ? zeros.filter((i) => i !== last) : zeros;
-  const start = relevant.length > 0 ? relevant[relevant.length - 1] + 1 : 0;
-  return new Set(entries.slice(start).map((e) => e.id));
 }
 
 /**

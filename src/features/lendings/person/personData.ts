@@ -13,7 +13,7 @@ export interface PersonPageData {
   cp: PersonCounterparty;
   /** The page the URL asks for (or the last one when it is past the end), newest first, each with the balance after it. */
   ledger: CounterpartyLedgerResponse;
-  /** The URL state with the page clamped to the pages that exist. */
+  /** The URL state with the page clamped to the pages that exist and the cycle to one that exists. */
   state: PersonUrlState;
 }
 
@@ -35,14 +35,17 @@ export const loadPerson = cache(async (id: string): Promise<PersonCounterparty> 
  */
 export const loadPersonPage = cache(async (id: string, state: PersonUrlState): Promise<PersonPageData> => {
   // The ledger does not depend on the person read, so both start together; the person's failure (a 404, a sign-in) still wins.
-  const firstLedger = counterpartiesApi.ledger(id, state.page, state.size);
+  const cycleParam = String(state.cycle);
+  const firstLedger = counterpartiesApi.ledger(id, state.page, state.size, cycleParam);
   firstLedger.catch(() => undefined);
   const cp = await loadPerson(id);
   let ledger = await firstLedger;
   const totalPages = ledger.entries.totalPages;
   if (totalPages > 0 && state.page >= totalPages) {
     state = { ...state, page: clampPage(state.page, totalPages) };
-    ledger = await counterpartiesApi.ledger(id, state.page, state.size);
+    ledger = await counterpartiesApi.ledger(id, state.page, state.size, cycleParam);
   }
+  // A numbered cycle that does not exist falls back to the newest on the server; the URL state follows.
+  if (typeof state.cycle === 'number' && ledger.selectedCycle !== state.cycle) state = { ...state, cycle: 'latest' };
   return { cp, ledger, state };
 });

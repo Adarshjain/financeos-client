@@ -10,7 +10,6 @@ import {
   type ExportableEntry,
   headerLine,
   type LendingExportOptions,
-  sinceLastSettledIds,
 } from '@/lib/lendingExport';
 import { formatDate } from '@/lib/utils';
 
@@ -124,11 +123,10 @@ describe('buildLendingLedgerText — golden samples', () => {
     );
   });
 
-  it('since-last-settled selection prints a zero opening balance as settled and closes on the overall balance', () => {
-    const selected = sinceLastSettledIds(LEDGER);
+  it('a selection starting after a zero balance prints a zero opening balance as settled and closes on the overall balance', () => {
+    const selected = ids('l3', 'l4', 'l5', 'l6', 'l7');
     const text = build(selected, { openingBalance: derivedOpeningBalance(LEDGER, selected) });
 
-    expect(selected).toEqual(ids('l3', 'l4', 'l5', 'l6', 'l7'));
     expect(text).toContain('Opening balance: ₹0.00 (settled)');
     expect(text).toContain('Closing balance: Rahul owes Adarsh ₹6,300.00');
   });
@@ -358,35 +356,5 @@ describe('buildLendingLedgerText — notes, expected return, running balance, to
     ];
     const text = buildLendingLedgerText({ entries: rows, selectedIds: ids('b', 'r'), today: TODAY, options: opts() });
     expect(text).toContain('Rahul lent Adarsh: ₹400.00\nAdarsh repaid Rahul: ₹400.00');
-  });
-});
-
-describe('sinceLastSettledIds', () => {
-  it('returns everything when the balance never hit zero', () => {
-    const open = LEDGER.slice(2);
-    expect(sinceLastSettledIds(open)).toEqual(ids('l3', 'l4', 'l5', 'l6', 'l7'));
-  });
-
-  it('returns the tail after the last zero when the ledger is currently open', () => {
-    expect(sinceLastSettledIds(LEDGER)).toEqual(ids('l3', 'l4', 'l5', 'l6', 'l7'));
-  });
-
-  it('returns the just-settled cycle when the ledger is square right now', () => {
-    const square = [...LEDGER, entry('l8', '2026-10-05', 'borrowed', 'settlement', 6300, 0)];
-    expect(sinceLastSettledIds(square)).toEqual(ids('l3', 'l4', 'l5', 'l6', 'l7', 'l8'));
-  });
-
-  it('returns everything when the only zero is the final entry', () => {
-    expect(sinceLastSettledIds(LEDGER.slice(0, 2))).toEqual(ids('l1', 'l2'));
-  });
-
-  it('treats float noise as zero and handles an empty ledger', () => {
-    const noisy = [
-      entry('a', '2026-01-01', 'lent', 'principal', 0.3, 0.3),
-      entry('b', '2026-01-02', 'borrowed', 'settlement', 0.3, 5e-17),
-      entry('c', '2026-01-03', 'lent', 'principal', 1, 1),
-    ];
-    expect(sinceLastSettledIds(noisy)).toEqual(ids('c'));
-    expect(sinceLastSettledIds([])).toEqual(new Set());
   });
 });

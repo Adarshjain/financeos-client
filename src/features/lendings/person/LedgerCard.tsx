@@ -9,10 +9,13 @@ import { DataTable } from '@/components/ds/DataTable/DataTable';
 import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
 import { EmptyState } from '@/components/ds/EmptyState/EmptyState';
 import { Pager } from '@/components/ds/Pager/Pager';
+import { Select } from '@/components/ds/Select/Select';
 import { StatusWord } from '@/components/ds/StatusWords/StatusWords';
 import { Text } from '@/components/ds/Text/Text';
+import type { LendingCycleResponse } from '@/lib/lending.types';
 
-import type { LedgerRow } from './personModel';
+import { cycleLabel } from '../cycleModel';
+import type { LedgerRow, PersonUrlState } from './personModel';
 
 const ch = createDataTableColumnHelper<LedgerRow>();
 
@@ -42,6 +45,11 @@ export interface LedgerCardProps {
   onOpenEntry: (row: LedgerRow) => void;
   /** "Export as text" at the end of the totals line: opens Export ledger. */
   onExport: () => void;
+  /** Every cycle of the ledger, newest first; the picker shows only when there is more than one. */
+  cycles: LendingCycleResponse[];
+  /** The cycle the URL asks for. */
+  cycle: PersonUrlState['cycle'];
+  onCycleChange: (cycle: PersonUrlState['cycle']) => void;
 }
 
 /** The person's entries newest first, each with the balance after it. Paged by the server. */
@@ -58,7 +66,16 @@ export function LedgerCard({
   onSizeChange,
   onOpenEntry,
   onExport,
+  cycles,
+  cycle,
+  onCycleChange,
 }: LedgerCardProps) {
+  const newest = cycles[0]?.number;
+  const cycleOptions = React.useMemo(
+    () => [...cycles.map((c) => ({ value: String(c.number), label: cycleLabel(c) })), { value: 'all', label: 'All entries' }],
+    [cycles],
+  );
+  const cycleValue = cycle === 'latest' ? String(newest) : String(cycle);
   const columns = React.useMemo(
     () => [
       ch.display({
@@ -134,7 +151,27 @@ export function LedgerCard({
   );
 
   return (
-    <Card title="Ledger" subtitle={`Running balance · positive means ${firstName} owes you`}>
+    <Card>
+      {/* On a phone the cycle picker wraps under the title instead of squeezing the subtitle. */}
+      <Card.Header
+        className="flex-wrap gap-y-space-8"
+        title="Ledger"
+        subtitle={`Running balance · positive means ${firstName} owes you`}
+        action={
+          cycles.length > 1 ? (
+            <Select
+              aria-label="Cycle"
+              size="sm"
+              options={cycleOptions}
+              value={cycleValue}
+              onValueChange={(v) => {
+                const next = String(v);
+                onCycleChange(next === 'all' ? 'all' : Number(next) === newest ? 'latest' : Number(next));
+              }}
+            />
+          ) : undefined
+        }
+      />
       <DataTable
         columns={columns}
         data={rows}

@@ -52,9 +52,12 @@ interface Errors {
 export function AddLendingDialog({
   onClose,
   initialPerson,
+  onRecorded,
 }: {
   onClose: () => void;
   initialPerson?: CounterpartyResponse;
+  /** Runs after the entry is saved instead of the default page refresh. */
+  onRecorded?: () => void;
 }) {
   const router = useAppRouter();
   const today = todayInAppZone();
@@ -98,7 +101,8 @@ export function AddLendingDialog({
       );
       showToast('Lending recorded');
       onClose();
-      router.refresh();
+      if (onRecorded) onRecorded();
+      else router.refresh();
     } catch {
       // onError already surfaced the toast.
     }

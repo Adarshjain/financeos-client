@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { amountExpressionValue, sanitizeAmountExpressionInput } from '@/lib/amountExpression';
 import { copyText } from '@/lib/copyText';
 import { todayInAppZone } from '@/lib/date-range';
+import type { LendingCycleResponse } from '@/lib/lending.types';
 import {
   buildLendingLedgerText,
   DEFAULT_LENDING_EXPORT_TOGGLES,
@@ -13,7 +14,6 @@ import {
   type ExportableEntry,
   headerLine,
   type LendingExportToggles,
-  sinceLastSettledIds,
 } from '@/lib/lendingExport';
 
 /** Per-device conveniences only (your name + toggles); selection and opening balance never persist. */
@@ -63,6 +63,10 @@ interface UseExportLedgerArgs {
   theirName: string;
   /** The signed-in user's display name; prefills "Your name" unless a saved value exists. */
   defaultMyName: string | null;
+  /** The person's cycles (any order); the cycle picker shows when there is more than one. */
+  cycles?: LendingCycleResponse[];
+  /** The cycle whose entries start selected; anything else (or none) starts with every entry. */
+  initialCycle?: number | null;
   /** Says what Copy did. Defaults to a sonner toast. */
   notify?: (message: string, tone: 'success' | 'danger') => void;
 }
@@ -72,10 +76,20 @@ const defaultNotify = (message: string, tone: 'success' | 'danger') =>
 
 const noopSubscribe = () => () => {};
 
-export function useExportLedger({ entries, theirName, defaultMyName, notify = defaultNotify }: UseExportLedgerArgs) {
+export function useExportLedger({
+  entries,
+  theirName,
+  defaultMyName,
+  cycles = [],
+  initialCycle = null,
+  notify = defaultNotify,
+}: UseExportLedgerArgs) {
   const stored = useMemo(() => readStoredPrefs(), []);
 
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(entries.map((e) => e.id)));
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => {
+    const start = initialCycle !== null && cycles.some((c) => c.number === initialCycle) ? initialCycle : null;
+    return new Set((start === null ? entries : entries.filter((e) => e.cycle === start)).map((e) => e.id));
+  });
   const [myName, setMyName] = useState(() => stored.myName ?? defaultMyName ?? '');
   const [theirNameInput, setTheirNameInput] = useState(theirName);
   const [toggles, setToggles] = useState<LendingExportToggles>(() => ({
@@ -95,8 +109,17 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = de
   }, [myName, toggles]);
 
   // --- selection -----------------------------------------------------------
-  const sinceSettled = useMemo(() => sinceLastSettledIds(entries), [entries]);
-  const sinceSettledAvailable = sinceSettled.size > 0 && sinceSettled.size < entries.length;
+  const cycleIds = useMemo(() => {
+    const byCycle = new Map<number, Set<string>>();
+    for (const e of entries) {
+      if (e.cycle === undefined) continue;
+      const ids = byCycle.get(e.cycle) ?? new Set<string>();
+      ids.add(e.id);
+      byCycle.set(e.cycle, ids);
+    }
+    return byCycle;
+  }, [entries]);
+  const cyclesAvailable = cycles.length > 1;
 
   const toggleEntry = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -108,11 +131,16 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = de
   }, []);
   const selectAll = useCallback(() => setSelectedIds(new Set(entries.map((e) => e.id))), [entries]);
   const selectNone = useCallback(() => setSelectedIds(new Set()), []);
-  const selectSinceSettled = useCallback(() => setSelectedIds(new Set(sinceSettled)), [sinceSettled]);
+  const selectCycle = useCallback((number: number) => setSelectedIds(new Set(cycleIds.get(number))), [cycleIds]);
 
   const allSelected = entries.length > 0 && selectedIds.size === entries.length;
   const noneSelected = selectedIds.size === 0;
-  const sinceSettledSelected = sinceSettledAvailable && setsEqual(selectedIds, sinceSettled);
+  // The cycle whose entries are exactly the selection (null once the selection is anything else).
+  const selectedCycle =
+    cycles.find((c) => {
+      const ids = cycleIds.get(c.number);
+      return ids !== undefined && setsEqual(selectedIds, ids);
+    })?.number ?? null;
 
   // --- opening balance -----------------------------------------------------
   const derived = useMemo(() => derivedOpeningBalance(entries, selectedIds), [entries, selectedIds]);
@@ -190,11 +218,12 @@ export function useExportLedger({ entries, theirName, defaultMyName, notify = de
     toggleEntry,
     selectAll,
     selectNone,
-    selectSinceSettled,
-    sinceSettledAvailable,
+    cycles,
+    cyclesAvailable,
+    selectCycle,
+    selectedCycle,
     allSelected,
     noneSelected,
-    sinceSettledSelected,
     myName,
     setMyName,
     theirName: theirNameInput,

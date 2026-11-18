@@ -1503,7 +1503,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description The person's entries newest first with a running balance, plus totals. */
+        /** @description The person's entries newest first with a running balance, plus totals and the derived cycles (newest first). cycle=all (default) returns every entry; latest the newest cycle; a positive number that cycle (falls back to latest when it does not exist); anything else is 400. Totals follow the selected cycle. */
         get: operations["getCounterpartyLedger"];
         put?: never;
         post?: never;
@@ -6961,7 +6961,10 @@ export interface components {
             subject?: string | null;
         };
         CounterpartyLedgerResponse: {
+            cycles: components["schemas"]["LendingCycleResponse"][];
             entries: components["schemas"]["PageLedgerEntryResponse"];
+            /** Format: int32 */
+            selectedCycle?: number | null;
             totals: components["schemas"]["Totals"];
         };
         CounterpartyMatchSuggestionsResponse: {
@@ -8927,6 +8930,8 @@ export interface components {
             counterpartyName: string;
             /** Format: date-time */
             createdAt: string;
+            /** Format: int32 */
+            cycle: number;
             /** @enum {string} */
             direction: "lent" | "borrowed";
             /** Format: date */
@@ -8945,6 +8950,20 @@ export interface components {
             transaction?: components["schemas"]["LendingTransactionSummary"];
             /** Format: uuid */
             transactionId?: string | null;
+        };
+        LendingCycleResponse: {
+            closing: number;
+            /** Format: date */
+            endDate: string;
+            /** Format: int32 */
+            entryCount: number;
+            lent: number;
+            /** Format: int32 */
+            number: number;
+            received: number;
+            settled: boolean;
+            /** Format: date */
+            startDate: string;
         };
         LendingMatchSuggestion: {
             amount: number;
@@ -16035,6 +16054,7 @@ export interface operations {
     getCounterpartyLedger: {
         parameters: {
             query?: {
+                cycle?: string;
                 /** @description Zero-based page index (0..N) */
                 page?: number;
                 /** @description The size of the page to be returned */
@@ -19716,7 +19736,9 @@ export interface operations {
                 search?: string;
                 sort?: string;
                 dir?: string;
+                /** @description Zero-based page; ignored when size is omitted */
                 page?: number;
+                /** @description Page size (default 50, max 200 when given). Omit to return all matching rows in one page. */
                 size?: number;
             };
             header?: never;

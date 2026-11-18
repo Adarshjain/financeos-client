@@ -24,6 +24,8 @@ export type ObligationItemDto = Schemas['ObligationItemDto'];
 
 // Not (yet) named exports on '@/lib/api/types' — aliased directly off Schemas
 // rather than editing that shared file, which this feature doesn't own.
+/** One derived lending cycle: zero balance to the next zero balance. */
+export type LendingCycleResponse = Schemas['LendingCycleResponse'];
 export type LendingTransactionSummary = Schemas['LendingTransactionSummary'];
 export type LinkLendingTransactionRequest = Schemas['LinkLendingTransactionRequest'];
 export type CounterpartySuggestionResponse = Schemas['CounterpartySuggestionResponse'];

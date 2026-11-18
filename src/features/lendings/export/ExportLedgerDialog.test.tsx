@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { LendingCycleResponse } from '@/lib/lending.types';
 import type { ExportableEntry } from '@/lib/lendingExport';
 
 const toast = vi.fn();
@@ -23,18 +24,22 @@ function entry(
   return { id, entryDate, direction, kind, amount, runningBalance, ...extra };
 }
 
-/** Never hits zero, so "Since last settled" would equal All and stays hidden. */
+/** One open cycle. */
 const OPEN_LEDGER: ExportableEntry[] = [
   entry('e1', '2026-01-05', 'lent', 'principal', 5000, 5000, { notes: 'Dinner' }),
   entry('e2', '2026-01-18', 'borrowed', 'settlement', 2000, 3000),
   entry('e3', '2026-02-02', 'lent', 'principal', 1000, 4000, { expectedReturnDate: '2026-03-01' }),
 ];
 
-/** Settled once in the middle, so "Since last settled" picks the tail. */
+/** Settled once in the middle: cycle 1 is settled, cycle 2 is open. */
 const CYCLED_LEDGER: ExportableEntry[] = [
-  entry('c1', '2025-11-12', 'lent', 'principal', 3000, 3000),
-  entry('c2', '2025-11-20', 'borrowed', 'settlement', 3000, 0),
-  entry('c3', '2026-01-05', 'lent', 'principal', 5000, 5000),
+  entry('c1', '2025-11-12', 'lent', 'principal', 3000, 3000, { cycle: 1 }),
+  entry('c2', '2025-11-20', 'borrowed', 'settlement', 3000, 0, { cycle: 1 }),
+  entry('c3', '2026-01-05', 'lent', 'principal', 5000, 5000, { cycle: 2 }),
+];
+const CYCLES: LendingCycleResponse[] = [
+  { number: 2, startDate: '2026-01-05', endDate: '2026-01-05', settled: false, entryCount: 1, lent: 5000, received: 0, closing: 5000 },
+  { number: 1, startDate: '2025-11-12', endDate: '2025-11-20', settled: true, entryCount: 2, lent: 3000, received: 3000, closing: 0 },
 ];
 
 function renderDialog(over: Partial<React.ComponentProps<typeof ExportLedgerDialog>> = {}) {
@@ -133,17 +138,65 @@ describe('entries choice', () => {
     expect(button('Copy')).toBeEnabled();
   });
 
-  it('offers Since last settled only when the ledger was settled part-way, and it picks the tail', () => {
-    renderDialog();
+  it('has no Since last settled link and no Cycle picker when no cycles are passed', () => {
+    renderDialog({ entries: CYCLED_LEDGER });
     expect(screen.queryByRole('button', { name: 'Since last settled' })).toBeNull();
+    expect(screen.queryByRole('combobox', { name: 'Cycle' })).toBeNull();
+    expect(screen.getByTestId('export-selected-count')).toHaveTextContent('3 selected');
+  });
+});
+
+describe('cycles', () => {
+  const pick = async (label: string) => {
+    fireEvent.click(screen.getByRole('combobox', { name: 'Cycle' }));
+    fireEvent.click(await screen.findByRole('option', { name: label }));
+  };
+
+  it('is not offered with a single cycle', () => {
+    renderDialog({ entries: OPEN_LEDGER.map((e) => ({ ...e, cycle: 1 })), cycles: [CYCLES[1]] });
+    expect(screen.queryByRole('combobox', { name: 'Cycle' })).toBeNull();
   });
 
-  it('Since last settled keeps the entries after the last zero balance', () => {
-    renderDialog({ entries: CYCLED_LEDGER });
-    fireEvent.click(button('Since last settled'));
+  it('starts with every entry and the placeholder when no initial cycle is given', () => {
+    renderDialog({ entries: CYCLED_LEDGER, cycles: CYCLES });
+    expect(screen.getByTestId('export-selected-count')).toHaveTextContent('3 selected');
+    expect(screen.getByRole('combobox', { name: 'Cycle' })).toHaveTextContent('Cycle');
+  });
+
+  it('starts with only the initial cycle ticked and shows it as the value', () => {
+    renderDialog({ entries: CYCLED_LEDGER, cycles: CYCLES, initialCycle: 2 });
     expect(screen.getByTestId('export-selected-count')).toHaveTextContent('1 selected');
+    expect(screen.getByRole('combobox', { name: 'Cycle' })).toHaveTextContent('Cycle 2 · from 5 Jan 26');
     expect(preview()).toContain('Adarsh lent Rahul · ₹5,000.00');
-    expect(preview()).not.toContain('₹3,000.00 ');
+  });
+
+  it('starts with every entry when the initial cycle does not exist or is null', () => {
+    renderDialog({ entries: CYCLED_LEDGER, cycles: CYCLES, initialCycle: 9 });
+    expect(screen.getByTestId('export-selected-count')).toHaveTextContent('3 selected');
+    cleanup();
+    renderDialog({ entries: CYCLED_LEDGER, cycles: CYCLES, initialCycle: null });
+    expect(screen.getByTestId('export-selected-count')).toHaveTextContent('3 selected');
+  });
+
+  it('picking a cycle selects exactly its entries, with the labels from the cycle dates', async () => {
+    renderDialog({ entries: CYCLED_LEDGER, cycles: CYCLES });
+    fireEvent.click(screen.getByRole('combobox', { name: 'Cycle' }));
+    expect(await screen.findByRole('option', { name: 'Cycle 2 · from 5 Jan 26' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Cycle 1 · 12 Nov 25 – 20 Nov 25' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('option', { name: 'Cycle 1 · 12 Nov 25 – 20 Nov 25' }));
+    expect(screen.getByTestId('export-selected-count')).toHaveTextContent('2 selected');
+    expect(preview()).toContain('Adarsh lent Rahul · ₹3,000.00');
+    expect(preview()).not.toContain('₹5,000.00');
+  });
+
+  it('goes back to the placeholder after a manual change of the selection', async () => {
+    renderDialog({ entries: CYCLED_LEDGER, cycles: CYCLES, initialCycle: 2 });
+    fireEvent.click(screen.getAllByRole('checkbox')[0]);
+    expect(screen.getByRole('combobox', { name: 'Cycle' })).toHaveTextContent('Cycle');
+    expect(screen.getByRole('combobox', { name: 'Cycle' })).not.toHaveTextContent('from 5 Jan 26');
+    await pick('Cycle 1 · 12 Nov 25 – 20 Nov 25');
+    fireEvent.click(button('All'));
+    expect(screen.getByRole('combobox', { name: 'Cycle' })).not.toHaveTextContent('12 Nov 25');
   });
 });
 

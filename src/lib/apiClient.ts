@@ -703,10 +703,10 @@ export const counterpartiesApi = {
     const { data } = await serverApi.GET('/api/v1/counterparties/{id}', { params: { path: { id } } });
     return data! as CounterpartyResponse;
   },
-  /** One page of the person's entries, newest first, each with the balance after it, plus the totals over all. */
-  ledger: async (id: string, page = 0, size = 25): Promise<CounterpartyLedgerResponse> => {
+  /** One page of the person's entries, newest first, each with the balance after it, plus the cycles and the totals of the selected cycle (`cycle`: all, latest or a number). */
+  ledger: async (id: string, page = 0, size = 25, cycle?: string): Promise<CounterpartyLedgerResponse> => {
     const { data } = await serverApi.GET('/api/v1/counterparties/{id}/ledger', {
-      params: { path: { id }, query: { page, size } },
+      params: { path: { id }, query: { page, size, ...(cycle ? { cycle } : {}) } },
     });
     return data! as CounterpartyLedgerResponse;
   },

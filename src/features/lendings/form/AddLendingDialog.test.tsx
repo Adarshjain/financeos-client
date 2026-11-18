@@ -248,4 +248,14 @@ describe('AddLendingDialog', () => {
     save();
     await waitFor(() => expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ counterpartyId: 'p9' })));
   });
+
+  it('runs onRecorded instead of refreshing when the page gave one', async () => {
+    const onRecorded = vi.fn();
+    render(<AddLendingDialog onClose={onClose} onRecorded={onRecorded} initialPerson={cp({ id: 'p9', name: 'Meera Rao' })} />);
+    fireEvent.change(amount(), { target: { value: '100' } });
+    save();
+    await waitFor(() => expect(onRecorded).toHaveBeenCalledTimes(1));
+    expect(onClose).toHaveBeenCalled();
+    expect(router.refresh).not.toHaveBeenCalled();
+  });
 });

@@ -27,10 +27,22 @@ const TODAY = '2026-10-13';
 
 describe('URL state', () => {
   it('parses defaults and rejects junk', () => {
-    expect(parsePersonUrl({})).toEqual({ page: 0, size: 25 });
-    expect(parsePersonUrl({ page: '3', size: '50' })).toEqual({ page: 2, size: 50 });
-    expect(parsePersonUrl({ page: '-1', size: '10' })).toEqual({ page: 0, size: 25 });
-    expect(parsePersonUrl({ page: 'x' })).toEqual({ page: 0, size: 25 });
+    expect(parsePersonUrl({})).toEqual({ page: 0, size: 25, cycle: 'latest' });
+    expect(parsePersonUrl({ page: '3', size: '50' })).toEqual({ page: 2, size: 50, cycle: 'latest' });
+    expect(parsePersonUrl({ page: '-1', size: '10' })).toEqual({ page: 0, size: 25, cycle: 'latest' });
+    expect(parsePersonUrl({ page: 'x' })).toEqual({ page: 0, size: 25, cycle: 'latest' });
+  });
+
+  it('reads the cycle: absent or invalid is latest, all or a positive number is kept', () => {
+    expect(parsePersonUrl({ cycle: 'all' }).cycle).toBe('all');
+    expect(parsePersonUrl({ cycle: '2' }).cycle).toBe(2);
+    for (const junk of ['0', '-1', '1.5', 'abc', '', 'latest', '2x']) expect(parsePersonUrl({ cycle: junk }).cycle).toBe('latest');
+    expect(parsePersonUrl({ cycle: ['3', '4'] }).cycle).toBe(3);
+  });
+
+  it('writes the cycle into the URL, leaving latest out', () => {
+    expect(personUrl('p1', { page: 0, size: 25, cycle: 'all' })).toBe('/lending/p1?cycle=all');
+    expect(personUrl('p1', { page: 1, size: 50, cycle: 2 })).toBe('/lending/p1?page=2&size=50&cycle=2');
   });
 
   it('opens Export ledger only for ?export=1', () => {
@@ -42,8 +54,8 @@ describe('URL state', () => {
 
   it('builds the person URL on the Dinero page with defaults left out', () => {
     expect(personHref('p1')).toBe('/lending/p1');
-    expect(personUrl('p1', { page: 0, size: 25 })).toBe('/lending/p1');
-    expect(personUrl('p1', { page: 2, size: 50 })).toBe('/lending/p1?page=3&size=50');
+    expect(personUrl('p1', { page: 0, size: 25, cycle: 'latest' })).toBe('/lending/p1');
+    expect(personUrl('p1', { page: 2, size: 50, cycle: 'latest' })).toBe('/lending/p1?page=3&size=50');
   });
 });
 
@@ -172,6 +184,16 @@ describe('confirm copy', () => {
     ]);
     expect(deleteEntryCopy(entriesFixture()[1])).toMatchObject({ description: 'This lent entry of ₹25,000 goes.' });
     expect(deleteEntryCopy(entriesFixture()[1]).impact).toHaveLength(1);
+  });
+
+  it('adds the settled-cycle impact line to the delete copy only when asked', () => {
+    const line = 'It is in a settled cycle: that cycle is worked out again and can reopen.';
+    expect(deleteEntryCopy(entriesFixture()[1], true).impact).toEqual([
+      'The entry leaves the ledger and the balance is worked out again.',
+      line,
+    ]);
+    expect(deleteEntryCopy(entriesFixture()[1], false).impact).not.toContain(line);
+    expect(deleteEntryCopy(entriesFixture()[1]).impact).not.toContain(line);
   });
 
   it('says the whole ledger goes when a person is deleted', () => {

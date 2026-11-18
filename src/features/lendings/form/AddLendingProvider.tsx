@@ -12,8 +12,8 @@ interface AddLendingApi {
   /** Opens Add lending in place; the URL never changes. The first press loads the dialog code; resolves to whether it opened.
    * `beforeOpen` runs in the same update that opens it (e.g. closing the sheet that launched it). */
   open: (options?: { beforeOpen?: () => void }) => Promise<boolean>;
-  /** Opens it with this person already picked (a person's own page). */
-  openFor: (person: CounterpartyResponse) => Promise<boolean>;
+  /** Opens it with this person already picked (a person's own page). `onRecorded` runs after the entry is saved, instead of the default page refresh. */
+  openFor: (person: CounterpartyResponse, options?: { onRecorded?: () => void }) => Promise<boolean>;
   /** Starts loading the dialog code; call it on pointerdown of a trigger. */
   preload: () => void;
   /** True while a press waits for the dialog code: the pressed control shows its loading state. */
@@ -38,6 +38,7 @@ export function useAddLending(): AddLendingApi {
 export function AddLendingProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
   const [person, setPerson] = React.useState<CounterpartyResponse | undefined>(undefined);
+  const [onRecorded, setOnRecorded] = React.useState<(() => void) | undefined>(undefined);
   const { Component: AddLendingDialog, run, preload, loading } = useLazyDialog(loadAddLendingDialog);
   const api = React.useMemo<AddLendingApi>(
     () => ({
@@ -45,11 +46,13 @@ export function AddLendingProvider({ children }: { children: React.ReactNode }) 
         run(() => {
           options?.beforeOpen?.();
           setPerson(undefined);
+          setOnRecorded(undefined);
           setOpen(true);
         }),
-      openFor: (p) =>
+      openFor: (p, options) =>
         run(() => {
           setPerson(p);
+          setOnRecorded(options?.onRecorded ? () => options.onRecorded : undefined);
           setOpen(true);
         }),
       preload,
@@ -60,7 +63,7 @@ export function AddLendingProvider({ children }: { children: React.ReactNode }) 
   return (
     <AddLendingContext.Provider value={api}>
       {children}
-      {open && AddLendingDialog ? <AddLendingDialog initialPerson={person} onClose={() => setOpen(false)} /> : null}
+      {open && AddLendingDialog ? <AddLendingDialog initialPerson={person} onRecorded={onRecorded} onClose={() => setOpen(false)} /> : null}
     </AddLendingContext.Provider>
   );
 }

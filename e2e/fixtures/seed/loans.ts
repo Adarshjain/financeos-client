@@ -302,6 +302,7 @@ export async function addLending(
     counterpartyId?: string;
     newCounterpartyName?: string;
     direction?: 'lent' | 'borrowed';
+    kind?: 'principal' | 'settlement';
     amount?: number;
     entryDate?: string;
     expectedReturnDate?: string;
@@ -311,6 +312,7 @@ export async function addLending(
 ): Promise<LendingResponse> {
   const body: CreateLendingRequest = {
     direction: options.direction ?? 'lent',
+    kind: options.kind,
     amount: options.amount ?? 10000,
     entryDate: options.entryDate ?? monthsAgo(1),
     expectedReturnDate: options.expectedReturnDate,

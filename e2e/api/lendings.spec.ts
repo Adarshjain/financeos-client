@@ -283,4 +283,69 @@ test.describe('Lendings and Counterparties API (@api)', () => {
     await expectUnauthenticated('DELETE', `/api/v1/lendings/${lending.id}`);
     await expectUnauthenticated('GET', '/api/v1/obligations/upcoming');
   });
+
+  test('Ledger cycles: lent, full repayment, lent again gives two cycles and cycle filters the entries', async ({ api }) => {
+    const cp = await createCounterparty(api, { name: `Cycle Person ${Date.now()}` });
+    await addLending(api, { counterpartyId: cp.id, direction: 'lent', amount: 10000, entryDate: monthsAgo(3) });
+    await addLending(api, { counterpartyId: cp.id, direction: 'borrowed', kind: 'settlement', amount: 10000, entryDate: monthsAgo(2) });
+    await addLending(api, { counterpartyId: cp.id, direction: 'lent', amount: 4000, entryDate: monthsAgo(1) });
+    const ledger = (cycle?: string) =>
+      api.GET('/api/v1/counterparties/{id}/ledger', { params: { path: { id: cp.id }, query: cycle ? { cycle } : {} } });
+
+    // No cycle param: every entry, totals over all, selectedCycle null.
+    const all = await ledger();
+    expect(all.response.status).toBe(200);
+    expect(all.data!.entries.content.map((e) => e.cycle)).toEqual([2, 1, 1]);
+    expect(all.data!.selectedCycle).toBeNull();
+    expect(all.data!.totals).toMatchObject({ lent: 14000, received: 10000, closing: 4000 });
+
+    // Cycles, newest first.
+    const [open, settled] = all.data!.cycles;
+    expect(all.data!.cycles).toHaveLength(2);
+    expect(open).toMatchObject({ number: 2, startDate: monthsAgo(1), settled: false, entryCount: 1, lent: 4000, received: 0, closing: 4000 });
+    expect(settled).toMatchObject({
+      number: 1,
+      startDate: monthsAgo(3),
+      endDate: monthsAgo(2),
+      settled: true,
+      entryCount: 2,
+      lent: 10000,
+      received: 10000,
+      closing: 0,
+    });
+
+    // latest = newest cycle, totals follow it.
+    const latest = await ledger('latest');
+    expect(latest.data!.entries.content).toHaveLength(1);
+    expect(latest.data!.selectedCycle).toBe(2);
+    expect(latest.data!.totals).toMatchObject({ lent: 4000, received: 0, closing: 4000 });
+    expect(latest.data!.cycles).toHaveLength(2);
+
+    // A number picks that cycle.
+    const first = await ledger('1');
+    expect(first.data!.entries.content).toHaveLength(2);
+    expect(first.data!.entries.content.every((e) => e.cycle === 1)).toBe(true);
+    expect(first.data!.selectedCycle).toBe(1);
+    expect(first.data!.totals).toMatchObject({ lent: 10000, received: 10000, closing: 0 });
+
+    // all = every entry; a cycle that does not exist falls back to latest; junk is a 400.
+    const everything = await ledger('all');
+    expect(everything.data!.entries.content).toHaveLength(3);
+    expect(everything.data!.selectedCycle).toBeNull();
+    const missing = await ledger('99');
+    expect(missing.data!.selectedCycle).toBe(2);
+    expect(missing.data!.entries.content).toHaveLength(1);
+    expect((await ledger('abc')).response.status).toBe(400);
+  });
+
+  test('Ledger cycles: an expected return date inside a settled cycle no longer counts once a new cycle is open', async ({ api }) => {
+    const cp = await createCounterparty(api, { name: `Cycle Return ${Date.now()}` });
+    const expected = monthsAhead(1);
+    await addLending(api, { counterpartyId: cp.id, direction: 'lent', amount: 6000, entryDate: monthsAgo(3), expectedReturnDate: expected });
+    expect((await getCounterparty(api, cp.id))!.expectedReturnDate).toBe(expected);
+
+    await addLending(api, { counterpartyId: cp.id, direction: 'borrowed', kind: 'settlement', amount: 6000, entryDate: monthsAgo(2) });
+    await addLending(api, { counterpartyId: cp.id, direction: 'lent', amount: 1500, entryDate: monthsAgo(1) });
+    expect((await getCounterparty(api, cp.id))!.expectedReturnDate ?? null).toBeNull();
+  });
 });

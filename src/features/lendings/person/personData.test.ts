@@ -28,12 +28,12 @@ beforeEach(() => {
 
 describe('loadPersonPage', () => {
   it('asks the server only for the page in the URL', async () => {
-    const data = await loadPersonPage('p1', { page: 1, size: 3 });
+    const data = await loadPersonPage('p1', { page: 1, size: 3, cycle: 'latest' });
     expect(get).toHaveBeenCalledWith('p1');
     expect(ledger).toHaveBeenCalledTimes(1);
-    expect(ledger).toHaveBeenCalledWith('p1', 1, 3);
+    expect(ledger).toHaveBeenCalledWith('p1', 1, 3, 'latest');
     expect(data.cp.name).toBe('Rahul Sharma');
-    expect(data.state).toEqual({ page: 1, size: 3 });
+    expect(data.state).toEqual({ page: 1, size: 3, cycle: 'latest' });
   });
 
   it('shows the last page when the URL is past the end', async () => {
@@ -41,53 +41,86 @@ describe('loadPersonPage', () => {
       ...ledgerFixture(entriesFixture().slice(0, 1), 2),
       pageAsked: page,
     }));
-    const data = await loadPersonPage('p1', { page: 99, size: 3 });
-    expect(ledger).toHaveBeenNthCalledWith(1, 'p1', 99, 3);
-    expect(ledger).toHaveBeenNthCalledWith(2, 'p1', 1, 3);
-    expect(data.state).toEqual({ page: 1, size: 3 });
+    const data = await loadPersonPage('p1', { page: 99, size: 3, cycle: 'latest' });
+    expect(ledger).toHaveBeenNthCalledWith(1, 'p1', 99, 3, 'latest');
+    expect(ledger).toHaveBeenNthCalledWith(2, 'p1', 1, 3, 'latest');
+    expect(data.state).toEqual({ page: 1, size: 3, cycle: 'latest' });
     expect(data.ledger).toMatchObject({ pageAsked: 1 });
   });
 
   it('does not clamp for a person without entries', async () => {
     get.mockResolvedValue(personFixture({ entryCount: 0 }));
     ledger.mockResolvedValue(ledgerFixture([], 0));
-    const data = await loadPersonPage('p1', { page: 5, size: 25 });
+    const data = await loadPersonPage('p1', { page: 5, size: 25, cycle: 'latest' });
     expect(ledger).toHaveBeenCalledTimes(1);
     expect(data.state.page).toBe(5);
   });
 
   it('is a 404 for a person who does not exist', async () => {
     get.mockRejectedValue(new ApiError(404, { code: 'NOT_FOUND', message: 'no', timestamp: 'x' }));
-    await expect(loadPersonPage('p1', { page: 0, size: 25 })).rejects.toThrow('NEXT_NOT_FOUND');
+    await expect(loadPersonPage('p1', { page: 0, size: 25, cycle: 'latest' })).rejects.toThrow('NEXT_NOT_FOUND');
     expect(notFound).toHaveBeenCalled();
   });
 
   it('starts the person and the ledger together, before either resolves', async () => {
     let releaseGet!: (v: unknown) => void;
     get.mockReturnValue(new Promise((r) => (releaseGet = r)));
-    const pending = loadPersonPage('p1', { page: 0, size: 3 });
+    const pending = loadPersonPage('p1', { page: 0, size: 3, cycle: 'latest' });
     await Promise.resolve();
     expect(get).toHaveBeenCalledTimes(1);
     expect(ledger).toHaveBeenCalledTimes(1);
     releaseGet(personFixture({ entryCount: 4 }));
-    await expect(pending).resolves.toMatchObject({ state: { page: 0, size: 3 } });
+    await expect(pending).resolves.toMatchObject({ state: { page: 0, size: 3, cycle: 'latest' } });
   });
 
   it('keeps the 404 of the person when the ledger fails too', async () => {
     get.mockRejectedValue(new ApiError(404, { code: 'NOT_FOUND', message: 'no', timestamp: 'x' }));
     ledger.mockRejectedValue(new ApiError(500, { code: 'X', message: 'boom', timestamp: 'x' }));
-    await expect(loadPersonPage('p1', { page: 0, size: 25 })).rejects.toThrow('NEXT_NOT_FOUND');
+    await expect(loadPersonPage('p1', { page: 0, size: 25, cycle: 'latest' })).rejects.toThrow('NEXT_NOT_FOUND');
   });
 
   it('is a 404 too when the server rejects the id itself (400)', async () => {
     get.mockRejectedValue(new ApiError(400, { code: 'BAD', message: 'no', timestamp: 'x' }));
-    await expect(loadPersonPage('nope', { page: 0, size: 25 })).rejects.toThrow('NEXT_NOT_FOUND');
+    await expect(loadPersonPage('nope', { page: 0, size: 25, cycle: 'latest' })).rejects.toThrow('NEXT_NOT_FOUND');
     expect(notFound).toHaveBeenCalled();
   });
 
   it('lets any other failure through to the route error state', async () => {
     get.mockRejectedValue(new ApiError(500, { code: 'X', message: 'boom', timestamp: 'x' }));
-    await expect(loadPersonPage('p1', { page: 0, size: 25 })).rejects.toThrow();
+    await expect(loadPersonPage('p1', { page: 0, size: 25, cycle: 'latest' })).rejects.toThrow();
     expect(notFound).not.toHaveBeenCalled();
+  });
+
+  it('sends the cycle on the first request and keeps it on the page-clamp re-request', async () => {
+    ledger.mockImplementation(async (_id: string, page: number) => ({
+      ...ledgerFixture(entriesFixture().slice(0, 1), 2, 1),
+      pageAsked: page,
+    }));
+    const data = await loadPersonPage('p1', { page: 9, size: 3, cycle: 1 });
+    expect(ledger).toHaveBeenNthCalledWith(1, 'p1', 9, 3, '1');
+    expect(ledger).toHaveBeenNthCalledWith(2, 'p1', 1, 3, '1');
+    expect(data.state).toEqual({ page: 1, size: 3, cycle: 1 });
+  });
+
+  it('sends all as all, and keeps it', async () => {
+    ledger.mockResolvedValue(ledgerFixture(entriesFixture(), 1, null));
+    const data = await loadPersonPage('p1', { page: 0, size: 25, cycle: 'all' });
+    expect(ledger).toHaveBeenCalledTimes(1);
+    expect(ledger).toHaveBeenCalledWith('p1', 0, 25, 'all');
+    expect(data.state.cycle).toBe('all');
+  });
+
+  it('turns a numbered cycle the server fell back from into latest', async () => {
+    ledger.mockResolvedValue(ledgerFixture(entriesFixture(), 1, 2));
+    const data = await loadPersonPage('p1', { page: 0, size: 25, cycle: 99 });
+    expect(ledger).toHaveBeenCalledTimes(1);
+    expect(ledger).toHaveBeenCalledWith('p1', 0, 25, '99');
+    expect(data.state.cycle).toBe('latest');
+  });
+
+  it('keeps a numbered cycle the server honoured', async () => {
+    ledger.mockResolvedValue(ledgerFixture(entriesFixture(), 1, 1));
+    const data = await loadPersonPage('p1', { page: 0, size: 25, cycle: 1 });
+    expect(data.state.cycle).toBe(1);
   });
 });

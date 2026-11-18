@@ -15,10 +15,18 @@ export const LEDGER_SIZE_OPTIONS = [25, 50, 100];
 export interface PersonUrlState {
   page: number;
   size: number;
+  /** Which cycle of the ledger to show: the newest (default), every entry, or one by number. */
+  cycle: 'latest' | 'all' | number;
+}
+
+/** `?cycle=all` or a positive whole number; absent or anything else is the newest cycle. */
+function parseCycle(raw: string | undefined): PersonUrlState['cycle'] {
+  if (raw === 'all') return 'all';
+  return raw !== undefined && /^[1-9]\d*$/.test(raw) ? Number(raw) : 'latest';
 }
 
 export function parsePersonUrl(params: SearchParamsRecord): PersonUrlState {
-  return parsePage(params, { sizes: LEDGER_SIZE_OPTIONS });
+  return { ...parsePage(params, { sizes: LEDGER_SIZE_OPTIONS }), cycle: parseCycle(first(params.cycle)) };
 }
 
 /** `?export=1` (from the "money due back" push) opens Export ledger on load. */
@@ -36,6 +44,7 @@ export function personUrl(id: string, state: PersonUrlState): string {
   const query = new URLSearchParams();
   setPageParam(query, state.page);
   if (state.size !== DEFAULT_PAGE_SIZE) query.set('size', String(state.size));
+  if (state.cycle !== 'latest') query.set('cycle', String(state.cycle));
   const text = query.toString();
   return text ? `${personHref(id)}?${text}` : personHref(id);
 }
@@ -158,7 +167,10 @@ export function linkedLine(entryCount: number, linkedEntryCount: number): string
 }
 
 /** "Delete this repayment entry of ₹10,000?" copy for the delete confirm. */
-export function deleteEntryCopy(entry: LedgerEntryResponse): { description: string; impact: string[] } {
+export function deleteEntryCopy(
+  entry: LedgerEntryResponse,
+  inSettledCycle = false,
+): { description: string; impact: string[] } {
   const type = toEntryType(entry.direction, entry.kind);
   const noun = isSettlementType(type) ? 'repayment' : entry.direction;
   return {
@@ -166,6 +178,7 @@ export function deleteEntryCopy(entry: LedgerEntryResponse): { description: stri
     impact: [
       'The entry leaves the ledger and the balance is worked out again.',
       ...(entry.transaction ? ['The bank transaction stays; only its link to this entry goes.'] : []),
+      ...(inSettledCycle ? ['It is in a settled cycle: that cycle is worked out again and can reopen.'] : []),
     ],
   };
 }

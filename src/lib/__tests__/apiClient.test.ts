@@ -7,6 +7,7 @@ import {
   authApi,
   cardholdersApi,
   categoryListApi,
+  counterpartiesApi,
   dashboardsApi,
   gmailApi,
   investmentsApi,
@@ -107,6 +108,22 @@ describe('apiClient (Server API Client Modernization & Coverage)', () => {
 
       fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'd1', name: 'Main' }));
       expect(await dashboardsApi.get('d1')).toEqual({ id: 'd1', name: 'Main' });
+    });
+  });
+
+  describe('counterpartiesApi.ledger', () => {
+    const askedUrl = () => {
+      const arg = (fetchSpy.mock.calls.at(-1) as unknown[])[0];
+      return new URL(arg instanceof Request ? arg.url : String(arg));
+    };
+
+    it('sends the cycle only when given', async () => {
+      await counterpartiesApi.ledger('p1', 0, 25, 'latest');
+      expect(askedUrl().searchParams.get('cycle')).toBe('latest');
+      await counterpartiesApi.ledger('p1', 2, 50, '3');
+      expect(askedUrl().searchParams.get('cycle')).toBe('3');
+      await counterpartiesApi.ledger('p1');
+      expect(askedUrl().searchParams.has('cycle')).toBe(false);
     });
   });
 

@@ -1,4 +1,9 @@
-import type { CounterpartyLedgerResponse, LedgerEntryResponse, PersonCounterparty } from '@/lib/lending.types';
+import type {
+  CounterpartyLedgerResponse,
+  LedgerEntryResponse,
+  LendingCycleResponse,
+  PersonCounterparty,
+} from '@/lib/lending.types';
 
 export function personFixture(over: Partial<PersonCounterparty> = {}): PersonCounterparty {
   return {
@@ -24,6 +29,7 @@ export function entryFixture(over: Partial<LedgerEntryResponse> = {}): LedgerEnt
     counterpartyId: 'p1',
     counterpartyName: 'Rahul Sharma',
     createdAt: '2026-08-29T10:00:00Z',
+    cycle: 1,
     direction: 'lent',
     kind: 'principal',
     amount: 25000,
@@ -39,6 +45,7 @@ export function entriesFixture(): LedgerEntryResponse[] {
   return [
     entryFixture({
       id: 'e3',
+      cycle: 2,
       direction: 'borrowed',
       kind: 'settlement',
       amount: 10000,
@@ -47,13 +54,37 @@ export function entriesFixture(): LedgerEntryResponse[] {
       notes: 'Part repayment',
       transaction: { id: 't1', accountId: 'a1', accountName: 'HDFC Savings', date: '2026-10-10', description: 'UPI from Rahul Sharma', signedAmount: 10000 },
     }),
-    entryFixture({ id: 'e2', amount: 25000, runningBalance: 25000, expectedReturnDate: '2026-10-28' }),
+    entryFixture({ id: 'e2', cycle: 2, amount: 25000, runningBalance: 25000, expectedReturnDate: '2026-10-28' }),
     entryFixture({ id: 'e1b', direction: 'borrowed', kind: 'settlement', amount: 1800, entryDate: '2026-05-09', runningBalance: 0, notes: null }),
     entryFixture({ id: 'e1', amount: 1800, entryDate: '2026-05-02', runningBalance: 1800, notes: 'Dinner split' }),
   ];
 }
 
-export function ledgerFixture(entries = entriesFixture(), totalPages = 1): CounterpartyLedgerResponse {
+/** The cycles of newest-first entries, newest first; a cycle is settled when its newest entry leaves a zero balance. */
+export function cyclesFixture(entries: LedgerEntryResponse[]): LendingCycleResponse[] {
+  const numbers = [...new Set(entries.map((e) => e.cycle))].sort((a, b) => b - a);
+  return numbers.map((number) => {
+    const own = entries.filter((e) => e.cycle === number);
+    const lent = own.filter((e) => e.direction === 'lent').reduce((sum, e) => sum + e.amount, 0);
+    const received = own.filter((e) => e.direction === 'borrowed').reduce((sum, e) => sum + e.amount, 0);
+    return {
+      number,
+      startDate: own[own.length - 1].entryDate,
+      endDate: own[0].entryDate,
+      settled: own[0].runningBalance === 0,
+      entryCount: own.length,
+      lent,
+      received,
+      closing: own[0].runningBalance,
+    };
+  });
+}
+
+export function ledgerFixture(
+  entries = entriesFixture(),
+  totalPages = 1,
+  selectedCycle: number | null = null,
+): CounterpartyLedgerResponse {
   return {
     entries: {
       content: entries,
@@ -68,6 +99,8 @@ export function ledgerFixture(entries = entriesFixture(), totalPages = 1): Count
       pageable: {} as never,
       sort: [],
     },
+    cycles: cyclesFixture(entries),
+    selectedCycle,
     totals: { lent: 26800, received: 11800, closing: 15000 },
   };
 }

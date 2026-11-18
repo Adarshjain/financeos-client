@@ -79,6 +79,11 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
   const [navPending, startNav] = React.useTransition();
   const go = (next: Partial<PersonUrlState>) =>
     startNav(() => router.replace(personUrl(cp.id, { ...state, ...next }), { scroll: false }));
+  // A new entry or settlement lands in the newest cycle: from an older one, go there so it shows.
+  const afterRecorded = () => (typeof state.cycle === 'number' ? go({ cycle: 'latest', page: 0 }) : router.refresh());
+  const selectedCycle = ledger.selectedCycle ?? null;
+  const settledEntry = (entry: LedgerEntryResponse) =>
+    ledger.cycles.find((c) => c.number === entry.cycle)?.settled === true;
 
   return (
     <>
@@ -92,7 +97,9 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
         }
         backHref={LENDINGS_HREF}
         addLabel="Add entry"
-        onAdd={() => void addLending.openFor(cp)}
+        onAdd={() =>
+          void addLending.openFor(cp, typeof state.cycle === 'number' ? { onRecorded: afterRecorded } : undefined)
+        }
         addLoading={addLending.loading}
       >
         <div className="flex flex-col gap-space-8 desk:gap-space-16">
@@ -133,6 +140,9 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
                 onSizeChange={(size) => go({ size, page: 0 })}
                 onOpenEntry={(row) => void runEditEntry(() => setEditingEntry(row.entry))}
                 onExport={() => setExporting(true)}
+                cycles={ledger.cycles}
+                cycle={state.cycle}
+                onCycleChange={(cycle) => go({ cycle, page: 0 })}
               />
             </div>
             <div className="desk:col-span-5 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
@@ -165,7 +175,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
           name={cp.name}
           direction={cp.netPosition > 0 ? 'lent' : 'borrowed'}
           balance={Math.abs(cp.netPosition)}
-          onRecorded={() => router.refresh()}
+          onRecorded={afterRecorded}
         />
       ) : null}
 
@@ -183,6 +193,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
           key={editingEntry.id}
           entry={editingEntry}
           netPosition={cp.netPosition}
+          inSettledCycle={settledEntry(editingEntry)}
           personName={cp.name}
           submitting={actions.pending.entry}
           onSubmit={actions.updateEntry}
@@ -200,6 +211,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
           entryCount={cp.entryCount}
           theirName={cp.name}
           defaultMyName={myName}
+          initialCycle={selectedCycle}
           onClose={() => setExporting(false)}
         />
       ) : null}
@@ -211,7 +223,7 @@ export function PersonScreen({ cp, ledger, state, today, myName, openExport }: P
             if (!open && !actions.pending.deleteEntry) setDeletingEntry(null);
           }}
           title="Delete entry?"
-          {...deleteEntryCopy(deletingEntry)}
+          {...deleteEntryCopy(deletingEntry, settledEntry(deletingEntry))}
           confirmLabel="Delete"
           confirmLoading={actions.pending.deleteEntry}
           onConfirm={() => {
