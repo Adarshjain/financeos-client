@@ -15,7 +15,7 @@ import { Text } from '@/components/ds/Text/Text';
 import { TextField } from '@/components/ds/TextField/TextField';
 import { fyLabel } from '@/features/investments/investmentsFormatModel';
 import { formatQuantity } from '@/lib/format';
-import type { PagePosition, SellEstimate } from '@/lib/investments.types';
+import type { CorporateActionItem, PagePosition, SellEstimate } from '@/lib/investments.types';
 
 import { loadCorporateActionsPage, loadDividendsPage, loadTradesPage } from './holdingActions';
 import {
@@ -223,19 +223,31 @@ export function CorporateActionsCard({
   instrumentId,
   initial,
   onRecord,
+  onEdit,
+  reloadKey,
 }: {
   instrumentId: string;
   initial: HoldingSection<CorporateActionRowModel>;
   onRecord: () => void;
+  onEdit: (item: CorporateActionItem) => void;
+  /** Changes when a row was edited: the page shown is fetched again. */
+  reloadKey?: number;
 }) {
-  const { section, goTo } = useSectionPage(initial, (page) => loadCorporateActionsPage(instrumentId, page));
+  const { section, goTo, reload } = useSectionPage(initial, (page) => loadCorporateActionsPage(instrumentId, page));
+  const seenKey = React.useRef(reloadKey);
+  React.useEffect(() => {
+    if (seenKey.current === reloadKey) return;
+    seenKey.current = reloadKey;
+    void reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reloadKey]);
   const pager = <SectionPager position={section.position} onPageChange={(page) => void goTo(page)} />;
   return (
     <Card title="Corporate actions" subtitle="Recorded for this holding" action={<Text variant="label" as="div"><ActionButton variant="link" size="sm" onSelect={onRecord}>Record</ActionButton></Text>}>
       {section.rows.length > 0 ? pager : null}
       {section.rows.length === 0 ? <EmptyState compact description="No corporate actions yet" /> : null}
       {section.rows.map((r) => (
-        <ListRow key={r.id} title={r.title} subtitle={r.subtitle} wrap />
+        <ListRow key={r.id} clickable title={r.title} subtitle={r.subtitle} wrap onClick={() => onEdit(r.item)} />
       ))}
       {section.rows.length > 0 ? pager : null}
     </Card>

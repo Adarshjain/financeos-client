@@ -128,5 +128,27 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByText(seeded.infy.symbol, { exact: false })).toHaveCount(0);
       await expect(page.getByText('No corporate actions match')).toBeVisible();
     });
+
+    test('on the holding page a recorded split opens its edit dialog; a new ratio shows in the card, and Delete removes the row', async ({ page }) => {
+      await page.goto(`/investments/${seeded.itc.id}`);
+      await expect(shown(page.getByText('Split 1:3', { exact: true }))).toBeVisible();
+      await shown(page.getByText('Split 1:3', { exact: true })).click();
+
+      const dialog = page.getByRole('dialog');
+      await expect(dialog.getByText('Edit corporate action')).toBeVisible();
+      await expect(dialog.getByRole('textbox', { name: /^After/ })).toHaveValue('3');
+      await dialog.getByRole('textbox', { name: /^After/ }).fill('4');
+      await dialog.getByRole('button', { name: 'Save split' }).click();
+      await expect(page.getByText('Corporate action updated')).toBeVisible();
+      await expect(dialog).toHaveCount(0);
+      await expect(shown(page.getByText('Split 1:4', { exact: true }))).toBeVisible();
+      await expect(page.getByText('Split 1:3', { exact: true })).toHaveCount(0);
+
+      await shown(page.getByText('Split 1:4', { exact: true })).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+      await page.getByRole('dialog', { name: 'Delete corporate action' }).getByRole('button', { name: 'Delete', exact: true }).click();
+      await expect(page.getByText('Corporate action deleted')).toBeVisible();
+      await expect(page.getByText('Split 1:4', { exact: true })).toHaveCount(0);
+    });
   });
 }

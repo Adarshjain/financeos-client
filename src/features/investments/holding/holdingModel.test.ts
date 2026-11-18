@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { HoldingDetail, SellEstimate } from '@/lib/investments.types';
+import type { CorporateAction } from '@/lib/types';
 import { pinClock } from '@/test/pinClock';
 
 import { bonus, buy, dividend, estimate, holding, instrument, manualPrice } from './holding.fixtures';
@@ -106,7 +107,32 @@ describe('section rows', () => {
   });
 
   it('writes a corporate action with its ratio and ex date, and no "Applied" word', () => {
-    expect(corporateActionRow(bonus)).toEqual({ id: 'ca1', title: 'Bonus 1:1', subtitle: 'ex 10 Jun 25' });
+    expect(corporateActionRow(bonus)).toMatchObject({ id: 'ca1', title: 'Bonus 1:1', subtitle: 'ex 10 Jun 25' });
+  });
+
+  it.each([
+    ['split', 1, 5],
+    ['bonus', 1, 2],
+    ['demerger', 3, 7],
+    ['merger', 2, 9],
+    ['delisted', 4, 11],
+  ] as const)('carries the saved %s for the edit dialog', (kind, ratioFrom, ratioTo) => {
+    const action = {
+      id: 'x1', instrumentId: 'i-infy', type: kind, ratioFrom, ratioTo, exDate: '2025-06-10', notes: 'a note',
+      targetInstrumentId: 't1', targetInstrumentName: 'Child Ltd', targetInstrumentSymbol: 'CHILD', costAllocationPct: 30, fractionalCashInLieu: 12.5,
+    } as unknown as CorporateAction;
+    const row = corporateActionRow(action);
+    expect(row.item).toMatchObject({
+      id: 'x1', instrumentId: 'i-infy', type: kind, ratioFrom, ratioTo, exDate: '2025-06-10', notes: 'a note',
+      targetInstrumentId: 't1', targetInstrumentName: 'Child Ltd', targetInstrumentSymbol: 'CHILD', costAllocationPct: 30, fractionalCashInLieu: 12.5,
+    });
+    expect(row.title).toBe(corporateActionRow({ ...action, notes: undefined }).title);
+    expect(JSON.parse(JSON.stringify(row))).toEqual(row);
+  });
+
+  it('reads the kind from an uppercase actionType when there is no type', () => {
+    const action = { id: 'x2', instrumentId: 'i-infy', actionType: 'DEMERGER', ratioFrom: 3, ratioTo: 7, exDate: '2025-06-10' } as unknown as CorporateAction;
+    expect(corporateActionRow(action).item.type).toBe('demerger');
   });
 
   it('lets only the signed-in user\'s own manual prices change', () => {

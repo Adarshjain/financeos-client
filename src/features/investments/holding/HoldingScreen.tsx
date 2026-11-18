@@ -17,6 +17,7 @@ import {
 import { subCrumb } from '@/features/shell/navigation';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { formatMoney, formatQuantity } from '@/lib/format';
+import type { CorporateActionItem } from '@/lib/investments.types';
 import { useLazyDialog } from '@/lib/lazy/useLazyDialog';
 import { useAppRouter } from '@/lib/useAppRouter';
 
@@ -63,7 +64,13 @@ export function HoldingScreen({ data, today, now }: HoldingScreenProps) {
   const router = useAppRouter();
   const [overriding, setOverriding] = React.useState(false);
   const [dialog, setDialog] = React.useState<HoldingDialog | null>(null);
-  const closeDialog = () => setDialog(null);
+  const [editingAction, setEditingAction] = React.useState<CorporateActionItem | null>(null);
+  const [actionsReload, setActionsReload] = React.useState(0);
+  const closeDialog = () => {
+    if (editingAction) setActionsReload((n) => n + 1);
+    setDialog(null);
+    setEditingAction(null);
+  };
   const trade = useLazyDialog(loadRecordTradeDialog);
   const dividend = useLazyDialog(loadDividendAddDialog);
   const corporateAction = useLazyDialog(loadCorporateActionDialog);
@@ -127,7 +134,12 @@ export function HoldingScreen({ data, today, now }: HoldingScreenProps) {
             </div>
             <div className="desk:col-span-4 flex flex-col gap-space-8 desk:gap-space-16 min-w-0">
               <DividendsCard instrumentId={id} initial={dividends ?? EMPTY_SECTION} onRecord={() => openDialog('dividend')} />
-              <CorporateActionsCard instrumentId={id} initial={corporateActions ?? EMPTY_SECTION} onRecord={() => openDialog('corporate-action')} />
+              <CorporateActionsCard instrumentId={id} initial={corporateActions ?? EMPTY_SECTION} onRecord={() => openDialog('corporate-action')} reloadKey={actionsReload}
+                onEdit={(item) => void corporateAction.run(() => {
+                  setEditingAction({ ...item, instrumentName: holding.name, instrumentSymbol: holding.symbol });
+                  setDialog('corporate-action');
+                })}
+              />
               {instrument ? <InstrumentCard rows={instrumentRows(instrument)} /> : null}
             </div>
           </div>
@@ -147,7 +159,9 @@ export function HoldingScreen({ data, today, now }: HoldingScreenProps) {
           onClose={closeDialog}
         />
       ) : null}
-      {dialog === 'corporate-action' && corporateAction.Component ? <corporateAction.Component instrument={ref} onClose={closeDialog} /> : null}
+      {dialog === 'corporate-action' && corporateAction.Component ? (
+        editingAction ? <corporateAction.Component key={editingAction.id} action={editingAction} onClose={closeDialog} /> : <corporateAction.Component instrument={ref} onClose={closeDialog} />
+      ) : null}
       {dialog === 'edit-instrument' && instrument && editInstrument.Component ? (
         <editInstrument.Component
           instrument={instrument}

@@ -421,6 +421,19 @@ describe('/investments/[id]: record and edit dialogs', () => {
     expect(props('action-dialog')).toEqual({ instrument });
   });
 
+  it('opens a Corporate actions row in edit mode, then Record opens the create dialog with no action', async () => {
+    await renderPage();
+    fireEvent.click(screen.getByText('Bonus 1:1'));
+    await screen.findByTestId('action-dialog');
+    const edit = props('action-dialog');
+    expect(edit.instrument).toBeUndefined();
+    expect(edit.action).toMatchObject({ id: 'ca1', instrumentId: 'i-infy', type: 'bonus', instrumentName: data.holding.name });
+    fireEvent.click(screen.getByRole('button', { name: 'close dialog' }));
+    expect(screen.queryByTestId('action-dialog')).toBeNull();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Record' })[1]);
+    expect(props('action-dialog')).toEqual({ instrument });
+  });
+
   it('opens the instrument edit dialog from the header menu', async () => {
     await renderPage();
     fireEvent.click(within(await openMenu()).getByRole('menuitem', { name: 'Edit instrument' }));

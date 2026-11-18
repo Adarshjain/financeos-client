@@ -1,7 +1,7 @@
 import { ratioText } from '@/features/investments/corporate-actions/corporateActionRatioModel';
 import { moveTone, priceTimeLabel } from '@/features/investments/investmentsFormatModel';
 import { formatDate, formatMoney, formatPercent, formatQuantity, formatTime } from '@/lib/format';
-import type { HoldingDetail, PagePosition, PricePoint, SellEstimate } from '@/lib/investments.types';
+import type { CorporateActionItem, CorporateActionKind, HoldingDetail, PagePosition, PricePoint, SellEstimate } from '@/lib/investments.types';
 import type { CorporateAction, Dividend, Instrument, InvestmentTransactionResponse } from '@/lib/types';
 
 // ---- Sections ------------------------------------------------------------------
@@ -203,6 +203,8 @@ export interface CorporateActionRowModel {
   id: string;
   title: string;
   subtitle: string;
+  /** The saved action, as the edit dialog takes it. */
+  item: CorporateActionItem;
 }
 
 const ACTION_WORDS: Record<string, string> = { split: 'Split', bonus: 'Bonus', demerger: 'Demerger', merger: 'Merger' };
@@ -216,6 +218,27 @@ export function corporateActionRow(a: CorporateAction): CorporateActionRowModel 
     id: a.id,
     title: `${ACTION_WORDS[kind] ?? kind}${ratio}`,
     subtitle: [a.exDate ? `ex ${formatDate(a.exDate, 'list')}` : '', target, a.notes ?? ''].filter(Boolean).join(' · '),
+    item: {
+      id: a.id,
+      instrumentId: a.instrumentId,
+      instrumentName: a.instrumentName ?? '',
+      instrumentSymbol: a.instrumentSymbol ?? null,
+      type: kind as CorporateActionKind,
+      ratioFrom: a.ratioFrom ?? null,
+      ratioTo: a.ratioTo ?? null,
+      exDate: a.exDate ?? '',
+      notes: a.notes ?? null,
+      targetInstrumentId: a.targetInstrumentId ?? null,
+      targetInstrumentName: a.targetInstrumentName ?? null,
+      targetInstrumentSymbol: a.targetInstrumentSymbol ?? null,
+      costAllocationPct: a.costAllocationPct ?? null,
+      fractionalCashInLieu: a.fractionalCashInLieu ?? null,
+      createdAt: a.createdAt ?? '',
+      quantityBefore: null,
+      quantityAfter: null,
+      costPerUnitBefore: null,
+      costPerUnitAfter: null,
+    },
   };
 }
 
