@@ -82,6 +82,28 @@ export function defaultExcludedFilter(
   return { field: EXCLUDED_FIELD, operator, value: false };
 }
 
+/** The boolean filter field that keeps real spend and income (not excluded, transfers between own accounts, bill payments, wallet top-ups). */
+export const COUNTS_IN_TOTALS_FIELD = 'countsInTotals';
+
+/** `countsInTotals is true`, the filter a new transactions report starts with; null if the catalog has no such field. */
+export function defaultCountsInTotalsFilter(catalog: DatasourceCatalog): FilterClause | null {
+  const field = catalog.fields.find((f) => f.name === COUNTS_IN_TOTALS_FIELD);
+  if (!field) return null;
+  const ops = operatorsForField(catalog, field);
+  const operator = ops.includes('is') ? 'is' : (ops[0] ?? 'is');
+  return { field: COUNTS_IN_TOTALS_FIELD, operator, value: true };
+}
+
+/**
+ * The filters a new blank report starts with. Transactions: `countsInTotals is true`, else (a catalog without it)
+ * the hide-excluded filter. Any other datasource starts with none.
+ */
+export function startFilters(catalog: DatasourceCatalog | undefined, datasource: string): FilterClause[] {
+  if (!catalog || datasource !== 'transactions') return [];
+  const seed = defaultCountsInTotalsFilter(catalog) ?? defaultExcludedFilter(catalog);
+  return seed ? [seed] : [];
+}
+
 /** Aggregations a measure field supports — only the ones it lists. */
 export function aggsFor(
   catalog: DatasourceCatalog,

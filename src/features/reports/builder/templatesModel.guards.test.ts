@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { FieldGuard, ReportCatalog } from '@/lib/reports.types';
 
-import { catalogFixture } from './editor.fixtures';
+import { catalogWithCountsFixture } from './editor.fixtures';
 import { initialEditorState, workingCatalog } from './editorStateModel';
 import { guardProblems } from './guardsModel';
 import { TEMPLATES } from './templatesModel';
@@ -14,8 +14,8 @@ const guards: Record<string, FieldGuard[]> = {
   isExcluded: [],
 };
 const guarded: ReportCatalog = {
-  ...catalogFixture,
-  datasources: catalogFixture.datasources.map((ds) =>
+  ...catalogWithCountsFixture,
+  datasources: catalogWithCountsFixture.datasources.map((ds) =>
     ds.name === 'transactions' ? { ...ds, fields: ds.fields.map((f) => (guards[f.name] ? { ...f, guards: guards[f.name] } : f)) } : ds,
   ),
 };

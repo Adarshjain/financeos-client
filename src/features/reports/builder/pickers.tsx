@@ -200,6 +200,9 @@ export function MeasurePicker({
   );
 }
 
+/** Shown under a tag split: a transaction with several tags is in each tag's bucket. */
+export const TAG_SPLIT_NOTE = 'A transaction with more than one tag is counted under each tag.';
+
 /** A dimension field and, only for a date field, the granularity it is grouped by. */
 export function DimensionPicker({
   catalog,
@@ -237,6 +240,7 @@ export function DimensionPicker({
           placeholder={placeholder}
           noneLabel={noneLabel}
           error={isDate ? undefined : error}
+          helper={value.field === 'tag' ? TAG_SPLIT_NOTE : undefined}
           onValueChange={(field) =>
             // A date dimension starts at month; any other has no granularity.
             onChange({ field, granularity: isDateFieldName(catalog, field) ? (value.granularity ?? 'month') : undefined })

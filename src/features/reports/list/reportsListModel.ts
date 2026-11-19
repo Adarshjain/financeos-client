@@ -171,6 +171,9 @@ export interface ReportTemplate {
 /** The fixed templates of "Start from a template" (board). */
 export const REPORT_TEMPLATES: ReportTemplate[] = [
   { id: 'spend-vs-last-month-by-category', label: 'Spend vs last month by category' },
+  { id: 'spend-by-category-and-sub-category', label: 'Spend by category and sub-category' },
+  { id: 'category-spend-by-month', label: 'Category spend by month' },
+  { id: 'income-by-category', label: 'Income by category' },
   { id: 'dividend-income-by-fy', label: 'Dividend income by FY' },
 ];
 

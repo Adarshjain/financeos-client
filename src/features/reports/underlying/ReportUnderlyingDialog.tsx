@@ -23,14 +23,17 @@ import { Skeleton } from '@/components/ds/Skeleton/Skeleton';
 import { Tabs } from '@/components/ds/Tabs/Tabs';
 import { Text } from '@/components/ds/Text/Text';
 import { formatMeasure } from '@/features/reports/measureFormatModel';
+import { transactionsUrl } from '@/features/transactions/list/transactionsUrl';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { formatDateRange } from '@/lib/date-range';
 import { formatCount, pluralize } from '@/lib/format';
+import { useCategoryList } from '@/lib/query/hooks/useCategoryList';
 import { asReportData, isRawTableData } from '@/lib/reports.helpers';
 import type { RunReportRequest, SortClause, TableRow } from '@/lib/reports.types';
 
 import { BreakdownFrameView } from './BreakdownFrameView';
 import { filterChipText } from './filterChipText';
+import { transactionsQueryFor } from './openInTransactionsModel';
 import type { UnderlyingExcludedItem, UnderlyingPeriod, UnderlyingSource } from './underlying.types';
 import {
   asFormat,
@@ -112,6 +115,16 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
   const [downloading, setDownloading] = React.useState(false);
   const [csvError, setCsvError] = React.useState<string | null>(null);
   const nav = useBreakdownStack();
+
+  // "Open in Transactions": only for transaction rows of this period, and only when the Transactions page can say the same
+  // filter. The category list is fetched when a category or sub-category clause needs it, never before the dialog opens.
+  const clauses = request?.datasource === 'transactions' ? request.definition.filters : null;
+  const needsCategories = !!clauses?.some((f) => f.field === 'category' || f.field === 'subcategory');
+  const categoryList = useCategoryList(undefined, { enabled: needsCategories });
+  const transactionsQuery = React.useMemo(
+    () => (clauses && period === 'current' ? transactionsQueryFor(clauses, categoryList.list) : null),
+    [clauses, period, categoryList.list],
+  );
 
   const query = useKpiUnderlying(source, { period, page, size: UNDERLYING_PAGE_SIZE, sort });
   const shown = query.data;
@@ -279,6 +292,8 @@ export function ReportUnderlyingDialog({ request: wholeRequest, builtin, entries
         // The CSV is the listing's rows, not the open breakdown's: inside one, only Close.
         tertiary={top ? undefined : { label: 'Download CSV', icon: 'download', onSelect: download, loading: downloading, disabled: !data }}
         secondary={{ label: 'Close', onSelect: onClose }}
+        // A link (the app's own), so the page changes without a reload and the dialog closes as it opens.
+        primary={!top && transactionsQuery ? { label: 'Open in Transactions', href: transactionsUrl(transactionsQuery), onSelect: onClose } : undefined}
       >
         <Dialog.Body>
           {top ? (

@@ -8,6 +8,7 @@ import { createDataTableColumnHelper } from '@/components/ds/DataTable/types';
 import { ProgressBar, type ProgressBarColor } from '@/components/ds/ProgressBar/ProgressBar';
 import { Text } from '@/components/ds/Text/Text';
 import { formatMeasure } from '@/features/reports/measureFormatModel';
+import { subRowDisplayLabel } from '@/features/reports/view/subRowLabelModel';
 import { formatCount, formatPercent } from '@/lib/format';
 import { labelChartData, valueLabel } from '@/lib/reports.helpers';
 import type { BreakdownBars, BreakdownColumn, BreakdownSubRow } from '@/lib/reports.types';
@@ -202,7 +203,7 @@ export const ChartBreakdown = forwardRef<HTMLDivElement, ChartBreakdownProps>(fu
           {row.subRows.map((sub, i) => (
             <div key={i} className="flex items-baseline justify-between gap-space-12">
               <Text variant="caption" tone="ink-2" truncate>
-                {`${valueLabel(sub.label, subLabels)} · ${txns(sub.count)}`}
+                {`${subRowDisplayLabel(row.label, valueLabel(sub.label, subLabels))} · ${txns(sub.count)}`}
               </Text>
               <Text variant="caption" tone="ink-2">
                 {fmt(sub.value)}

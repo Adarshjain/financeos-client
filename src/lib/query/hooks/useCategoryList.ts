@@ -9,12 +9,16 @@ import { keys } from '@/lib/query/keys';
 
 const NO_CATEGORIES: CategoryDef[] = [];
 
-/** The fixed category list. It never changes, so it is fetched once and kept for the session. */
-export function useCategoryList(initialData?: CategoryDef[]) {
+/**
+ * The fixed category list. It never changes, so it is fetched once and kept for the session.
+ * `enabled: false` holds the fetch back until something needs the list.
+ */
+export function useCategoryList(initialData?: CategoryDef[], options?: { enabled?: boolean }) {
   const query = useQuery({
     queryKey: keys.categoryList.all,
     queryFn: () => unwrapAction(loadCategoryList()),
     initialData,
+    enabled: options?.enabled ?? true,
     staleTime: Infinity,
     gcTime: Infinity,
   });

@@ -258,7 +258,8 @@ test.describe('/ds report editor, desktop 1440px (@ui)', () => {
       await expect(dialog.getByText(name).first()).toBeVisible();
     }
     await expect(dialog.getByText('Cards')).toHaveCount(0);
-    await expect(dialog.getByText('Open in Transactions')).toHaveCount(0);
+    // A this-month report on transactions can be said exactly in Transactions, so the dialog offers it.
+    await expect(dialog.getByRole('link', { name: 'Open in Transactions' })).toHaveAttribute('href', '/transactions?period=this_month');
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { REPORT_TEMPLATES } from '@/features/reports/list/reportsListModel';
 import type { ReportCatalog } from '@/lib/reports.types';
 
-import { catalogFixture, savedChart } from './editor.fixtures';
+import { catalogFixture, catalogWithCountsFixture, savedChart } from './editor.fixtures';
 import { initialEditorState, snapshot, workingCatalog } from './editorStateModel';
 import { serializeDefinition } from './serializeModel';
 import { findTemplate, templateFits,TEMPLATES } from './templatesModel';
@@ -14,7 +14,7 @@ describe('templates', () => {
   });
 
   it('only uses fields the datasource has', () => {
-    for (const t of TEMPLATES) expect(templateFits(t, workingCatalog(catalogFixture, t.datasource))).toBe(true);
+    for (const t of TEMPLATES) expect(templateFits(t, workingCatalog(catalogWithCountsFixture, t.datasource))).toBe(true);
   });
 
   it('is unusable when a field it uses is missing', () => {
@@ -39,9 +39,9 @@ describe('initialEditorState', () => {
   });
 
   it('prefills the draft from a template, as a new report', () => {
-    const s = initialEditorState({ catalog: catalogFixture, templateId: 'spend-vs-last-month-by-category' });
+    const s = initialEditorState({ catalog: catalogWithCountsFixture, templateId: 'spend-vs-last-month-by-category' });
     expect(s).toMatchObject({ mode: 'create', reportId: undefined, type: 'CHART', datasource: 'transactions', name: 'Spend vs last month by category' });
-    expect(serializeDefinition(s, workingCatalog(catalogFixture, 'transactions'))).toMatchObject({
+    expect(serializeDefinition(s, workingCatalog(catalogWithCountsFixture, 'transactions'))).toMatchObject({
       chartType: 'bar',
       dimension: { field: 'category' },
       measure: { field: 'spend', aggregation: 'sum' },
@@ -50,7 +50,7 @@ describe('initialEditorState', () => {
       comparison: { enabled: true, period: 'previous_period', higherIsBetter: false },
       filters: [
         { field: 'date', operator: 'this_month' },
-        { field: 'isExcluded', operator: 'is', value: false },
+        { field: 'countsInTotals', operator: 'is', value: true },
       ],
     });
   });

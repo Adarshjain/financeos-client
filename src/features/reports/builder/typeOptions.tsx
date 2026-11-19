@@ -23,7 +23,7 @@ import { ConfigSection } from './ConfigSection';
 import type { GuardMeasure } from './guardsModel';
 import { AGGREGATION_LABELS } from './labelsModel';
 import { chartTypeOptions, dimensionOptions, granularityOptions } from './optionsModel';
-import { CompareFields, CountField, DimensionPicker, FieldError, MeasurePicker, type MeasureValue, PAIR, PickSelect, RemoveButton, RevealPair } from './pickers';
+import { CompareFields, CountField, DimensionPicker, FieldError, MeasurePicker, type MeasureValue, PAIR, PickSelect, RemoveButton, RevealPair, TAG_SPLIT_NOTE } from './pickers';
 import { aggregatedColumnKey, hasSeries,type IssueKey, SUB_LIMIT_MAX, TOP_N_MAX } from './serializeModel';
 
 export type Issues = Partial<Record<IssueKey, string>>;
@@ -156,6 +156,7 @@ export function ChartOptions({ catalog, state, dispatch, issues }: SectionProps)
                 options={dimensionOptions(catalog, 'CHART', c.dimensionField ? [c.dimensionField] : [], c.subDimensionField, chartMeasures)}
                 noneLabel="No sub-rows"
                 placeholder="No sub-rows"
+                helper={c.subDimensionField === 'tag' ? TAG_SPLIT_NOTE : undefined}
                 error={isDateFieldName(catalog, c.subDimensionField) ? undefined : issues.subDimension}
                 onValueChange={(field) =>
                   set({

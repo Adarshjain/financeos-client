@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { catalogFixture, savedChart } from '@/features/reports/builder/editor.fixtures';
+import { catalogFixture, catalogWithCountsFixture, savedChart } from '@/features/reports/builder/editor.fixtures';
 import type { NewReportData, SavedReportData } from '@/features/reports/builder/editorData';
 import type { Loaded } from '@/features/shell/loadHelpers';
 import type { ChartData } from '@/lib/reports.types';
@@ -56,7 +56,7 @@ describe('/reports/new', () => {
   });
 
   it('reads ?template= on the server, so the first render is already prefilled', async () => {
-    loadNewReport.mockResolvedValue({ ok: true, data: { catalog: catalogFixture } });
+    loadNewReport.mockResolvedValue({ ok: true, data: { catalog: catalogWithCountsFixture } });
     renderWithQuery(await NewReportPage({ searchParams: Promise.resolve({ template: 'spend-vs-last-month-by-category' }) }));
     expect(screen.getByLabelText('Report name')).toHaveValue('Spend vs last month by category');
     expect(screen.getByRole('radio', { name: 'Chart' })).toBeChecked();

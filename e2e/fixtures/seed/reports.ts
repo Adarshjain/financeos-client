@@ -1,5 +1,6 @@
 import type { components } from '../../../src/lib/api/schema.d.ts';
 import { type ApiClient } from '../api';
+import { istToday } from '../dates';
 import { createBankAccount } from './accounts';
 import {
 } from './investments';
@@ -215,5 +216,78 @@ export async function seedTransactionsDataset(
     currentMonthTravelDebitTotal: -2000,
     currentMonthCreditTotal: 5000,
     prevMonthFoodDebitTotal: -800,
+  };
+}
+
+// ============================================================================
+// Fixed categories: sub-category, "Others", uncategorised, transfer and excluded rows
+// ============================================================================
+
+export interface SeededCategoriesDataset {
+  account: components['schemas']['BankAccountResponse'];
+  /** Descriptions of the seeded rows, by what they stand for. */
+  descriptions: {
+    delivery: string;
+    dining: string;
+    foodOthers: string;
+    cabs: string;
+    transportOthers: string;
+    uncategorised: string;
+    selfTransfer: string;
+    excluded: string;
+  };
+  /** The amount of each row (debits, positive here). */
+  amounts: {
+    delivery: number;
+    dining: number;
+    foodOthers: number;
+    cabs: number;
+    transportOthers: number;
+    uncategorised: number;
+    selfTransfer: number;
+    excluded: number;
+  };
+  /** What "counts as spend or income" keeps: every row but the self transfer and the excluded one. */
+  countedSpend: number;
+}
+
+/**
+ * This month's rows, all debits on one new account of `api`'s user, with fixed categories chosen explicitly:
+ * a sub-category row, a category with no sub-category (twice, in two categories), an uncategorised row, a row in
+ * `self_transfer` and a row excluded by hand. Use a fresh user when a user-wide figure is asserted.
+ */
+export async function seedCategoriesDataset(api: ApiClient): Promise<SeededCategoriesDataset> {
+  const tag = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}`;
+  const account = await createBankAccount(api, { name: `Categories Account ${tag}` });
+  const date = istToday();
+  const descriptions = {
+    delivery: `Cat delivery ${tag}`,
+    dining: `Cat dining ${tag}`,
+    foodOthers: `Cat food others ${tag}`,
+    cabs: `Cat cabs ${tag}`,
+    transportOthers: `Cat transport others ${tag}`,
+    // A name the built-in engine cannot place, so the row stays uncategorised.
+    uncategorised: `Zxqv uncategorised ${tag}`,
+    selfTransfer: `Cat self transfer ${tag}`,
+    excluded: `Cat excluded ${tag}`,
+  };
+  const amounts = { delivery: 300, dining: 200, foodOthers: 100, cabs: 400, transportOthers: 60, uncategorised: 50, selfTransfer: 999, excluded: 777 };
+  const add = (description: string, amount: number, extra: { categoryKey?: string; subcategoryKey?: string; isTransactionExcluded?: boolean }) =>
+    createTransaction(api, account.id, { amount: -amount, date, description, ...extra });
+
+  await add(descriptions.delivery, amounts.delivery, { categoryKey: 'food', subcategoryKey: 'food.delivery' });
+  await add(descriptions.dining, amounts.dining, { categoryKey: 'food', subcategoryKey: 'food.dining' });
+  await add(descriptions.foodOthers, amounts.foodOthers, { categoryKey: 'food' });
+  await add(descriptions.cabs, amounts.cabs, { categoryKey: 'transport', subcategoryKey: 'transport.cabs' });
+  await add(descriptions.transportOthers, amounts.transportOthers, { categoryKey: 'transport' });
+  await add(descriptions.uncategorised, amounts.uncategorised, {});
+  await add(descriptions.selfTransfer, amounts.selfTransfer, { categoryKey: 'self_transfer' });
+  await add(descriptions.excluded, amounts.excluded, { categoryKey: 'food', subcategoryKey: 'food.delivery', isTransactionExcluded: true });
+
+  return {
+    account,
+    descriptions,
+    amounts,
+    countedSpend: amounts.delivery + amounts.dining + amounts.foodOthers + amounts.cabs + amounts.transportOthers + amounts.uncategorised,
   };
 }

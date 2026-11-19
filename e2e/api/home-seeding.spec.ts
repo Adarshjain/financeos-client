@@ -120,8 +120,7 @@ test.describe('Home dashboard seeding (@api)', () => {
       expect.arrayContaining([
         expect.objectContaining({ field: 'date', operator: 'this_month' }),
         expect.objectContaining({ field: 'type', operator: 'is', value: 'DEBIT' }),
-        expect.objectContaining({ field: 'isExcluded', operator: 'is', value: false }),
-        expect.objectContaining({ field: 'isTransferLeg', operator: 'is', value: false }),
+        expect.objectContaining({ field: 'countsInTotals', operator: 'is', value: true }),
       ]),
     );
   });

@@ -22,7 +22,7 @@ import type {
   SortClause,
 } from '@/lib/reports.types';
 
-import { defaultExcludedFilter } from './catalog';
+import { startFilters } from './catalog';
 
 
 
@@ -148,16 +148,15 @@ export function initialBuilderState(
   /** The KPI's comparison on a new draft: on by default, off (Show: None) for the editor. */
   kpiComparison = true,
 ): BuilderState {
-  // New reports on transactions default to hiding excluded transactions.
+  // New reports on transactions start with "counts as spend or income".
   // Other datasources start with no filters. Edit mode passes no catalog.
-  const seedFilter = catalog && datasource === 'transactions' ? defaultExcludedFilter(catalog) : null;
   return {
     mode: 'create',
     name: '',
     description: '',
     datasource,
     type,
-    filters: seedFilter ? [seedFilter] : [],
+    filters: startFilters(catalog, datasource),
     kpi: { comparisonEnabled: kpiComparison },
     chart: { chartType: 'bar' },
     table: {
@@ -182,11 +181,10 @@ export function builderReducer(
     case 'SET_DATASOURCE': {
       if (state.mode === 'edit') return state;
       const newDs = action.value;
-      const seedFilter = newDs === 'transactions' && action.catalog ? defaultExcludedFilter(action.catalog) : null;
       return {
         ...state,
         datasource: newDs,
-        filters: seedFilter ? [seedFilter] : [],
+        filters: startFilters(action.catalog, newDs),
         kpi: { comparisonEnabled: true },
         chart: { chartType: 'bar' },
         table: {

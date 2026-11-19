@@ -68,7 +68,7 @@ export function FilterValueEditor({ kind, field, dynamicOptions, value, onChange
       return (
         <Select
           label="Value"
-          searchable={opts.length > 8}
+          searchable={opts.length > 8 || field.name === 'category' || field.name === 'subcategory'}
           placeholder={opts.length === 0 ? emptyHint : 'Select value'}
           options={opts}
           value={typeof value === 'string' ? value : ''}

@@ -47,6 +47,16 @@ export const catalogFixture: ReportCatalog = {
   ],
 };
 
+/** The same catalog once the server has the "Counts as spend or income" filter field on Transactions. */
+export const catalogWithCountsFixture: ReportCatalog = {
+  ...catalogFixture,
+  datasources: catalogFixture.datasources.map((ds) =>
+    ds.name === 'transactions'
+      ? { ...ds, fields: [...ds.fields, field({ name: 'countsInTotals', label: 'Counts as spend or income', type: 'boolean', role: 'filter', allowedInReports: [] })] }
+      : ds,
+  ),
+};
+
 /** A saved report as the server returns it. */
 export const savedChart: ReportResponse = {
   id: 'r1',
